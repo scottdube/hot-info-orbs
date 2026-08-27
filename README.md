@@ -69,6 +69,8 @@ While built on Arduino, the codebase for this project has been built using the  
 Once you have platform.io installed and configured in VSC, open the `info-orbs.code-workspace` to being the setup process.
 
 **Project Configuration**
+**New to PlatformIO? Read [docs/SETUP.md](docs/SETUP.md) instead** — it walks from an empty machine to a running orb, with a troubleshooting table for the common failures. The short version follows.
+
 Before compiling/flashing, go into the `firmware/config` directory and make **two** copies, in the same folder:
 
 | Copy this | To this | What goes in it |
