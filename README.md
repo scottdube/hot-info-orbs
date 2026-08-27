@@ -69,7 +69,23 @@ While built on Arduino, the codebase for this project has been built using the  
 Once you have platform.io installed and configured in VSC, open the `info-orbs.code-workspace` to being the setup process.
 
 **Project Configuration**
-Before compiling/flashing, you'll need to navigate into `firmware` >>`config` directory and make a copy of the file `config.h.template` in the same folder and rename that copy to `config.h` **THIS STEP IS CRITICAL AND YOUR CODE WILL NOT COMPILE IF YOU DONT COPY THIS FILE AND CHANGE THE NAME**
+Before compiling/flashing, go into the `firmware/config` directory and make **two** copies, in the same folder:
+
+| Copy this | To this | What goes in it |
+|---|---|---|
+| `config.h.template` | `config.h` | your preferences - timezone, units, tickers, clock style |
+| `secrets.h.template` | `secrets.h` | your own API keys, and WiFi/MQTT credentials if you use them |
+
+**Both copies are required and the build will refuse to compile without them.** That is deliberate - it tells you at build time instead of leaving you with a blank orb on the bench.
+
+Both `config.h` and `secrets.h` are gitignored, so your keys and your settings stay on your machine. The two `.template` files are the ones tracked in git, which is why they must never hold real values.
+
+The two API keys are free and take about a minute each:
+
+- **Weather** - <https://www.visualcrossing.com/sign-up>
+- **Timezone** - <https://timezonedb.com/register>
+
+Register your own rather than borrowing someone else's. A key shared across several devices burns a single free-tier quota, and whoever owns it can revoke it without warning.
 
 Lastly, open up the `config.h` file you just copied/renamed and adjust the parameters in this file to configure the orbs to your personal needs. You can find more details about each configuration option below.
 
