@@ -336,3 +336,108 @@ board onto the bench, not produce the final article.
 
 The remaining unknown is geometric, not topological, and the way to settle it is
 to attempt the layout rather than to reason further about it.
+
+---
+
+# Appendix B: Attempting the layout — where geometry actually bites
+
+The planarity result in Appendix A says zero crossings are forced by the
+circuit. Planarity ignores geometry. This is what happens when the geometry is
+put back in.
+
+## The pinout is the whole problem
+
+All five display connectors are identical 1x7 headers:
+
+| Pin | Net | |
+|---|---|---|
+| 1 | IO18 — RST | shared by all five |
+| **2** | **IO13 / IO33 / IO32 / IO25 / IO21** | **unique per display** |
+| 3 | IO19 — DC | shared |
+| 4 | IO17 — MOSI | shared |
+| 5 | IO23 — SCLK | shared |
+| 6 | GND | shared |
+| 7 | 3V3 | shared |
+
+**The one signal that differs per display sits at pin 2 — fenced in between two
+shared bus lanes.** Every other pin can be served by a straight lane running the
+length of the row. Pin 2 cannot, because each connector's pin 2 goes somewhere
+different.
+
+## The hard constraint, computed
+
+Header pads are 1.70 mm on 2.54 mm pitch:
+
+```
+pad-to-pad gap    0.84 mm
+one track needs   1.20 mm   (0.40 trace + 0.40 clearance each side)
+tracks that fit   0
+```
+
+**Nothing routes between adjacent header pads at the milling floor.** Not one
+track. Every connection either arrives from outside the pin column or does not
+arrive.
+
+## The layout that follows
+
+Place the five connectors in a row, pin columns parallel, pins perpendicular to
+the row. Then:
+
+- **Pins 1, 3, 4, 5, 7 become straight horizontal lanes**, each at its own pin
+  height, hopping connector to connector. No crossings, no detours.
+- **Pin 6 (GND) disappears into the pour** and costs nothing.
+- **Pin 2 is the exception.** Each CS line must reach a pad whose neighbours on
+  both sides are occupied bus lanes.
+
+A CS line heading for a distant connector must route around the intervening pin
+columns — there is no path between the pads. Sending it above the row (past pin
+1) into a clear channel works, and 4 such tracks need only 3.6 mm of channel,
+which is nothing on a board this size. But coming back *down* to pin 2 means
+crossing the pin-1 RST lane.
+
+**That crossing is the irreducible cost, and it is one per CS line that has to
+get past another connector.**
+
+## The number
+
+| Module placement | Jumpers |
+|---|---:|
+| Module at one end of the row | **4** |
+| Module in the middle of the row | **3** |
+
+With the module at the left, CS for the nearest display runs alongside the RST
+lane without crossing it; the other four each cross once. Moving the module into
+the middle of the row splits the fan-out in both directions and saves one.
+
+Routing the RST lane above the CS channel instead does not help — then RST has
+to come down to each pin 1 and crosses the CS tracks instead. The count is
+symmetric because the topology is.
+
+## Verdict
+
+**Three or four jumper wires on a single-sided milled board.** Not 56, not
+zero. That is an entirely reasonable prototype — a handful of short wire links
+soldered on the copper face.
+
+The path is open: mill a single-sided prototype in-house with a GND pour and
+3–4 jumpers, prove the firmware and the pin map on real hardware, then send the
+proper 2-layer design to JLCPCB for production where the jumpers become vias and
+cost nothing.
+
+## One trap to fix before milling
+
+The stock 1x7 header footprint is **1.70 mm pads on a 1.00 mm drill**. Milled:
+
+```
+drill 1.00 snaps to nearest owned bit 1.181 (UP)
+annulus = (1.70 - 1.181)/2 = 0.2595 mm
+gate = 0.25 mm  ->  passes by 9.5 microns
+```
+
+It passes, with no margin worth the name — this is exactly the socket-row case
+the shop guide flags. **Grow the header pads to 1.78 mm** before generating CAM,
+which takes the annulus to 0.299 mm and a 49 µm margin. Same change applies to
+all five display connectors and the module row if it is socketed.
+
+Note this is a *milling* concern only. Sent to JLCPCB, the holes are plated and
+the stock footprint is fine.
