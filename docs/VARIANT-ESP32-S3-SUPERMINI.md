@@ -239,3 +239,100 @@ commitment starts.
 - Is the SuperMini socketed or soldered down? Socketing is friendlier to
   reflashing and rework but drags in the 1.78 mm pad requirement and doubles the
   height.
+
+---
+
+# Appendix: Is upstream's board poorly laid out?
+
+Measured 2026-08-27 from `PCBFiles+Schematics/Main PCB/info_orbs.kicad_pcb`.
+Every number here came from parsing that file, not from inspection by eye.
+
+## What is on the board
+
+| | |
+|---|---|
+| Footprints | 16 (3 are graphics with no pads) |
+| Pads | 135, **all through-hole**, no SMD |
+| Nets | 36 |
+| Track segments | 277 — 155 on F.Cu, 122 on B.Cu |
+| Copper length | 204 cm front, 38 cm back |
+| Vias | 56, every one 0.6 mm pad / 0.3 mm drill |
+| **Copper pours** | **zero** |
+
+## Three findings that explain the 56 vias
+
+**1. There is no ground plane.** Not on either layer. Every ground and power
+connection is an individually routed trace. Ground touches 14 pads across the
+board and is the highest-fanout net on it; a bottom-layer pour would absorb
+nearly all of those with no vias at all. The 14-via net `Net-(J1-Pin_1)` is
+ground, stitched across the board one hop at a time.
+
+**2. The board carries TWO ESP32 module footprints, both fully wired.** `V1`
+(`New folder:38 Pin Board`) and `V2` (`A Local Libs:38 Pin Board thin`) — 38
+pads and 36 nets each, connected in parallel so either module variant can be
+fitted. That is a deliberate choice, not an error, but it roughly doubles the
+routing burden. Every shared bus net reaches seven pads instead of five: five
+displays plus both module positions.
+
+**3. The back layer is used for stubs, not for a strategy.** 204 cm of copper on
+the front against 38 cm on the back, yet 56 vias to service that back layer.
+122 back-layer segments carrying 38 cm total means the pattern is hop over an
+obstacle and hop straight back.
+
+Supporting evidence of hurry rather than intent: two *different* 38-pin board
+footprints, a library named `New folder`, a footprint named `Untitled`, and no
+power symbols in the schematic — the nets are auto-named `Net-(U1-3.3v)` and
+`Net-(J1-Pin_1)` rather than `+3V3` and `GND`, which is *why* nothing could be
+poured. You cannot pour to a net the schematic never named.
+
+None of this makes the board wrong. It works, and hundreds of people have built
+it. It was drawn for a fab house where vias are free and there is no reason to
+count them.
+
+## How many connections actually need the other side?
+
+Tested rather than estimated: the netlist was built into a graph — one node per
+pad, net connections as edges, each component's pin rows locked into their
+physical order, routing under through-hole parts allowed — and checked for
+planarity. A planar graph can be drawn with no edge crossings, which is the
+graph-theory statement of "routable on one layer".
+
+| Scenario | Net edges | Planar? | Crossings required |
+|---|---:|---|---:|
+| One module, nothing poured | 59 | **yes** | **0** |
+| One module, GND poured | 49 | **yes** | **0** |
+| One module, GND + 3V3 poured | 37 | **yes** | **0** |
+
+**The circuit is inherently single-layer routable.** Upstream's 56 vias are a
+property of their layout, not of this design. Drop the duplicate module
+footprint, pour ground, and place the five display connectors in a row so the
+shared bus runs along it, and the topology has no forced crossings at all.
+
+### What this result does not prove
+
+Planarity is about topology; it ignores geometry. Specifically:
+
+- It assumes traces can be made as thin as needed. At the 0.4 mm milling floor
+  they cannot.
+- **It ignores that you cannot thread a trace between 0.1″ header pads.** The
+  gap between 1.7 mm pads at 2.54 mm pitch is about 0.84 mm — too tight to
+  isolate reliably on the mill. With 5×7-pin connectors, routing *around* rather
+  than *between* is where real crossings will appear.
+- Display placement is not actually free; the enclosure dictates where five orbs
+  sit.
+
+So the honest reading: **zero crossings are forced by the circuit, and whatever
+crossings appear will be driven by clearance geometry, not topology.** That is a
+much better starting position than 56 suggests, and it means a small number of
+jumpers, not a stitched board.
+
+## Consequence: a milled prototype looks feasible after all
+
+This retracts the earlier claim in §3 that a single-layer version would be a
+jumper exercise. It would not. A single-sided milled board with a ground pour
+and a handful of jumpers is a realistic prototype path, which matters because
+production is going to JLCPCB regardless — the mill only has to get a testable
+board onto the bench, not produce the final article.
+
+The remaining unknown is geometric, not topological, and the way to settle it is
+to attempt the layout rather than to reason further about it.
