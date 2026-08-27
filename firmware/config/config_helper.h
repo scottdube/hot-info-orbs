@@ -26,7 +26,12 @@
     // An empty string literal is 1 byte, so this catches a secrets.h that was
     // copied but never filled in - which otherwise only shows up as a blank
     // weather orb on the bench.
-    #if defined(WEATHER_API_KEY) && defined(TIMEZONE_API_KEY)
+    //
+    // C++ ONLY. platformio.ini force-includes this header into every translation
+    // unit with -include, and that includes plain C files from libraries
+    // (tjpgd.c, sd_diskio_crc.c). static_assert is a C++ keyword; unguarded it
+    // is a syntax error there and the whole build dies in someone else's code.
+    #if defined(__cplusplus) && defined(WEATHER_API_KEY) && defined(TIMEZONE_API_KEY)
 static_assert(sizeof(WEATHER_API_KEY) > 1, "WEATHER_API_KEY is empty in firmware/config/secrets.h - paste your visualcrossing.com key");
 static_assert(sizeof(TIMEZONE_API_KEY) > 1, "TIMEZONE_API_KEY is empty in firmware/config/secrets.h - paste your timezonedb.com key");
     #endif
