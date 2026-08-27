@@ -70,39 +70,65 @@ can be done on the existing hardware by editing this file, no board change.
 What genuinely remains on the S3 side: native USB (less fiddly flashing, no
 BOOT-button dance), more GPIO headroom in principle, and physical size.
 
-## 3. The carrier board is the real work — and it is needed either way
+## 3. The carrier board — reassessed for 2-layer
+
+**Updated 2026-08-27: two-layer boards are available.** This reverses most of
+what this section originally argued. Recorded rather than deleted, because the
+reversal is the useful part.
+
+### What the original argument was
 
 Read from `PCBFiles+Schematics/Main PCB/info_orbs.kicad_pro` and `.kicad_pcb`:
 
-- The upstream board is **2-layer** (F.Cu + B.Cu, no inner layers)
-- Its track width defaults are `[0.0, 0.2, 0.6]` mm — **0.2 mm tracks**
-- `min_track_width` and `min_clearance` are both `0.0`, i.e. no floor set
+- Upstream's board is **2-layer**, track width defaults `[0.0, 0.2, 0.6]` mm
+- In-house milling is **single-sided, no plated vias, 0.4 mm floor**
 
-This shop mills **single-sided with no plated vias**, and the milling floor is
-**0.4 mm** track and clearance. So:
+So upstream's board could not be milled here, and any board — SuperMini or
+devkit — meant a single-sided redesign with jumpers. That made the SuperMini's
+PCB cost look nearly free, since a redesign was happening anyway, and it made
+ordering look attractive purely to escape the one-layer fan-out problem.
 
-> **Upstream's PCB cannot be milled here as-is, regardless of which MCU is
-> chosen.** Its traces are half the minimum width and it relies on two layers.
+### What changes with 2 layers on the table
 
-That reframes the decision. "Keep the devkit" does not mean "use the existing
-board on the mill" — it means order upstream's board from a fab house, or
-redesign for milling anyway. The SuperMini's PCB cost is therefore **less
-incremental than it first appears**.
+Every one of those premises drops:
 
-### Routing risk, specific to this circuit
+| | Was (single-sided milled) | Now (2-layer ordered) |
+|---|---|---|
+| Five CS lines crossing a shared bus | jumper exercise, real routing risk | trivial, vias handle it |
+| Min track / clearance | 0.4 mm floor | ~0.15 mm |
+| Upstream's existing board | unusable | **usable as-is, or as a starting point** |
+| Turnaround | hours | weeks |
 
-Five displays share MOSI, SCLK, DC and RST while each needs its own CS. On a
-single copper layer that is a bus fanning out to five connectors with five
-individual returns crossing it. Expect jumpers. Before committing to milling,
-the honest test from the shop guide applies: if it will not route on one layer
-with a ground pour and a couple of jumpers, **order it** rather than fighting
-the layout.
+**The important consequence: upstream's PCB becomes an asset instead of a dead
+end.** For the classic devkit it can be ordered as drawn — zero PCB work. For
+the SuperMini, the display and button sections of the existing KiCad project are
+reusable; only the module footprint and its fan-out need redrawing.
 
-Given the fan-out, ordering from JLCPCB deserves serious consideration here even
-though the mill is sitting right there. Two layers makes this circuit easy and
-milling makes it hard.
+### Which means the SuperMini's cost went back up
 
-## 4. Shop constraints the carrier must respect
+Not to "from scratch", but no longer to "free". Honestly stated:
+
+- **Classic devkit, ordered:** no PCB work at all. Send upstream's Gerbers.
+- **SuperMini, ordered:** new module footprint, re-layout of the module area and
+  its fan-out, then a full verification pass. Days, not weeks — but not zero,
+  and it is work that buys size and native USB rather than function.
+
+The single-sided constraint was doing a lot of the arguing in favour of the
+SuperMini. With it gone, the case rests on what it was always really about:
+physical size and nicer flashing.
+
+### The new cost is schedule
+
+Ordered boards run weeks, not hours. That is the constraint to plan around now —
+and it argues for settling the pin map on flying leads first, because a mistake
+discovered after ordering costs another full turnaround.
+
+## 4. Constraints on the carrier
+
+**Applies only if this is milled in-house.** For an ordered 2-layer board the
+drill-snapping and annular-ring gates below are irrelevant — the fab plates the
+holes and stock KiCad footprints are fine. Kept because the milled path is still
+open, and because the socket-pad trap is easy to carry into the wrong context.
 
 Values traced to source, not quoted from memory:
 
@@ -121,6 +147,8 @@ Consequences for this board specifically:
 - **Machined-pin (turned) sockets, or direct-solder the module.** Never stamped
   female headers — a defective one cost a full day in this shop and mimicked a
   dead flash chip perfectly.
+**True on any board, milled or ordered:**
+
 - **Antenna keepout** at the SuperMini's antenna end. Non-negotiable, and easy
   to forget on a board this small where every mm is contested.
 - **Bulk cap near the module supply pin** — 220 µF electrolytic plus 0.1 µF
@@ -192,7 +220,11 @@ Ordered so the cheapest disqualifier runs first:
    and the true usable-GPIO set. "SuperMini" is not a specification.
 3. **Port the firmware on flying leads.** Prove the S3 drives five GC9A01s
    before any copper is drawn. No PCB risk taken until this works.
-4. **Then decide milled vs ordered**, and only then lay out the carrier.
+4. **Lay out the carrier** as a modification of upstream's KiCad project, not
+   from scratch — the display and button sections carry over.
+
+Ordering runs weeks per turn, so steps 1-3 are not optional preliminaries. A pin
+map error found after the boards arrive costs another full turnaround.
 
 Steps 1–3 cost parts already on the shelf and no money. Step 4 is where the
 commitment starts.
@@ -200,8 +232,8 @@ commitment starts.
 ## Open questions
 
 - How does the board mount in the assembly? (blocks layout — see §5)
-- Milled single-sided, or ordered 2-layer? (§3 argues ordering is stronger than
-  it first looks, for this circuit)
+- ~~Milled single-sided, or ordered 2-layer?~~ **Resolved 2026-08-27: 2 layers
+  available.** See §3 for what that reversed.
 - Does the variant replace the classic build or sit alongside it? That decides
   whether `config.h.template` forks or grows conditionals.
 - Is the SuperMini socketed or soldered down? Socketing is friendlier to
