@@ -470,3 +470,105 @@ all five display connectors and the module row if it is socketed.
 
 Note this is a *milling* concern only. Sent to JLCPCB, the holes are plated and
 the stock footprint is fine.
+
+---
+
+# Appendix C: HackerBox 0129 "Orbital" — someone already built this
+
+Found 2026-08-27. HackerBoxes shipped a monthly kit that is this exact variant:
+ESP32-S3 SuperMini, five GC9A01 modules, three tactile buttons, custom PCB.
+Their own description: *"originally inspired by the very cool Info Orbs from
+Brett Turner... employs a different microcontroller (ESP32-S3 vs ESP32) and thus
+has a different PCB layout and different IO pin assignments."*
+
+Sources: [product page](https://hackerboxes.com/collections/past-hackerboxes/products/hackerbox-0129-orbital),
+[build guide](https://www.instructables.com/HackerBox-0129-Orbital/) (published
+2026-07-29, 11 people report building it).
+
+## What this hands us for free
+
+**A working pin map for the S3, published:**
+
+```c
+#define TFT_MOSI 11
+#define TFT_MISO -1
+#define TFT_SCLK 12
+#define TFT_CS   10
+#define TFT_DC    9
+#define TFT_RST  13
+#define USE_HSPI_PORT
+
+#define SCREEN_1_CS 4
+#define SCREEN_2_CS 5
+#define SCREEN_3_CS 6
+#define SCREEN_4_CS 7
+#define SCREEN_5_CS 8
+
+#define BUTTON_OK    1
+#define BUTTON_LEFT  2
+#define BUTTON_RIGHT 3
+```
+
+**And the PlatformIO target:**
+
+```ini
+[env:esp32-s3-devkitc-1]
+platform = espressif32
+board = esp32-s3-devkitc-1
+board_upload.flash_size = 4MB
+```
+
+Three things this settles that were open in §1 and §7:
+
+1. **The firmware port is a config edit, not a project.** `config.h` pin
+   defines plus a new env block. §7 estimated more work than that.
+2. **13 GPIO, not 12.** They kept `TFT_CS` (pin 10) rather than reclaiming it,
+   so the real budget is 13.
+3. **My "exactly 12 safe pins" caution in §1 was over-conservative.** They use
+   IO1 through IO13 contiguously, including IO3 and IO9-13 which the
+   conservative classification lists as restricted. Those restrictions apply to
+   variants with octal PSRAM; on this board they are usable in practice, and 11
+   builders confirm it.
+
+**Flash is confirmed 4MB** (`board_upload.flash_size = 4MB`), which supports §2:
+no headroom gain over the classic board.
+
+## What it does not fix
+
+- **No regulator for the display rail.** The kit contents are PCB, five female
+  1x7 headers, three buttons, one right-angle male header. No LDO, no bulk
+  capacitor. Five displays hang directly off the SuperMini's onboard regulator,
+  exactly the arrangement §6 flags as the electrical risk. It evidently works
+  well enough to ship — but "works" here is untested against brownout under
+  simultaneous WiFi transmit and full backlight.
+- **It runs stock Info Orbs firmware**, so every configuration and secrets
+  problem this repo just fixed is still present in theirs.
+- **The PCB is not published as source.** The Instructable attaches an `.ino`
+  demo sketch and a 3-D printed stand `.stl`. No Gerbers, no KiCad project. It
+  cannot be forked, only bought — and it is a past box, sold while supplies
+  last.
+
+## One thing worth checking on their pin map
+
+**GPIO3 is a strapping pin on the ESP32-S3** (JTAG signal source select), and
+they assign it to `BUTTON_RIGHT`. Info Orbs wires buttons to VCC with
+`INPUT_PULLDOWN`, so a button held down during reset drives a strapping pin
+high at boot. Likely harmless in the default eFuse configuration, but it is the
+kind of thing that produces an intermittent "sometimes won't boot" that nobody
+connects to a button. **If a pin map is being drawn fresh anyway, move that
+button off IO3.**
+
+## Assessment: better as a starting point, not as a project
+
+**Take from it:** the pin map, the PlatformIO target, and the empirical proof
+that one SuperMini drives five GC9A01s. That is genuine de-risking and it costs
+nothing.
+
+**Do not take:** the power architecture. The dedicated display-rail LDO in §6
+remains the right call, and their omission of it is not evidence against —
+they were building to a kit price with no PCB revisions planned.
+
+From a planning standpoint it is *worse*, not better: a discontinued monthly box
+with an unpublished board, no maintenance path, and no way to fork the hardware.
+Its value here is as a reference design that proves the electrical concept, not
+as something to depend on.
