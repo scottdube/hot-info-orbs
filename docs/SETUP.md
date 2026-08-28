@@ -36,7 +36,7 @@ Budget about 45 minutes the first time. Most of that is downloads.
 If you use git:
 
 ```bash
-git clone https://github.com/scottdube/info-orbs.git
+git clone https://github.com/scottdube/hot-info-orbs.git
 cd info-orbs
 ```
 

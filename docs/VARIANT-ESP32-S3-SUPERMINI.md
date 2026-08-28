@@ -1,8 +1,10 @@
 # Variant: ESP32-S3 SuperMini
 
-Status: **CLOSED — declined 2026-08-27.** Staying on the ESP32 dev kit. See
-[Decision](#decision-declined) at the end. The evaluation is kept because the
-measurements in it apply to the dev-kit board too. This records what the
+Status: **REOPENED 2026-08-27.** Declined earlier the same day on cost and
+complexity, then reopened at Yang's request. The power objection that drove the
+original decline now looks resolvable — see [Reopened](#reopened) at the end.
+The earlier decision record is kept below rather than deleted, because the
+reasoning that reversed is the useful part. This records what the
 switch would actually cost, so the decision is made against facts rather than
 against how small the board looks.
 
@@ -672,3 +674,86 @@ worth doing on any new board, no longer load-bearing.
 
 **What would reopen this:** a display rail with its own regulator making the
 module's LDO irrelevant, plus a reason to care about size. Neither is true today.
+
+
+---
+
+# Reopened
+
+**2026-08-27, later the same day.** Yang asked to move to the S3 SuperMini. The
+decision to decline was made on cost and complexity, not on a technical
+blocker — and the technical objection that carried the most weight now looks
+answerable.
+
+## What changed: the power problem may cost nothing to fix
+
+The decline rested on the SuperMini's 500 mA SOT-23-5 regulator against the dev
+kit's 1 A AMS1117, with field reports at 82 °C. That analysis assumed the five
+displays draw from the module's 3.3 V rail, as upstream wires them.
+
+They may not have to. The GC9A01 clone modules being considered appear to carry
+**their own onboard regulator** — a 3-terminal part with input and output
+capacitors is visible on the module PCB. If confirmed, then:
+
+- The displays run from a **5 V bus** taken off the module's 5 V pin
+- Each module drops 5 V to 3.3 V itself, spreading roughly 0.1 W across five
+  packages instead of concentrating ~0.5 W in one
+- The SuperMini's regulator carries only the ESP32 — the ~52 °C case
+- **No added regulator, no added parts, no carrier-board complexity**
+
+That removes the objection without spending the cost and complexity budget that
+closed this the first time.
+
+## What must be confirmed before committing
+
+Three things, all on one module, none of them analysis:
+
+1. **Is there really a regulator?** Feed 5 V to VCC and measure at the
+   3-terminal part's output. ~3.3 V means yes. Read its marking (`662K` would
+   be an XC6206-3.3).
+2. **What do the resistors on the logic lines do?** If they are series damping,
+   3.3 V logic passes fine. If any form a divider sized for 5 V logic, 3.3 V in
+   becomes roughly 2.2 V at a controller wanting about 2.3 V — marginal, and
+   marginal fails intermittently rather than cleanly. Measure resistance from
+   SDA to GND and from SDA to the controller side.
+3. **Measure the actual current** at full brightness, and multiply by five.
+
+**"GC9A01 clone from AliExpress" is not a specification.** Inventory already
+records one generic module (#418, HiLetgo) as 3.3 V only, and another (#70,
+Waveshare) as 3.3/5 V with an 8-pin interface including BL. Same controller,
+same form factor, different power design. Buy one before buying five.
+
+## Proposed pin map
+
+HackerBoxes' published map spends all of IO1–10 — the S3's ADC1 pins — leaving
+nothing analog for expansion, and puts a button on IO3, a strapping pin. Moving
+the bus up frees ADC1 entirely:
+
+| Function | Pins |
+|---|---|
+| MOSI / SCLK | 11, 12 |
+| DC / RST | 13, 14 |
+| Screen CS ×5 | 15, 16, 17, 18, 21 |
+| Buttons | 4, 5, 6 |
+| **Free, all ADC1** | **1, 2, 7, 8, 9, 10** |
+
+Avoids IO0/3/45/46 (strapping), IO19/20 (native USB), IO43/44 (UART), IO48
+(onboard LED). Costs compatibility with HackerBoxes' board, which is irrelevant
+for a board drawn here.
+
+## What still stands from the decline
+
+- **Flash headroom is still a mirage.** Both boards are 4 MB with a 2 MB app
+  partition (§2). Nothing gained.
+- **A carrier board is still needed**, with a new module footprint and fan-out
+  re-layout. Ordering 2-layer from JLCPCB makes that tractable (§3).
+- **The 3–4 jumper analysis and the planarity result are unaffected** — they
+  describe the display fan-out, not the module.
+
+## Note on the missing BL pin
+
+The 7-pin clone has no backlight pin; the backlight is hardwired on. Since the
+backlight is the dominant *continuous* load, a module exposing BL would allow
+PWM dimming — real brightness control instead of the colour desaturation the
+firmware currently uses, and a direct cut in the thermal load. Worth weighing
+when choosing which clone to buy, on either board.
