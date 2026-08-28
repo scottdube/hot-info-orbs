@@ -52,9 +52,9 @@ the folder (not a single file) is what makes PlatformIO recognize the project.
 In `firmware/config/` you will find two `.template` files. Make a copy of each,
 in the same folder, with the `.template` dropped from the name:
 
-| Copy this | To this | What it holds |
-|---|---|---|
-| `config.h.template` | `config.h` | your preferences — timezone, units, tickers |
+| Copy this            | To this     | What it holds                                |
+|----------------------|-------------|----------------------------------------------|
+| `config.h.template`  | `config.h`  | your preferences — timezone, units, tickers  |
 | `secrets.h.template` | `secrets.h` | your API keys, and WiFi/MQTT if you use them |
 
 ```bash
@@ -77,10 +77,10 @@ Both are free, both take about a minute, and **you need your own**. A key shared
 across several orbs burns one free-tier quota and gets rate-limited, and whoever
 owns it can revoke it without warning.
 
-| Key | Register at | What it does |
-|---|---|---|
-| `WEATHER_API_KEY` | [visualcrossing.com/sign-up](https://www.visualcrossing.com/sign-up) | Current conditions and forecast for the weather orb. Free tier is ~1000 records/day, far more than one orb uses. |
-| `TIMEZONE_API_KEY` | [timezonedb.com/register](https://timezonedb.com/register) | Your UTC offset and the next daylight-saving changeover. |
+| Key                | Register at                                                          | What it does                                                                                                     |
+|--------------------|----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `WEATHER_API_KEY`  | [visualcrossing.com/sign-up](https://www.visualcrossing.com/sign-up) | Current conditions and forecast for the weather orb. Free tier is ~1000 records/day, far more than one orb uses. |
+| `TIMEZONE_API_KEY` | [timezonedb.com/register](https://timezonedb.com/register)           | Your UTC offset and the next daylight-saving changeover.                                                         |
 
 A note on the second one, because the name misleads: TimeZoneDB is **not** where
 the orb gets the time. The time comes from NTP (`pool.ntp.org`). TimeZoneDB
@@ -144,14 +144,14 @@ WiFi later — hold the buttons per the on-screen prompts to reopen the portal.
 
 ## Troubleshooting
 
-| Symptom | Cause and fix |
-|---|---|
-| `Copy firmware/config/secrets.h.template…` | You missed step 3. Copy both templates. |
-| `WEATHER_API_KEY is empty…` | `secrets.h` exists but a key is still `""`. See step 4. |
+| Symptom                                           | Cause and fix                                                                                                                                                                                |
+|---------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Copy firmware/config/secrets.h.template…`        | You missed step 3. Copy both templates.                                                                                                                                                      |
+| `WEATHER_API_KEY is empty…`                       | `secrets.h` exists but a key is still `""`. See step 4.                                                                                                                                      |
 | `ModuleNotFoundError: No module named 'intelhex'` | PlatformIO bootstrapped a fresh Python environment (often after a VS Code update) and missed a dependency of its flashing tool. Fix: `~/.platformio/penv/bin/python -m pip install intelhex` |
-| No serial port listed | Suspect the USB cable first — many are charge-only. Then check whether your machine needs a CP2102 or CH340 driver for your board. |
-| Upload starts then fails | Hold **BOOT** on the ESP32, click Upload, release at "Connecting…". |
-| Clock right, weather orb blank | The weather key is wrong or its quota is spent. A bad key fails silently at runtime — it cannot be caught at build time. |
-| Never finds your WiFi | The network is 5 GHz. The ESP32 only sees 2.4 GHz. |
-| Builds broke on a machine that worked before | A VS Code update replaced PlatformIO's Python environment. Reopen the project folder in VS Code and let the bootstrap finish, then see the `intelhex` row above. |
-| Time is an hour off after a DST change | The timezone key is wrong or out of quota — that is the service that supplies the changeover. |
+| No serial port listed                             | Suspect the USB cable first — many are charge-only. Then check whether your machine needs a CP2102 or CH340 driver for your board.                                                           |
+| Upload starts then fails                          | Hold **BOOT** on the ESP32, click Upload, release at "Connecting…".                                                                                                                          |
+| Clock right, weather orb blank                    | The weather key is wrong or its quota is spent. A bad key fails silently at runtime — it cannot be caught at build time.                                                                     |
+| Never finds your WiFi                             | The network is 5 GHz. The ESP32 only sees 2.4 GHz.                                                                                                                                           |
+| Builds broke on a machine that worked before      | A VS Code update replaced PlatformIO's Python environment. Reopen the project folder in VS Code and let the bootstrap finish, then see the `intelhex` row above.                             |
+| Time is an hour off after a DST change            | The timezone key is wrong or out of quota — that is the service that supplies the changeover.                                                                                                |
