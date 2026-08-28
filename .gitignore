@@ -30,3 +30,12 @@ megalinter-reports/
 node_modules
 package.json
 package-lock.json
+
+# KiCad session locks and local-history sidecars - ephemeral, and .history is
+# its own git repo which would land here as a broken gitlink
+*.lck
+~*.lck
+.history/
+**/.history/
+*-backups/
+*.kicad_prl

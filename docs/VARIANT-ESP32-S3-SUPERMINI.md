@@ -171,15 +171,44 @@ hand-drilling a soldered, masked board next to a pour, with no registration.
 Decide before placing the first component. Default is M3 drilled 3.175 mm, NPTH,
 with a ~6.5 mm keepout and centre ≥ 3.2 mm from the board edge.
 
-## 6. Power — measure, do not model
+## 6. Power — the regulator is the real constraint
 
-Five GC9A01 modules run their backlights off the 5 V rail. On a SuperMini that
-rail is USB VBUS passthrough, not a regulator output with headroom.
+**Correction:** an earlier draft of this section said the displays run off 5 V.
+They do not. The netlist is explicit — display connector pin 7 is
+`Net-(U1-3.3v)` and pin 6 is GND. All five displays hang off the **module's
+onboard 3.3 V regulator**, which makes the regulator comparison decisive rather
+than incidental.
 
-**This is the cheapest thing to check and the one most likely to kill the
-variant.** Put a meter on the existing five-display build and measure actual
-draw at full brightness before any layout work. A number here either clears the
-approach or ends it in five minutes.
+| | DevKit V1 (DOIT) | S3 SuperMini |
+|---|---|---|
+| Regulator | AMS1117-3.3, SOT-223 | ME6211-series, SOT-23-5 |
+| Datasheet max | 1 A | 500 mA |
+| Practical sustained | ~500-600 mA before thermal droop | 500 mA, and needs >=4.3 V in |
+
+**The SuperMini has about half the headroom in a much smaller package.**
+
+Estimated load, not measured: a GC9A01 1.28in module draws roughly 40-80 mA at
+3.3 V with the backlight up. Five is 200-400 mA. The ESP32 itself spikes to
+350-500 mA on WiFi transmit. Peak lands near **550-900 mA** — marginal on the
+AMS1117, over the limit on a 500 mA part.
+
+**Two things to verify physically, both quick:**
+
+1. **Read the regulator marking** on one of the AITRIP boards. The ME6211 is
+   documented on the C3 SuperMini and the S3 shares the SOT-23-5 footprint, but
+   this specific board is unconfirmed.
+2. **Measure one GC9A01 at full brightness** (part #70 is on the shelf) and
+   multiply by five. That replaces the whole estimated range with a number.
+
+### The design answer that removes the question
+
+Give the display rail **its own 3.3 V regulator** on the carrier board, fed from
+the 5 V input, rather than hanging five displays off the module's LDO. A 1 A LDO
+is about a dollar, and the board then does not care which module is fitted.
+
+Since a new board is being drawn anyway, this is likely correct regardless of
+how the SuperMini decision goes — and it retires the single biggest electrical
+risk in the variant.
 
 ## 7. Firmware port
 
