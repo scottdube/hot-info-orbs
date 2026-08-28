@@ -45,3 +45,19 @@ Fix: `~/.platformio/penv/bin/python -m pip install intelhex`
 Diagnostic that settles it fast: `stat -f '%SB' ~/.platformio/penv` — if the
 creation date is today, the environment is new, and prior successes were on a
 different one.
+
+## `git add -A` near an open KiCad project commits its session state
+
+KiCad writes `~<project>.kicad_*.lck` lock files while a project is open, and
+the editor keeps a `.history/` sidecar that is **its own git repository**. A
+blanket `git add -A` swept all four into a commit here — the lock files as
+ordinary files, and `.history` as a gitlink pointing at a repo that exists only
+on one machine. A clone would get a broken submodule reference.
+
+Now covered by `.gitignore` (`~*.lck`, `**/.history/`, `*-backups/`,
+`*.kicad_prl`). The general lesson stands regardless: **check `git status`
+before `git add -A` in a directory someone has open in a GUI tool.**
+
+Related: the presence of `~*.lck` is also the reliable test for whether KiCad
+has a project open, which matters because writing to a project directory while
+KiCad holds it corrupts state.
