@@ -572,3 +572,57 @@ From a planning standpoint it is *worse*, not better: a discontinued monthly box
 with an unpublished board, no maintenance path, and no way to fork the hardware.
 Its value here is as a reference design that proves the electrical concept, not
 as something to depend on.
+
+## Appendix C.1: Field reports confirm the thermal problem
+
+Builders in the Instructable comments report the SuperMini running hot. One
+quantified it:
+
+> "my ESP32 gets 'very' hot. Painful to touch. Close up thermal image shows
+> 180 F." — wheagy1, on the HackerBox 0129 Instructable
+
+**180 °F is 82 °C, not 180 °C.** Still a problem, and the qualifier in the same
+comment is what makes it serious: *"I've only loaded the graphics test so far."*
+**That temperature is with the radio off.**
+
+Working back from a 57 °C rise over ambient, through a SOT-23-5 LDO dropping
+5 V to 3.3 V:
+
+| θ_JA assumption | Dissipation | Implied current |
+|---|---|---|
+| 250 °C/W (still air) | 229 mW | 135 mA |
+| 150 °C/W (on copper) | 381 mW | 224 mA |
+
+Now add the radio, which Info Orbs uses constantly:
+
+| WiFi TX burst | Total current | Junction temp |
+|---|---|---|
+| +150 mA | 374 mA | ~120 °C |
+| +250 mA | 474 mA | ~146 °C |
+| +350 mA | 574 mA | **~171 °C — past thermal shutdown** |
+
+LDO thermal shutdown is typically 150–165 °C, and the ME6211-class part is
+rated 500 mA absolute maximum. **The margin is already spent on the graphics
+demo.**
+
+This is field confirmation of §6 rather than new analysis, and it settles the
+open question there: the dedicated display-rail LDO is not a nicety, and
+HackerBoxes' omission of one is a defect in their board, not a demonstration
+that it is unnecessary.
+
+### Two corrections from the same comment thread
+
+**GPIO count returns to 12.** A builder traced the PCB with a multimeter and
+lists **GP10 as "Unused?"** — so `TFT_CS 10` appears in HackerBoxes' config but
+is not physically connected. Appendix C revised the budget up to 13 on the
+strength of their config file; that was wrong. `TFT_CS` is vestigial, as §1
+originally suspected, and the requirement is 12.
+
+**A maintained fork exists.** [JoeAWagner/orbital-orbs](https://github.com/JoeAWagner/orbital-orbs)
+— Info Orbs for the ESP32-S3 with a web control panel and OTA updates. That is
+the runtime-configuration approach considered and deferred during the secrets
+work, already implemented by someone else. Worth reading before building it.
+
+**Sourcing caveat:** reply threads on that Instructable are login-gated. Only
+top-level comments were read directly; reports of additional heat complaints are
+secondhand.
