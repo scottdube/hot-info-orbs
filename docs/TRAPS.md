@@ -61,3 +61,29 @@ before `git add -A` in a directory someone has open in a GUI tool.**
 Related: the presence of `~*.lck` is also the reliable test for whether KiCad
 has a project open, which matters because writing to a project directory while
 KiCad holds it corrupts state.
+
+## Strapping pins keep turning up on user-facing connections
+
+Two independent boards for this project both route an MCU strapping pin
+somewhere a user can drive it:
+
+**Upstream, GPIO12 on the `U1` expansion header.** `U1` is a 1x6 sensor
+breakout carrying 5V, 3V3, GND, GPIO34, GPIO35, GPIO12. GPIO34/35 are a good
+choice — input-only and on ADC1, which still works while WiFi is active. GPIO12
+is not: it is MTDI, the strapping pin that selects flash voltage at boot. Held
+high at reset on a 3.3V-flash module, the board may not boot. It is also ADC2,
+so it cannot do analog while the radio is up. The header offers 3V3 two pins
+away from it.
+
+**HackerBox 0129, GPIO3 as `BUTTON_RIGHT`.** GPIO3 is an ESP32-S3 strapping pin
+(JTAG source select), and Info Orbs wires buttons to VCC with `INPUT_PULLDOWN` —
+so a button held during reset drives it high.
+
+Both produce the same failure signature: **an intermittent no-boot that nobody
+connects to a button or a sensor lead**, because it only happens when something
+is held at the moment of reset.
+
+**When drawing a pin map, check the strapping list for that exact part first.**
+It differs between ESP32 variants — classic is GPIO0/2/5/12/15, S3 is
+GPIO0/3/45/46 — so a map ported between them silently changes which pins are
+hazardous.
