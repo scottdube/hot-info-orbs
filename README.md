@@ -73,9 +73,9 @@ Once you have platform.io installed and configured in VSC, open the `info-orbs.c
 
 Before compiling/flashing, go into the `firmware/config` directory and make **two** copies, in the same folder:
 
-| Copy this | To this | What goes in it |
-|---|---|---|
-| `config.h.template` | `config.h` | your preferences - timezone, units, tickers, clock style |
+| Copy this            | To this     | What goes in it                                              |
+|----------------------|-------------|--------------------------------------------------------------|
+| `config.h.template`  | `config.h`  | your preferences - timezone, units, tickers, clock style     |
 | `secrets.h.template` | `secrets.h` | your own API keys, and WiFi/MQTT credentials if you use them |
 
 **Both copies are required and the build will refuse to compile without them.** That is deliberate - it tells you at build time instead of leaving you with a blank orb on the bench.

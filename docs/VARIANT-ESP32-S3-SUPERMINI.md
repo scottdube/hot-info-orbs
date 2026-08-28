@@ -25,13 +25,13 @@ pins, and what does the change drag along with it?
 
 Counted from `firmware/config/config.h.template`, not estimated:
 
-| Function | Pins | Notes |
-|---|---:|---|
-| SPI MOSI + SCLK | 2 | `TFT_MISO` is `-1`; displays are write-only |
-| Display DC + RST | 2 | shared across all five |
-| Per-screen chip select | 5 | one per display, the unavoidable cost of 5 panels on one bus |
-| Buttons | 3 | |
-| **Hard requirement** | **12** | |
+| Function               |   Pins | Notes                                                        |
+|------------------------|-------:|--------------------------------------------------------------|
+| SPI MOSI + SCLK        |      2 | `TFT_MISO` is `-1`; displays are write-only                  |
+| Display DC + RST       |      2 | shared across all five                                       |
+| Per-screen chip select |      5 | one per display, the unavoidable cost of 5 panels on one bus |
+| Buttons                |      3 |                                                              |
+| **Hard requirement**   | **12** |                                                              |
 
 Two more are soft. `BUSY_PIN` is a real output (`Widget.cpp:7`) but only drives an
 activity indicator and can be dropped. `TFT_CS` appears solely in a
@@ -40,10 +40,10 @@ TFT_eSPI isn't consuming it internally before counting on that.
 
 **Against the candidates:**
 
-| Board | Usable GPIO | Verdict |
-|---|---|---|
-| ESP32-C3 SuperMini | ~11 | **Does not fit.** Short before the optional pins. |
-| ESP32-S3 SuperMini | 32 broken out; conservative "safe" set is IO1, IO2, IO4–8, IO15–18, IO21 = **exactly 12** | Fits, with zero margin on the safe set |
+| Board              | Usable GPIO                                                                               | Verdict                                           |
+|--------------------|-------------------------------------------------------------------------------------------|---------------------------------------------------|
+| ESP32-C3 SuperMini | ~11                                                                                       | **Does not fit.** Short before the optional pins. |
+| ESP32-S3 SuperMini | 32 broken out; conservative "safe" set is IO1, IO2, IO4–8, IO15–18, IO21 = **exactly 12** | Fits, with zero margin on the safe set            |
 
 The safe set landing on exactly 12 is worth sitting with. It works, but any
 future addition — a rotary encoder, a light sensor, an I²C bus — means reasoning
@@ -96,12 +96,12 @@ ordering look attractive purely to escape the one-layer fan-out problem.
 
 Every one of those premises drops:
 
-| | Was (single-sided milled) | Now (2-layer ordered) |
-|---|---|---|
-| Five CS lines crossing a shared bus | jumper exercise, real routing risk | trivial, vias handle it |
-| Min track / clearance | 0.4 mm floor | ~0.15 mm |
-| Upstream's existing board | unusable | **usable as-is, or as a starting point** |
-| Turnaround | hours | weeks |
+|                                     | Was (single-sided milled)          | Now (2-layer ordered)                    |
+|-------------------------------------|------------------------------------|------------------------------------------|
+| Five CS lines crossing a shared bus | jumper exercise, real routing risk | trivial, vias handle it                  |
+| Min track / clearance               | 0.4 mm floor                       | ~0.15 mm                                 |
+| Upstream's existing board           | unusable                           | **usable as-is, or as a starting point** |
+| Turnaround                          | hours                              | weeks                                    |
 
 **The important consequence: upstream's PCB becomes an asset instead of a dead
 end.** For the classic devkit it can be ordered as drawn — zero PCB work. For
@@ -136,11 +136,11 @@ open, and because the socket-pad trap is easy to carry into the wrong context.
 
 Values traced to source, not quoted from memory:
 
-| Constraint | Value | Source |
-|---|---|---|
-| Annular ring minimum | **0.25 mm**, checked *after* drill snapping | `pcbmill/constants.py:45`, `toollib.py:156` |
-| Owned drill bits | 0.032″ / 0.0465″ / 0.0625″ / 0.125″ (0.813 / 1.181 / 1.588 / 3.175 mm) | `pcbmill/toollib.py:24-31` |
-| Drill snapping | to **nearest** owned bit, not up | `toollib.py:128-138` |
+| Constraint           | Value                                                                  | Source                                      |
+|----------------------|------------------------------------------------------------------------|---------------------------------------------|
+| Annular ring minimum | **0.25 mm**, checked *after* drill snapping                            | `pcbmill/constants.py:45`, `toollib.py:156` |
+| Owned drill bits     | 0.032″ / 0.0465″ / 0.0625″ / 0.125″ (0.813 / 1.181 / 1.588 / 3.175 mm) | `pcbmill/toollib.py:24-31`                  |
+| Drill snapping       | to **nearest** owned bit, not up                                       | `toollib.py:128-138`                        |
 
 Consequences for this board specifically:
 
@@ -183,10 +183,10 @@ They do not. The netlist is explicit — display connector pin 7 is
 onboard 3.3 V regulator**, which makes the regulator comparison decisive rather
 than incidental.
 
-| | DevKit V1 (DOIT) | S3 SuperMini |
-|---|---|---|
-| Regulator | AMS1117-3.3, SOT-223 | ME6211-series, SOT-23-5 |
-| Datasheet max | 1 A | 500 mA |
+|                     | DevKit V1 (DOIT)                 | S3 SuperMini                 |
+|---------------------|----------------------------------|------------------------------|
+| Regulator           | AMS1117-3.3, SOT-223             | ME6211-series, SOT-23-5      |
+| Datasheet max       | 1 A                              | 500 mA                       |
 | Practical sustained | ~500-600 mA before thermal droop | 500 mA, and needs >=4.3 V in |
 
 **The SuperMini has about half the headroom in a much smaller package.**
@@ -282,15 +282,15 @@ Every number here came from parsing that file, not from inspection by eye.
 
 ## What is on the board
 
-| | |
-|---|---|
-| Footprints | 16 (3 are graphics with no pads) |
-| Pads | 135, **all through-hole**, no SMD |
-| Nets | 36 |
-| Track segments | 277 — 155 on F.Cu, 122 on B.Cu |
-| Copper length | 204 cm front, 38 cm back |
-| Vias | 56, every one 0.6 mm pad / 0.3 mm drill |
-| **Copper pours** | **zero** |
+|                  |                                         |
+|------------------|-----------------------------------------|
+| Footprints       | 16 (3 are graphics with no pads)        |
+| Pads             | 135, **all through-hole**, no SMD       |
+| Nets             | 36                                      |
+| Track segments   | 277 — 155 on F.Cu, 122 on B.Cu          |
+| Copper length    | 204 cm front, 38 cm back                |
+| Vias             | 56, every one 0.6 mm pad / 0.3 mm drill |
+| **Copper pours** | **zero**                                |
 
 ## Three findings that explain the 56 vias
 
@@ -330,11 +330,11 @@ physical order, routing under through-hole parts allowed — and checked for
 planarity. A planar graph can be drawn with no edge crossings, which is the
 graph-theory statement of "routable on one layer".
 
-| Scenario | Net edges | Planar? | Crossings required |
-|---|---:|---|---:|
-| One module, nothing poured | 59 | **yes** | **0** |
-| One module, GND poured | 49 | **yes** | **0** |
-| One module, GND + 3V3 poured | 37 | **yes** | **0** |
+| Scenario                     | Net edges | Planar? | Crossings required |
+|------------------------------|----------:|---------|-------------------:|
+| One module, nothing poured   |        59 | **yes** |              **0** |
+| One module, GND poured       |        49 | **yes** |              **0** |
+| One module, GND + 3V3 poured |        37 | **yes** |              **0** |
 
 **The circuit is inherently single-layer routable.** Upstream's 56 vias are a
 property of their layout, not of this design. Drop the duplicate module
@@ -382,15 +382,15 @@ put back in.
 
 All five display connectors are identical 1x7 headers:
 
-| Pin | Net | |
-|---|---|---|
-| 1 | IO18 — RST | shared by all five |
+| Pin   | Net                                  |                        |
+|-------|--------------------------------------|------------------------|
+| 1     | IO18 — RST                           | shared by all five     |
 | **2** | **IO13 / IO33 / IO32 / IO25 / IO21** | **unique per display** |
-| 3 | IO19 — DC | shared |
-| 4 | IO17 — MOSI | shared |
-| 5 | IO23 — SCLK | shared |
-| 6 | GND | shared |
-| 7 | 3V3 | shared |
+| 3     | IO19 — DC                            | shared                 |
+| 4     | IO17 — MOSI                          | shared                 |
+| 5     | IO23 — SCLK                          | shared                 |
+| 6     | GND                                  | shared                 |
+| 7     | 3V3                                  | shared                 |
 
 **The one signal that differs per display sits at pin 2 — fenced in between two
 shared bus lanes.** Every other pin can be served by a straight lane running the
@@ -433,10 +433,10 @@ get past another connector.**
 
 ## The number
 
-| Module placement | Jumpers |
-|---|---:|
-| Module at one end of the row | **4** |
-| Module in the middle of the row | **3** |
+| Module placement                | Jumpers |
+|---------------------------------|--------:|
+| Module at one end of the row    |   **4** |
+| Module in the middle of the row |   **3** |
 
 With the module at the left, CS for the nearest display runs alongside the RST
 lane without crossing it; the other four each cross once. Moving the module into
@@ -592,18 +592,18 @@ comment is what makes it serious: *"I've only loaded the graphics test so far."*
 Working back from a 57 °C rise over ambient, through a SOT-23-5 LDO dropping
 5 V to 3.3 V:
 
-| θ_JA assumption | Dissipation | Implied current |
-|---|---|---|
-| 250 °C/W (still air) | 229 mW | 135 mA |
-| 150 °C/W (on copper) | 381 mW | 224 mA |
+| θ_JA assumption      | Dissipation | Implied current |
+|----------------------|-------------|-----------------|
+| 250 °C/W (still air) | 229 mW      | 135 mA          |
+| 150 °C/W (on copper) | 381 mW      | 224 mA          |
 
 Now add the radio, which Info Orbs uses constantly:
 
-| WiFi TX burst | Total current | Junction temp |
-|---|---|---|
-| +150 mA | 374 mA | ~120 °C |
-| +250 mA | 474 mA | ~146 °C |
-| +350 mA | 574 mA | **~171 °C — past thermal shutdown** |
+| WiFi TX burst | Total current | Junction temp                       |
+|---------------|---------------|-------------------------------------|
+| +150 mA       | 374 mA        | ~120 °C                             |
+| +250 mA       | 474 mA        | ~146 °C                             |
+| +350 mA       | 574 mA        | **~171 °C — past thermal shutdown** |
 
 LDO thermal shutdown is typically 150–165 °C, and the ME6211-class part is
 rated 500 mA absolute maximum. **The margin is already spent on the graphics
@@ -729,12 +729,12 @@ HackerBoxes' published map spends all of IO1–10 — the S3's ADC1 pins — lea
 nothing analog for expansion, and puts a button on IO3, a strapping pin. Moving
 the bus up frees ADC1 entirely:
 
-| Function | Pins |
-|---|---|
-| MOSI / SCLK | 11, 12 |
-| DC / RST | 13, 14 |
-| Screen CS ×5 | 15, 16, 17, 18, 21 |
-| Buttons | 4, 5, 6 |
+| Function           | Pins                  |
+|--------------------|-----------------------|
+| MOSI / SCLK        | 11, 12                |
+| DC / RST           | 13, 14                |
+| Screen CS ×5       | 15, 16, 17, 18, 21    |
+| Buttons            | 4, 5, 6               |
 | **Free, all ADC1** | **1, 2, 7, 8, 9, 10** |
 
 Avoids IO0/3/45/46 (strapping), IO19/20 (native USB), IO43/44 (UART), IO48
