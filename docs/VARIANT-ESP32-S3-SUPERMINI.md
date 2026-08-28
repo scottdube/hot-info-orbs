@@ -1,6 +1,8 @@
 # Variant: ESP32-S3 SuperMini
 
-Status: **evaluation only.** Nothing here is committed to. This records what the
+Status: **CLOSED — declined 2026-08-27.** Staying on the ESP32 dev kit. See
+[Decision](#decision-declined) at the end. The evaluation is kept because the
+measurements in it apply to the dev-kit board too. This records what the
 switch would actually cost, so the decision is made against facts rather than
 against how small the board looks.
 
@@ -626,3 +628,47 @@ work, already implemented by someone else. Worth reading before building it.
 **Sourcing caveat:** reply threads on that Instructable are login-gated. Only
 top-level comments were read directly; reports of additional heat complaints are
 secondhand.
+
+
+---
+
+# Decision: declined
+
+**2026-08-27 — staying with the ESP32 dev kit. The SuperMini variant is closed.**
+
+The evaluation answered its own question. Pins were never the constraint, and
+the two things that would have justified the switch did not survive contact with
+the measurements:
+
+- **Flash headroom was a mirage.** `partitions.csv` already maps 4 MB with a
+  2 MB app partition, and the SuperMini is also 4 MB (§2).
+- **Power got worse, not better.** The dev kit's AMS1117-3.3 is 1 A in a SOT-223
+  with a real thermal tab; the SuperMini carries a 500 mA part in SOT-23-5.
+  Field reports put the SuperMini at 82 °C *with the radio off* (§C.1).
+
+What remained was physical size and native USB — real, but not worth what they
+cost here.
+
+**The deciding factor was complexity and cost, not the electronics.** This is
+built as a learning project by people at a range of skill levels. The dev-kit
+path needs no new carrier board, no added regulator, no new footprint, and no
+divergence from the upstream assembly documentation that builders will follow.
+The SuperMini path needs all four before anyone sees a working orb.
+
+On the dev kit the power problem largely goes away: roughly twice the current
+headroom in a package that can shed the heat. The dedicated display-rail
+regulator discussed in §6 becomes an option rather than a requirement — still
+worth doing on any new board, no longer load-bearing.
+
+**Consequences:**
+
+- InvenTree BO-0016 already allocates a classic dev kit (#62), so the parts
+  claim is unchanged and needs no correction.
+- The four AITRIP SuperMini boards stay as general spare stock.
+- The two-layer JLCPCB question stands on its own merits — upstream's board can
+  be ordered as drawn (§3), which is now the zero-work option.
+- Everything measured here about the displays, the pinout, the planarity result
+  and the 3–4 jumper count applies unchanged to a dev-kit board.
+
+**What would reopen this:** a display rail with its own regulator making the
+module's LDO irrelevant, plus a reason to care about size. Neither is true today.
