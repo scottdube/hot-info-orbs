@@ -8,12 +8,12 @@ fails are specific, so they are recorded rather than the conclusion alone.
 
 ESPHome would provide, as built-in components rather than as work:
 
-| Requirement | ESPHome |
-|---|---|
-| R2 — OTA updates | `ota:` component, native |
-| R1 — remote configuration | `web_server:` component |
-| Secrets handling | `secrets.yaml`, the exact pattern hand-built in `secrets.h` |
-| Config format | YAML instead of C++ |
+| Requirement               | ESPHome                                                     |
+|---------------------------|-------------------------------------------------------------|
+| R2 — OTA updates          | `ota:` component, native                                    |
+| R1 — remote configuration | `web_server:` component                                     |
+| Secrets handling          | `secrets.yaml`, the exact pattern hand-built in `secrets.h` |
+| Config format             | YAML instead of C++                                         |
 
 And one thing not on the requirements list that may matter more than both:
 **Home Assistant integration would remove the API keys entirely.** Weather could
@@ -39,10 +39,10 @@ current firmware uses           53,084 B   (16.2%)
 free                           274,596 B
 ```
 
-| Colour depth | Per display | Five displays | |
-|---|---:|---:|---|
-| 16-bit | 115,200 B | 576,000 B | **2.1× the free DRAM** |
-| 8-bit | 57,600 B | 288,000 B | **still over** |
+| Colour depth | Per display | Five displays |                        |
+|--------------|------------:|--------------:|------------------------|
+| 16-bit       |   115,200 B |     576,000 B | **2.1× the free DRAM** |
+| 8-bit        |    57,600 B |     288,000 B | **still over**         |
 
 Even at 8-bit colour, five buffers exceed the entire free DRAM before ESPHome's
 own runtime, the WiFi stack, or anything else is accounted for.
