@@ -22,7 +22,8 @@ hardware but does not write code, that is a wall.
 **Must:**
 - Serve a configuration page from the device over the local network
 - Cover the settings people actually change: timezone, weather location, units,
-  ticker list, clock face, brightness and dimming hours
+  ticker list, clock face, and the scheduled dim hours (see the note below —
+  this is not brightness control)
 - Persist to NVS so settings survive a reboot and a firmware update
 - Be reachable without special software — a browser on a phone is enough
 
@@ -37,6 +38,23 @@ guarantee: a device can then be flashed and running with no keys at all, failing
 silently at the first API call. If keys move to the panel, the panel must show
 their status plainly — set, unset, or last call failed — because the build-time
 error that currently catches this goes away.
+
+**There is no brightness control, and there cannot be on this hardware.** The
+7-pin GC9A01 modules do not break out the backlight pin — BL is tied on at the
+module, so the backlight runs at full output whenever the board is powered.
+Upstream's "dimming" is a firmware effect: during the configured hours it
+desaturates the colours so the display *looks* dimmer. It draws exactly the same
+current.
+
+So the panel can expose the dim *hours*, and must not offer a brightness slider.
+A slider that does nothing is worse than no slider — someone will report the
+orbs as too bright at night and be told to adjust a control that was never
+connected to anything.
+
+Real dimming needs different hardware: a display module that exposes BL, wired
+to a PWM-capable GPIO. Worth weighing when the next batch of modules is chosen,
+because it also cuts the dominant continuous load — the backlight, not the
+radio, is what makes these boards warm.
 
 **Security floor:** the panel holds WiFi credentials and API keys. It needs at
 minimum a password, and it must never display stored secrets back in plaintext.
