@@ -50,3 +50,43 @@ a footprint and that changes how they are made.
 ## Verified before generating
 
 ERC 0, DRC 0, 0 unconnected pads, 0 schematic parity issues.
+
+## Design rules
+
+Set 2026-08-28 from JLCPCB's published capabilities for standard 2-layer, 1 oz.
+They were all `0.0` before, so DRC was checking nothing.
+
+| Rule | Value |
+|---|---|
+| Min clearance | 0.10 mm |
+| Min track width | 0.10 mm |
+| Min through-hole | 0.15 mm |
+| Min via diameter | 0.25 mm |
+| Min annular width | **0.15 mm — see below** |
+| Min copper-to-edge | 0.5 mm (JLC allows 0.2; the board already passes at 0.5) |
+
+The board uses 0.2 and 0.35 mm tracks, so it has 2–3.5× margin on width.
+
+### The annular ring number is the one to confirm
+
+JLCPCB's capabilities page states a minimum annular ring of 0.18 mm,
+"recommended 0.25 mm or above". This board's 17 smaller vias are 0.6 mm pad on a
+0.3 mm drill, giving **0.150 mm** — under that figure.
+
+Two reasons it is set to 0.15 here rather than 0.18:
+
+1. **The quoted 0.18 is not internally consistent** with the rest of that page,
+   which also gives a 0.15 mm minimum drill and a 0.25 mm minimum via diameter —
+   0.15 + 2×0.18 would be 0.51 mm, not 0.25. The figures appear to span
+   different capability tiers, so 0.18 should not be treated as settled.
+2. **0.6/0.3 is KiCad's default via** and is what an enormous number of boards
+   are fabricated with at JLC every day.
+
+**Enlarging the vias was tried and made things worse.** Taking the 17 vias to
+0.8 mm gave the required ring but produced 24 clearance violations, because the
+larger pads crowd neighbouring copper. Fixing it properly means moving traces —
+real layout work on someone else's board, not a settings change.
+
+**If certainty is wanted before ordering, ask JLC directly whether 0.6/0.3 vias
+are acceptable on a standard 2-layer order.** Nothing else on the board is close
+to a limit.
