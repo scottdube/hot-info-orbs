@@ -1502,12 +1502,6 @@
 		(uuid "98e10326-190e-48ee-8039-f7aa78554684")
 	)
 	(junction
-		(at 172.72 60.96)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "9d2a4007-2240-4b53-8305-0d6b374436f3")
-	)
-	(junction
 		(at 180.34 97.79)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1578,6 +1572,18 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "f86340d8-5342-46fe-9e6b-04bfa1dc220e")
+	)
+	(no_connect
+		(at 96.52 109.22)
+		(uuid "c27e3480-5589-4d5b-aa89-ce0f08db61fe")
+	)
+	(no_connect
+		(at 96.52 93.98)
+		(uuid "c502bb0a-1d5b-47f4-8743-9689035629aa")
+	)
+	(no_connect
+		(at 96.52 97.79)
+		(uuid "cee8248b-c1fd-4a70-800f-25b3bd2582e2")
 	)
 	(wire
 		(pts
@@ -1748,16 +1754,6 @@
 			(type default)
 		)
 		(uuid "21c49a98-9d9e-4532-8983-682ab96a2469")
-	)
-	(wire
-		(pts
-			(xy 172.72 57.15) (xy 172.72 60.96)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "25a4c767-8ff5-49c7-b106-34c4a4e9581b")
 	)
 	(wire
 		(pts
@@ -2001,16 +1997,6 @@
 	)
 	(wire
 		(pts
-			(xy 49.53 109.22) (xy 96.52 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5dd91387-8ec7-4392-be26-a1a60f16cf32")
-	)
-	(wire
-		(pts
 			(xy 93.98 74.93) (xy 123.19 74.93)
 		)
 		(stroke
@@ -2131,13 +2117,13 @@
 	)
 	(wire
 		(pts
-			(xy 74.93 171.45) (xy 49.53 171.45)
+			(xy 68.58 171.45) (xy 74.93 171.45)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "98b05ee3-4f84-4a20-803b-14d2ae22268d")
+		(uuid "93b740c9-c1f2-4016-abeb-e2c3bd93287b")
 	)
 	(wire
 		(pts
@@ -2358,16 +2344,6 @@
 			(type default)
 		)
 		(uuid "c2124540-dd28-44a3-97d7-a7d30385912c")
-	)
-	(wire
-		(pts
-			(xy 49.53 109.22) (xy 49.53 171.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c37e0734-5237-4f36-b0fb-bc175b889396")
 	)
 	(wire
 		(pts
@@ -2648,6 +2624,36 @@
 			(type default)
 		)
 		(uuid "fe4fa503-2d05-4291-a5b1-6d70770fa221")
+	)
+	(wire
+		(pts
+			(xy 127 116.84) (xy 133.35 116.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fec5e8d3-3f7d-465c-920d-a912859b2670")
+	)
+	(label "SW3"
+		(at 133.35 116.84 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "501d865a-cc13-4f4a-b584-04e53146413b")
+	)
+	(label "SW3"
+		(at 68.58 171.45 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "949a6a24-3338-4f5a-a392-f3cc371e3499")
 	)
 	(symbol
 		(lib_id "_AZDelivery components:GC9A01_TFT")

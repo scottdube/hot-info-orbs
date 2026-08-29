@@ -1,10 +1,40 @@
 # Fab package
 
-> **THE GENERATED FILES HAVE BEEN REMOVED ON PURPOSE.** They were built from the
-> board before Yang's v2 reroute and are wrong for the current design. A stale
-> gerber zip that looks ready is exactly what gets uploaded by accident.
-> Regenerate with the command below once the board is final — the zones need
-> filling and the GPIO3 button move is still outstanding.
+## FIRST PRODUCTION RUN — v1.1
+
+**`hot_info_orbs_v1.1_run1_gerbers.zip` is the package the first boards were
+ordered from.** Generated 2026-08-29 from the board tagged `v1.1-run1`.
+
+Do not regenerate this file to "refresh" it. If the board changes, the next run
+gets its own zip and its own tag, and this one stays exactly as ordered — the
+whole point is that when a board comes back, there is no question what was sent.
+
+Verified before generating: ERC 0, DRC 0 unconnected pads, 0 schematic parity
+issues. One silkscreen-overlap warning on B.Silkscreen near U2, accepted as
+cosmetic.
+
+Drill tools cross-checked against the footprint count:
+
+| Tool | Holes | |
+|---|---:|---|
+| 0.30 mm | 18 | vias |
+| 0.80 mm | 2 | C1 |
+| 1.00 mm | 53 | 5×7 display headers + 18 module pins |
+| 1.10 mm | 12 | 3 buttons × 4 pads |
+| | **85** | total |
+
+The four Ø3.20 mm mounting holes are deliberately absent from the drill file —
+they are `Edge.Cuts` circles the fab routes, not drills.
+
+### Known and accepted for this run
+
+**Vias are 0.6 mm pad on 0.3 mm drill — a 0.150 mm annular ring**, against the
+0.18 mm JLCPCB's capabilities page states. Ordered as-is. The page's own figures
+are not internally consistent (a 0.15 mm minimum drill and 0.25 mm minimum via
+cannot both hold with a 0.18 mm ring), and 0.6/0.3 is KiCad's default via.
+Enlarging them was tried and produces clearance violations instead; see below.
+**If these boards come back with via problems, this is the first thing to look
+at.**
 
 Generated from `hot_info_orbs.kicad_pcb` with `kicad-cli` (KiCad 10.0.3).
 **Upload `hot_info_orbs_gerbers.zip` to JLCPCB as-is.**
