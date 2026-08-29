@@ -16,12 +16,12 @@ machine — the footprints render because KiCad caches them inside the board fil
 but nobody else can place a new instance or update one. Project-local tables
 avoid that permanently.
 
-| Nickname | Provides |
-|---|---|
-| `_AZDelivery components` | `GC9A01_TFT` symbol |
-| `_ESP32 modules` | SuperMini symbol + footprint |
-| `_Displays` | `GC9A01_PINS` footprint |
-| `_Logos` | `Hot_Logo_5x5mm` footprint |
+| Nickname                 | Provides                     |
+|--------------------------|------------------------------|
+| `_AZDelivery components` | `GC9A01_TFT` symbol          |
+| `_ESP32 modules`         | SuperMini symbol + footprint |
+| `_Displays`              | `GC9A01_PINS` footprint      |
+| `_Logos`                 | `Hot_Logo_5x5mm` footprint   |
 
 **`_Logos` was not in the zip.** It was recovered by extracting the embedded
 footprint from `hot_info_orbs.kicad_pcb`, since KiCad caches full definitions in
