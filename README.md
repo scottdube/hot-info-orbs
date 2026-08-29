@@ -103,8 +103,10 @@ someone grants full write to everything including the KiCad files, which cannot
 be merged if two people change them at once.
 
 If you are building one of these and something is wrong or missing — a step in
-the setup guide, a trap worth recording — an issue or a PR is the fastest route,
-and both are open to everybody.
+the setup guide, a trap worth recording — [open an issue](../../issues) or send
+a PR. Both are open to everybody, and a build that went sideways is worth
+reporting even if you already worked around it: that is how the traps file gets
+written.
 
 ## For collaborators
 
