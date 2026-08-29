@@ -2,6 +2,8 @@
 
 ## FIRST PRODUCTION RUN — v1.1
 
+**ORDERED 2026-08-29 — 10 boards, JLCPCB.**
+
 **`hot_info_orbs_v1.1_run1_gerbers.zip` is the package the first boards were
 ordered from.** Generated 2026-08-29 from the board tagged `v1.1-run1`.
 
