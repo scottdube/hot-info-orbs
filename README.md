@@ -39,6 +39,30 @@ Version 1.1 is here, in the future releases will be more frequent, but this one 
  11. Multi Language support for the weather widget
 
  ..plus LOTS more, this was a big one, thank you to all of the community members who made this update happen. I'm excited we get to finally roll it out and share it with you.
+## Working on this together
+
+Two people share this repo. The whole convention is three lines:
+
+```bash
+git pull --rebase     # before you start
+# ...work...
+git commit -am "what changed and why"
+git push
+```
+
+`git config pull.rebase true` once, and a plain `git pull` does the right thing
+from then on.
+
+**KiCad files cannot be merged.** If two people edit `hot_info_orbs.kicad_pcb`,
+git cannot reconcile them and somebody's work is lost. There is no tool that
+fixes this, so it is handled by saying so out loud: *"I've got the board"* /
+*"it's yours"*. Everything else in the repo -- docs, firmware, config -- merges
+normally and needs no ceremony.
+
+MegaLinter runs on every push but is configured **not** to commit anything back.
+Upstream had it auto-committing fixes, which meant a bot pushed after every one
+of your pushes and rejected the next one.
+
 ## Getting Up And Running
 
 ### 1. Hardware/Wiring
