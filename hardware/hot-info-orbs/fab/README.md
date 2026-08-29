@@ -26,34 +26,31 @@ Drill tools cross-checked against the footprint count:
 The four Ø3.20 mm mounting holes are deliberately absent from the drill file —
 they are `Edge.Cuts` circles the fab routes, not drills.
 
-### Known and accepted for this run
+### Via geometry — RESOLVED, no issue
 
-**Vias are 0.6 mm pad on 0.3 mm drill — a 0.150 mm annular ring**, against the
-0.18 mm JLCPCB's capabilities page states. Ordered as-is. The page's own figures
-are not internally consistent (a 0.15 mm minimum drill and 0.25 mm minimum via
-cannot both hold with a 0.18 mm ring), and 0.6/0.3 is KiCad's default via.
-Enlarging them was tried and produces clearance violations instead; see below.
-**If these boards come back with via problems, this is the first thing to look
-at.**
+Earlier drafts flagged the 0.6 mm / 0.3 mm vias as a possible problem: a
+0.150 mm annular ring against a "0.18 mm minimum annular ring" figure on
+JLCPCB's capabilities page. **That was the wrong number.**
 
-Generated from `hot_info_orbs.kicad_pcb` with `kicad-cli` (KiCad 10.0.3).
-**Upload `hot_info_orbs_gerbers.zip` to JLCPCB as-is.**
+JLCPCB's order form states the rule as a *diameter* difference, not a ring:
 
-Regenerate with:
+> "Via diameter should be 0.1mm (0.15mm preferred) larger than Via hole size."
 
-```bash
-KC=/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli
-"$KC" pcb export gerbers --output fab/gerbers \
-  --layers "F.Cu,B.Cu,F.Mask,B.Mask,F.Silkscreen,B.Silkscreen,Edge.Cuts" \
-  hot_info_orbs.kicad_pcb
-"$KC" pcb export drill --output fab/gerbers --format excellon --excellon-units mm \
-  hot_info_orbs.kicad_pcb
-cd fab/gerbers && zip ../hot_info_orbs_gerbers.zip *.gbl *.gbs *.gbo *.gm1 *.gtl *.gts *.gto *.drl
-```
+For a 0.3 mm hole that means a 0.4 mm diameter minimum, 0.45 mm preferred. These
+vias are **0.6 mm on a 0.3 mm hole — 0.3 mm larger, three times the minimum and
+twice the preferred.** Not close to a limit.
 
-**Only those seven layers plus the drill file.** KiCad's default export also
-emits Courtyard, Fab, Adhesive, Paste and User_1-9. None of it is used for a
-bare board, and extra layers are how fab queries start.
+The same tooltip also settles cost:
+
+> "No additional charge when the via hole ≥0.3mm, and via diameter ≥0.4mm."
+
+0.3 mm hole and 0.6 mm diameter meet both conditions, so there is no via
+surcharge on this order.
+
+**Lesson worth keeping:** the capabilities page and the order form express the
+same constraint differently, and the capabilities page's figures are not
+internally consistent. When a number decides something, take it from the order
+form.
 
 ## Order parameters
 
