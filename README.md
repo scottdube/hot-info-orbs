@@ -90,7 +90,23 @@ The variant and ESPHome documents keep the reasoning that changed rather than
 only the conclusions. A decision with its argument attached can be revisited;
 one without it gets re-litigated from scratch.
 
-## Working on this together
+## Contributing
+
+**Fork it and open a pull request.** Anyone can clone, build, fork and propose
+changes — no permission needed for any of that, and a fork is yours to take in
+whatever direction you like.
+
+**Push access is by invitation**, and deliberately limited to a couple of
+people. That is not gatekeeping the project, it is keeping the board files safe:
+GitHub gives a personal repository no read-only collaborator tier, so adding
+someone grants full write to everything including the KiCad files, which cannot
+be merged if two people change them at once.
+
+If you are building one of these and something is wrong or missing — a step in
+the setup guide, a trap worth recording — an issue or a PR is the fastest route,
+and both are open to everybody.
+
+## For collaborators
 
 ```bash
 git pull --rebase     # before you start
