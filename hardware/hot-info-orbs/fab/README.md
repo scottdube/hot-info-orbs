@@ -1,5 +1,11 @@
 # Fab package
 
+> **THE GENERATED FILES HAVE BEEN REMOVED ON PURPOSE.** They were built from the
+> board before Yang's v2 reroute and are wrong for the current design. A stale
+> gerber zip that looks ready is exactly what gets uploaded by accident.
+> Regenerate with the command below once the board is final — the zones need
+> filling and the GPIO3 button move is still outstanding.
+
 Generated from `hot_info_orbs.kicad_pcb` with `kicad-cli` (KiCad 10.0.3).
 **Upload `hot_info_orbs_gerbers.zip` to JLCPCB as-is.**
 

@@ -10934,7 +10934,7 @@
 			(tracks not_allowed)
 			(vias not_allowed)
 			(pads not_allowed)
-			(copperpour allowed)
+			(copperpour not_allowed)
 			(footprints allowed)
 		)
 		(placement
@@ -10953,4 +10953,56 @@
 		)
 	)
 	(embedded_fonts no)
+	(zone
+		(net "GND")
+		(layer "B.Cu")
+		(uuid "3ae847d7-494f-4d8d-abec-a18cdb9d2361")
+		(name "GND")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(fill yes
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+			(island_removal_mode 0)
+		)
+		(polygon
+			(pts
+				(xy 52.532697 79.763543) (xy 52.5 107) (xy 249.5 107) (xy 249.5 80)
+			)
+		)
+	)
+	(zone
+		(layer "B.Cu")
+		(uuid "b0000000-0000-4000-8000-00000000cu2b")
+		(name "Antenna Keep Out")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(keepout
+			(tracks not_allowed)
+			(vias not_allowed)
+			(pads not_allowed)
+			(copperpour not_allowed)
+			(footprints allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+			(island_removal_mode 0)
+		)
+		(polygon
+			(pts
+				(xy 125.31 83.04) (xy 137.12232 82.981493) (xy 137.15 88.57) (xy 125.31 88.59) (xy 125.34 83.05)
+			)
+		)
+	)
 )
