@@ -27,9 +27,23 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Create config.h
+      # The build deliberately refuses to compile without BOTH config.h and
+      # secrets.h, and rejects an unfilled key, so CI has to create both and
+      # put something non-empty in the key fields. These are placeholders: CI
+      # only ever compiles, it never calls the APIs.
+      - name: Create config.h and secrets.h
+        shell: bash
         working-directory: ./firmware
-        run: cp config/config.h.template config/config.h
+        run: |
+          cp config/config.h.template config/config.h
+          cp config/secrets.h.template config/secrets.h
+          python - <<'PY'
+          p = "config/secrets.h"
+          s = open(p).read()
+          s = s.replace('#define WEATHER_API_KEY ""',  '#define WEATHER_API_KEY "CI_BUILD_ONLY"')
+          s = s.replace('#define TIMEZONE_API_KEY ""', '#define TIMEZONE_API_KEY "CI_BUILD_ONLY"')
+          open(p, "w").write(s)
+          PY
 
       - name: Build PlatformIO Project
         run: pio run

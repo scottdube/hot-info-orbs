@@ -87,3 +87,20 @@ is held at the moment of reset.
 It differs between ESP32 variants — classic is GPIO0/2/5/12/15, S3 is
 GPIO0/3/45/46 — so a map ported between them silently changes which pins are
 hazardous.
+
+## Changing the build contract breaks CI silently
+
+The secrets split made `secrets.h` a required file and added a guard that
+rejects an unfilled key. Both are deliberate. But `.github/workflows/platformio.yml`
+created only `config.h`, so every CI build failed from that commit onward —
+with our own `#error`, on a repo nobody was watching the checks on.
+
+It went unnoticed for several commits because the repo was private and nothing
+surfaces a red check unless you look. **If you change what the build requires,
+change CI in the same commit.** The build guard is the point; CI has to satisfy
+it like any other builder.
+
+CI now writes both files and injects `CI_BUILD_ONLY` placeholder keys — it
+compiles, it never calls the APIs. Note the injection is done in Python rather
+than `sed`: the matrix runs ubuntu, macos and windows, and `sed -i` differs
+between GNU and BSD and does not exist in the default Windows shell.
