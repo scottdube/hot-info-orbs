@@ -70,27 +70,35 @@
 
 #define TFT_SDA_READ
 
-#define TFT_MOSI 17
+// ===== HoT Info Orbs board, Rev 1.1 - ESP32-S3 SuperMini =====
+// These are read off hot_info_orbs.kicad_pcb, not copied from another project.
+// Do NOT substitute HackerBoxes' published map: theirs uses GPIO10 for TFT_CS
+// and GPIO3 for a button. On this board GPIO10 is SW3, and GPIO3 is left free
+// deliberately because it is an ESP32-S3 strapping pin.
+#define TFT_MOSI 11
 #define TFT_MISO -1
-#define TFT_SCLK 23
-#define TFT_CS 15
-#define TFT_DC 19
-#define TFT_RST 18
+#define TFT_SCLK 12
+#define TFT_CS 14 // not connected to anything; TFT_eSPI needs a pin, each display has its own CS below
+#define TFT_DC 9
+#define TFT_RST 13
+#define USE_HSPI_PORT
 
-#define SCREEN_1_CS 13
-#define SCREEN_2_CS 33
-#define SCREEN_3_CS 32
-#define SCREEN_4_CS 25
-#define SCREEN_5_CS 21
+#define SCREEN_1_CS 4
+#define SCREEN_2_CS 5
+#define SCREEN_3_CS 6
+#define SCREEN_4_CS 7
+#define SCREEN_5_CS 8
 
+// SW1 / SW2 / SW3 left to right on the board; OK is the middle one, matching
+// upstream's "short press of the middle button" behaviour.
 #if INVERTED_ORBS
-    #define BUTTON_OK 27
-    #define BUTTON_LEFT 14
-    #define BUTTON_RIGHT 26
+    #define BUTTON_OK 2
+    #define BUTTON_LEFT 10
+    #define BUTTON_RIGHT 1
 #else
-    #define BUTTON_OK 27
-    #define BUTTON_LEFT 26
-    #define BUTTON_RIGHT 14
+    #define BUTTON_OK 2
+    #define BUTTON_LEFT 1
+    #define BUTTON_RIGHT 10
 #endif
 
 #define BUTTON_DEBOUNCE_TIME 35        // Debounce buttons for X ms
@@ -98,7 +106,7 @@
 #define BUTTON_LONG_PRESS_TIME 2000     // Long press is registered after X ms
 
 #define BUTTON_MODE INPUT_PULLDOWN
-#define BUSY_PIN 2
+#define BUSY_PIN 15 // was 2 on the dev kit; GPIO2 is SW2 on this board
 
 
 #define NTP_SERVER "pool.ntp.org"
