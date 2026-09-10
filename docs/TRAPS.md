@@ -117,14 +117,34 @@ in ten seconds, and that is what happened here: the firmware was running fine
 and on the network the whole time.
 
 The cause is that Arduino's `Serial` defaults to **UART0 on GPIO43/44**, not to
-the USB port. The USB device still enumerates, nothing services a CDC endpoint,
-and macOS keeps losing it. Fix, in `platformio.ini` `build_flags`:
+the USB port, so nothing services a CDC endpoint and macOS keeps losing it.
+
+**The obvious fix makes it worse on this board. Tried and reverted 2026-09-10:**
 
 ```ini
+; DO NOT USE on the SuperMini without testing on hardware first
 -D ARDUINO_USB_MODE=1
 -D ARDUINO_USB_CDC_ON_BOOT=1
 ```
 
+With those set, the *application* takes ownership of the USB peripheral instead
+of leaving it to the ROM. It then fails to enumerate, and the board disappears
+from the host completely — no `/dev/cu.usbmodem*`, nothing in
+`system_profiler SPUSBDataType`. It still boots, still joins WiFi, still answers
+pings. There is simply no port left to flash over.
+
+Recovery is manual bootloader entry: hold BOOT while plugging the USB cable in,
+then reflash. Which is unpleasant on a board whose BOOT and RST silkscreen is
+unreadable — the recovery attempt is also how you find out which button is which.
+
+**The diagnostic that keeps this cheap:** a board that has vanished from USB but
+answers pings is not broken, and the firmware is not the thing to investigate.
+Ping first. Both times this came up, the firmware was running correctly and only
+the host link was in question.
+
+Serial output on this board therefore needs a different route — UART0 on
+GPIO43/44 with an external adapter — or you wait for displays, which report the
+same failures visually.
 The classic ESP32 does not need this — it has a separate USB-serial chip, so
 `Serial` reaches the host without any build flag. This is specific to parts
 where the MCU provides USB itself, and it is easy to miss when porting because
