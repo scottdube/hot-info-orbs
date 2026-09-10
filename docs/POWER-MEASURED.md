@@ -10,7 +10,7 @@ ported firmware on WiFi.
 |---|---|
 | Average | **341.79 mA** → **1.71 W** |
 | Max (10 s window) | 399.87 mA → 2.00 W |
-| Boot inrush | **>1 A for a few ms** — see the caveat below |
+| **Boot inrush** | **1.15 A peak**, milliseconds, measured |
 
 ## What it settles
 
@@ -34,22 +34,32 @@ As built, each display regulates its own 5 V and the module's LDO carries only
 the ESP32: roughly 80 mA average, ~136 mW, ~52 °C. The part that was cooking is
 no longer in the path.
 
-## Caveat on the inrush figure
+## Boot inrush: 1.15 A, measured
 
-**The PPK II source meter tops out at 1 A, so ">1 A" is clipped, not measured.**
-The true peak is unknown and at least 1 A. It lasts a few milliseconds — five
-display regulators and their capacitors starting together.
+**Corrected 2026-09-10.** An earlier draft recorded this as ">1 A, clipped",
+assuming the PPK II source meter limited at 1 A. It does not — it read the peak
+directly at **1.15 A**.
 
-Consequence worth designing around: a marginal USB supply can sag at power-on,
-giving an orb that starts on one charger and not another, with nothing wrong
-with the orb. The 220 µF bulk capacitor is doing real work there. If a unit ever
-refuses to start on a particular supply, this is the first thing to suspect
-rather than the firmware.
+Second capture, 3 s window at 10 kSa/s covering power-on:
 
-Measuring the true inrush needs an instrument with more headroom — a current
-probe on a scope, or a sense resistor.
+| | |
+|---|---|
+| Peak | **1.15 A**, a single narrow spike at power-on |
+| Settles to | ~240 mA |
+| Then steps | ~270 mA → ~300 mA as displays come up |
+| Then | ~340 mA with WiFi bursts to ~450 mA |
+| Window average over the 3 s | 270 mA, 0.81 C |
+
+The staged ramp is five display regulators starting in sequence, then the radio
+joining the network.
+
+**What it means for supply choice: 1.15 A is 3.4x the running current.** A
+supply sized for the 342 mA average will sag at power-on. The failure that
+produces is an orb which starts on one charger and not another, with nothing
+wrong with the orb — and it will be blamed on the firmware.
 
 ## For pricing and supply choice
 
-1.71 W typical. Any USB source should be rated comfortably above the inrush
-rather than the average: **2 A is a sensible floor**, and that costs nothing.
+1.71 W typical, but **size the supply for the 1.15 A inrush, not the 342 mA
+average**. 2 A is a sensible floor and costs nothing; 1 A is not enough despite
+being nearly 3x the running current.
