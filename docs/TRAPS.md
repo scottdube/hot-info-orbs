@@ -104,3 +104,31 @@ CI now writes both files and injects `CI_BUILD_ONLY` placeholder keys — it
 compiles, it never calls the APIs. Note the injection is done in Python rather
 than `sed`: the matrix runs ubuntu, macos and windows, and `sed -i` differs
 between GNU and BSD and does not exist in the default Windows shell.
+
+## ESP32-S3 native USB: a serial monitor that connects, says nothing, and drops
+
+Symptom on a freshly ported S3 build: `pio device monitor` attaches, prints no
+output, then loops `Disconnected (read failed: [Errno 6] Device not configured)`
+/ `Reconnecting... Connected!` forever.
+
+It looks exactly like a boot loop and is not. **Check whether the board is
+actually up before diagnosing the firmware** — 20 pings with 0% loss settles it
+in ten seconds, and that is what happened here: the firmware was running fine
+and on the network the whole time.
+
+The cause is that Arduino's `Serial` defaults to **UART0 on GPIO43/44**, not to
+the USB port. The USB device still enumerates, nothing services a CDC endpoint,
+and macOS keeps losing it. Fix, in `platformio.ini` `build_flags`:
+
+```ini
+-D ARDUINO_USB_MODE=1
+-D ARDUINO_USB_CDC_ON_BOOT=1
+```
+
+The classic ESP32 does not need this — it has a separate USB-serial chip, so
+`Serial` reaches the host without any build flag. This is specific to parts
+where the MCU provides USB itself, and it is easy to miss when porting because
+nothing about the build fails.
+
+After enabling CDC the first upload may need the manual bootloader entry (hold
+BOOT, tap RST, release BOOT), because the USB device presents differently.
