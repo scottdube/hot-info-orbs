@@ -95,9 +95,9 @@ void setup() {
     sm->drawCentreString("Welcome", ScreenCenterX, ScreenCenterY, 29);
 
     sm->selectScreen(1);
-    sm->drawCentreString("Info Orbs", ScreenCenterX, ScreenCenterY - 50, 22);
+    sm->drawCentreString("HOT Info Orbs", ScreenCenterX, ScreenCenterY - 50, 22);
     sm->drawCentreString("by", ScreenCenterX, ScreenCenterY - 5, 22);
-    sm->drawCentreString("brett.tech", ScreenCenterX, ScreenCenterY + 30, 22);
+    sm->drawCentreString("HOT-Team", ScreenCenterX, ScreenCenterY + 30, 22);
     sm->setFontColor(TFT_RED);
     sm->drawCentreString("version: " FIRMWARE_VERSION, ScreenCenterX, ScreenCenterY + 65, 14);
 

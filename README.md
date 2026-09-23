@@ -32,6 +32,16 @@ this repository is public.
 | Display supply | 3.3 V, off the module's regulator | **5 V, each module regulates its own** |
 | API keys | compiled into `config.h`, shipped with live keys in the template | **`secrets.h`, gitignored, build fails without it** |
 | Board | upstream's 2-layer design | **new carrier board, v1.1** |
+| Firmware updates | USB cable every time | **over WiFi** — browser page or `pio run -e ota` |
+| Boot splash | "Info Orbs by brett.tech", Brett's logo | **"HOT Info Orbs by HOT-Team"**, club logo |
+
+**Upgrading a board flashed before 2026-09-23? Flash it once more over USB.**
+The WiFi updates need a new flash layout (two firmware slots instead of one), and
+only a USB flash writes that layout. Every update after that can go over WiFi:
+open `http://<orb's IP>/update`, choose `.pio/build/esp32-s3-devkitc-1/firmware.bin`
+and upload. The page also shows which commit is running. Set `OTA_PASSWORD` in
+`secrets.h`, or anyone on your network can flash your orbs. Details in
+[docs/SETUP.md](docs/SETUP.md#8-later-updates-no-cable-needed).
 
 The 5 V change is the significant one. Upstream powers all five displays from
 the ESP32 module's onboard regulator, which is why builders report the module
@@ -62,6 +72,10 @@ Two free API keys are needed, about a minute each:
 [TimeZoneDB](https://timezonedb.com/register) for DST changeovers. Register your
 own — a shared key burns one free-tier quota and can be revoked out from under
 everyone using it.
+
+To have the orbs rotate Clock → Stocks → Weather on their own, set
+`WIDGET_CYCLE_DELAY` in `config.h` to the number of seconds per page (15 works
+well; 0 turns it off). Pressing a button restarts the countdown.
 
 ## Hardware
 

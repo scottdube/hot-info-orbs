@@ -1,5 +1,6 @@
 #include "OtaUpdater.h"
 #include "Utils.h"
+#include "build_id.h"
 #include "config_helper.h"
 #include <ArduinoOTA.h>
 #include <ESPmDNS.h>
@@ -26,7 +27,7 @@ static const char *uploadPage =
     "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width'>"
     "<title>Info Orbs update</title></head><body style='font-family:sans-serif'>"
     "<h2>Info Orbs firmware update</h2>"
-    "<p>Running: " FIRMWARE_VERSION ", built " __DATE__ " " __TIME__ "</p>"
+    "<p>Running: " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "</p>"
     "<form method='POST' action='/update' enctype='multipart/form-data'>"
     "<input type='file' name='firmware' accept='.bin'> "
     "<input type='submit' value='Upload'></form>"

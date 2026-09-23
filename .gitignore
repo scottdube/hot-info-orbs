@@ -16,6 +16,7 @@
 libraries/
 firmware/config/config.h
 firmware/config/secrets.h
+firmware/include/build_id.h
 .pio
 
 # VS Code
