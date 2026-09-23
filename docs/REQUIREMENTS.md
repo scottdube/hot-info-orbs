@@ -61,6 +61,18 @@ minimum a password, and it must never display stored secrets back in plaintext.
 An unauthenticated page on the LAN that reveals WiFi credentials is not
 acceptable, however friendly the network.
 
+**Upstream already built this — found 2026-09-23.** `upstream/dev` (not
+`main`, which this fork is based on; 571 commits apart) has
+`firmware/src/core/configmanager/ConfigManager.*`: a settings page on
+WiFiManager, stored in NVS via `Preferences`, with sections, an "advanced"
+toggle and i18n. Per-widget settings register themselves; MainHelper.cpp
+covers timezone, language, widget cycle delay, NTP server, orb rotation, and dim
+hours. Measured by building `upstream/dev` against our S3 board and
+partitions.csv: **1,712,081 bytes, 87.1% of one OTA slot**, no OTA code yet. So it
+fits. Two conflicts with decisions here: it offers a `tftBrightness` setting,
+which does nothing on these displays (see above), and its key handling has to
+be reconciled with the `secrets.h` split.
+
 ## R2 — Over-the-air firmware updates
 
 **Firmware updates must not require a USB cable.**
