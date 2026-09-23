@@ -163,3 +163,12 @@ minute, while `curl http://192.168.30.208/update` returned 200 first try. The ca
 not established. Whether a browser has the same problem was not tested. When
 the name stalls, test the IP before concluding the orb or its web server is
 down. The orbs show the IP when they connect.
+
+## `__DATE__`/`__TIME__` do not date the image (2026-09-23)
+
+The OTA page first printed `built __DATE__ __TIME__` from `OtaUpdater.cpp`. After
+a change to `main.cpp` only, the orb reported the *previous* build's time,
+because that file had not recompiled. That is a version report that lies. Fixed with
+`tools/build_id.py`, which writes the git commit into a generated
+`firmware/include/build_id.h`. The ELF SHA-256 in the app descriptor was
+checked as an alternative: this build leaves it zeroed.
