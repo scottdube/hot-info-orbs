@@ -83,6 +83,9 @@ void WifiWidget::update(bool force) {
     wifimgr.process();
 
     if (WiFi.status() == WL_CONNECTED) {
+        if (wifimgr.getConfigPortalActive()) {
+            wifimgr.stopConfigPortal(); // frees port 80 for the OTA update page
+        }
         m_isConnected = true;
         m_connectionString = "Connected";
         m_ipaddress = WiFi.localIP().toString();

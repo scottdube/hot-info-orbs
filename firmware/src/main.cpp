@@ -1,5 +1,6 @@
 #include "Button.h"
 #include "GlobalTime.h"
+#include "OtaUpdater.h"
 #include "ScreenManager.h"
 #include "Utils.h"
 #include "WidgetSet.h"
@@ -39,6 +40,7 @@ GlobalTime *globalTime; // Initialize the global time
 String connectingString{""};
 
 WifiWidget *wifiWidget{nullptr};
+OtaUpdater *otaUpdater{nullptr};
 
 int connectionTimer{0};
 const int connectionTimeout{10000};
@@ -97,7 +99,7 @@ void setup() {
     sm->drawCentreString("by", ScreenCenterX, ScreenCenterY - 5, 22);
     sm->drawCentreString("brett.tech", ScreenCenterX, ScreenCenterY + 30, 22);
     sm->setFontColor(TFT_RED);
-    sm->drawCentreString("version: 1.1.0", ScreenCenterX, ScreenCenterY + 65, 14);
+    sm->drawCentreString("version: " FIRMWARE_VERSION, ScreenCenterX, ScreenCenterY + 65, 14);
 
     sm->selectScreen(2);
 
@@ -117,6 +119,7 @@ void setup() {
     Serial.println("Connecting to WiFi");
 
     wifiWidget = new WifiWidget(*sm);
+    otaUpdater = new OtaUpdater(*sm);
     wifiWidget->setup();
 
     globalTime = GlobalTime::getInstance();
@@ -192,6 +195,11 @@ void loop() {
     } else {
         if (!widgetSet->initialUpdateDone()) {
             widgetSet->initializeAllWidgetsData();
+        }
+        otaUpdater->begin(); // no-op after the first call
+        otaUpdater->handle();
+        if (otaUpdater->isUpdating()) {
+            return; // leave the CPU and screen 2 to the upload
         }
         globalTime->updateTime();
 

@@ -47,6 +47,9 @@
 //#define MQTT_SETUP_TOPIC "info-orbs/setup/orbs" // Setup topic
 // MQTT_WIDGET_USER and MQTT_WIDGET_PASS live in secrets.h
 
+// OTA UPDATE CONFIGURATION
+//#define OTA_HOSTNAME "info-orbs" // Update page at http://info-orbs.local/update - give each orb its own name if you have several
+
 // WIFI CONFIGURATION
 // Normally WiFi is configured on the device itself, using a phone or computer to
 // connect to the Info-Orbs setup portal. As a fall-back, WIFI_SSID and WIFI_PASS

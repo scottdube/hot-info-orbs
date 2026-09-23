@@ -140,6 +140,24 @@ Pick your home network from the list and enter its password.
 This is stored on the device, not in your files. You do not reflash to change
 WiFi later — hold the buttons per the on-screen prompts to reopen the portal.
 
+## 8. Later updates: no cable needed
+
+Once the orbs are on your WiFi, new firmware goes over the network. The **first**
+flash has to be over USB (step 6), because it also writes the partition layout
+that makes network updates possible.
+
+- **From a browser:** build as usual, then open `http://info-orbs.local/update`,
+  choose `.pio/build/esp32-s3-devkitc-1/firmware.bin` and press Upload. If
+  `.local` names do not resolve on your computer, use the IP address shown on
+  the orbs when they connect.
+- **From PlatformIO:** `pio run -e ota -t upload`.
+
+Set `OTA_PASSWORD` in `secrets.h` (the browser asks for user `admin` and that
+password). Without one, anyone on your network can flash the orbs.
+
+A failed or interrupted update keeps the old firmware. A new firmware that
+installs but cannot get back on WiFi is rolled back when it next restarts.
+
 ---
 
 ## Troubleshooting

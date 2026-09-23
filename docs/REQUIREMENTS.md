@@ -65,6 +65,15 @@ acceptable, however friendly the network.
 
 **Firmware updates must not require a USB cable.**
 
+**Status 2026-09-23: implemented, built, NOT yet tested on hardware.**
+`firmware/src/core/ota/OtaUpdater.*`, browser upload at `/update` plus
+ArduinoOTA (`pio run -e ota -t upload`). Partition table reworked to two
+1.875 MB slots (app at 83.4%) with the filesystem cut to 128 KB. A new image is
+confirmed only after it reaches WiFi and starts listening for the next update,
+using the core's `verifyRollbackLater()` hook; the prebuilt bootloader has
+rollback enabled. Version shows on the boot screen and the update page. Still
+open: the *Should* — devices do not check for updates themselves.
+
 The orbs sit on a desk or shelf, often in a case. Fixing a bug currently means
 retrieving the device, opening it if necessary, finding a data-capable USB
 cable, and running a toolchain the owner may not have installed. In practice
