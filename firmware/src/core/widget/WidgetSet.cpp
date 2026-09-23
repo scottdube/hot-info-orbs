@@ -1,4 +1,5 @@
 #include "WidgetSet.h"
+#include "Settings.h"
 
 WidgetSet::WidgetSet(ScreenManager *sm) : m_screenManager(sm) {
 }
@@ -93,22 +94,24 @@ void WidgetSet::initializeAllWidgetsData() {
 }
 
 void WidgetSet::updateBrightnessByTime(uint8_t hour24) {
-#if defined(DIM_START_HOUR) && defined(DIM_END_HOUR) && defined(DIM_BRIGHTNESS)
+    const SettingsValues &s = Settings::get();
+    if (!s.dim) {
+        return;
+    }
     bool isInDimRange;
 
-    if (DIM_START_HOUR < DIM_END_HOUR) {
+    if (s.dimstart < s.dimend) {
         // Normal case: the range does not cross midnight
-        isInDimRange = (hour24 >= DIM_START_HOUR && hour24 < DIM_END_HOUR);
+        isInDimRange = (hour24 >= s.dimstart && hour24 < s.dimend);
     } else {
         // Case where the range crosses midnight
-        isInDimRange = (hour24 >= DIM_START_HOUR || hour24 < DIM_END_HOUR);
+        isInDimRange = (hour24 >= s.dimstart || hour24 < s.dimend);
     }
 
-    uint8_t brightness = isInDimRange ? DIM_BRIGHTNESS : TFT_BRIGHTNESS;
+    uint8_t brightness = isInDimRange ? SETTINGS_DIM_LEVEL : TFT_BRIGHTNESS;
     if (m_screenManager->setBrightness(brightness)) {
         // brightness was changed -> update widget
         m_screenManager->clearAllScreens();
         drawCurrent(true);
     }
-#endif
 }

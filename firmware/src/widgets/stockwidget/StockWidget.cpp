@@ -1,5 +1,6 @@
 #include "StockWidget.h"
 
+#include "Settings.h"
 #include "config_helper.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
@@ -7,23 +8,29 @@
 #include <iomanip>
 
 StockWidget::StockWidget(ScreenManager &manager) : Widget(manager) {
-#ifdef STOCK_TICKER_LIST
-    char stockList[strlen(STOCK_TICKER_LIST) + 1];
-    strcpy(stockList, STOCK_TICKER_LIST);
-
-    char *symbol = strtok(stockList, ",");
+    // Settings holds a normalised list (1..5, no empties). The bound is checked
+    // BEFORE writing: the old loop wrote m_stocks[5] and then broke.
+    const std::string &list = Settings::get().tickers;
     m_stockCount = 0;
-    do {
-        StockDataModel stockModel = StockDataModel();
-        stockModel.setSymbol(String(symbol));
-        m_stocks[m_stockCount] = stockModel;
-        m_stockCount++;
-        if (m_stockCount > MAX_STOCKS) {
-            Serial.println("MAX STOCKS UNABLE TO ADD MORE");
+    size_t start = 0;
+    while (start < list.size()) {
+        size_t comma = list.find(',', start);
+        std::string symbol = list.substr(start, comma == std::string::npos ? std::string::npos : comma - start);
+        if (!symbol.empty()) {
+            if (m_stockCount >= MAX_STOCKS) {
+                Serial.println("MAX STOCKS UNABLE TO ADD MORE");
+                break;
+            }
+            StockDataModel stockModel = StockDataModel();
+            stockModel.setSymbol(String(symbol.c_str()));
+            m_stocks[m_stockCount] = stockModel;
+            m_stockCount++;
+        }
+        if (comma == std::string::npos) {
             break;
         }
-    } while (symbol = strtok(nullptr, ","));
-#endif
+        start = comma + 1;
+    }
 }
 
 void StockWidget::setup() {

@@ -1,4 +1,5 @@
 #include "GlobalTime.h"
+#include "SettingsValidation.h"
 
 #include "config_helper.h"
 #include <TimeLib.h>
@@ -114,14 +115,13 @@ String GlobalTime::getWeekday() {
 }
 
 String GlobalTime::getDayAndMonth() {
-#ifdef WEATHER_UNITS_METRIC
-    String retVal = LOC_FORMAT_DAYMONTH;
-    retVal.replace("%d", String(m_day));
-    retVal.replace("%B", m_monthName);
-    return retVal;
-#else
+    if (Settings::get().wxmetric) {
+        String retVal = LOC_FORMAT_DAYMONTH;
+        retVal.replace("%d", String(m_day));
+        retVal.replace("%B", m_monthName);
+        return retVal;
+    }
     return m_monthName + " " + String(m_day);
-#endif
 }
 
 #include <HTTPClient.h> // Include the necessary header file
@@ -132,7 +132,7 @@ bool GlobalTime::isPM() {
 
 void GlobalTime::getTimeZoneOffsetFromAPI() {
     HTTPClient http;
-    http.begin(String(TIMEZONE_API_URL) + "?key=" + TIMEZONE_API_KEY + "&format=json&fields=gmtOffset,zoneEnd&by=zone&zone=" + String(TIMEZONE_API_LOCATION));
+    http.begin(String(TIMEZONE_API_URL) + "?key=" + TIMEZONE_API_KEY + "&format=json&fields=gmtOffset,zoneEnd&by=zone&zone=" + String(sv::urlEncode(Settings::get().tz).c_str()));
     int httpCode = http.GET();
 
     if (httpCode > 0) {

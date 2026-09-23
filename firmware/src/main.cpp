@@ -2,6 +2,7 @@
 #include "GlobalTime.h"
 #include "OtaUpdater.h"
 #include "ScreenManager.h"
+#include "Settings.h"
 #include "Utils.h"
 #include "WidgetSet.h"
 #include "clockwidget/ClockWidget.h"
@@ -24,11 +25,7 @@
 
 TFT_eSPI tft = TFT_eSPI();
 
-#ifdef WIDGET_CYCLE_DELAY
-unsigned long m_widgetCycleDelay = WIDGET_CYCLE_DELAY * 1000; // Automatically cycle widgets every X seconds, set to 0 to disable
-#else
-unsigned long m_widgetCycleDelay = 0;
-#endif
+unsigned long m_widgetCycleDelay = 0; // ms between automatic widget changes, 0 = off; set from Settings in setup()
 unsigned long m_widgetCycleDelayPrev = 0;
 
 Button buttonLeft(BUTTON_LEFT);
@@ -83,6 +80,11 @@ void setup() {
     Serial.println();
     Serial.println("Starting up...");
 
+    // Before anything is constructed: ScreenManager, GlobalTime and every
+    // widget read their settings once, at construction
+    Settings::load();
+    m_widgetCycleDelay = Settings::get().cycle * 1000UL;
+
     TJpgDec.setSwapBytes(true); // JPEG rendering setup
     TJpgDec.setCallback(tft_output);
     setupButtons();
@@ -129,7 +131,9 @@ void setup() {
     widgetSet->add(new ParqetWidget(*sm));
 #endif
 #ifdef STOCK_TICKER_LIST
-    widgetSet->add(new StockWidget(*sm));
+    if (!Settings::get().tickers.empty()) {
+        widgetSet->add(new StockWidget(*sm));
+    }
 #endif
     widgetSet->add(new WeatherWidget(*sm));
 #ifdef WEB_DATA_WIDGET_URL

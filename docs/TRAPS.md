@@ -172,3 +172,20 @@ because that file had not recompiled. That is a version report that lies. Fixed 
 `tools/build_id.py`, which writes the git commit into a generated
 `firmware/include/build_id.h`. The ELF SHA-256 in the app descriptor was
 checked as an alternative: this build leaves it zeroed.
+
+## A failed `pio run -e ota -t upload` reboots the orb — and the next try hits the reboot (2026-09-23)
+
+Measured: from the MacBook at 192.168.1.203, espota to the orb at 192.168.30.208
+failed twice with `No response from device`. Each time the orb's port 80 then
+refused connections for ~10–20 s and came back on the old firmware. That is by
+design, not a crash: the invitation reaches the orb and fires `onStart`, the
+orb cannot open the data connection back to the laptop, and `onError` restarts
+it after 3 s (`OtaUpdater.cpp`). A `curl` upload fired straight after landed in
+that reboot and was refused, which reads as "the orb is down".
+
+espota needs the orb to connect **back** to the laptop; the browser/curl path
+needs only laptop → orb. Across subnets (here .1.x → .30.x, TTL 63) only the
+second was shown to work: `curl -F "firmware=@.pio/build/ota/firmware.bin"
+http://<ip>/update` → `Update OK` in 11 s. Why the connect-back fails (routing,
+firewall, macOS application firewall) was not established. After a failed
+espota, wait for `/update` to answer 200 before trying anything else.

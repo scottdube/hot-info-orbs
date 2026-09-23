@@ -57,17 +57,11 @@ private:
     #define WEATHER_LOCATION WEATHER_LOCAION
 #endif
 
-    const String weatherLocation = WEATHER_LOCATION;
-#ifdef WEATHER_UNITS_METRIC
-    const String weatherUnits = "metric";
-#else
-    const String weatherUnits = "us";
-#endif
+    // Built in the constructor from Settings (location and units are on the
+    // settings page). The location is url-encoded: "Dover, NH" has a space
+    // and a comma, and upstream issue #337 reports spaces failing.
     const String weatherApiKey = WEATHER_API_KEY;
-
-    const String httpRequestAddress = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" +
-                                      weatherLocation + "/next3days?key=" + weatherApiKey + "&unitGroup=" + weatherUnits +
-                                      "&include=days,current&iconSet=icons1&lang=" + LOC_LANG;
+    String httpRequestAddress;
 
     const int MODE_HIGHS = 0;
     const int MODE_LOWS = 1;

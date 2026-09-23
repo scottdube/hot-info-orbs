@@ -13,10 +13,17 @@
 #include "WeatherWidget.h"
 #include "icons.h"
 
+#include "Settings.h"
+#include "SettingsValidation.h"
 #include "config_helper.h"
 
 WeatherWidget::WeatherWidget(ScreenManager &manager) : Widget(manager) {
     m_mode = MODE_HIGHS;
+    const SettingsValues &s = Settings::get();
+    httpRequestAddress = String("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/") +
+                         sv::urlEncode(s.wxloc).c_str() + "/next3days?key=" + weatherApiKey +
+                         "&unitGroup=" + (s.wxmetric ? "metric" : "us") +
+                         "&include=days,current&iconSet=icons1&lang=" + LOC_LANG;
 }
 
 WeatherWidget::~WeatherWidget() {
@@ -37,9 +44,7 @@ void WeatherWidget::buttonPressed(uint8_t buttonId, ButtonState state) {
 
 void WeatherWidget::setup() {
     m_time = GlobalTime::getInstance();
-#ifdef WEATHER_SCREEN_MODE
-    m_screenMode = WEATHER_SCREEN_MODE;
-#endif
+    m_screenMode = Settings::get().wxdark ? Dark : Light;
     configureColors();
 }
 

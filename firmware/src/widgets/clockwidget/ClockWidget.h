@@ -96,7 +96,9 @@ private:
     void displayCustom(int displayIndex, const String &digit);
     void changeClockType();
 
-    ClockType m_type = DEFAULT_CLOCK;
+    ClockType m_type = DEFAULT_CLOCK; // replaced from Settings in the constructor
+    uint32_t m_colour = CLOCK_COLOR;
+    uint32_t m_shadow = CLOCK_SHADOW_COLOR;
 
     time_t m_unixEpoch;
     int m_timeZoneOffset;
