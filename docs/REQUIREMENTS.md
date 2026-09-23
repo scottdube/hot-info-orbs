@@ -65,7 +65,12 @@ acceptable, however friendly the network.
 
 **Firmware updates must not require a USB cable.**
 
-**Status 2026-09-23: implemented, built, NOT yet tested on hardware.**
+**Status 2026-09-23: implemented and tested on the SuperMini.** USB flash of the
+new layout, then a browser-style multipart upload to `/update` by IP: 11 s
+upload, back on the network 14 s later. otadata read back over USB afterwards:
+highest sequence 2 → running `app1`, state `VALID`, i.e. the new image reached
+WiFi and confirmed itself. Not yet exercised: `pio run -e ota` (espota), a
+password, an interrupted upload, and an actual rollback.
 `firmware/src/core/ota/OtaUpdater.*`, browser upload at `/update` plus
 ArduinoOTA (`pio run -e ota -t upload`). Partition table reworked to two
 1.875 MB slots (app at 83.4%) with the filesystem cut to 128 KB. A new image is

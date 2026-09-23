@@ -152,3 +152,14 @@ nothing about the build fails.
 
 After enabling CDC the first upload may need the manual bootloader entry (hold
 BOOT, tap RST, release BOOT), because the USB device presents differently.
+
+
+## `info-orbs.local` resolves but curl to it stalls — use the IP (2026-09-23)
+
+Measured from the MacBook right after the first OTA-layout flash: `dns-sd -G v4
+info-orbs.local` answered at once with 192.168.30.208, but `curl
+http://info-orbs.local/update` did not answer in a 3 s timeout for over a
+minute, while `curl http://192.168.30.208/update` returned 200 first try. The cause is
+not established. Whether a browser has the same problem was not tested. When
+the name stalls, test the IP before concluding the orb or its web server is
+down. The orbs show the IP when they connect.
