@@ -3,6 +3,7 @@
 
 #include "ScreenManager.h"
 #include <Arduino.h>
+#include <WebServer.h>
 
 // Over-the-air firmware updates (docs/REQUIREMENTS.md R2), two ways in:
 //   - browser: http://<OTA_HOSTNAME>.local/update, pick firmware.bin, upload
@@ -16,6 +17,9 @@ class OtaUpdater {
     void begin(); // once WiFi is connected
     void handle(); // every loop
     bool isUpdating() const { return m_updating; }
+    // Shared with SettingsPage: one server on port 80, one password check
+    WebServer &server();
+    bool authorised(); // false = a 401 challenge has already been sent
 
   private:
     void setupArduinoOta();

@@ -3,6 +3,7 @@
 #include "OtaUpdater.h"
 #include "ScreenManager.h"
 #include "Settings.h"
+#include "SettingsPage.h"
 #include "Utils.h"
 #include "WidgetSet.h"
 #include "clockwidget/ClockWidget.h"
@@ -38,6 +39,7 @@ String connectingString{""};
 
 WifiWidget *wifiWidget{nullptr};
 OtaUpdater *otaUpdater{nullptr};
+SettingsPage *settingsPage{nullptr};
 
 int connectionTimer{0};
 const int connectionTimeout{10000};
@@ -122,6 +124,7 @@ void setup() {
 
     wifiWidget = new WifiWidget(*sm);
     otaUpdater = new OtaUpdater(*sm);
+    settingsPage = new SettingsPage(*otaUpdater);
     wifiWidget->setup();
 
     globalTime = GlobalTime::getInstance();
@@ -201,6 +204,7 @@ void loop() {
             widgetSet->initializeAllWidgetsData();
         }
         otaUpdater->begin(); // no-op after the first call
+        settingsPage->begin(); // same server, so after OTA's
         otaUpdater->handle();
         if (otaUpdater->isUpdating()) {
             return; // leave the CPU and screen 2 to the upload

@@ -12,7 +12,7 @@
     #define OTA_HOSTNAME "info-orbs"
 #endif
 
-static WebServer server(80);
+static WebServer s_server(80);
 
 // The Arduino core marks a freshly updated image good before setup() runs, so
 // an image that boots and then cannot get back on the network would be kept.
@@ -32,6 +32,7 @@ static const char *uploadPage =
     "<input type='file' name='firmware' accept='.bin'> "
     "<input type='submit' value='Upload'></form>"
     "<p>Use <code>.pio/build/&lt;env&gt;/firmware.bin</code>. The orbs restart when it is done.</p>"
+    "<p><a href='/settings'>Settings</a></p>"
     "</body></html>";
 
 OtaUpdater::OtaUpdater(ScreenManager &manager) : m_manager(manager) {}
@@ -50,12 +51,26 @@ void OtaUpdater::begin() {
 #endif
 }
 
+WebServer &OtaUpdater::server() {
+    return s_server;
+}
+
+bool OtaUpdater::authorised() {
+#ifdef OTA_PASSWORD
+    if (!s_server.authenticate("admin", OTA_PASSWORD)) {
+        s_server.requestAuthentication();
+        return false;
+    }
+#endif
+    return true;
+}
+
 void OtaUpdater::handle() {
     if (!m_started) {
         return;
     }
     ArduinoOTA.handle();
-    server.handleClient();
+    s_server.handleClient();
 }
 
 void OtaUpdater::setupArduinoOta() {
@@ -80,26 +95,22 @@ void OtaUpdater::setupArduinoOta() {
 }
 
 void OtaUpdater::setupWebUpdate() {
-    server.on("/update", HTTP_GET, []() {
-#ifdef OTA_PASSWORD
-        if (!server.authenticate("admin", OTA_PASSWORD)) {
-            return server.requestAuthentication();
+    s_server.on("/update", HTTP_GET, [this]() {
+        if (!authorised()) {
+            return;
         }
-#endif
-        server.send(200, "text/html", uploadPage);
+        s_server.send(200, "text/html", uploadPage);
     });
 
-    server.on(
+    s_server.on(
         "/update", HTTP_POST,
         // Runs after the upload has finished
         [this]() {
-#ifdef OTA_PASSWORD
-            if (!server.authenticate("admin", OTA_PASSWORD)) {
-                return server.requestAuthentication();
+            if (!authorised()) {
+                return;
             }
-#endif
             bool ok = !Update.hasError();
-            server.send(ok ? 200 : 500, "text/plain", ok ? "Update OK, restarting.\n" : "Update FAILED, old firmware kept.\n");
+            s_server.send(ok ? 200 : 500, "text/plain", ok ? "Update OK, restarting.\n" : "Update FAILED, old firmware kept.\n");
             drawStatus(ok ? "Update OK" : "Update failed", ok ? "restarting" : "old firmware kept", ok ? TFT_GREEN : TFT_RED);
             delay(1000);
             ESP.restart();
@@ -107,11 +118,11 @@ void OtaUpdater::setupWebUpdate() {
         // Runs once per chunk while the upload streams in
         [this]() {
 #ifdef OTA_PASSWORD
-            if (!server.authenticate("admin", OTA_PASSWORD)) {
+            if (!s_server.authenticate("admin", OTA_PASSWORD)) {
                 return;
             }
 #endif
-            HTTPUpload &upload = server.upload();
+            HTTPUpload &upload = s_server.upload();
             if (upload.status == UPLOAD_FILE_START) {
                 Serial.printf("OTA upload: %s\n", upload.filename.c_str());
                 m_updating = true;
@@ -140,7 +151,7 @@ void OtaUpdater::setupWebUpdate() {
             }
         });
 
-    server.begin();
+    s_server.begin();
     MDNS.addService("http", "tcp", 80);
 }
 
