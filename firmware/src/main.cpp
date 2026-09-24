@@ -9,6 +9,7 @@
 #include "clockwidget/ClockWidget.h"
 #include "config_helper.h"
 #include "icons.h"
+#include "weatherwidget/VisualCrossingSource.h"
 #include "weatherwidget/WeatherWidget.h"
 #include "webdatawidget/WebDataWidget.h"
 #include "wifiwidget/WifiWidget.h"
@@ -153,7 +154,7 @@ void setup() {
         widgetSet->add(new StockWidget(*sm));
     }
 #endif
-    widgetSet->add(new WeatherWidget(*sm));
+    widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
 #ifdef WEB_DATA_WIDGET_URL
     widgetSet->add(new WebDataWidget(*sm, WEB_DATA_WIDGET_URL));
 #endif

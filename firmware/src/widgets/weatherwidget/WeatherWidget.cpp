@@ -14,19 +14,17 @@
 #include "icons.h"
 
 #include "Settings.h"
-#include "SettingsValidation.h"
-#include "config_helper.h"
 
-WeatherWidget::WeatherWidget(ScreenManager &manager) : Widget(manager) {
+WeatherWidget::WeatherWidget(ScreenManager &manager, WeatherSource *source) : Widget(manager), m_source(source) {
     m_mode = MODE_HIGHS;
-    const SettingsValues &s = Settings::get();
-    httpRequestAddress = String("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/") +
-                         sv::urlEncode(s.wxloc).c_str() + "/next3days?key=" + weatherApiKey +
-                         "&unitGroup=" + (s.wxmetric ? "metric" : "us") +
-                         "&include=days,current&iconSet=icons1&lang=" + LOC_LANG;
+    String label = m_source->label();
+    if (label.length() > 0) {
+        model.setCityName(label); // orb 1 names the page before the first fetch
+    }
 }
 
 WeatherWidget::~WeatherWidget() {
+    delete m_source;
 }
 
 void WeatherWidget::changeMode() {
@@ -71,65 +69,14 @@ void WeatherWidget::update(bool force) {
         setBusy(true);
         if (force) {
             int retry = 0;
-            while (!getWeatherData() && retry++ < MAX_RETRIES)
+            while (!m_source->fetch(model) && retry++ < MAX_RETRIES)
                 ;
         } else {
-            getWeatherData();
+            m_source->fetch(model);
         }
         setBusy(false);
         m_weatherDelayPrev = millis();
     }
-}
-
-bool WeatherWidget::getWeatherData() {
-    HTTPClient http;
-    http.begin(httpRequestAddress);
-    int httpCode = http.GET();
-    if (httpCode > 0) {
-        // Check for the return code   TODO: factor out
-        JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getString());
-        http.end();
-
-        if (!error) {
-            model.setCityName(doc["resolvedAddress"].as<String>());
-            model.setCurrentTemperature(doc["currentConditions"]["temp"].as<float>());
-            model.setCurrentText(doc["days"][0]["description"].as<String>());
-
-            model.setCurrentIcon(doc["currentConditions"]["icon"].as<String>());
-            model.setTodayHigh(doc["days"][0]["tempmax"].as<float>());
-            model.setTodayLow(doc["days"][0]["tempmin"].as<float>());
-            for (int i = 0; i < 3; i++) {
-                model.setDayIcon(i, doc["days"][i + 1]["icon"].as<String>());
-                model.setDayHigh(i, doc["days"][i + 1]["tempmax"].as<float>());
-                model.setDayLow(i, doc["days"][i + 1]["tempmin"].as<float>());
-            }
-        } else {
-            // Handle JSON deserialization error
-            switch (error.code()) {
-            case DeserializationError::Ok:
-                Serial.print(F("Deserialization succeeded"));
-                break;
-            case DeserializationError::InvalidInput:
-                Serial.print(F("Invalid input!"));
-                break;
-            case DeserializationError::NoMemory:
-                Serial.print(F("Not enough memory"));
-                break;
-            default:
-                Serial.print(F("Deserialization failed"));
-                break;
-            }
-
-            return false;
-        }
-    } else {
-        // Handle HTTP request error
-        Serial.printf("HTTP request failed, error: %s\n", http.errorToString(httpCode).c_str());
-        http.end();
-        return false;
-    }
-    return true;
 }
 
 void WeatherWidget::displayClock(int displayIndex) {
@@ -324,5 +271,5 @@ void WeatherWidget::configureColors() {
 }
 
 String WeatherWidget::getName() {
-    return "Weather";
+    return m_source->name();
 }
