@@ -13,6 +13,7 @@
 #include "webdatawidget/WebDataWidget.h"
 #include "wifiwidget/WifiWidget.h"
 #include <Arduino.h>
+#include <LittleFS.h>
 
 #ifdef STOCK_TICKER_LIST
     #include "stockwidget/StockWidget.h"
@@ -87,6 +88,11 @@ void setup() {
     Settings::load();
     m_widgetCycleDelay = Settings::get().cycle * 1000UL;
 
+    // Holds the uploaded boot picture. true = format if it will not mount: a
+    // new board's partition has never been formatted (a few seconds, once)
+    bool fsMounted = LittleFS.begin(true);
+    Serial.printf("LittleFS %s\n", fsMounted ? "mounted" : "FAILED - built-in logo only");
+
     TJpgDec.setSwapBytes(true); // JPEG rendering setup
     TJpgDec.setCallback(tft_output);
     setupButtons();
@@ -108,7 +114,16 @@ void setup() {
     sm->selectScreen(2);
 
     TJpgDec.setJpgScale(1);
-    TJpgDec.drawJpg(0, 0, logo_start, logo_end - logo_start);
+    // The uploaded picture if there is one and it decodes; the built-in logo
+    // otherwise, drawn over whatever part of a bad file got drawn
+    bool pictureUnreadable = false;
+    if (fsMounted && LittleFS.exists("/boot.jpg")) {
+        pictureUnreadable = TJpgDec.drawFsJpg(0, 0, "/boot.jpg", LittleFS) != JDR_OK;
+    }
+    if (!fsMounted || !LittleFS.exists("/boot.jpg") || pictureUnreadable) {
+        TJpgDec.drawJpg(0, 0, logo_start, logo_end - logo_start);
+    }
+    SettingsPage::setBootStatus(fsMounted, pictureUnreadable);
 
     widgetSet = new WidgetSet(sm);
 

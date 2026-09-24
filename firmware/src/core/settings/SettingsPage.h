@@ -16,17 +16,34 @@ class SettingsPage {
     explicit SettingsPage(OtaUpdater &ota);
     void begin(); // once OtaUpdater::begin() has run; safe to call every loop
 
+    // From setup(), which mounts the filesystem and draws the boot picture
+    // before the page exists
+    static void setBootStatus(bool fsMounted, bool storedPictureUnreadable);
+
   private:
     typedef std::map<std::string, std::string> Errors;
 
     void handleGet();
     void handlePost();
     void handleReset();
+    void handleBootUploadChunk();
+    void handleBootUploadDone();
+    void handleBootReset();
+    void handleBootGet();
+    String renderBootSection();
     String renderForm(const SettingsValues &v, const Errors &errors, const String &banner);
     void sendRestarting(const String &what);
 
     OtaUpdater &m_ota;
     bool m_started = false;
+
+    // Upload in progress: /boot.tmp is written chunk by chunk, checked, then
+    // renamed over /boot.jpg - an interrupted upload never replaces the picture
+    String m_uploadError;
+    size_t m_uploadSize = 0;
+
+    static bool s_fsMounted;
+    static bool s_pictureUnreadable;
 };
 
 #endif
