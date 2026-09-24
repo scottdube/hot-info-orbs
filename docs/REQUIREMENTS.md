@@ -43,7 +43,8 @@ error that currently catches this goes away.
 7-pin GC9A01 modules do not break out the backlight pin — BL is tied on at the
 module, so the backlight runs at full output whenever the board is powered.
 Upstream's "dimming" is a firmware effect: during the configured hours it
-desaturates the colours so the display *looks* dimmer. It draws exactly the same
+scales every colour's R, G and B down before drawing (`Utils::rgb565dim`,
+level 128 of 255 by default), so the display *looks* dimmer. It draws exactly the same
 current.
 
 So the panel can expose the dim *hours*, and must not offer a brightness slider.
