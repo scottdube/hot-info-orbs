@@ -34,6 +34,8 @@ this repository is public.
 | Board | upstream's 2-layer design | **new carrier board, v1.1** |
 | Firmware updates | USB cable every time | **over WiFi** — browser page or `pio run -e ota` |
 | Boot splash | "Info Orbs by brett.tech", Brett's logo | **"HOT Info Orbs by HOT-Team"**, club logo |
+| Settings | edit `config.h`, rebuild, reflash | **a page in the browser**: `http://<orb's IP>/settings` |
+| Boot picture | fixed at build time | **upload your own** from the settings page |
 
 **Upgrading a board flashed before 2026-09-23? Flash it once more over USB.**
 The WiFi updates need a new flash layout (two firmware slots instead of one), and
@@ -76,6 +78,13 @@ everyone using it.
 To have the orbs rotate Clock → Stocks → Weather on their own, set
 `WIDGET_CYCLE_DELAY` in `config.h` to the number of seconds per page (15 works
 well; 0 turns it off). Pressing a button restarts the countdown.
+
+**After the first flash, most of `config.h` can be changed from a phone.** Open
+`http://<orb's IP>/settings` to change the rotation time, tickers, weather
+location and units, timezone, clock face and colours, night-dim hours,
+upside-down mounting, and the start-up picture. The orbs restart to apply the
+changes. The values in `config.h` become the defaults, and the page's reset button returns
+to them. See [docs/SETUP.md](docs/SETUP.md#9-change-settings-from-a-browser).
 
 ## Hardware
 

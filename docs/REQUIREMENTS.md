@@ -73,6 +73,17 @@ fits. Two conflicts with decisions here: it offers a `tftBrightness` setting,
 which does nothing on these displays (see above), and its key handling has to
 be reconciled with the `secrets.h` split.
 
+**Status 2026-09-23: partly implemented — our own page, not upstream's.**
+`http://<orb>/settings` covers rotation time, tickers, weather location,
+units and screen mode, timezone, 12/24 h, AM/PM, starting clock face, clock
+and shadow colours, night-dim hours, upside-down mounting, and an uploadable
+boot picture. It saves to NVS and restarts. It has no brightness control.
+It uses the same password as `/update`, and holds no secrets.
+Design and reasons: `docs/superpowers/specs/2026-09-23-web-settings-design.md`.
+Not done yet: API keys on the page (needs the per-key status above first), WiFi
+signal and last-API-call status, and enabling/disabling widgets. Flash is
+87.0% of a slot, and the stop line is 92%.
+
 ## R2 — Over-the-air firmware updates
 
 **Firmware updates must not require a USB cable.**

@@ -150,13 +150,36 @@ that makes network updates possible.
   choose `.pio/build/esp32-s3-devkitc-1/firmware.bin` and press Upload. If
   `.local` names do not resolve on your computer, use the IP address shown on
   the orbs when they connect.
-- **From PlatformIO:** `pio run -e ota -t upload`.
+- **From PlatformIO:** `pio run -e ota -t upload`. This needs the orb to connect
+  *back* to your computer, which fails when the two are on different subnets,
+  and a failed attempt restarts the orb. If it says `No response from device`,
+  wait until the update page loads again and use the browser.
 
 Set `OTA_PASSWORD` in `secrets.h` (the browser asks for user `admin` and that
 password). Without one, anyone on your network can flash the orbs.
 
 A failed or interrupted update keeps the old firmware. A new firmware that
 installs but cannot get back on WiFi is rolled back when it next restarts.
+
+## 9. Change settings from a browser
+
+Open `http://<orb's IP>/settings` (or `http://info-orbs.local/settings`) on a
+phone or computer on the same network. It uses the same `admin` / `OTA_PASSWORD`
+login as the update page.
+
+- **Save and restart** stores the changes and restarts the orbs, about 15 s.
+  The page reloads by itself. A value that fails its check is shown beside
+  that field, and nothing is saved.
+- **Reset to built-in values** forgets everything saved from the page and goes
+  back to what `config.h` says.
+- **Start-up picture:** pick any photo. The page crops it to a centred square
+  and shows the circle the orb will display. **Upload and restart** puts it on the
+  middle orb at start-up. **Use the built-in logo** takes it off again.
+
+Settings survive restarts and firmware updates. A USB flash with **Erase
+Flash** first clears them.
+Timezone and weather location cannot be checked until the orb uses them. If
+you mistype one, the clock or weather orb shows the error.
 
 ---
 
