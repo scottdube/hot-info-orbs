@@ -75,8 +75,8 @@ void test_tickers() {
 
 void test_text() {
     std::string out, err;
-    TEST_ASSERT_TRUE(normaliseText("  Dover,   NH ", 64, out, err));
-    TEST_ASSERT_EQUAL_STRING("Dover, NH", out.c_str());
+    TEST_ASSERT_TRUE(normaliseText("  The   Villages,  FL ", 64, out, err));
+    TEST_ASSERT_EQUAL_STRING("The Villages, FL", out.c_str());
     TEST_ASSERT_FALSE(normaliseText(std::string(65, 'a'), 64, out, err));
     TEST_ASSERT_TRUE(normaliseText(std::string(64, 'a'), 64, out, err));
     TEST_ASSERT_FALSE(normaliseText("a\tb", 64, out, err));
@@ -86,7 +86,7 @@ void test_text() {
 // --- urlEncode ---------------------------------------------------------------
 
 void test_url_encode() {
-    TEST_ASSERT_EQUAL_STRING("Dover%2C%20NH", urlEncode("Dover, NH").c_str());
+    TEST_ASSERT_EQUAL_STRING("The%20Villages%2C%20FL", urlEncode("The Villages, FL").c_str());
     TEST_ASSERT_EQUAL_STRING("America%2FNew_York", urlEncode("America/New_York").c_str());
     TEST_ASSERT_EQUAL_STRING("A-z_0.~", urlEncode("A-z_0.~").c_str());
 }

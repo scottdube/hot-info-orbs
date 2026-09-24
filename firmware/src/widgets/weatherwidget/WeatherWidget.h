@@ -58,7 +58,7 @@ private:
 #endif
 
     // Built in the constructor from Settings (location and units are on the
-    // settings page). The location is url-encoded: "Dover, NH" has a space
+    // settings page). The location is url-encoded: "The Villages, FL" has spaces
     // and a comma, and upstream issue #337 reports spaces failing.
     const String weatherApiKey = WEATHER_API_KEY;
     String httpRequestAddress;

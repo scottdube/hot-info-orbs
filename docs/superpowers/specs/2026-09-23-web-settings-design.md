@@ -105,9 +105,9 @@ that today are tested with `#ifdef` (`WEATHER_UNITS_METRIC`,
 chosen by `#if LOCALE`, are untouched.
 
 **Weather location is URL-encoded** where the request is built
-(`WeatherWidget.h:69`). Today "Dover, NH" goes into the URL raw with its space and
+(`WeatherWidget.h:69`). Today the configured town goes into the URL raw with its spaces and
 comma. Upstream issue #337 reports that locations containing a space fail. Whether
-weather data currently displays for "Dover, NH" has **not been verified** —
+weather data currently displays for a two-word town has **not been verified** —
 check it on the orb before and after this change.
 
 ## Boot picture

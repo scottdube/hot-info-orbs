@@ -62,8 +62,8 @@
   - cycle: `"0"`→0 ok; `"15"`→15; `"4"` err; `"3601"` err; `"abc"` err; `" 30 "`→30.
   - hour: `"0"`,`"23"` ok; `"24"`,`"-1"`,`""` err.
   - tickers: `"spy, qqq ,AAPL"`→`"SPY,QQQ,AAPL"`; `"BTC/USD"` ok; `"shop&country=Canada"`→`"SHOP&country=Canada"`; 6 items err; `""` err; `",,"` err; `"SP Y"` err.
-  - text: `"  Dover,   NH "`→`"Dover, NH"`; 65 chars with max 64 err; `"a\tb"` err.
-  - urlEncode: `"Dover, NH"`→`"Dover%2C%20NH"`; `"America/New_York"`→`"America%2FNew_York"`; `"A-z_0.~"` unchanged.
+  - text: `"  The   Villages,  FL "`→`"The Villages, FL"`; 65 chars with max 64 err; `"a\tb"` err.
+  - urlEncode: `"The Villages, FL"`→`"The%20Villages%2C%20FL"`; `"America/New_York"`→`"America%2FNew_York"`; `"A-z_0.~"` unchanged.
   - colour: `"#fc8000"`→ `0xFC00`; `"fc8000"` err; `"#zzzzzz"` err; `rgb565ToHex(0xFFFF)`→`"#ffffff"`, `rgb565ToHex(0)`→`"#000000"`.
   - htmlEscape: `"<a href=\"x\">&"` → `"&lt;a href=&quot;x&quot;&gt;&amp;"`.
   - jpeg: `images/logo.jpg` (read with fopen) passes; `test/fixtures/progressive.jpg` fails with "progressive"; a 4-byte `{0xFF,0xD8,0xFF,0xD9}` fails; `{0x89,'P','N','G'}` fails "not a JPEG".
