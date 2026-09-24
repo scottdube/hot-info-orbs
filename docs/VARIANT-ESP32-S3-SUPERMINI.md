@@ -804,6 +804,7 @@ Candidates, from datasheets and KiCad footprints. Prices fetched live
 
 | | Flash / PSRAM | Footprint vs our 2×9 @ 15.24 mm | GPIO | Price |
 |---|---|---|---|---|
+| **ESP32-S3 SuperMini (Basic, today)** | 4 MB / 2 MB quad | ours | 12 used | $4.25, what Scott last paid (not a live price) |
 | Seeed XIAO ESP32S3 | 8 MB / 8 MB octal | 2×7, **same 15.24 mm rows**, pin 1 differs | 11 edge | $7.49, in stock |
 | XIAO ESP32S3 Plus | 16 MB / 8 MB octal | same edge + 9 SMD-only back pads | 11 edge + 8 back | $7.99, in stock |
 | UM TinyS3 | 8 MB / 8 MB quad | 11+12, same 15.24 mm rows | 17 | $20 at Adafruit, not stocked; UM's own store not checked |
