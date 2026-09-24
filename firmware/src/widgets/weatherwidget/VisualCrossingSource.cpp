@@ -42,6 +42,7 @@ bool VisualCrossingSource::fetch(WeatherDataModel &model) {
             model.setCurrentIcon(doc["currentConditions"]["icon"].as<String>());
             model.setTodayHigh(doc["days"][0]["tempmax"].as<float>());
             model.setTodayLow(doc["days"][0]["tempmin"].as<float>());
+            model.setSunTimes(doc["days"][0]["sunriseEpoch"] | (int64_t)0, doc["days"][0]["sunsetEpoch"] | (int64_t)0);
             for (int i = 0; i < 3; i++) {
                 model.setDayIcon(i, doc["days"][i + 1]["icon"].as<String>());
                 model.setDayHigh(i, doc["days"][i + 1]["tempmax"].as<float>());

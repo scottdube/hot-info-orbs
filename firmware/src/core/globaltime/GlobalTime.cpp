@@ -160,6 +160,10 @@ void GlobalTime::getTimeZoneOffsetFromAPI() {
     }
 }
 
+int GlobalTime::getTimeZoneOffset() {
+    return m_timeZoneOffset == -1 ? 0 : m_timeZoneOffset;
+}
+
 bool GlobalTime::getFormat24Hour() {
     return m_format24hour;
 }

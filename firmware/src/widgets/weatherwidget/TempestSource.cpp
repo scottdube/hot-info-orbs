@@ -57,6 +57,7 @@ bool TempestSource::fetch(WeatherDataModel &model) {
     model.setCurrentTemperature(r.temp);
     model.setTodayHigh(r.days[0].high);
     model.setTodayLow(r.days[0].low);
+    model.setSunTimes(r.days[0].sunrise, r.days[0].sunset);
     for (int i = 0; i < 3; i++) {
         model.setDayIcon(i, r.days[i + 1].icon.c_str());
         model.setDayHigh(i, r.days[i + 1].high);

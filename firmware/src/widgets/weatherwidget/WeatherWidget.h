@@ -29,6 +29,7 @@ private:
     void showJPG(int displayIndex, int x, int y, const byte jpgData[], int size, int scale);
     void drawWeatherIcon(int displayIndex, const String &condition, int x, int y, int scale);
     void singleWeatherDeg(int displayIndex);
+    void sunMoon(int displayIndex);
     void weatherText(int displayIndex);
     void threeDayWeather(int displayIndex);
     int getClockStamp();

@@ -10,6 +10,7 @@
 // 4
 // factor out the text wrapping (there's a utils for that already, if that doesn't work, why not?)
 
+#include "SunMoon.h"
 #include "WeatherWidget.h"
 #include "icons.h"
 
@@ -58,6 +59,7 @@ void WeatherWidget::draw(bool force) {
     if (force || model.isChanged()) {
         weatherText(1);
         drawWeatherIcon(2, model.getCurrentIcon(), 0, 0, 1);
+        sunMoon(2);
         singleWeatherDeg(3);
         threeDayWeather(4);
         model.setChangedStatus(false);
@@ -143,6 +145,21 @@ void WeatherWidget::drawWeatherIcon(int displayIndex, const String &condition, i
     if (iconStart != NULL && size > 0) {
         showJPG(displayIndex, x, y, iconStart, size, scale);
     }
+}
+
+// Sunrise/sunset along the top of the icon screen and the moon phase along
+// the bottom: the icon art leaves those bands free, and a page of its own
+// would cost flash we are short of. Redrawn whenever the weather refreshes.
+void WeatherWidget::sunMoon(int displayIndex) {
+    m_manager.selectScreen(displayIndex);
+    int offset = m_time->getTimeZoneOffset();
+    std::string sun = sunLine(model.getSunrise(), model.getSunset(), offset, m_time->getFormat24Hour());
+    m_manager.setFontColor(m_foregroundColor);
+    if (!sun.empty()) {
+        m_manager.drawCentreString(sun.c_str(), centre, 32, 15);
+    }
+    int64_t utc = (int64_t)m_time->getUnixEpoch() - offset; // getUnixEpoch() is local-shifted
+    m_manager.drawCentreString(moonPhaseName(moonAgeDays(utc)), centre, 212, 15);
 }
 
 // Displays the current temperature on a single screen.

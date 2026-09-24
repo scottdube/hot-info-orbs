@@ -49,6 +49,8 @@ void test_parse_fixture_through_filter() {
     TEST_ASSERT_EQUAL_FLOAT(50.0f, r.temp);
     TEST_ASSERT_EQUAL_FLOAT(62.0f, r.days[0].high); // daily[0] is today
     TEST_ASSERT_EQUAL_FLOAT(42.0f, r.days[0].low);
+    TEST_ASSERT_TRUE(r.days[0].sunrise == 1700000000); // epoch seconds, today
+    TEST_ASSERT_TRUE(r.days[0].sunset == 1700040000);
     TEST_ASSERT_EQUAL_STRING("rain", r.days[1].icon.c_str()); // translated
     TEST_ASSERT_EQUAL_STRING("rain", r.days[3].icon.c_str());
     TEST_ASSERT_EQUAL_FLOAT(51.0f, r.days[3].low);

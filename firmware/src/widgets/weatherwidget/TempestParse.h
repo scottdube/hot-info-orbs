@@ -12,6 +12,8 @@ struct TempestDay {
     std::string icon; // already translated to the orb's icon names
     float high = 0;
     float low = 0;
+    int64_t sunrise = 0; // UTC epoch, 0 when absent
+    int64_t sunset = 0;
 };
 
 struct TempestReading {
@@ -104,6 +106,8 @@ inline void tempestFilter(JsonDocument &filter) {
     filter["forecast"]["daily"][0]["icon"] = true; // [0] in a filter applies to every element
     filter["forecast"]["daily"][0]["air_temp_high"] = true;
     filter["forecast"]["daily"][0]["air_temp_low"] = true;
+    filter["forecast"]["daily"][0]["sunrise"] = true;
+    filter["forecast"]["daily"][0]["sunset"] = true;
 }
 
 inline bool tempestParse(JsonDocument &doc, TempestReading &out, std::string &err) {
@@ -130,6 +134,8 @@ inline bool tempestParse(JsonDocument &doc, TempestReading &out, std::string &er
         r.days[i].icon = tempestIcon(daily[i]["icon"] | "");
         r.days[i].high = daily[i]["air_temp_high"] | 0.0f;
         r.days[i].low = daily[i]["air_temp_low"] | 0.0f;
+        r.days[i].sunrise = daily[i]["sunrise"] | (int64_t)0;
+        r.days[i].sunset = daily[i]["sunset"] | (int64_t)0;
     }
     out = r;
     return true;
