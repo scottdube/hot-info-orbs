@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Published by GitHub Pages from main:/docs. This file is the source of
+     truth for the feature sheet: edit it here, push, and the page updates. -->
+<title>HOT Info Orbs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{
+  --paper:#F3F5F7; --surface:#FFFFFF; --ink:#15202B; --muted:#56636E; --rule:#D8DEE4;
+  --accent:#C96F00; --accent-soft:#FBEBD6; --mask:#1C5D54; --mask-soft:#DCEEEA;
+  --glass:#0A0E12; --glass-rim:#2A333C; --orb-text:#E9EEF2; --orb-orange:#FF9200; --orb-dim:#6E7A85;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#0F151B; --surface:#161F28; --ink:#E7ECF0; --muted:#98A5B0; --rule:#26323D;
+    --accent:#FF9A24; --accent-soft:#3A2710; --mask:#5CC0AE; --mask-soft:#15312C;
+    --glass-rim:#34404B;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#0F151B; --surface:#161F28; --ink:#E7ECF0; --muted:#98A5B0; --rule:#26323D;
+  --accent:#FF9A24; --accent-soft:#3A2710; --mask:#5CC0AE; --mask-soft:#15312C;
+  --glass-rim:#34404B;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding:0 20px}
+.wrap{max-width:1080px;margin:0 auto;padding-block:40px 64px;display:flex;flex-direction:column;gap:64px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
+h2{font-size:clamp(1.6rem,3.2vw,2.1rem);font-weight:750;font-stretch:112%;letter-spacing:-.01em}
+h3{font-size:1.05rem;font-weight:700;font-stretch:100%}
+p{margin:0;max-width:65ch}
+.eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--ink)}
+.note{font-size:.88rem;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:20px}
+.head{display:flex;flex-direction:column;gap:8px}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:1fr;gap:36px}
+.hero h1{font-size:clamp(2.6rem,7vw,4.6rem);font-weight:800;font-stretch:125%;letter-spacing:-.02em}
+.hero h1 span{color:var(--accent)}
+.hero .copy{display:flex;flex-direction:column;gap:16px}
+.orbs{display:flex;flex-wrap:wrap;gap:14px;justify-content:flex-start}
+.orb{--d:clamp(92px,15vw,150px);width:var(--d);aspect-ratio:1;max-width:100%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#1a222b 0%,var(--glass) 62%);box-shadow:0 0 0 5px var(--glass-rim),0 10px 24px rgba(0,0,0,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--orb-text);font-family:var(--mono);text-align:center;gap:2px}
+.orb .big{font-size:calc(var(--d)*.36);font-weight:600;line-height:1;color:var(--orb-orange);text-shadow:3px 3px 0 #3a2a05}
+.orb .mid{font-size:calc(var(--d)*.2);font-weight:500;line-height:1}
+.orb .sm{font-size:calc(var(--d)*.085);color:var(--orb-dim);letter-spacing:.06em;text-transform:uppercase}
+.orb .up{color:#6FD08C}
+.orb svg{width:calc(var(--d)*.34);height:calc(var(--d)*.34)}
+.orbcap{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+
+/* Key figures */
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.fig{background:var(--surface);padding:18px 18px 16px;display:flex;flex-direction:column;gap:4px}
+.fig b{font-family:var(--display);font-stretch:112%;font-size:1.7rem;font-weight:750;line-height:1.1;font-variant-numeric:tabular-nums}
+.fig span{font-size:.85rem;color:var(--muted)}
+
+/* Status */
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:.88rem}
+.st{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.78rem;font-weight:600;padding:2px 8px;border-radius:3px;white-space:nowrap;border:1px solid transparent}
+.st.ship{background:var(--mask-soft);color:var(--mask);border-color:var(--mask)}
+.st.branch{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.st.prop{background:transparent;color:var(--muted);border:1px dashed var(--muted)}
+
+/* Tables */
+.tbl{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:.93rem}
+th,td{text-align:left;vertical-align:top;padding:11px 14px;border-bottom:1px solid var(--rule)}
+tr:last-child td{border-bottom:0}
+thead th{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--paper)}
+tbody th{font-weight:600;width:22%}
+td.ours{font-weight:500}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.88rem}
+
+/* Tiers */
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.tier{background:var(--surface);border:1px solid var(--rule);padding:24px;display:flex;flex-direction:column;gap:14px}
+.tier.adv{border-style:dashed;border-color:var(--muted)}
+.tier .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.tier h3{font-size:1.5rem;font-stretch:118%}
+.tier dl{display:grid;grid-template-columns:minmax(90px,auto) 1fr;gap:8px 16px;margin:0;font-size:.92rem}
+.tier dt{color:var(--muted)}
+.tier dd{margin:0}
+
+/* Spec */
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 40px}
+.block{display:flex;flex-direction:column;gap:10px}
+.block h3{font-family:var(--mono);font-size:.75rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding-bottom:6px;border-bottom:2px solid var(--accent)}
+.block dl{margin:0;display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:7px 14px;font-size:.92rem}
+.block dt{color:var(--muted)}
+.block dd{margin:0}
+.m{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;color:var(--mask);border:1px solid var(--mask);border-radius:2px;padding:0 4px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+
+.widgets{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.w{border-top:2px solid var(--ink);padding-top:10px;display:flex;flex-direction:column;gap:4px}
+.w p{font-size:.9rem;color:var(--muted)}
+
+footer{border-top:1px solid var(--rule);padding-top:20px;display:flex;flex-direction:column;gap:8px;font-size:.88rem;color:var(--muted)}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Change lists */
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 40px}
+.group{display:flex;flex-direction:column;gap:10px}
+.group h3{font-size:1.1rem;font-stretch:110%;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+.group ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.group li{position:relative;padding-left:18px;font-size:.93rem;line-height:1.5}
+.group li::before{content:"";position:absolute;left:2px;top:.62em;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.group li .was{display:block;color:var(--muted);font-size:.84rem}
+.group li .st{margin-left:4px;font-size:.7rem;padding:0 6px;vertical-align:1px}
+.brand{display:flex;align-items:center;gap:20px}
+.badge{width:clamp(80px,11vw,116px);aspect-ratio:1;max-width:100%;border-radius:22%;flex:none;display:grid;place-items:center;background:radial-gradient(120% 100% at 50% 100%,#6BA6DC 0%,#2E63A8 45%,#0E2C66 100%);box-shadow:0 0 0 5px var(--glass-rim)}
+.badge img{display:block;height:84%;width:auto}
+
+@media (min-width:860px){
+  .hero{grid-template-columns:1.05fr 1fr;align-items:center}
+  .orbs{justify-content:flex-end}
+}
+@media (max-width:520px){
+  .orb{--d:78px}
+  .orbs{gap:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="copy">
+    <div class="eyebrow">Hands-On Tech Club · feature &amp; spec sheet · Sept 2026</div>
+    <div class="brand">
+      <div class="badge"><img src="assets/hot-smcomp-logo.png" alt="Hands-On Tech Small Computing logo: a hand made of tech icons holding a chip" width="184" height="240"></div>
+      <h1>HOT <span>Info Orbs</span></h1>
+    </div>
+    <p class="lede">Five round displays on your desk showing the time, the weather and the markets. They update over WiFi and are set up from any browser. It's built as a club kit, so it's hard to get wrong and cheap to get into.</p>
+    <p class="note">A derivative of Brett Turner's <a href="https://github.com/brettdottech/info-orbs">Info Orbs</a>. The firmware started as his; the carrier board, power design and everything under “What we added” are the club's.</p>
+  </div>
+  <div>
+    <div class="orbs" aria-label="The five orbs showing a clock, weather and a stock">
+      <div class="orb"><span class="big">1</span></div>
+      <div class="orb"><span class="big">0</span></div>
+      <div class="orb"><span class="sm">Sep 24</span><span class="mid">:42</span><span class="sm">Wed</span></div>
+      <div class="orb" aria-label="weather">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="16" cy="16" r="8" fill="#FFB400"/><path d="M12 30h18a6 6 0 0 0 0-12 8 8 0 0 0-15 3 5 5 0 0 0-3 9z" fill="#C9D3DC"/></svg>
+        <span class="mid">54°</span>
+      </div>
+      <div class="orb"><span class="sm">SPY</span><span class="mid up">▲0.8%</span><span class="sm">quote</span></div>
+    </div>
+    <p class="orbcap" style="margin-top:12px">Illustration, not a screenshot: a mix of pages, one per orb.</p>
+  </div>
+</header>
+
+<section aria-label="Key figures">
+  <div class="figs">
+    <div class="fig"><b>5 × 240²</b><span>round GC9A01 displays on one SPI bus</span></div>
+    <div class="fig"><b>1.71 W</b><span>typical draw at 5 V, measured</span></div>
+    <div class="fig"><b>0 cables</b><span>to update the firmware or change a setting after the first flash</span></div>
+    <div class="fig"><b>87%</b><span>of a firmware slot used; the stop line is 92%</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">What we added · compared with the original Info Orbs</div>
+    <h2>Software changes</h2>
+    <p>The baseline is upstream's <span class="num">main</span> branch as of February 2025, the point this project forked from. Grey text under an item says how the original did it.</p>
+  </div>
+  <div class="legend">
+    <span><span class="st ship">✔ Shipping</span> on <span class="num">main</span>, running on the orbs; unmarked items are shipping</span>
+    <span><span class="st branch">◐ Built</span> on a branch, soaking on one orb</span>
+    <span><span class="st prop">○ Proposed</span> researched, not built</span>
+  </div>
+  <div class="groups">
+    <div class="group">
+      <h3>Settings from a browser</h3>
+      <ul>
+        <li>A settings page at <span class="num">http://&lt;orb&gt;/settings</span>. It covers rotation time, tickers, weather town, units and light/dark mode, time zone, 12/24 hour and AM/PM, starting clock face, clock and shadow colours, night-dim hours, and upside-down mounting.<span class="was">Was: edit <span class="num">config.h</span>, rebuild, reflash over USB.</span></li>
+        <li>Settings are stored on the orb and survive restarts and firmware updates. <span class="num">config.h</span> supplies the defaults, and one button resets to them.</li>
+        <li>The orb checks every field before it saves. Problems show next to the field, marked ✔ / ✖ / ⚠ as well as by colour.</li>
+        <li>Upload your own start-up picture. Your browser crops and shrinks it to 240 × 240, and a bad file falls back to the built-in logo.<span class="was">Was: fixed when the firmware was built.</span></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Updates over WiFi</h3>
+      <ul>
+        <li>Upload new firmware from a browser at <span class="num">/update</span>, or straight from PlatformIO.<span class="was">Was: USB cable, every time.</span></li>
+        <li>Two firmware slots. A new image counts as good only once it reaches WiFi; otherwise the orb rolls back to the previous one.</li>
+        <li>The update and settings pages show the running version, commit and build time.</li>
+        <li>The boot screen shows how much of the firmware slot is used, so the headroom is visible without a laptop.</li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Keys and security</h3>
+      <ul>
+        <li>API keys live in your own <span class="num">secrets.h</span>, which git ignores.<span class="was">Was: keys compiled into <span class="num">config.h</span>, and the template shipped with live keys.</span></li>
+        <li>The build stops if a key is missing or empty. You get a compile error at your desk instead of a blank orb on the bench.</li>
+        <li>An <strong>optional</strong> password protects both the settings and update pages. Without one, anyone on your network can use them, and both pages show a ⚠ warning. The page never shows a stored key.</li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Weather</h3>
+      <ul>
+        <li>Towns with spaces in their names work; the location is now URL-encoded.<span class="was">Was: spaces could break the request (upstream issue #337).</span></li>
+        <li>Personal Tempest weather stations, up to two, each with its own page and a label of up to 16 characters.<span class="st branch">◐ Built</span></li>
+        <li>The Tempest page shows live readings: conditions, feels-like, humidity, and wind as a range from average to gust.<span class="st branch">◐ Built</span></li>
+        <li>The 96 KB Tempest reply is streamed through a filter that keeps 744 bytes. The settings page shows ✔ / ✖ for each station's last fetch.<span class="st branch">◐ Built</span></li>
+        <li>Tempest code is left out of the build unless a Tempest token is set, so a Basic build pays nothing for it.<span class="st branch">◐ Built</span></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Port and branding</h3>
+      <ul>
+        <li>Ported to the ESP32-S3 SuperMini pin map. Every pin is a setting in <span class="num">config.h</span>, so a different module needs a new pin map, not new code.</li>
+        <li>The splash reads “HOT Info Orbs by HOT-Team”. The Hands-On Tech logo is in the repo, ready to become the built-in picture.<span class="was">Was: “Info Orbs by brett.tech” and Brett's logo.</span></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Quality</h3>
+      <ul>
+        <li>Unit tests run on a laptop and in CI for settings validation and weather parsing: 11 tests on <span class="num">main</span>, 22 with Tempest.<span class="was">Was: none.</span></li>
+        <li>The linter reports problems and no longer commits changes back, so the repository only moves when a person moves it.</li>
+        <li>An upstream bug is fixed: an uninitialised loop counter in the page rotation.<span class="st branch">◐ Built</span></li>
+        <li>A written setup guide goes from an empty laptop to a running orb, and a traps file records every mistake that cost time once.<span class="was">Was: Brett's assembly video and README.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">What we added · compared with the original Info Orbs</div>
+    <h2>Hardware changes</h2>
+  </div>
+  <div class="groups">
+    <div class="group">
+      <h3>A new carrier board</h3>
+      <ul>
+        <li>Carrier board v1.1, Yang's KiCad 10 design. The libraries live inside the project, so you clone it and open it; there's nothing to install.<span class="was">Was: upstream's 2-layer board for an ESP32 dev kit.</span></li>
+        <li>The ESP32-S3 SuperMini sits in machined-pin sockets, so a module can be swapped without desoldering.<span class="was">Was: a 30/38-pin ESP32 dev kit.</span></li>
+        <li>Fixed in review before fab: the fifth display's DC line connected, a button moved off a strapping pin, and a ground pour added.</li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Power that stays cool</h3>
+      <ul>
+        <li>Each display gets 5 V and regulates its own supply, so the module's regulator carries only the ESP32.<span class="was">Was: all five displays on the module's 3.3 V regulator. Builders reported 82 °C.</span></li>
+        <li>Measured on a Nordic PPK II: 342 mA (1.71 W) typical and a 1.15 A surge at power-on. That's why the spec calls for a 2 A supply.</li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Built to be reproducible</h3>
+      <ul>
+        <li>JLCPCB's design rules are loaded into the design-rule check.<span class="was">Before: the check was running against default rules.</span></li>
+        <li>The exact gerbers sent to the fab are archived and never regenerated. Ten boards were ordered on 29 Aug 2026.</li>
+        <li>A 3D assembly model (STEP) is available for enclosure design.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Two builds, one carrier board</div>
+    <h2>Basic and Advanced</h2>
+    <p><b>Basic</b> is the club kit: cheap, proven and shipping. <b>Advanced</b> is for builders who want room to grow. The plan is a larger module on a small adapter board that plugs into the Basic board's socket, so the club keeps a single board design. Advanced isn't built yet; everything in its column is a researched candidate.</p>
+  </div>
+  <div class="tiers">
+    <article class="tier">
+      <div class="top"><h3>Basic</h3><span class="st ship">✔ Shipping</span></div>
+      <dl>
+        <dt>Module</dt><dd>ESP32-S3 SuperMini (FH4R2)</dd>
+        <dt>Flash</dt><dd><span class="num">4 MB</span>, split into two 1.875 MB firmware slots so updates are safe</dd>
+        <dt>Headroom</dt><dd>Firmware fills <span class="num">87%</span> of a slot, with Tempest built in <span class="num">88%</span>. The stop line is <span class="num">92%</span>.</dd>
+        <dt>PSRAM</dt><dd><span class="num">2 MB</span>, measured present, not yet switched on</dd>
+        <dt>Carrier</dt><dd>v1.1, module in machined-pin sockets</dd>
+        <dt>Pins</dt><dd>12 GPIO used: 9 for the displays (5 chip selects plus data, clock, DC and reset) and 3 for the buttons</dd>
+        <dt>Module price</dt><dd><span class="num">$4.25</span>, Scott's last purchase</dd>
+        <dt>For</dt><dd>Every club build. Everything on this sheet marked ✔ runs on it.</dd>
+      </dl>
+    </article>
+    <article class="tier adv">
+      <div class="top"><h3>Advanced</h3><span class="st prop">○ Proposed</span></div>
+      <dl>
+        <dt>Module</dt><dd>Leading candidate: Seeed XIAO ESP32S3 Plus</dd>
+        <dt>Flash</dt><dd><span class="num">16 MB</span>, about four times the room for new widgets, fonts and pictures</dd>
+        <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal</dd>
+        <dt>Carrier</dt><dd>The same v1.1 board. An adapter presents the SuperMini pin layout into the same socket.</dd>
+        <dt>Pins</dt><dd>11 on the edge and more on the back pads. One pin short on the edge alone; freeing the display reset line is the likely fix, still untested.</dd>
+        <dt>Firmware</dt><dd>The same code base with a second pin map. Every pin is already a setting.</dd>
+        <dt>Module price</dt><dd><span class="num">$7.99</span> at Seeed, in stock, checked 24 Sept 2026</dd>
+      </dl>
+    </article>
+  </div>
+  <p class="note">Also considered for Advanced: the Unexpected Maker TinyS3 (8 MB flash / 8 MB PSRAM; not stocked at Adafruit) and the Waveshare ESP32-S3-Pico (16 MB / 2 MB, a larger 40-pin Pico layout). None of the three plugs straight into the SuperMini socket, which is why the plan uses an adapter.</p>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">What it shows</div>
+    <h2>Pages in the rotation</h2>
+    <p>The orbs rotate through their pages on a timer set from the settings page. Pressing a button restarts the countdown.</p>
+  </div>
+  <div class="widgets">
+    <div class="w"><h3>Clock</h3><p>Seven-segment, Nixie, or your own JPG digits. 12 or 24 hour, with custom colours and shadow.</p></div>
+    <div class="w"><h3>Weather</h3><p>Current conditions, today's high and low, and a 3-day forecast. From Visual Crossing, or your own Tempest station (◐).</p></div>
+    <div class="w"><h3>Stocks</h3><p>Five tickers, one per orb: stocks, forex or crypto, from Twelve Data.</p></div>
+    <div class="w"><h3>And more</h3><p>A Parqet portfolio, custom web data and MQTT pages, carried over from upstream and switched on in <span class="num">config.h</span>.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Specifications · Basic build</div>
+    <h2>Spec sheet</h2>
+    <p class="note">Figures tagged <span class="m">MEASURED</span> were read off the club's first assembled board with instruments. Untagged figures come from datasheets or the build output.</p>
+  </div>
+  <div class="spec">
+    <div class="block">
+      <h3>Displays</h3>
+      <dl>
+        <dt>Type</dt><dd>GC9A01 round IPS, 240 × 240</dd>
+        <dt>Count</dt><dd>5, on one shared SPI bus with a chip-select line each</dd>
+        <dt>Supply</dt><dd>5 V; each module has its own regulator</dd>
+        <dt>Backlight</dt><dd>Always on, wired on at the module. Night dim darkens the colours instead.</dd>
+      </dl>
+    </div>
+    <div class="block">
+      <h3>Controller</h3>
+      <dl>
+        <dt>Chip</dt><dd>ESP32-S3, dual-core, 240 MHz</dd>
+        <dt>Radio</dt><dd>2.4 GHz WiFi</dd>
+        <dt>Flash</dt><dd><span class="num">4 MB</span> <span class="m">MEASURED</span></dd>
+        <dt>PSRAM</dt><dd><span class="num">2 MB</span>, not enabled yet <span class="m">MEASURED</span></dd>
+        <dt>Free memory</dt><dd>About <span class="num">210 KB</span> of heap after a weather fetch <span class="m">MEASURED</span></dd>
+      </dl>
+    </div>
+    <div class="block">
+      <h3>Power</h3>
+      <dl>
+        <dt>Typical</dt><dd><span class="num">342 mA / 1.71 W</span> at 5 V <span class="m">MEASURED</span></dd>
+        <dt>Peak running</dt><dd><span class="num">400 mA / 2.0 W</span> <span class="m">MEASURED</span></dd>
+        <dt>Power-on surge</dt><dd><span class="num">1.15 A</span> for a few milliseconds <span class="m">MEASURED</span></dd>
+        <dt>Supply</dt><dd><b>Use a 2 A adapter.</b> A 1 A one sags at power-on, and the orb then starts on some chargers but not others.</dd>
+      </dl>
+    </div>
+    <div class="block">
+      <h3>Controls</h3>
+      <dl>
+        <dt>Buttons</dt><dd>3: left, OK, right</dd>
+        <dt>Presses</dt><dd>Short, medium (<span class="num">0.5 s</span>), long (<span class="num">2 s</span>)</dd>
+        <dt>Mounting</dt><dd>Works upside down: screens and buttons re-map from the settings page</dd>
+      </dl>
+    </div>
+    <div class="block">
+      <h3>Network &amp; updates</h3>
+      <dl>
+        <dt>Settings</dt><dd><span class="num">http://&lt;orb&gt;/settings</span> in any browser</dd>
+        <dt>Updates</dt><dd><span class="num">http://&lt;orb&gt;/update</span>; about an 11 s upload, back online about 14 s later <span class="m">MEASURED</span></dd>
+        <dt>Safety</dt><dd>Two firmware slots. A new image counts as good only once it reaches WiFi; otherwise the orb rolls back.</dd>
+        <dt>Password</dt><dd>Optional; one password guards both pages, set in <span class="num">secrets.h</span></dd>
+      </dl>
+    </div>
+    <div class="block">
+      <h3>Data sources</h3>
+      <dl>
+        <dt>Weather</dt><dd>Visual Crossing (free key)</dd>
+        <dt>Time zone</dt><dd>TimeZoneDB (free key) for daylight-saving changes</dd>
+        <dt>Stocks</dt><dd>Twelve Data</dd>
+        <dt>Tempest ◐</dt><dd>WeatherFlow API. Each fetch takes 1.2–3.8 s, and only 744 bytes of a 96 KB reply are kept <span class="m">MEASURED</span></dd>
+      </dl>
+    </div>
+    <div class="block">
+      <h3>Build</h3>
+      <dl>
+        <dt>Toolchain</dt><dd>PlatformIO, Arduino core for ESP32</dd>
+        <dt>Board files</dt><dd>KiCad 10 with project-local libraries: clone and open</dd>
+        <dt>First run</dt><dd>10 boards, v1.1, ordered 29 Aug 2026</dd>
+        <dt>Licence</dt><dd>AGPL-3.0, inherited from upstream. The source is public, so you're entitled to it when someone hands you a board.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p><b>Credit:</b> Info Orbs is Brett Turner's project, and the firmware started as his and its contributors'. Buy <a href="https://brett.tech/collections/electronics-projects/products/info-orbs-full-dev-kit">his dev kit</a> if you want the original.</p>
+  <p>Source, setup guide and build notes: <a href="https://github.com/scottdube/hot-info-orbs">github.com/scottdube/hot-info-orbs</a>. Status as of 24 September 2026.</p>
+</footer>
+
+</div>
+</body>
+</html>
