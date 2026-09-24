@@ -190,25 +190,13 @@ http://<ip>/update` → `Update OK` in 11 s. Why the connect-back fails (routing
 firewall, macOS application firewall) was not established. After a failed
 espota, wait for `/update` to answer 200 before trying anything else.
 
-## The orb can drop off Wi-Fi and stay off until power-cycled — cause NOT established (2026-09-23)
+## Finding the orb on 192.168.30.x, and a URL that "doesn't work" (2026-09-23)
 
-Observed once: after the web-settings testing (many restarts, all fine), the
-orb stopped answering ping and HTTP at 192.168.30.208. The rest of
-192.168.30.x and its gateway were reachable, and no host on the subnet served
-the orb's `/settings`. A power-cycle brought it back on the same IP. It then
-answered every 30 s check for 1 h 40 m (20:25–22:05) with no miss.
-
-The screens were not seen during the outage, so nothing separates a crash, a
-Wi-Fi drop without reconnect, and a hang. One thing is known from the code:
-the firmware never re-checks `WiFi.status()` after its first connect, so any
-reconnect depends on the Arduino core's own auto-reconnect. That makes the
-reconnect path a **candidate**, not the cause. Next time, look at the screens
-before power-cycling: frozen clock, running clock, or "Info-Orbs_xx" setup
-text each point somewhere different.
-
-Two side traps from the hunt:
 - **Several other devices on 192.168.30.x answer `/update` with a bare "200
   OK".** A port-80 sweep for `/update` does not find the orb; check that
   `/settings` contains "Running 1.1.0".
 - **A trailing `.` pasted after the URL** (`…/settings.`) stops the page loading
   by itself. Rule it out first when someone says the page "doesn't work".
+- **An orb that has gone completely dark on the network may simply be
+  unplugged.** On 2026-09-23 it was an accidental unplug, not firmware. Ask
+  before debugging. A 1 h 40 m watch at 30 s intervals afterwards saw no drop.
