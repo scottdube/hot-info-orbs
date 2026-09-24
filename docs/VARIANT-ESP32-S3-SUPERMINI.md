@@ -757,3 +757,20 @@ backlight is the dominant *continuous* load, a module exposing BL would allow
 PWM dimming — real brightness control instead of the colour desaturation the
 firmware currently uses, and a direct cut in the thermal load. Worth weighing
 when choosing which clone to buy, on either board.
+
+---
+
+## 2026-09-24: where the flash goes (measured, `tempest` build)
+
+Image 1,730,737 bytes, 88.0% of one 1,966,080-byte OTA slot (stop line 92%, so
+~80 KB of working headroom). Free heap after a Tempest fetch is ~210 KB, so
+**RAM is not the constraint. Flash is**, and the missing PSRAM only forced
+streaming the Tempest reply, which works.
+
+Largest symbols (`xtensa-esp32s3-elf-nm --size-sort`) are all framework:
+newlib printf/scanf (~57 KB across 6 variants), mbedTLS handshakes, mDNS,
+lwIP, WiFi. The largest app symbols are `SettingsPage::handlePost` (3.5 KB) and
+`renderForm` (3.1 KB). Trimming our own features buys kilobytes, not hundreds of
+them. **The ceiling is 4 MB of in-package flash split into two OTA slots**,
+and only a module with more flash moves it. A board change still means a new
+carrier footprint and fan-out (§3).
