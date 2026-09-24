@@ -167,6 +167,9 @@ void OtaUpdater::setupWebUpdate() {
 void OtaUpdater::drawStatus(const String &line1, const String &line2, uint32_t color) {
     m_manager.selectScreen(2);
     m_manager.clearScreen();
+    // Otherwise it inherits the current widget's font: on the clock that is
+    // DSEG, which has almost no letters. Widgets set their own font per draw.
+    m_manager.setFont(DEFAULT_FONT);
     m_manager.setFontColor(color);
     m_manager.drawCentreString(line1, ScreenCenterX, ScreenCenterY - 20, 22);
     m_manager.setFontColor(TFT_WHITE);
