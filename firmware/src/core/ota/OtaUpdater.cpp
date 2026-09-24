@@ -23,11 +23,20 @@ extern "C" bool verifyRollbackLater() {
     return true;
 }
 
+// Same warning as the settings page: both pages are open when there is no password
+#ifdef OTA_PASSWORD
+    #define NO_PASSWORD_WARNING ""
+#else
+    #define NO_PASSWORD_WARNING "<p>&#9888; No password is set, so anyone on this network can install firmware " \
+                                "and change the settings. Set OTA_PASSWORD in secrets.h.</p>"
+#endif
+
 static const char *uploadPage =
     "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width'>"
     "<title>Info Orbs update</title></head><body style='font-family:sans-serif'>"
     "<h2>Info Orbs firmware update</h2>"
     "<p>Running: " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "</p>"
+    NO_PASSWORD_WARNING
     "<form method='POST' action='/update' enctype='multipart/form-data'>"
     "<input type='file' name='firmware' accept='.bin'> "
     "<input type='submit' value='Upload'></form>"
