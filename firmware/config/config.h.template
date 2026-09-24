@@ -13,6 +13,7 @@
 //#define DIM_START_HOUR 22  // Dim the screens at this time (24h format)
 //#define DIM_END_HOUR 7     // Undim the screens at this time (24h format)
 //#define DIM_BRIGHTNESS 128 // Dim brightness (0-255)
+//#define NIGHT_SCREENS_OFF  // Turn the panels off during those hours instead of dimming
 
 // CLOCK CONFIGURATION
 #define FORMAT_24_HOUR false            // Toggle 24 hour clock vs 12 hour clock, change between true/false

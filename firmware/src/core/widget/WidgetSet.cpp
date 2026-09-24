@@ -108,10 +108,34 @@ void WidgetSet::updateBrightnessByTime(uint8_t hour24) {
         isInDimRange = (hour24 >= s.dimstart || hour24 < s.dimend);
     }
 
-    uint8_t brightness = isInDimRange ? SETTINGS_DIM_LEVEL : TFT_BRIGHTNESS;
+    if (m_woken && millis() - m_wokenAt >= 60000UL) {
+        m_woken = false;
+    }
+    bool wantAsleep = isInDimRange && s.nightoff && !m_woken;
+    if (wantAsleep != m_panelsAsleep) {
+        m_panelsAsleep = wantAsleep;
+        m_screenManager->setPanelsAsleep(wantAsleep);
+        if (!wantAsleep) {
+            m_screenManager->clearAllScreens();
+            drawCurrent(true);
+        }
+    }
+
+    // Screens-off hours are drawn at full brightness while a button has them awake
+    uint8_t brightness = isInDimRange && !s.nightoff ? SETTINGS_DIM_LEVEL : TFT_BRIGHTNESS;
     if (m_screenManager->setBrightness(brightness)) {
         // brightness was changed -> update widget
         m_screenManager->clearAllScreens();
         drawCurrent(true);
     }
+}
+
+bool WidgetSet::panelsAsleep() {
+    return m_panelsAsleep;
+}
+
+void WidgetSet::wakeForAMinute() {
+    m_woken = true;
+    m_wokenAt = millis();
+    // updateBrightnessByTime() on the next loop pass does the waking
 }

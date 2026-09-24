@@ -191,10 +191,11 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += boolSelect("wxdark", "Weather screens", v.wxdark, d.wxdark, "Light", "Dark", errors);
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Night dim</legend>";
-    h += boolSelect("dim", "Dim at night", v.dim, d.dim, "Off", "On", errors);
-    h += hint("Dimming darkens the colours drawn; the backlight itself stays on.");
-    h += hourSelect("dimstart", "Dim from", v.dimstart, d.dimstart, errors);
+    h += "<fieldset><legend>Night</legend>";
+    h += boolSelect("dim", "Night hours", v.dim, d.dim, "Off", "On", errors);
+    h += boolSelect("nightoff", "During them", v.nightoff, d.nightoff, "Dim", "Screens off", errors);
+    h += hint("Dim darkens the colours drawn. Screens off blanks the panels; any button wakes them for a minute.");
+    h += hourSelect("dimstart", "From", v.dimstart, d.dimstart, errors);
     h += hourSelect("dimend", "Until", v.dimend, d.dimend, errors);
     h += "</fieldset>";
 
@@ -258,6 +259,7 @@ void SettingsPage::handlePost() {
     readBool("h24", v.h24);
     readBool("ampm", v.ampm);
     readBool("dim", v.dim);
+    readBool("nightoff", v.nightoff);
     readBool("invert", v.invert);
     if (has("face")) {
         std::string a = argStr(s, "face");

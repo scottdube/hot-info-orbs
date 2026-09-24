@@ -126,6 +126,23 @@ bool ScreenManager::setBrightness(uint8_t brightness) {
     }
 }
 
+// Display off + sleep on every panel at once (GC9A01 commands 0x28/0x10), and
+// back. Frame memory is redrawn by the caller after waking.
+void ScreenManager::setPanelsAsleep(bool asleep) {
+    selectAllScreens();
+    if (asleep) {
+        m_tft.writecommand(TFT_DISPOFF);
+        m_tft.writecommand(TFT_SLPIN);
+        delay(5); // controller wants 5 ms before the next command
+    } else {
+        m_tft.writecommand(TFT_SLPOUT);
+        delay(120); // and 120 ms after sleep-out
+        m_tft.writecommand(TFT_DISPON);
+    }
+    reset();
+    Serial.printf("Panels %s\n", asleep ? "asleep" : "awake");
+}
+
 uint8_t ScreenManager::getBrightness() {
     return m_brightness;
 }

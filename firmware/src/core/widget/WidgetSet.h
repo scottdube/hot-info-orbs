@@ -23,6 +23,8 @@ public:
     void initializeAllWidgetsData();
     void setClearScreensOnDrawCurrent();
     void updateBrightnessByTime(uint8_t hour24);
+    bool panelsAsleep();
+    void wakeForAMinute(); // a button press during night-off hours
 
 private:
     void showCenteredLine(int screen, const String &text);
@@ -33,6 +35,9 @@ private:
     int8_t m_currentWidget = 0;
 
     bool m_initialized = false;
+    bool m_panelsAsleep = false;
+    unsigned long m_wokenAt = 0;
+    bool m_woken = false; // a button woke the panels; m_wokenAt says when
 
     void switchWidget();
 };
