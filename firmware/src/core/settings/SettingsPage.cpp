@@ -102,7 +102,7 @@ static String stationRow(int slot, const char *idKey, const char *lblKey, uint32
     String h = "<label for='" + String(idKey) + "'>Station " + n + " ID</label><input type='text' inputmode='numeric' id='" +
                idKey + "' name='" + idKey + "' value='" + (id ? String(id) : String("")) + "'>";
     h += hint("Blank = no page. Default: " + (defId ? String(defId) : String("none"))) + errorLine(errors, idKey);
-    String label = "Station " + n + " label (8 characters)";
+    String label = "Station " + n + " label (16 characters)";
     h += textField(lblKey, label.c_str(), lbl, defLbl, "", errors);
     if (id) {
         h += tempestStatusLine(slot);

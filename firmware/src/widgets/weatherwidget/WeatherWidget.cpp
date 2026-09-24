@@ -181,15 +181,25 @@ void WeatherWidget::weatherText(int displayIndex) {
 
     String message = model.getCurrentText() + " ";
     String messageArr[4];
-    int variableRangeS = 0;
-    int variableRangeE = 18;
-    for (int i = 0; i < 4; i++) {
-        while (message.substring(variableRangeE - 1, variableRangeE) != " ") {
-            variableRangeE--;
+    if (message.indexOf('\n') >= 0) {
+        // Already laid out one line per reading (Tempest's station readings)
+        int start = 0;
+        for (int i = 0; i < 4 && start < (int)message.length(); i++) {
+            int nl = message.indexOf('\n', start);
+            messageArr[i] = message.substring(start, nl < 0 ? message.length() : nl);
+            start = nl < 0 ? message.length() : nl + 1;
         }
-        messageArr[i] = message.substring(variableRangeS, variableRangeE);
-        variableRangeS = variableRangeE;
-        variableRangeE = variableRangeS + 18;
+    } else {
+        int variableRangeS = 0;
+        int variableRangeE = 18;
+        for (int i = 0; i < 4; i++) {
+            while (message.substring(variableRangeE - 1, variableRangeE) != " ") {
+                variableRangeE--;
+            }
+            messageArr[i] = message.substring(variableRangeS, variableRangeE);
+            variableRangeS = variableRangeE;
+            variableRangeE = variableRangeS + 18;
+        }
     }
     //=== OVERFLOW END ==============================
 

@@ -170,7 +170,8 @@ void test_station_label() {
     TEST_ASSERT_FALSE(parseStationLabel("  ", 123, out, err)); // a station needs a label
     TEST_ASSERT_TRUE(parseStationLabel(" SLN ", 123, out, err));
     TEST_ASSERT_EQUAL_STRING("SLN", out.c_str());
-    TEST_ASSERT_FALSE(parseStationLabel("TOOLONGXX", 123, out, err)); // 9 > 8
+    TEST_ASSERT_TRUE(parseStationLabel("Salt Lake City", 123, out, err));
+    TEST_ASSERT_FALSE(parseStationLabel("SEVENTEEN-LETTERS", 123, out, err)); // 17 > 16
 }
 
 int main() {

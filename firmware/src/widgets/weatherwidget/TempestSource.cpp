@@ -18,8 +18,9 @@ bool TempestSource::fetch(WeatherDataModel &model) {
     TempestStatus st;
     st.attempted = true;
     uint32_t start = millis();
+    bool metric = Settings::get().wxmetric;
     String url = String("https://swd.weatherflow.com/swd/rest/better_forecast?station_id=") + m_station +
-                 "&units_temp=" + (Settings::get().wxmetric ? "c" : "f") + "&token=" + TEMPEST_TOKEN;
+                 "&units_temp=" + (metric ? "c" : "f") + "&units_wind=" + (metric ? "kph" : "mph") + "&token=" + TEMPEST_TOKEN;
     HTTPClient http;
     http.useHTTP10(true); // no chunked encoding, so getStream() is plain JSON
     http.begin(url);
@@ -51,7 +52,7 @@ bool TempestSource::fetch(WeatherDataModel &model) {
         return false; // the model keeps the previous data
     }
     model.setCityName(m_label);
-    model.setCurrentText(r.conditions.c_str());
+    model.setCurrentText(tempestSummary(r, metric ? "kph" : "mph").c_str()); // station readings, one per line
     model.setCurrentIcon(r.icon.c_str());
     model.setCurrentTemperature(r.temp);
     model.setTodayHigh(r.days[0].high);

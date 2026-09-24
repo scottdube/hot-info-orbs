@@ -75,6 +75,52 @@ void test_parse_rejects_missing_current() {
     TEST_ASSERT_FALSE(tempestParse(doc, r, err));
 }
 
+void test_summary_from_fixture() {
+    std::ifstream in("test/fixtures/tempest_sample.json");
+    JsonDocument filter;
+    tempestFilter(filter);
+    JsonDocument doc;
+    deserializeJson(doc, in, DeserializationOption::Filter(filter));
+    TempestReading r;
+    std::string err;
+    TEST_ASSERT_TRUE(tempestParse(doc, r, err));
+    TEST_ASSERT_EQUAL_STRING("Clear\nFeels like 49\nHumidity 82%\nWind W 4-7 mph", tempestSummary(r, "mph").c_str());
+}
+
+void test_summary_lines_fit() {
+    TempestReading r;
+    r.conditions = "Thunderstorms Possible";
+    r.feels = 101.4f;
+    r.humidity = 100;
+    r.windAvg = 34;
+    r.windGust = 58;
+    r.windDir = "NNW";
+    std::string s = tempestSummary(r, "kph");
+    TEST_ASSERT_EQUAL_STRING("T-storms Possible\nFeels like 101\nHumidity 100%\nWind NNW 34-58 kph", s.c_str());
+    size_t start = 0;
+    while (start <= s.size()) {
+        size_t nl = s.find('\n', start);
+        size_t len = (nl == std::string::npos ? s.size() : nl) - start;
+        TEST_ASSERT_TRUE(len <= TEMPEST_LINE);
+        if (nl == std::string::npos) break;
+        start = nl + 1;
+    }
+    r.conditions = "Wintry Mix Possible Later";
+    TEST_ASSERT_EQUAL_STRING("Wintry Mix", tempestFitLine(r.conditions).c_str());
+}
+
+void test_summary_calm_and_missing() {
+    TempestReading r;
+    r.conditions = "Clear";
+    r.windAvg = 0.3f;
+    r.windGust = 0.4f;
+    r.windDir = "N";
+    TEST_ASSERT_EQUAL_STRING("Clear\nWind calm", tempestSummary(r, "mph").c_str()); // no feels/humidity in reply
+    r.windGust = 0.2f; // gust not above average: no range
+    r.windAvg = 5;
+    TEST_ASSERT_EQUAL_STRING("Clear\nWind N 5 mph", tempestSummary(r, "mph").c_str());
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_icons_unchanged);
@@ -83,5 +129,8 @@ int main() {
     RUN_TEST(test_parse_fixture_through_filter);
     RUN_TEST(test_parse_rejects_short_forecast);
     RUN_TEST(test_parse_rejects_missing_current);
+    RUN_TEST(test_summary_from_fixture);
+    RUN_TEST(test_summary_lines_fit);
+    RUN_TEST(test_summary_calm_and_missing);
     return UNITY_END();
 }

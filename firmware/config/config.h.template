@@ -32,7 +32,7 @@
 //#define WEATHER_UNITS_METRIC          // Uncomment this line if you want metric units for the weather
 // Tempest stations, only used when TEMPEST_TOKEN is set in secrets.h. The ID is
 // the number in the station's tempestwx.com address; the label replaces the
-// town name on the page (8 characters at most). Also changeable on /settings.
+// town name on the page (16 characters at most). Also changeable on /settings.
 //#define TEMPEST_STATION_1 123456
 //#define TEMPEST_LABEL_1 "HOME"
 //#define TEMPEST_STATION_2 0

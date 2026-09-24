@@ -190,7 +190,7 @@ This is on the `tempest` branch.
 1. Get a token: tempestwx.com > Settings > Data Authorizations > Create Token.
    Add it to `secrets.h`: `#define TEMPEST_TOKEN "..."`.
 2. Find each station's ID: the number in the station's tempestwx.com address.
-   Put the IDs, and a short label for each (8 characters at most, shown in place
+   Put the IDs, and a short label for each (16 characters at most, shown in place
    of the town name), in `config.h` (see the commented `TEMPEST_STATION_1` lines
    in the template), or enter them on the settings page later.
 3. Build and upload. The settings page gets a **Tempest stations** section
