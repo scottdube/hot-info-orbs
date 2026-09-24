@@ -58,7 +58,11 @@ void WeatherWidget::draw(bool force) {
 
     if (force || model.isChanged()) {
         weatherText(1);
-        drawWeatherIcon(2, model.getCurrentIcon(), 0, 0, 1);
+        // Half size (the decoder only scales by 1/2/4/8): the full-size art runs
+        // y 32-205 and left no room for the sun and moon lines
+        m_manager.selectScreen(2);
+        m_manager.fillScreen(m_backgroundColor);
+        drawWeatherIcon(2, model.getCurrentIcon(), 60, 60, 2);
         sunMoon(2);
         singleWeatherDeg(3);
         threeDayWeather(4);
@@ -147,19 +151,18 @@ void WeatherWidget::drawWeatherIcon(int displayIndex, const String &condition, i
     }
 }
 
-// Sunrise/sunset along the top of the icon screen and the moon phase along
-// the bottom: the icon art leaves those bands free, and a page of its own
-// would cost flash we are short of. Redrawn whenever the weather refreshes.
+// Sunrise/sunset above the half-size icon and the moon phase below it. Not a
+// page of its own: that would cost flash we are short of. Redrawn whenever the weather refreshes.
 void WeatherWidget::sunMoon(int displayIndex) {
     m_manager.selectScreen(displayIndex);
     int offset = m_time->getTimeZoneOffset();
     std::string sun = sunLine(model.getSunrise(), model.getSunset(), offset, m_time->getFormat24Hour());
     m_manager.setFontColor(m_foregroundColor);
     if (!sun.empty()) {
-        m_manager.drawCentreString(sun.c_str(), centre, 32, 15);
+        m_manager.drawCentreString(sun.c_str(), centre, 48, 17);
     }
     int64_t utc = (int64_t)m_time->getUnixEpoch() - offset; // getUnixEpoch() is local-shifted
-    m_manager.drawCentreString(moonPhaseName(moonAgeDays(utc)), centre, 212, 15);
+    m_manager.drawCentreString(moonPhaseName(moonAgeDays(utc)), centre, 192, 17);
 }
 
 // Displays the current temperature on a single screen.
