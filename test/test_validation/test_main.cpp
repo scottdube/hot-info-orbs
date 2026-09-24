@@ -68,6 +68,15 @@ void test_hour_range() {
     TEST_ASSERT_FALSE(inHourRange(7, 7, 7)); // same hour = empty
 }
 
+void test_list_contains() {
+    TEST_ASSERT_TRUE(listContains("Clock", "Clock"));
+    TEST_ASSERT_TRUE(listContains("Clock\nWeather Home", "Weather Home"));
+    TEST_ASSERT_FALSE(listContains("Clock\nWeather Home", "Weather"));
+    TEST_ASSERT_FALSE(listContains("WebData 2", "WebData"));
+    TEST_ASSERT_FALSE(listContains("", "Clock"));
+    TEST_ASSERT_FALSE(listContains("Clock\n", ""));
+}
+
 // --- tickers -----------------------------------------------------------------
 
 void test_tickers() {
@@ -168,6 +177,7 @@ int main() {
     RUN_TEST(test_cycle);
     RUN_TEST(test_hour);
     RUN_TEST(test_hour_range);
+    RUN_TEST(test_list_contains);
     RUN_TEST(test_tickers);
     RUN_TEST(test_text);
     RUN_TEST(test_url_encode);

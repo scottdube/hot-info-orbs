@@ -28,6 +28,7 @@ struct SettingsValues {
     int offstart; // hour 0..23
     int offend; // hour 0..23; where it overlaps the dim hours, off wins
     bool invert;
+    std::string hidden; // widget names left out of the rotation, '\n'-separated; "" = show all
 };
 
 // Night-dim level. The page sets hours only; the level stays a build choice.

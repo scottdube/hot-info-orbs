@@ -174,6 +174,7 @@ void setup() {
 #ifdef MQTT_WIDGET_HOST
     widgetSet->add(new MQTTWidget(*sm, MQTT_WIDGET_HOST, MQTT_WIDGET_PORT));
 #endif
+    settingsPage->setWidgets(widgetSet);
 
     m_widgetCycleDelayPrev = millis();
 }

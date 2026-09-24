@@ -64,6 +64,7 @@ SettingsValues Settings::defaults() {
     d.offend = 6;
 #endif
     d.invert = INVERTED_ORBS;
+    d.hidden = "";
     return d;
 }
 
@@ -93,6 +94,7 @@ void Settings::load() {
             v.offstart = p.getInt("offstart", v.offstart);
             v.offend = p.getInt("offend", v.offend);
             v.invert = p.getBool("invert", v.invert);
+            v.hidden = p.getString("hidden", v.hidden.c_str()).c_str();
         }
         p.end();
     }
@@ -129,6 +131,7 @@ bool Settings::save(const SettingsValues &v) {
               p.putInt("offstart", v.offstart) &&
               p.putInt("offend", v.offend) &&
               p.putBool("invert", v.invert) &&
+              p.putString("hidden", v.hidden.c_str()) == v.hidden.size() &&
               // schema last: a save that dies part-way leaves no schema key
               // on a fresh orb, so load() keeps using config.h
               p.putInt("schema", SCHEMA);

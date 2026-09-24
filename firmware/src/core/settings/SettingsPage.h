@@ -3,6 +3,7 @@
 
 #include "OtaUpdater.h"
 #include "Settings.h"
+#include "WidgetSet.h"
 #include <Arduino.h>
 #include <map>
 #include <string>
@@ -19,6 +20,8 @@ class SettingsPage {
     // From setup(), which mounts the filesystem and draws the boot picture
     // before the page exists
     static void setBootStatus(bool fsMounted, bool storedPictureUnreadable);
+    // Once every widget is added: the Show checkboxes list them
+    void setWidgets(WidgetSet *widgets) { m_widgets = widgets; }
 
   private:
     typedef std::map<std::string, std::string> Errors;
@@ -36,6 +39,7 @@ class SettingsPage {
 
     OtaUpdater &m_ota;
     bool m_started = false;
+    WidgetSet *m_widgets = nullptr;
 
     // Upload in progress: /boot.tmp is written chunk by chunk, checked, then
     // renamed over /boot.jpg - an interrupted upload never replaces the picture

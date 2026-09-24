@@ -26,6 +26,12 @@ public:
     bool panelsAsleep();
     void wakeForAMinute(); // a button press during night-off hours
 
+    // For the settings page's Show checkboxes. A widget's key is its name,
+    // with " 2" etc. added when two share one (two WebData widgets)
+    int8_t count();
+    String key(int8_t i);
+    bool shown(int8_t i);
+
 private:
     void showCenteredLine(int screen, const String &text);
     ScreenManager *m_screenManager;
@@ -35,6 +41,10 @@ private:
     int8_t m_currentWidget = 0;
 
     bool m_initialized = false;
+    String m_keys[MAX_WIDGETS];
+    bool m_hidden[MAX_WIDGETS] = {};
+    int8_t m_shownCount = 0;
+    bool isShown(int8_t i); // hidden widgets are shown anyway if none is left
     bool m_panelsAsleep = false;
     unsigned long m_wokenAt = 0;
     bool m_woken = false; // a button woke the panels; m_wokenAt says when

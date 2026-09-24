@@ -9,9 +9,42 @@ void WidgetSet::add(Widget *widget) {
         Serial.println("MAX WIDGETS UNABLE TO ADD");
         return;
     }
-    m_widgets[m_widgetCount] = widget;
-    m_widgets[m_widgetCount]->setup();
+    int8_t i = m_widgetCount;
+    m_widgets[i] = widget;
+    m_widgets[i]->setup();
+
+    String name = widget->getName();
+    int same = 1;
+    for (int8_t j = 0; j < i; j++) {
+        if (m_widgets[j]->getName() == name) {
+            same++;
+        }
+    }
+    m_keys[i] = same == 1 ? name : name + " " + String(same);
+    m_hidden[i] = sv::listContains(Settings::get().hidden, m_keys[i].c_str());
     m_widgetCount++;
+    if (!m_hidden[i]) {
+        m_shownCount++;
+        if (m_shownCount == 1) {
+            m_currentWidget = i; // start on the first shown widget
+        }
+    }
+}
+
+bool WidgetSet::isShown(int8_t i) {
+    return !m_hidden[i] || m_shownCount == 0;
+}
+
+int8_t WidgetSet::count() {
+    return m_widgetCount;
+}
+
+String WidgetSet::key(int8_t i) {
+    return m_keys[i];
+}
+
+bool WidgetSet::shown(int8_t i) {
+    return isShown(i);
 }
 
 void WidgetSet::drawCurrent(bool force) {
@@ -40,20 +73,34 @@ void WidgetSet::setClearScreensOnDrawCurrent() {
     m_clearScreensOnDrawCurrent = true;
 }
 
+// Next/previous shown widget. With only one shown, nothing changes and
+// nothing is redrawn (a static display must not flicker every cycle)
 void WidgetSet::next() {
-    m_currentWidget++;
-    if (m_currentWidget >= m_widgetCount) {
-        m_currentWidget = 0;
+    int8_t i = m_currentWidget;
+    for (int8_t n = 0; n < m_widgetCount; n++) {
+        i = (i + 1) % m_widgetCount;
+        if (isShown(i)) {
+            break;
+        }
     }
-    switchWidget();
+    if (i != m_currentWidget) {
+        m_currentWidget = i;
+        switchWidget();
+    }
 }
 
 void WidgetSet::prev() {
-    m_currentWidget--;
-    if (m_currentWidget < 0) {
-        m_currentWidget = m_widgetCount - 1;
+    int8_t i = m_currentWidget;
+    for (int8_t n = 0; n < m_widgetCount; n++) {
+        i = (i + m_widgetCount - 1) % m_widgetCount;
+        if (isShown(i)) {
+            break;
+        }
     }
-    switchWidget();
+    if (i != m_currentWidget) {
+        m_currentWidget = i;
+        switchWidget();
+    }
 }
 
 void WidgetSet::switchWidget() {
@@ -77,7 +124,10 @@ void WidgetSet::showLoading() {
 }
 
 void WidgetSet::updateAll() {
-    for (int8_t i; i < m_widgetCount; i++) {
+    for (int8_t i = 0; i < m_widgetCount; i++) { // upstream left i uninitialised
+        if (!isShown(i)) {
+            continue; // a hidden widget never fetches
+        }
         Serial.printf("updating widget %s\n", m_widgets[i]->getName().c_str());
         showCenteredLine(4, m_widgets[i]->getName());
         m_widgets[i]->update();
