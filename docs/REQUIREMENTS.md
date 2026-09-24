@@ -79,6 +79,9 @@ units and screen mode, timezone, 12/24 h, AM/PM, starting clock face, clock
 and shadow colours, night-dim hours, upside-down mounting, and an uploadable
 boot picture. It saves to NVS and restarts. It has no brightness control.
 It uses the same password as `/update`, and holds no secrets.
+Tested from a phone on 2026-09-23: a 310×372 transparent PNG went through the
+page's crop-and-shrink and arrived as a 16.7 KB baseline 240×240 JPEG, which the
+orb stored and serves back. Not yet checked by eye on the displays.
 Design and reasons: `docs/superpowers/specs/2026-09-23-web-settings-design.md`.
 Not done yet: API keys on the page (needs the per-key status above first), WiFi
 signal and last-API-call status, and enabling/disabling widgets. Flash is
