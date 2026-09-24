@@ -39,18 +39,11 @@ void test_sun_clock() {
     TEST_ASSERT_EQUAL_STRING("", sunClock(0, 0, true).c_str());
 }
 
-void test_sun_line() {
-    TEST_ASSERT_EQUAL_STRING("Rise 7:17  Set 7:22", sunLine(1790248643, 1790292123, -4 * 3600, false).c_str());
-    TEST_ASSERT_EQUAL_STRING("Rise 7:17  Set 19:22", sunLine(1790248643, 1790292123, -4 * 3600, true).c_str());
-    TEST_ASSERT_EQUAL_STRING("", sunLine(0, 1790292123, 0, true).c_str());
-}
-
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_moon_known_new_and_full);
     RUN_TEST(test_moon_matches_visual_crossing);
     RUN_TEST(test_moon_names_cover_the_cycle);
     RUN_TEST(test_sun_clock);
-    RUN_TEST(test_sun_line);
     return UNITY_END();
 }

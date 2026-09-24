@@ -41,12 +41,3 @@ inline std::string sunClock(int64_t utcEpoch, long offsetSeconds, bool h24) {
     snprintf(buf, sizeof(buf), "%d:%02d", h, minutes % 60);
     return buf;
 }
-
-// "Rise 6:42  Set 6:51", or "" when the source gave no sun times
-inline std::string sunLine(int64_t rise, int64_t set, long offsetSeconds, bool h24) {
-    std::string r = sunClock(rise, offsetSeconds, h24), s = sunClock(set, offsetSeconds, h24);
-    if (r.empty() || s.empty()) {
-        return "";
-    }
-    return "Rise " + r + "  Set " + s;
-}

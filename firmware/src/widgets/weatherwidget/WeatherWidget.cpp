@@ -156,10 +156,12 @@ void WeatherWidget::drawWeatherIcon(int displayIndex, const String &condition, i
 void WeatherWidget::sunMoon(int displayIndex) {
     m_manager.selectScreen(displayIndex);
     int offset = m_time->getTimeZoneOffset();
-    std::string sun = sunLine(model.getSunrise(), model.getSunset(), offset, m_time->getFormat24Hour());
+    bool h24 = m_time->getFormat24Hour();
+    std::string rise = sunClock(model.getSunrise(), offset, h24), set = sunClock(model.getSunset(), offset, h24);
     m_manager.setFontColor(m_foregroundColor);
-    if (!sun.empty()) {
-        m_manager.drawCentreString(sun.c_str(), centre, 48, 17);
+    if (!rise.empty() && !set.empty()) { // stacked: one line was too wide for the round top
+        m_manager.drawCentreString(("Rise " + rise).c_str(), centre, 30, 17);
+        m_manager.drawCentreString(("Set " + set).c_str(), centre, 52, 17);
     }
     int64_t utc = (int64_t)m_time->getUnixEpoch() - offset; // getUnixEpoch() is local-shifted
     m_manager.drawCentreString(moonPhaseName(moonAgeDays(utc)), centre, 192, 17);
