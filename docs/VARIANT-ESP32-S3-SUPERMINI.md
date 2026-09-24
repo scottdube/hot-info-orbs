@@ -752,7 +752,10 @@ for a board drawn here.
 
 ## Note on the missing BL pin
 
-The 7-pin clone has no backlight pin; the backlight is hardwired on. Since the
+The 7-pin clone has no backlight pin; the backlight is hardwired on. Upstream
+is the same: the display symbol in Brett's `info_orbs.kicad_sch` has seven pins
+(RST CS DC SDA SCL GND VCC), and his firmware never defines `TFT_BL`. So no
+Info Orbs build has ever controlled the backlight. Since the
 backlight is the dominant *continuous* load, a module exposing BL would allow
 PWM dimming — real brightness control instead of the colour desaturation the
 firmware currently uses, and a direct cut in the thermal load. Worth weighing

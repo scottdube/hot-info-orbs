@@ -203,6 +203,18 @@ void checkCycleWidgets() {
 }
 
 void checkButtons() {
+    // While the panels are off, a press only wakes them; it does not also act
+    if (widgetSet->panelsAsleep()) {
+        bool pressed = buttonLeft.getState() != BTN_NOTHING;
+        pressed = buttonOK.getState() != BTN_NOTHING || pressed;
+        pressed = buttonRight.getState() != BTN_NOTHING || pressed;
+        if (pressed) {
+            Serial.println("Button pressed -> wake panels for a minute");
+            m_widgetCycleDelayPrev = millis();
+            widgetSet->wakeForAMinute();
+        }
+        return;
+    }
     // Reset cycle timer whenever a button is pressed
     if (buttonLeft.pressedShort()) {
         // Left short press cycles widgets backward
@@ -258,8 +270,9 @@ void loop() {
 
         widgetSet->updateCurrent();
         widgetSet->updateBrightnessByTime(globalTime->getHour24());
-        widgetSet->drawCurrent();
-
-        checkCycleWidgets();
+        if (!widgetSet->panelsAsleep()) {
+            widgetSet->drawCurrent();
+            checkCycleWidgets(); // a switch redraws all five screens
+        }
     }
 }

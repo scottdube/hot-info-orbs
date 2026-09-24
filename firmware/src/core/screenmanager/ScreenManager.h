@@ -32,6 +32,7 @@ public:
     void clearScreen(int screen = -1);
 
     bool setBrightness(uint8_t brightness);
+    void setPanelsAsleep(bool asleep);
     uint8_t getBrightness();
 
     // Set TTF parameters for next drawString()
