@@ -30,7 +30,7 @@ static const char *PAGE_HEAD =
     "<title>Info Orbs settings</title><style>"
     "body{font-family:sans-serif;max-width:34em;margin:0 auto;padding:0 16px 2em}"
     "fieldset{border:1px solid #999;margin:1em 0}legend{font-weight:bold}"
-    "label{display:block;margin:.7em 0 .2em}"
+    "label{display:block;margin:.7em 0 .2em}label.chk{margin:.3em 0}"
     "input[type=text],input[type=number],select{width:100%;box-sizing:border-box;padding:.3em;font-size:1em}"
     ".hint{color:#555;font-size:.85em}.err{color:#b00;font-weight:bold}"
     ".banner{padding:.5em;border:2px solid;margin:1em 0}"
@@ -193,6 +193,16 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += "<fieldset><legend>Rotation</legend>";
     h += "<label for='cycle'>Seconds per page</label><input type='number' id='cycle' name='cycle' min='0' max='3600' value='" + String(v.cycle) + "'>";
     h += hint("0 = stay on one page. Otherwise 5 to 3600. Default: " + String(d.cycle)) + errorLine(errors, "cycle");
+    if (m_widgets && m_widgets->count() > 0) {
+        h += "<label>Show</label><input type='hidden' name='shwform' value='1'>";
+        for (int8_t i = 0; i < m_widgets->count(); i++) {
+            std::string k = m_widgets->key(i).c_str();
+            h += "<label class='chk'><input type='checkbox' name='shw" + String(i) + "' value='1'" +
+                 (sv::listContains(v.hidden, k) ? "" : " checked") + "> " + sv::htmlEscape(k).c_str() + "</label>";
+        }
+        h += hint("Tick one to keep it on screen, or several to rotate through them. The buttons move between ticked pages only.") +
+             errorLine(errors, "show");
+    }
     h += "</fieldset>";
 
     h += "<fieldset><legend>Clock</legend>";
@@ -290,6 +300,22 @@ void SettingsPage::handlePost() {
 
     if (has("cycle") && !sv::parseCycle(argStr(s, "cycle"), v.cycle, err)) {
         errors["cycle"] = err;
+    }
+    if (has("shwform") && m_widgets) {
+        // An unticked checkbox sends nothing, hence the shwform marker
+        std::string hidden;
+        int shown = 0;
+        for (int8_t i = 0; i < m_widgets->count(); i++) {
+            if (has(("shw" + String(i)).c_str())) {
+                shown++;
+            } else {
+                hidden += (hidden.empty() ? "" : "\n") + std::string(m_widgets->key(i).c_str());
+            }
+        }
+        v.hidden = hidden;
+        if (shown == 0) {
+            errors["show"] = "Tick at least one page";
+        }
     }
 #ifdef STOCK_TICKER_LIST
     if (has("tickers") && !sv::normaliseTickers(argStr(s, "tickers"), v.tickers, err)) {

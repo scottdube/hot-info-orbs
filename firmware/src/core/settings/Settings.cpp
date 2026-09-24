@@ -84,6 +84,7 @@ SettingsValues Settings::defaults() {
 #else
     d.tlbl2 = "";
 #endif
+    d.hidden = "";
     return d;
 }
 
@@ -122,6 +123,7 @@ void Settings::load() {
             v.tstn2 = p.getUInt("tstn2", v.tstn2);
             v.tlbl2 = p.getString("tlbl2", v.tlbl2.c_str()).c_str();
 #endif
+            v.hidden = p.getString("hidden", v.hidden.c_str()).c_str();
         }
         p.end();
     }
@@ -164,6 +166,7 @@ bool Settings::save(const SettingsValues &v) {
               p.putUInt("tstn2", v.tstn2) &&
               p.putString("tlbl2", v.tlbl2.c_str()) == v.tlbl2.size() &&
 #endif
+              p.putString("hidden", v.hidden.c_str()) == v.hidden.size() &&
               // schema last: a save that dies part-way leaves no schema key
               // on a fresh orb, so load() keeps using config.h
               p.putInt("schema", SCHEMA);

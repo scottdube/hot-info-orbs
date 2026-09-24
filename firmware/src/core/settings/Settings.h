@@ -32,6 +32,7 @@ struct SettingsValues {
     std::string tlbl1; // its label on the page, "" when unused
     uint32_t tstn2;
     std::string tlbl2;
+    std::string hidden; // widget names left out of the rotation, '\n'-separated; "" = show all
 };
 
 // Night-dim level. The page sets hours only; the level stays a build choice.

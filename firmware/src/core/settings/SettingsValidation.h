@@ -61,6 +61,23 @@ inline bool parseHour(const std::string &in, int &out, std::string &err) {
     return true;
 }
 
+// Whether a '\n'-separated list holds item exactly (the hidden-widget list;
+// widget names cannot contain a line break, normaliseText refuses one)
+inline bool listContains(const std::string &list, const std::string &item) {
+    size_t start = 0;
+    while (start <= list.size()) {
+        size_t end = list.find('\n', start);
+        if (end == std::string::npos) {
+            end = list.size();
+        }
+        if (list.compare(start, end - start, item) == 0 && !item.empty()) {
+            return true;
+        }
+        start = end + 1;
+    }
+    return false;
+}
+
 // True when hour24 falls in [start, end), wrapping midnight when end < start
 // (22..7 covers 22:00-06:59). start == end is an empty range; the page refuses it.
 inline bool inHourRange(int hour24, int start, int end) {
