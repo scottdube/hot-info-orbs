@@ -47,3 +47,11 @@ jobs:
 
       - name: Build PlatformIO Project
         run: pio run
+
+      # Host unit tests (settings validation). Kept out of `pio run` by
+      # default_envs in platformio.ini. Skipped on Windows: the runner has no
+      # host C++ compiler PlatformIO's native platform is sure to find, and the
+      # logic under test is plain std C++ that ubuntu and macos already cover.
+      - name: Host unit tests
+        if: runner.os != 'Windows'
+        run: pio test -e native

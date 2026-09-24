@@ -207,3 +207,16 @@ espota, wait for `/update` to answer 200 before trying anything else.
 - **An orb that has gone completely dark on the network may simply be
   unplugged.** On 2026-09-23 it was an accidental unplug, not firmware. Ask
   before debugging. A 4 h watch at 30 s intervals afterwards (480 checks, 20:25–00:26) saw no drop.
+
+## A `native` test env gets built by a bare `pio run` — and cannot compile the firmware (2026-09-24)
+
+The web-settings merge added `[env:native]` for host unit tests. CI runs a bare
+`pio run`, which builds **every** env, so it tried to compile `firmware/src`
+for the host: `'Arduino.h' file not found`. It failed on all three OSes from
+983c037 until the fix. Locally everything was green, because every local command
+named its env (`-e esp32-s3-devkitc-1`, `-e ota`, `pio test -e native`).
+
+Fix: `default_envs = esp32-s3-devkitc-1, ota` under `[platformio]`, plus an
+explicit `pio test -e native` step in CI. This is the "change the build
+contract, change CI in the same commit" trap above, a second time. **Before a
+merge, run the exact CI command (`pio run`, no `-e`) locally.**
