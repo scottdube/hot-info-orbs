@@ -54,10 +54,14 @@ SettingsValues Settings::defaults() {
     d.dimstart = 22; // config.h.template's commented values
     d.dimend = 7;
 #endif
-#ifdef NIGHT_SCREENS_OFF
-    d.nightoff = true;
+#if defined(OFF_START_HOUR) && defined(OFF_END_HOUR)
+    d.off = true;
+    d.offstart = OFF_START_HOUR;
+    d.offend = OFF_END_HOUR;
 #else
-    d.nightoff = false;
+    d.off = false;
+    d.offstart = 23;
+    d.offend = 6;
 #endif
     d.invert = INVERTED_ORBS;
 #ifdef TEMPEST_STATION_1
@@ -105,7 +109,9 @@ void Settings::load() {
             v.dim = p.getBool("dim", v.dim);
             v.dimstart = p.getInt("dimstart", v.dimstart);
             v.dimend = p.getInt("dimend", v.dimend);
-            v.nightoff = p.getBool("nightoff", v.nightoff);
+            v.off = p.getBool("off", v.off);
+            v.offstart = p.getInt("offstart", v.offstart);
+            v.offend = p.getInt("offend", v.offend);
             v.invert = p.getBool("invert", v.invert);
 #ifdef TEMPEST_TOKEN
             // Added after schema 1 without a bump: an absent key falls back
@@ -148,7 +154,9 @@ bool Settings::save(const SettingsValues &v) {
               p.putBool("dim", v.dim) &&
               p.putInt("dimstart", v.dimstart) &&
               p.putInt("dimend", v.dimend) &&
-              p.putBool("nightoff", v.nightoff) &&
+              p.putBool("off", v.off) &&
+              p.putInt("offstart", v.offstart) &&
+              p.putInt("offend", v.offend) &&
               p.putBool("invert", v.invert) &&
 #ifdef TEMPEST_TOKEN
               p.putUInt("tstn1", v.tstn1) &&

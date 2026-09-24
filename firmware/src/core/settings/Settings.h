@@ -24,7 +24,9 @@ struct SettingsValues {
     bool dim;
     int dimstart; // hour 0..23
     int dimend; // hour 0..23, may be < dimstart (wraps midnight)
-    bool nightoff; // during those hours: true = panels off, false = dim
+    bool off; // panels off (display-off + sleep) during offstart..offend
+    int offstart; // hour 0..23
+    int offend; // hour 0..23; where it overlaps the dim hours, off wins
     bool invert;
     uint32_t tstn1; // Tempest station ID, 0 = unused
     std::string tlbl1; // its label on the page, "" when unused
