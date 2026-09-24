@@ -61,6 +61,18 @@ inline bool parseHour(const std::string &in, int &out, std::string &err) {
     return true;
 }
 
+// True when hour24 falls in [start, end), wrapping midnight when end < start
+// (22..7 covers 22:00-06:59). start == end is an empty range; the page refuses it.
+inline bool inHourRange(int hour24, int start, int end) {
+    if (start < end) {
+        return hour24 >= start && hour24 < end;
+    }
+    if (start > end) {
+        return hour24 >= start || hour24 < end;
+    }
+    return false;
+}
+
 // 1..5 comma-separated symbols. Upper-cases the symbol but not an exchange
 // qualifier after '&' ("SHOP&country=Canada", as config.h documents).
 inline bool normaliseTickers(const std::string &in, std::string &out, std::string &err) {

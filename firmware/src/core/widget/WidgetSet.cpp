@@ -1,4 +1,5 @@
 #include "WidgetSet.h"
+#include "SettingsValidation.h"
 #include "Settings.h"
 
 WidgetSet::WidgetSet(ScreenManager *sm) : m_screenManager(sm) {
@@ -95,23 +96,13 @@ void WidgetSet::initializeAllWidgetsData() {
 
 void WidgetSet::updateBrightnessByTime(uint8_t hour24) {
     const SettingsValues &s = Settings::get();
-    if (!s.dim) {
-        return;
-    }
-    bool isInDimRange;
-
-    if (s.dimstart < s.dimend) {
-        // Normal case: the range does not cross midnight
-        isInDimRange = (hour24 >= s.dimstart && hour24 < s.dimend);
-    } else {
-        // Case where the range crosses midnight
-        isInDimRange = (hour24 >= s.dimstart || hour24 < s.dimend);
-    }
+    bool isDim = s.dim && sv::inHourRange(hour24, s.dimstart, s.dimend);
+    bool isOff = s.off && sv::inHourRange(hour24, s.offstart, s.offend);
 
     if (m_woken && millis() - m_wokenAt >= 60000UL) {
         m_woken = false;
     }
-    bool wantAsleep = isInDimRange && s.nightoff && !m_woken;
+    bool wantAsleep = isOff && !m_woken;
     if (wantAsleep != m_panelsAsleep) {
         m_panelsAsleep = wantAsleep;
         m_screenManager->setPanelsAsleep(wantAsleep);
@@ -121,8 +112,8 @@ void WidgetSet::updateBrightnessByTime(uint8_t hour24) {
         }
     }
 
-    // Screens-off hours are drawn at full brightness while a button has them awake
-    uint8_t brightness = isInDimRange && !s.nightoff ? SETTINGS_DIM_LEVEL : TFT_BRIGHTNESS;
+    // Woken during off hours: dimmed if those are also dim hours, full otherwise
+    uint8_t brightness = isDim ? SETTINGS_DIM_LEVEL : TFT_BRIGHTNESS;
     if (m_screenManager->setBrightness(brightness)) {
         // brightness was changed -> update widget
         m_screenManager->clearAllScreens();

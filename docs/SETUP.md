@@ -117,7 +117,7 @@ Worth knowing about the ticker list: it takes five symbols. Crypto and forex
 need a currency pair (`BTC/USD`). For a symbol that trades on more than one
 exchange, append the country (`APC&country=Germany`).
 
-Other things you can turn on here: nighttime dimming, a Nixie-tube clock face,
+Other things you can turn on here: dim hours and screens-off hours (separate schedules), a Nixie-tube clock face,
 24-hour time, widget auto-cycling. Each is commented in the file.
 
 ## 6. Build and upload

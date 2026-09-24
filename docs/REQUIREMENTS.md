@@ -56,8 +56,10 @@ to a PWM-capable GPIO. Worth weighing when the next batch of modules is chosen,
 because it also cuts the dominant continuous load — the backlight, not the
 radio, is what makes these boards warm.
 
-**Screens off (added 2026-09-24).** The night hours can instead send the
-GC9A01's display-off and sleep-in commands (0x28, 0x10) to all five panels. The
+**Screens off (added 2026-09-24).** A second schedule, separate from the dim
+hours, sends the GC9A01's display-off and sleep-in commands (0x28, 0x10) to all
+five panels. Each schedule has its own switch, so an orb can dim in the evening
+and go off at bedtime, or use only one. Where the two overlap, off wins. The
 HOT meeting that day asked for it, and the controller datasheet lists the
 commands. Scott's first look in daylight: "looks pretty good". **Not yet
 measured:** how much the backlight still glows in a dark room, and the current

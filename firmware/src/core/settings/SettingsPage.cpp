@@ -191,12 +191,18 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += boolSelect("wxdark", "Weather screens", v.wxdark, d.wxdark, "Light", "Dark", errors);
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Night</legend>";
-    h += boolSelect("dim", "Night hours", v.dim, d.dim, "Off", "On", errors);
-    h += boolSelect("nightoff", "During them", v.nightoff, d.nightoff, "Dim", "Screens off", errors);
-    h += hint("Dim darkens the colours drawn. Screens off blanks the panels; any button wakes them for a minute.");
+    h += "<fieldset><legend>Dim hours</legend>";
+    h += boolSelect("dim", "Dim", v.dim, d.dim, "Off", "On", errors);
+    h += hint("Darkens the colours drawn; the backlight itself stays on.");
     h += hourSelect("dimstart", "From", v.dimstart, d.dimstart, errors);
     h += hourSelect("dimend", "Until", v.dimend, d.dimend, errors);
+    h += "</fieldset>";
+
+    h += "<fieldset><legend>Screens-off hours</legend>";
+    h += boolSelect("off", "Screens off", v.off, d.off, "Off", "On", errors);
+    h += hint("Blanks the panels; any button wakes them for a minute. Where these hours overlap the dim hours, off wins.");
+    h += hourSelect("offstart", "From", v.offstart, d.offstart, errors);
+    h += hourSelect("offend", "Until", v.offend, d.offend, errors);
     h += "</fieldset>";
 
     h += "<fieldset><legend>Mounting</legend>";
@@ -259,7 +265,7 @@ void SettingsPage::handlePost() {
     readBool("h24", v.h24);
     readBool("ampm", v.ampm);
     readBool("dim", v.dim);
-    readBool("nightoff", v.nightoff);
+    readBool("off", v.off);
     readBool("invert", v.invert);
     if (has("face")) {
         std::string a = argStr(s, "face");
@@ -280,6 +286,15 @@ void SettingsPage::handlePost() {
     }
     if (has("dimend") && !sv::parseHour(argStr(s, "dimend"), v.dimend, err)) {
         errors["dimend"] = err;
+    }
+    if (has("offstart") && !sv::parseHour(argStr(s, "offstart"), v.offstart, err)) {
+        errors["offstart"] = err;
+    }
+    if (has("offend") && !sv::parseHour(argStr(s, "offend"), v.offend, err)) {
+        errors["offend"] = err;
+    }
+    if (v.off && v.offstart == v.offend && !errors.count("offstart") && !errors.count("offend")) {
+        errors["offend"] = "Start and end are the same hour";
     }
     // Equal hours would mean "dim around the clock" (WidgetSet's wrap branch)
     if (v.dim && v.dimstart == v.dimend && !errors.count("dimstart") && !errors.count("dimend")) {

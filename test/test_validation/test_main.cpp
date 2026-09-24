@@ -55,6 +55,19 @@ void test_hour() {
     TEST_ASSERT_FALSE(parseHour("", out, err));
 }
 
+void test_hour_range() {
+    TEST_ASSERT_TRUE(inHourRange(18, 18, 22));
+    TEST_ASSERT_TRUE(inHourRange(21, 18, 22));
+    TEST_ASSERT_FALSE(inHourRange(22, 18, 22)); // end hour is excluded
+    TEST_ASSERT_FALSE(inHourRange(17, 18, 22));
+    TEST_ASSERT_TRUE(inHourRange(23, 23, 6)); // wraps midnight
+    TEST_ASSERT_TRUE(inHourRange(0, 23, 6));
+    TEST_ASSERT_TRUE(inHourRange(5, 23, 6));
+    TEST_ASSERT_FALSE(inHourRange(6, 23, 6));
+    TEST_ASSERT_FALSE(inHourRange(12, 23, 6));
+    TEST_ASSERT_FALSE(inHourRange(7, 7, 7)); // same hour = empty
+}
+
 // --- tickers -----------------------------------------------------------------
 
 void test_tickers() {
@@ -154,6 +167,7 @@ int main() {
     UNITY_BEGIN();
     RUN_TEST(test_cycle);
     RUN_TEST(test_hour);
+    RUN_TEST(test_hour_range);
     RUN_TEST(test_tickers);
     RUN_TEST(test_text);
     RUN_TEST(test_url_encode);
