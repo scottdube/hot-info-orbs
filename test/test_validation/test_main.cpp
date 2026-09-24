@@ -150,6 +150,29 @@ void test_jpeg_wrong_size_rejected() {
     TEST_ASSERT_NOT_EQUAL(std::string::npos, err.find("240"));
 }
 
+void test_station_id() {
+    uint32_t id = 99;
+    std::string err;
+    TEST_ASSERT_TRUE(parseStationId("", id, err));
+    TEST_ASSERT_EQUAL_UINT32(0, id); // blank = unused
+    TEST_ASSERT_TRUE(parseStationId(" 123456 ", id, err));
+    TEST_ASSERT_EQUAL_UINT32(123456, id);
+    TEST_ASSERT_TRUE(parseStationId("123456789", id, err));
+    TEST_ASSERT_FALSE(parseStationId("1234567890", id, err)); // 10 digits
+    TEST_ASSERT_FALSE(parseStationId("12a", id, err));
+    TEST_ASSERT_FALSE(parseStationId("-5", id, err));
+}
+
+void test_station_label() {
+    std::string out, err;
+    TEST_ASSERT_TRUE(parseStationLabel("", 0, out, err)); // unused station, no label needed
+    TEST_ASSERT_EQUAL_STRING("", out.c_str());
+    TEST_ASSERT_FALSE(parseStationLabel("  ", 123, out, err)); // a station needs a label
+    TEST_ASSERT_TRUE(parseStationLabel(" SLN ", 123, out, err));
+    TEST_ASSERT_EQUAL_STRING("SLN", out.c_str());
+    TEST_ASSERT_FALSE(parseStationLabel("TOOLONGXX", 123, out, err)); // 9 > 8
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_cycle);
@@ -163,5 +186,7 @@ int main() {
     RUN_TEST(test_jpeg_progressive_rejected);
     RUN_TEST(test_jpeg_garbage_rejected);
     RUN_TEST(test_jpeg_wrong_size_rejected);
+    RUN_TEST(test_station_id);
+    RUN_TEST(test_station_label);
     return UNITY_END();
 }
