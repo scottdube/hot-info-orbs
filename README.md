@@ -33,7 +33,7 @@ this repository is public.
 | API keys | compiled into `config.h`, shipped with live keys in the template | **`secrets.h`, gitignored, build fails without it** |
 | Board | upstream's 2-layer design | **new carrier board, v1.1** |
 | Firmware updates | USB cable every time | **over WiFi** — browser page or `pio run -e ota` |
-| Boot splash | "Info Orbs by brett.tech", Brett's logo | **"HOT Info Orbs by HOT-Team"**, club logo |
+| Boot splash | "Info Orbs by brett.tech", Brett's logo | **"HOT Info Orbs by HOT-Team"**, Yang's avatar for now; the Hands-On Tech hand (`images/hot-logo.jpg`) replaces it once Yang has this version |
 | Settings | edit `config.h`, rebuild, reflash | **a page in the browser**: `http://<orb's IP>/settings` |
 | Boot picture | fixed at build time | **upload your own** from the settings page |
 
