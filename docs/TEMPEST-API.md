@@ -18,7 +18,7 @@ orb's own settings.
 - **~96 KB per reply** (95–97 KB for both stations). About 100 KB of that is
   `forecast.hourly`: 231 entries nobody on the orbs needs. `http.getString()`,
   which the Visual Crossing code uses, would hold all of it in RAM. The
-  build has no PSRAM enabled (whether the chip has any is unmeasured; see
+  build does not enable PSRAM (the chip has 2 MB, measured 2026-09-24; see
   VARIANT-ESP32-S3-SUPERMINI.md), so the reply has to be **streamed through an
   ArduinoJson filter**.
 - **Field order in the raw stream:** `current_conditions` at byte 1,

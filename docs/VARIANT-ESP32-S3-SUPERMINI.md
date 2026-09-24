@@ -777,13 +777,23 @@ carrier footprint and fan-out (§3).
 
 ## 2026-09-24: a more capable variant on the same carrier?
 
-**PSRAM on our unit: unmeasured.** "No PSRAM" was asserted during the Tempest
-work, not measured. The stock SuperMini chip is reported as ESP32-S3**FH4R2**
-(4 MB flash, 2 MB quad PSRAM) by the Tenstar manual, ESPHome and espboards.dev.
-The build uses the `esp32-s3-devkitc-1` board definition without
-`BOARD_HAS_PSRAM`, so any PSRAM present goes unused. It can be settled by the
-chip marking (under a loupe), or by one flash with PSRAM enabled that reports
-`ESP.getPsramSize()`. It changes RAM, not flash: the 4 MB ceiling stays.
+**PSRAM on our unit: 2 MB, present and working. Measured 2026-09-24.** The
+earlier "no PSRAM" was an assertion, never a measurement. A throwaway build
+adding `-DBOARD_HAS_PSRAM` to `build_flags` (nothing else) was flashed to the
+orb, and the settings page reported `psramFound=1`, `ESP.getPsramSize()`
+2,094,607 bytes, 2,053,695 free while running, and flash 4,194,304 bytes. So
+the chip is the 4 MB flash + 2 MB quad PSRAM part. The PSRAM is quad, on
+in-package pins (CS 26, CLK 30), so it takes no GPIO from the carrier. The
+core's init fails soft (a `log_w` warning, then it carries on) if the PSRAM
+is missing, so the flag would be safe on a board without it.
+
+- **Flash cost: +3,592 bytes** (1,730,737 to 1,734,329, 88.2%).
+- **Not enabled in the committed build.** The orb went straight back to the
+  soaking build. Turning it on changes where the heap puts allocations over
+  4 KB, and WiFi/lwIP buffers can move into PSRAM too. That needs its own soak.
+- `esp_chip_info()`'s `CHIP_FEATURE_EMB_PSRAM` read **0** on this chip, even
+  with the PSRAM working. That bit is no use for detecting it on IDF 4.4.
+- It adds RAM, not flash. The 4 MB flash / two-slot ceiling is unchanged.
 
 **No SuperMini with more flash was found.** Every "N8R8"/"N16R8" result was a
 DevKitC or Waveshare Zero layout. AliExpress was not browsed (it blocks
