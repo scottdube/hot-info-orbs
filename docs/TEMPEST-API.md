@@ -42,3 +42,20 @@ The orb's icon set (`WeatherWidget::drawWeatherIcon`) knows
 `fog`/`wind`/`cloudy`. Tempest's names need a translation table. The names
 Tempest documents but that were not seen on this day (`foggy`, `windy`,
 `sleet`, `snow`, `possibly-snow-*`, `possibly-sleet-*`) are unmeasured.
+
+## On the orb (measured 2026-09-24, branch `tempest`)
+
+Streamed with `useHTTP10(true)` and the filter from `TempestParse.h`:
+
+- **The filter keeps 744 bytes** of a real ~96 KB reply (measured on the host
+  against a saved reply).
+- **Fetch time**, connect to parse, as reported on the settings page for
+  two stations: 1.4 to 2.7 s. The loop is blocked for that long, the same way as
+  for the Visual Crossing fetch.
+- **Free heap after a fetch:** 210 to 211 KB.
+- **Flash:** 1,728,589 bytes, 87.9% of a slot, with the token compiled in.
+  Without it: 1,710,645 bytes. That is +960 over main: +460 for the source
+  split and +500 for the two extra string fields in the settings struct.
+- **The start-up fetch runs before the clock has synced**, so the settings page
+  gives the fetch's age from `millis()`, not a clock time. Measured: the first
+  version stamped both fetches `00:00`.

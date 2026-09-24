@@ -36,6 +36,7 @@ this repository is public.
 | Boot splash | "Info Orbs by brett.tech", Brett's logo | **"HOT Info Orbs by HOT-Team"**, Yang's avatar for now; the Hands-On Tech hand (`images/hot-logo.jpg`) replaces it once Yang has this version |
 | Settings | edit `config.h`, rebuild, reflash | **a page in the browser**: `http://<orb's IP>/settings` |
 | Boot picture | fixed at build time | **upload your own** from the settings page |
+| Weather | one Visual Crossing town | also **your own Tempest stations**, one page each (branch `tempest`; see SETUP step 10) |
 
 **Upgrading a board flashed before 2026-09-23? Flash it once more over USB.**
 The WiFi updates need a new flash layout (two firmware slots instead of one), and

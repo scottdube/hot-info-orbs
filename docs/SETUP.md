@@ -181,6 +181,25 @@ Flash** first clears them.
 Timezone and weather location cannot be checked until the orb uses them. If
 you mistype one, the clock or weather orb shows the error.
 
+## 10. Optional: weather from your own Tempest stations
+
+If you own a WeatherFlow Tempest station, the orbs can show its weather
+instead of Visual Crossing's, with one weather page per station (up to two).
+This is on the `tempest` branch.
+
+1. Get a token: tempestwx.com > Settings > Data Authorizations > Create Token.
+   Add it to `secrets.h`: `#define TEMPEST_TOKEN "..."`.
+2. Find each station's ID: the number in the station's tempestwx.com address.
+   Put the IDs, and a short label for each (8 characters at most, shown in place
+   of the town name), in `config.h` (see the commented `TEMPEST_STATION_1` lines
+   in the template), or enter them on the settings page later.
+3. Build and upload. The settings page gets a **Tempest stations** section
+   where each station shows ✔ or ✖ for its last fetch, how long ago it was, and
+   the error if it failed.
+
+The token never appears on the settings page. Leave `TEMPEST_TOKEN` out and
+the Tempest code is not compiled in at all.
+
 ---
 
 ## Troubleshooting
