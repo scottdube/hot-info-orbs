@@ -19,7 +19,7 @@ orb's own settings.
   `forecast.hourly`: 231 entries nobody on the orbs needs. `http.getString()`,
   which the Visual Crossing code uses, would hold all of it in RAM. The
   build has no PSRAM enabled (whether the chip has any is unmeasured; see
-VARIANT-ESP32-S3-SUPERMINI.md), so the reply has to be **streamed through an
+  VARIANT-ESP32-S3-SUPERMINI.md), so the reply has to be **streamed through an
   ArduinoJson filter**.
 - **Field order in the raw stream:** `current_conditions` at byte 1,
   `forecast.daily` at byte 906, `forecast.hourly` at byte 3,584, and `station`

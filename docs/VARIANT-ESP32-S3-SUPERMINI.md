@@ -811,7 +811,7 @@ None is a drop-in: the power pins and SPI pins sit in different places.
    extra height.
 2. **Overlapping second footprint on the carrier.** Row spacing matches the
    XIAO, but each display net would need a pad on both footprints, in the
-   module area where §3 found nothing routes between header pads. Rejected for
+   module area, and Appendix B found nothing routes between header pads. Rejected for
    the milled 2-layer board.
 3. **Separate carrier.** Clean, but two boards to maintain.
 
