@@ -1,7 +1,6 @@
 #include "TempestSource.h"
 #ifdef TEMPEST_TOKEN
 
-    #include "GlobalTime.h"
     #include "Settings.h"
     #include "TempestParse.h"
     #include <HTTPClient.h>
@@ -44,9 +43,7 @@ bool TempestSource::fetch(WeatherDataModel &model) {
     }
     http.end();
     st.ms = millis() - start;
-    GlobalTime *t = GlobalTime::getInstance();
-    st.hour = t->getHour24(); // getHour() is 12 h when the clock is set to 12 h
-    st.minute = t->getMinute();
+    st.at = millis();
     st.freeHeap = ESP.getFreeHeap();
     s_status[m_slot] = st;
     if (!st.ok) {

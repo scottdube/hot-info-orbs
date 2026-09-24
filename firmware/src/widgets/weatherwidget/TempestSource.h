@@ -13,8 +13,8 @@ struct TempestStatus {
     bool ok = false;
     int code = 0; // HTTP code, or HTTPClient's negative error
     uint32_t ms = 0; // the whole fetch, connect to parse
-    int hour = 0;
-    int minute = 0;
+    uint32_t at = 0; // millis() when it finished. Not wall-clock time: the
+                     // start-up fetch runs before the clock has synced
     uint32_t freeHeap = 0; // just after the fetch
     String error; // when !ok
 };

@@ -86,9 +86,9 @@ static String tempestStatusLine(int slot) {
     if (!st.attempted) {
         return hint("&#9888; Not fetched since start-up.");
     }
-    char when[6];
-    snprintf(when, sizeof(when), "%02d:%02d", st.hour, st.minute);
-    String line = String(st.ok ? "&#10004; " : "&#10006; ") + "Last fetch " + when + ", " + String(st.ms / 1000.0, 1) +
+    uint32_t mins = (millis() - st.at) / 60000;
+    String when = mins == 0 ? String("under a minute ago") : mins < 120 ? String(mins) + " min ago" : String(mins / 60) + " h ago";
+    String line = String(st.ok ? "&#10004; " : "&#10006; ") + "Last fetch " + when + ", took " + String(st.ms / 1000.0, 1) +
                   " s, free heap " + String(st.freeHeap / 1024) + " KB";
     if (!st.ok) {
         line += " &mdash; " + esc(st.error.c_str());
