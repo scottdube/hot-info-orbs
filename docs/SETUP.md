@@ -107,7 +107,7 @@ The four settings most people want to change:
 
 ```c
 #define TIMEZONE_API_LOCATION "America/New_York"  // from https://timezonedb.com/time-zones
-#define WEATHER_LOCATION "Dover, NH"              // city, state
+#define WEATHER_LOCATION "The Villages, FL"       // city, state
 //#define WEATHER_UNITS_METRIC                    // uncomment for celsius
 #define STOCK_TICKER_LIST "SPY,QQQ,AAPL,MSFT,BTC/USD"  // exactly 5
 ```
