@@ -9,6 +9,7 @@
 #include "clockwidget/ClockWidget.h"
 #include "config_helper.h"
 #include "icons.h"
+#include "weatherwidget/TempestSource.h"
 #include "weatherwidget/VisualCrossingSource.h"
 #include "weatherwidget/WeatherWidget.h"
 #include "webdatawidget/WebDataWidget.h"
@@ -154,7 +155,22 @@ void setup() {
         widgetSet->add(new StockWidget(*sm));
     }
 #endif
-    widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
+    bool tempestPages = false;
+#ifdef TEMPEST_TOKEN
+    // One weather page per Tempest station; Visual Crossing only when none is set
+    const SettingsValues &wx = Settings::get();
+    if (wx.tstn1) {
+        widgetSet->add(new WeatherWidget(*sm, new TempestSource(0, wx.tstn1, wx.tlbl1)));
+        tempestPages = true;
+    }
+    if (wx.tstn2) {
+        widgetSet->add(new WeatherWidget(*sm, new TempestSource(1, wx.tstn2, wx.tlbl2)));
+        tempestPages = true;
+    }
+#endif
+    if (!tempestPages) {
+        widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
+    }
 #ifdef WEB_DATA_WIDGET_URL
     widgetSet->add(new WebDataWidget(*sm, WEB_DATA_WIDGET_URL));
 #endif

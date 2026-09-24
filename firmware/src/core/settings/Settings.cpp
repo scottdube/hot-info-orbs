@@ -55,6 +55,26 @@ SettingsValues Settings::defaults() {
     d.dimend = 7;
 #endif
     d.invert = INVERTED_ORBS;
+#ifdef TEMPEST_STATION_1
+    d.tstn1 = TEMPEST_STATION_1;
+#else
+    d.tstn1 = 0;
+#endif
+#ifdef TEMPEST_LABEL_1
+    d.tlbl1 = TEMPEST_LABEL_1;
+#else
+    d.tlbl1 = "";
+#endif
+#ifdef TEMPEST_STATION_2
+    d.tstn2 = TEMPEST_STATION_2;
+#else
+    d.tstn2 = 0;
+#endif
+#ifdef TEMPEST_LABEL_2
+    d.tlbl2 = TEMPEST_LABEL_2;
+#else
+    d.tlbl2 = "";
+#endif
     return d;
 }
 
@@ -81,6 +101,15 @@ void Settings::load() {
             v.dimstart = p.getInt("dimstart", v.dimstart);
             v.dimend = p.getInt("dimend", v.dimend);
             v.invert = p.getBool("invert", v.invert);
+#ifdef TEMPEST_TOKEN
+            // Added after schema 1 without a bump: an absent key falls back
+            // to the config.h default like every other key. Compiled out
+            // without a token, so that build matches main.
+            v.tstn1 = p.getUInt("tstn1", v.tstn1);
+            v.tlbl1 = p.getString("tlbl1", v.tlbl1.c_str()).c_str();
+            v.tstn2 = p.getUInt("tstn2", v.tstn2);
+            v.tlbl2 = p.getString("tlbl2", v.tlbl2.c_str()).c_str();
+#endif
         }
         p.end();
     }
@@ -114,6 +143,12 @@ bool Settings::save(const SettingsValues &v) {
               p.putInt("dimstart", v.dimstart) &&
               p.putInt("dimend", v.dimend) &&
               p.putBool("invert", v.invert) &&
+#ifdef TEMPEST_TOKEN
+              p.putUInt("tstn1", v.tstn1) &&
+              p.putString("tlbl1", v.tlbl1.c_str()) == v.tlbl1.size() &&
+              p.putUInt("tstn2", v.tstn2) &&
+              p.putString("tlbl2", v.tlbl2.c_str()) == v.tlbl2.size() &&
+#endif
               // schema last: a save that dies part-way leaves no schema key
               // on a fresh orb, so load() keeps using config.h
               p.putInt("schema", SCHEMA);

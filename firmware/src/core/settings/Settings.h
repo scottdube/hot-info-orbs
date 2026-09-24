@@ -25,6 +25,10 @@ struct SettingsValues {
     int dimstart; // hour 0..23
     int dimend; // hour 0..23, may be < dimstart (wraps midnight)
     bool invert;
+    uint32_t tstn1; // Tempest station ID, 0 = unused
+    std::string tlbl1; // its label on the page, "" when unused
+    uint32_t tstn2;
+    std::string tlbl2;
 };
 
 // Night-dim level. The page sets hours only; the level stays a build choice.

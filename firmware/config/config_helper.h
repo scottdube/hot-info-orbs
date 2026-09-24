@@ -35,6 +35,11 @@
 static_assert(sizeof(WEATHER_API_KEY) > 1, "WEATHER_API_KEY is empty in firmware/config/secrets.h - paste your visualcrossing.com key");
 static_assert(sizeof(TIMEZONE_API_KEY) > 1, "TIMEZONE_API_KEY is empty in firmware/config/secrets.h - paste your timezonedb.com key");
     #endif
+    // Optional, so only checked when present: an empty token would build and
+    // then fail every fetch with HTTP 401
+    #if defined(__cplusplus) && defined(TEMPEST_TOKEN)
+static_assert(sizeof(TEMPEST_TOKEN) > 1, "TEMPEST_TOKEN is empty in firmware/config/secrets.h - delete the line, or paste a token from tempestwx.com > Settings > Data Authorizations");
+    #endif
 #endif
 
 #endif
