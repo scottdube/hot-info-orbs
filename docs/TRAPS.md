@@ -164,6 +164,13 @@ not established. Whether a browser has the same problem was not tested. When
 the name stalls, test the IP before concluding the orb or its web server is
 down. The orbs show the IP when they connect.
 
+**Re-measured 2026-09-24:** the same again. The name resolves at once, and
+`curl http://info-orbs.local/settings` times out at 5 s, twice. On the SLN
+network, use **`http://info-orb-sln.internal/settings`** instead. That is the
+router's DNS name for the orb, not something the firmware sets: 200 in 0.19 s,
+forward and reverse both point at 192.168.30.208. Another orb or another
+network will not have it.
+
 ## `__DATE__`/`__TIME__` do not date the image (2026-09-23)
 
 The OTA page first printed `built __DATE__ __TIME__` from `OtaUpdater.cpp`. After
