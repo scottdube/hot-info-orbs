@@ -764,8 +764,8 @@ when choosing which clone to buy, on either board.
 
 Image 1,730,737 bytes, 88.0% of one 1,966,080-byte OTA slot (stop line 92%, so
 ~80 KB of working headroom). Free heap after a Tempest fetch is ~210 KB, so
-**RAM is not the constraint. Flash is**, and the missing PSRAM only forced
-streaming the Tempest reply, which works.
+**RAM is not the constraint. Flash is.** Having no PSRAM in the build only
+forced streaming the Tempest reply, which works.
 
 Largest symbols (`xtensa-esp32s3-elf-nm --size-sort`) are all framework:
 newlib printf/scanf (~57 KB across 6 variants), mbedTLS handshakes, mDNS,
@@ -774,3 +774,49 @@ lwIP, WiFi. The largest app symbols are `SettingsPage::handlePost` (3.5 KB) and
 them. **The ceiling is 4 MB of in-package flash split into two OTA slots**,
 and only a module with more flash moves it. A board change still means a new
 carrier footprint and fan-out (§3).
+
+## 2026-09-24: a more capable variant on the same carrier?
+
+**PSRAM on our unit: unmeasured.** "No PSRAM" was asserted during the Tempest
+work, not measured. The stock SuperMini chip is reported as ESP32-S3**FH4R2**
+(4 MB flash, 2 MB quad PSRAM) by the Tenstar manual, ESPHome and espboards.dev.
+The build uses the `esp32-s3-devkitc-1` board definition without
+`BOARD_HAS_PSRAM`, so any PSRAM present goes unused. It can be settled by the
+chip marking (under a loupe), or by one flash with PSRAM enabled that reports
+`ESP.getPsramSize()`. It changes RAM, not flash: the 4 MB ceiling stays.
+
+**No SuperMini with more flash was found.** Every "N8R8"/"N16R8" result was a
+DevKitC or Waveshare Zero layout. AliExpress was not browsed (it blocks
+fetches), so that is the one open lead.
+
+Candidates, from datasheets and KiCad footprints. Prices fetched live
+2026-09-24 unless marked.
+
+| | Flash / PSRAM | Footprint vs our 2×9 @ 15.24 mm | GPIO | Price |
+|---|---|---|---|---|
+| Seeed XIAO ESP32S3 | 8 MB / 8 MB octal | 2×7, **same 15.24 mm rows**, pin 1 differs | 11 edge | $7.49, in stock |
+| XIAO ESP32S3 Plus | 16 MB / 8 MB octal | same edge + 9 SMD-only back pads | 11 edge + 8 back | $7.99, in stock |
+| UM TinyS3 | 8 MB / 8 MB quad | 11+12, same 15.24 mm rows | 17 | $20 at Adafruit, not stocked; UM's own store not checked |
+| Waveshare ESP32-S3-Pico | 16 MB / 2 MB | 40-pin Pico layout | 27 | $8.99–9.99 |
+
+None is a drop-in: the power pins and SPI pins sit in different places.
+
+**Ways to keep one carrier:**
+
+1. **Adapter board (preferred).** The carrier keeps the SuperMini 2×9 in
+   machined-pin sockets (§4 already recommends them). The advanced module is
+   soldered to a small adapter whose 2×9 pins present the SuperMini pinout. The
+   carrier is unchanged, the adapter is a small 2-layer board, and the firmware
+   gets a per-module pin map in `config.h`. Costs: a second small board, and
+   extra height.
+2. **Overlapping second footprint on the carrier.** Row spacing matches the
+   XIAO, but each display net would need a pad on both footprints, in the
+   module area where §3 found nothing routes between header pads. Rejected for
+   the milled 2-layer board.
+3. **Separate carrier.** Clean, but two boards to maintain.
+
+**The XIAO is one GPIO short (11 edge vs 12 hard).** The likely way out is
+`TFT_RST -1`, where TFT_eSPI resets the panels by command and the RST line is
+held high on the board. Unmeasured on these panels; test it before an adapter
+depends on it.
+
