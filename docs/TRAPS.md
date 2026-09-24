@@ -199,4 +199,4 @@ espota, wait for `/update` to answer 200 before trying anything else.
   by itself. Rule it out first when someone says the page "doesn't work".
 - **An orb that has gone completely dark on the network may simply be
   unplugged.** On 2026-09-23 it was an accidental unplug, not firmware. Ask
-  before debugging. A 1 h 40 m watch at 30 s intervals afterwards saw no drop.
+  before debugging. A 4 h watch at 30 s intervals afterwards (480 checks, 20:25–00:26) saw no drop.
