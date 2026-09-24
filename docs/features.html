@@ -119,8 +119,8 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .group li .was{display:block;color:var(--muted);font-size:.84rem}
 .group li .st{margin-left:4px;font-size:.7rem;padding:0 6px;vertical-align:1px}
 .brand{display:flex;align-items:center;gap:20px}
-.badge{width:clamp(80px,11vw,116px);aspect-ratio:1;max-width:100%;border-radius:22%;flex:none;display:grid;place-items:center;background:radial-gradient(120% 100% at 50% 100%,#6BA6DC 0%,#2E63A8 45%,#0E2C66 100%);box-shadow:0 0 0 5px var(--glass-rim)}
-.badge img{display:block;height:84%;width:auto}
+.badge{--b:clamp(80px,11vw,116px);width:var(--b);height:var(--b);border-radius:22%;flex:none;display:grid;place-items:center;background:radial-gradient(120% 100% at 50% 100%,#6BA6DC 0%,#2E63A8 45%,#0E2C66 100%);box-shadow:0 0 0 5px var(--glass-rim)}
+.badge img{display:block;height:calc(var(--b)*.84);width:auto}
 
 @media (min-width:860px){
   .hero{grid-template-columns:1.05fr 1fr;align-items:center}
