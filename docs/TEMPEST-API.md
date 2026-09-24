@@ -27,6 +27,13 @@ orb's own settings.
   first ~3.6 KB.
 - `current_conditions`: `conditions` (text, e.g. "Partly Cloudy"), `icon`,
   `air_temperature`, `feels_like`, `relative_humidity`, `wind_avg`, and more.
+- `forecast.daily[*]` also carries `sunrise` and `sunset` as epoch seconds
+  (ints). Measured 2026-09-24; the keys are `air_temp_high`, `air_temp_low`,
+  `conditions`, `day_num`, `day_start_local`, `icon`, `month_num`,
+  `precip_icon`, `precip_probability`, `precip_type`, `sunrise` and `sunset`.
+  **There is no moon phase anywhere in the reply**, in `current_conditions` or
+  `daily`, so it has to be computed on the orb (it is date arithmetic) or come
+  from another source.
 - `forecast.daily`: 10 days. **`daily[0]` is today** (`day_num` = today's
   date): `conditions`, `icon`, `air_temp_high`, `air_temp_low`. Visual
   Crossing's `days[0]` is also today, and the page shows `days[1..3]`.
