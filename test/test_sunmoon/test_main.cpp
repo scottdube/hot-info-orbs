@@ -39,11 +39,29 @@ void test_sun_clock() {
     TEST_ASSERT_EQUAL_STRING("", sunClock(0, 0, true).c_str());
 }
 
+void test_moon_lit_span() {
+    double a, b;
+    moonLitSpan(0.0, 10, a, b); // new: nothing lit
+    TEST_ASSERT_TRUE(b - a < 0.01);
+    moonLitSpan(29.530588853 / 4, 10, a, b); // first quarter: right half
+    TEST_ASSERT_FLOAT_WITHIN(0.01, 0, a);
+    TEST_ASSERT_FLOAT_WITHIN(0.01, 10, b);
+    moonLitSpan(29.530588853 / 2, 10, a, b); // full: whole row
+    TEST_ASSERT_FLOAT_WITHIN(0.01, -10, a);
+    TEST_ASSERT_FLOAT_WITHIN(0.01, 10, b);
+    moonLitSpan(29.530588853 * 3 / 4, 10, a, b); // last quarter: left half
+    TEST_ASSERT_FLOAT_WITHIN(0.01, -10, a);
+    TEST_ASSERT_FLOAT_WITHIN(0.01, 0, b);
+    moonLitSpan(29.530588853 * 0.43, 10, a, b); // today, waxing gibbous: past half, lit on the right
+    TEST_ASSERT_TRUE(a < -5 && b == 10);
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_moon_known_new_and_full);
     RUN_TEST(test_moon_matches_visual_crossing);
     RUN_TEST(test_moon_names_cover_the_cycle);
     RUN_TEST(test_sun_clock);
+    RUN_TEST(test_moon_lit_span);
     return UNITY_END();
 }

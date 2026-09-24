@@ -41,3 +41,19 @@ inline std::string sunClock(int64_t utcEpoch, long offsetSeconds, bool h24) {
     snprintf(buf, sizeof(buf), "%d:%02d", h, minutes % 60);
     return buf;
 }
+
+// The lit part of one row of a drawn moon, for a row whose half-width is w
+// (x runs -w..w from the disc's centre). Lit from the right while waxing and
+// from the left while waning, as seen from the northern hemisphere. Sets
+// x0 > x1 when nothing on the row is lit.
+inline void moonLitSpan(double ageDays, double w, double &x0, double &x1) {
+    const double pi = 3.14159265358979;
+    double c = std::cos(2 * pi * ageDays / 29.530588853); // 1 new, -1 full
+    if (ageDays < 29.530588853 / 2) {
+        x0 = w * c; // waxing: terminator moves right to left
+        x1 = w;
+    } else {
+        x0 = -w;
+        x1 = -w * c; // waning: dark creeps in from the right
+    }
+}

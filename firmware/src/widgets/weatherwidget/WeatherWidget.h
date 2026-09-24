@@ -30,6 +30,7 @@ private:
     void drawWeatherIcon(int displayIndex, const String &condition, int x, int y, int scale);
     void singleWeatherDeg(int displayIndex);
     void sunMoon(int displayIndex);
+    void drawMoon(int cx, int cy, int r, double ageDays);
     void weatherText(int displayIndex);
     void threeDayWeather(int displayIndex);
     int getClockStamp();

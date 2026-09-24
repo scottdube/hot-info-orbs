@@ -164,7 +164,24 @@ void WeatherWidget::sunMoon(int displayIndex) {
         m_manager.drawCentreString(("Set " + set).c_str(), centre, 52, 17);
     }
     int64_t utc = (int64_t)m_time->getUnixEpoch() - offset; // getUnixEpoch() is local-shifted
-    m_manager.drawCentreString(moonPhaseName(moonAgeDays(utc)), centre, 192, 17);
+    drawMoon(centre, 202, 20, moonAgeDays(utc));
+}
+
+// A small moon showing today's phase: pale lit part on a dark disc, outlined
+// so a new moon still reads. Drawn row by row, so it costs no image flash.
+// The picture replaced the phase name, which few people could decode.
+void WeatherWidget::drawMoon(int cx, int cy, int r, double ageDays) {
+    const uint32_t dark = 0x39E7, lit = 0xFFF6; // grey, pale yellow
+    m_manager.fillCircle(cx, cy, r, dark);
+    for (int dy = -r; dy <= r; dy++) {
+        double w = std::sqrt((double)(r * r - dy * dy)), x0, x1;
+        moonLitSpan(ageDays, w, x0, x1);
+        int a = (int)std::lround(x0), b = (int)std::lround(x1);
+        if (b > a) {
+            m_manager.fillRect(cx + a, cy + dy, b - a, 1, lit);
+        }
+    }
+    m_manager.drawCircle(cx, cy, r, m_foregroundColor);
 }
 
 // Displays the current temperature on a single screen.
