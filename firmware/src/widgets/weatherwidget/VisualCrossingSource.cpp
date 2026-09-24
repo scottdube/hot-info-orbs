@@ -14,7 +14,7 @@
 #endif
 
 // Built from Settings (location and units are on the settings page). The
-// location is url-encoded: "Dover, NH" has a space and a comma, and upstream
+// location is url-encoded: "The Villages, FL" has spaces and a comma, and upstream
 // issue #337 reports spaces failing.
 VisualCrossingSource::VisualCrossingSource() {
     const SettingsValues &s = Settings::get();
