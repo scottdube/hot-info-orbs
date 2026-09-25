@@ -193,7 +193,6 @@ you mistype one, the clock or weather orb shows the error.
 
 If you own a WeatherFlow Tempest station, the orbs can show its weather
 instead of Visual Crossing's, with one weather page per station (up to two).
-This is on the `tempest` branch.
 
 1. Get a token: tempestwx.com > Settings > Data Authorizations > Create Token.
    Add it to `secrets.h`: `#define TEMPEST_TOKEN "..."`.

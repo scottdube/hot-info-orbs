@@ -178,7 +178,7 @@ Tested from a phone on 2026-09-23: a 310×372 transparent PNG went through the
 page's crop-and-shrink and arrived as a 16.7 KB baseline 240×240 JPEG, which the
 orb stored and serves back. Not yet checked by eye on the displays.
 Design and reasons: `docs/superpowers/specs/2026-09-23-web-settings-design.md`.
-Branch `tempest` (2026-09-24) adds Tempest station IDs and labels to the
+Tempest support (built 2026-09-24, merged to main 2026-09-25) adds Tempest station IDs and labels to the
 page, each with its last fetch result (✔/✖, age, duration, error): the
 per-source status the note above asks for. The Tempest token is deliberately
 **not** on the page; it stays in `secrets.h`.
