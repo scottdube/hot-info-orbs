@@ -128,6 +128,15 @@ bool ScreenManager::setBrightness(uint8_t brightness) {
 
 // Display off + sleep on every panel at once (GC9A01 commands 0x28/0x10), and
 // back. Frame memory is redrawn by the caller after waking.
+void ScreenManager::sendToAllPanels(uint8_t cmd, int data) {
+    selectAllScreens();
+    m_tft.writecommand(cmd);
+    if (data >= 0) {
+        m_tft.writedata((uint8_t)data);
+    }
+    reset();
+}
+
 void ScreenManager::setPanelsAsleep(bool asleep) {
     selectAllScreens();
     if (asleep) {
