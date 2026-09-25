@@ -86,6 +86,14 @@ with BL = 0, and separately 53h = 0x24 plus 51h = 0x00, then look in a dark
 room. If the backlight goes out, both real screens-off and real dimming become
 possible on this hardware, and the "no brightness control" rule above changes.
 
+**Result 2026-09-25: not wired.** Scott sent each command to all five panels
+through a temporary `/bltest` route: BL = 0 ("off"), 53h = 0x24 with 51h at
+0x00, 0x80 and 0xFF. None changed the backlight; only the restart did
+anything. A panel whose backlight hung off LEDPWM would have gone dark at "off"
+and at 0%, whatever the room light, so this settles it for these 7-pin modules:
+the "no brightness control" rule stands, and real dimming still needs a module
+that brings out BL. The route was removed once answered.
+
 **Security floor:** the panel holds WiFi credentials and API keys. It needs at
 minimum a password, and it must never display stored secrets back in plaintext.
 An unauthenticated page on the LAN that reveals WiFi credentials is not
