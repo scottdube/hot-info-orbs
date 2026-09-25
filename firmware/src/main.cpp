@@ -265,6 +265,7 @@ void loop() {
         if (otaUpdater->isUpdating()) {
             return; // leave the CPU and screen 2 to the upload
         }
+        wifiWidget->roamIfWeak();
         globalTime->updateTime();
 
         checkButtons();
