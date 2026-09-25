@@ -174,7 +174,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <div class="head">
     <div class="eyebrow">What we added · compared with the original Info Orbs</div>
     <h2>Software changes</h2>
-    <p>The baseline is upstream's <span class="num">main</span> branch as of February 2025, the point this project forked from. Grey text under an item says how the original did it.</p>
+    <p>The baseline is upstream's <span class="num">main</span> branch as of February 2025, the point this project forked from. Gray text under an item says how the original did it.</p>
   </div>
   <div class="legend">
     <span><span class="st ship">✔ Shipping</span> on <span class="num">main</span>, running on the orbs; unmarked items are shipping</span>
@@ -185,10 +185,18 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="group">
       <h3>Settings from a browser</h3>
       <ul>
-        <li>A settings page at <span class="num">http://&lt;orb&gt;/settings</span>. It covers rotation time, tickers, weather town, units and light/dark mode, time zone, 12/24 hour and AM/PM, starting clock face, clock and shadow colours, night-dim hours, and upside-down mounting.<span class="was">Was: edit <span class="num">config.h</span>, rebuild, reflash over USB.</span></li>
+        <li>A settings page at <span class="num">http://&lt;orb&gt;/settings</span>. It covers rotation time, tickers, weather town, units and light/dark mode, time zone, 12/24 hour and AM/PM, starting clock face, clock and shadow colors, dim and screens-off hours, which pages to show, and upside-down mounting.<span class="was">Was: edit <span class="num">config.h</span>, rebuild, reflash over USB.</span></li>
         <li>Settings are stored on the orb and survive restarts and firmware updates. <span class="num">config.h</span> supplies the defaults, and one button resets to them.</li>
-        <li>The orb checks every field before it saves. Problems show next to the field, marked ✔ / ✖ / ⚠ as well as by colour.</li>
+        <li>The orb checks every field before it saves. Problems show next to the field, marked ✔ / ✖ / ⚠ as well as by color.</li>
         <li>Upload your own start-up picture. Your browser crops and shrinks it to 240 × 240, and a bad file falls back to the built-in logo.<span class="was">Was: fixed when the firmware was built.</span></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Night and what's on screen</h3>
+      <ul>
+        <li>Two separate schedules: dim hours and screens-off hours. Use either, or both, so the orbs can dim in the evening and go dark at bedtime. Where they overlap, off wins.<span class="was">Was: dim hours only.</span></li>
+        <li>Screens off sends the display chip's own off and sleep commands to all five panels. Any button wakes them for a minute. How much the backlight still glows in a dark room is not yet checked.</li>
+        <li>Choose which pages appear. Tick one to keep it on screen, or several to rotate through them; the buttons move between ticked pages only.<span class="was">Was: every page, always.</span></li>
       </ul>
     </div>
     <div class="group">
@@ -215,6 +223,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <li>Personal Tempest weather stations, up to two, each with its own page and a label of up to 16 characters.<span class="st branch">◐ Built</span></li>
         <li>The Tempest page shows live readings: conditions, feels-like, humidity, and wind as a range from average to gust.<span class="st branch">◐ Built</span></li>
         <li>The 96 KB Tempest reply is streamed through a filter that keeps 744 bytes. The settings page shows ✔ / ✖ for each station's last fetch.<span class="st branch">◐ Built</span></li>
+        <li>Sunrise and sunset times above the weather icon, and a small drawing of tonight's moon below it. Times come from the weather source; the moon phase is worked out on the orb, because Tempest does not supply one.<span class="st branch">◐ Built</span></li>
         <li>Tempest code is left out of the build unless a Tempest token is set, so a Basic build pays nothing for it.<span class="st branch">◐ Built</span></li>
       </ul>
     </div>
@@ -228,9 +237,9 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="group">
       <h3>Quality</h3>
       <ul>
-        <li>Unit tests run on a laptop and in CI for settings validation and weather parsing: 11 tests on <span class="num">main</span>, 22 with Tempest.<span class="was">Was: none.</span></li>
+        <li>Unit tests run on a laptop and in CI for settings validation and weather parsing: 13 tests on <span class="num">main</span>, 29 with Tempest.<span class="was">Was: none.</span></li>
         <li>The linter reports problems and no longer commits changes back, so the repository only moves when a person moves it.</li>
-        <li>An upstream bug is fixed: an uninitialised loop counter in the page rotation.<span class="st branch">◐ Built</span></li>
+        <li>An upstream bug is fixed: an uninitialized loop counter in the page rotation.<span class="st branch">◐ Built</span></li>
         <li>A written setup guide goes from an empty laptop to a running orb, and a traps file records every mistake that cost time once.<span class="was">Was: Brett's assembly video and README.</span></li>
       </ul>
     </div>
@@ -281,7 +290,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <dl>
         <dt>Module</dt><dd>ESP32-S3 SuperMini (FH4R2)</dd>
         <dt>Flash</dt><dd><span class="num">4 MB</span>, split into two 1.875 MB firmware slots so updates are safe</dd>
-        <dt>Headroom</dt><dd>Firmware fills <span class="num">87%</span> of a slot, with Tempest built in <span class="num">88%</span>. The stop line is <span class="num">92%</span>.</dd>
+        <dt>Headroom</dt><dd>Firmware fills <span class="num">87.3%</span> of a slot, with Tempest built in <span class="num">88.9%</span>. The stop line is <span class="num">92%</span>.</dd>
         <dt>PSRAM</dt><dd><span class="num">2 MB</span>, measured present, not yet switched on</dd>
         <dt>Carrier</dt><dd>v1.1, module in machined-pin sockets</dd>
         <dt>Pins</dt><dd>12 GPIO used: 9 for the displays (5 chip selects plus data, clock, DC and reset) and 3 for the buttons</dd>
@@ -312,8 +321,8 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <p>The orbs rotate through their pages on a timer set from the settings page. Pressing a button restarts the countdown.</p>
   </div>
   <div class="widgets">
-    <div class="w"><h3>Clock</h3><p>Seven-segment, Nixie, or your own JPG digits. 12 or 24 hour, with custom colours and shadow.</p></div>
-    <div class="w"><h3>Weather</h3><p>Current conditions, today's high and low, and a 3-day forecast. From Visual Crossing, or your own Tempest station (◐).</p></div>
+    <div class="w"><h3>Clock</h3><p>Seven-segment, Nixie, or your own JPG digits. 12 or 24 hour, with custom colors and shadow.</p></div>
+    <div class="w"><h3>Weather</h3><p>Current conditions, today's high and low, a 3-day forecast, and sunrise, sunset and the moon (◐). From Visual Crossing, or your own Tempest station (◐).</p></div>
     <div class="w"><h3>Stocks</h3><p>Five tickers, one per orb: stocks, forex or crypto, from Twelve Data.</p></div>
     <div class="w"><h3>And more</h3><p>A Parqet portfolio, custom web data and MQTT pages, carried over from upstream and switched on in <span class="num">config.h</span>.</p></div>
   </div>
@@ -332,7 +341,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <dt>Type</dt><dd>GC9A01 round IPS, 240 × 240</dd>
         <dt>Count</dt><dd>5, on one shared SPI bus with a chip-select line each</dd>
         <dt>Supply</dt><dd>5 V; each module has its own regulator</dd>
-        <dt>Backlight</dt><dd>Always on, wired on at the module. Night dim darkens the colours instead.</dd>
+        <dt>Backlight</dt><dd>Always on, wired on at the module. Dim hours darken the colors; screens-off blanks the panels. The display chip has a backlight-control pin, and a test of whether these modules use it is ready.</dd>
       </dl>
     </div>
     <div class="block">
@@ -386,7 +395,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <dt>Toolchain</dt><dd>PlatformIO, Arduino core for ESP32</dd>
         <dt>Board files</dt><dd>KiCad 10 with project-local libraries: clone and open</dd>
         <dt>First run</dt><dd>10 boards, v1.1, ordered 29 Aug 2026</dd>
-        <dt>Licence</dt><dd>AGPL-3.0, inherited from upstream. The source is public, so you're entitled to it when someone hands you a board.</dd>
+        <dt>License</dt><dd>AGPL-3.0, inherited from upstream. The source is public, so you're entitled to it when someone hands you a board.</dd>
       </dl>
     </div>
   </div>

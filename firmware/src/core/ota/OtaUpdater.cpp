@@ -64,7 +64,7 @@ WebServer &OtaUpdater::server() {
     return s_server;
 }
 
-bool OtaUpdater::authorised() {
+bool OtaUpdater::authorized() {
 #ifdef OTA_PASSWORD
     if (!s_server.authenticate("admin", OTA_PASSWORD)) {
         s_server.requestAuthentication();
@@ -120,7 +120,7 @@ static void backlightTest(ScreenManager &m, const String &mode) {
 
 void OtaUpdater::setupWebUpdate() {
     s_server.on("/bltest", HTTP_GET, [this]() {
-        if (!authorised()) {
+        if (!authorized()) {
             return;
         }
         String m = s_server.arg("m");
@@ -139,7 +139,7 @@ void OtaUpdater::setupWebUpdate() {
     });
 
     s_server.on("/update", HTTP_GET, [this]() {
-        if (!authorised()) {
+        if (!authorized()) {
             return;
         }
         s_server.send(200, "text/html", uploadPage);
@@ -149,7 +149,7 @@ void OtaUpdater::setupWebUpdate() {
         "/update", HTTP_POST,
         // Runs after the upload has finished
         [this]() {
-            if (!authorised()) {
+            if (!authorized()) {
                 return;
             }
             bool ok = !Update.hasError();
@@ -205,9 +205,9 @@ void OtaUpdater::drawStatus(const String &line1, const String &line2, uint32_t c
     // DSEG, which has almost no letters. Widgets set their own font per draw.
     m_manager.setFont(DEFAULT_FONT);
     m_manager.setFontColor(color);
-    m_manager.drawCentreString(line1, ScreenCenterX, ScreenCenterY - 20, 22);
+    m_manager.drawCenterString(line1, ScreenCenterX, ScreenCenterY - 20, 22);
     m_manager.setFontColor(TFT_WHITE);
-    m_manager.drawCentreString(line2, ScreenCenterX, ScreenCenterY + 20, 16);
+    m_manager.drawCenterString(line2, ScreenCenterX, ScreenCenterY + 20, 16);
 }
 
 void OtaUpdater::drawProgress(size_t done, size_t total) {

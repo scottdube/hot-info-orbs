@@ -1,7 +1,7 @@
 #pragma once
 // Pure parsing and validation for the settings page. std-only on purpose, so
 // it compiles on the host and is covered by `pio test -e native`
-// (test/test_validation). Each parser either writes a normalised value to
+// (test/test_validation). Each parser either writes a normalized value to
 // `out` and returns true, or writes a message for the page to `err` and
 // returns false.
 
@@ -62,7 +62,7 @@ inline bool parseHour(const std::string &in, int &out, std::string &err) {
 }
 
 // Whether a '\n'-separated list holds item exactly (the hidden-widget list;
-// widget names cannot contain a line break, normaliseText refuses one)
+// widget names cannot contain a line break, normalizeText refuses one)
 inline bool listContains(const std::string &list, const std::string &item) {
     size_t start = 0;
     while (start <= list.size()) {
@@ -92,7 +92,7 @@ inline bool inHourRange(int hour24, int start, int end) {
 
 // 1..5 comma-separated symbols. Upper-cases the symbol but not an exchange
 // qualifier after '&' ("SHOP&country=Canada", as config.h documents).
-inline bool normaliseTickers(const std::string &in, std::string &out, std::string &err) {
+inline bool normalizeTickers(const std::string &in, std::string &out, std::string &err) {
     const size_t maxTickers = 5; // StockWidget.h MAX_STOCKS
     std::vector<std::string> items;
     size_t start = 0;
@@ -138,7 +138,7 @@ inline bool normaliseTickers(const std::string &in, std::string &out, std::strin
 }
 
 // Trims, collapses runs of spaces, 1..maxLen, no control characters
-inline bool normaliseText(const std::string &in, size_t maxLen, std::string &out, std::string &err) {
+inline bool normalizeText(const std::string &in, size_t maxLen, std::string &out, std::string &err) {
     std::string collapsed;
     for (char c : in) {
         if ((unsigned char)c < 0x20 || c == 0x7F) {
@@ -193,7 +193,7 @@ inline bool parseStationLabel(const std::string &in, uint32_t stationId, std::st
         out = "";
         return true;
     }
-    return normaliseText(in, 16, out, err);
+    return normalizeText(in, 16, out, err);
 }
 
 // RFC 3986: unreserved characters kept, everything else %XX
@@ -213,15 +213,15 @@ inline std::string urlEncode(const std::string &in) {
 }
 
 // "#rrggbb" (what <input type=color> sends) to RGB565
-inline bool parseHexColour(const std::string &in, uint16_t &rgb565, std::string &err) {
+inline bool parseHexColor(const std::string &in, uint16_t &rgb565, std::string &err) {
     std::string s = trim(in);
     if (s.size() != 7 || s[0] != '#') {
-        err = "Colour must look like #ff8800";
+        err = "Color must look like #ff8800";
         return false;
     }
     for (size_t i = 1; i < 7; i++) {
         if (!isxdigit((unsigned char)s[i])) {
-            err = "Colour must look like #ff8800";
+            err = "Color must look like #ff8800";
             return false;
         }
     }

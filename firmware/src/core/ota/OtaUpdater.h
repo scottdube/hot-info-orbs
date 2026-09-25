@@ -19,7 +19,7 @@ class OtaUpdater {
     bool isUpdating() const { return m_updating; }
     // Shared with SettingsPage: one server on port 80, one password check
     WebServer &server();
-    bool authorised(); // false = a 401 challenge has already been sent
+    bool authorized(); // false = a 401 challenge has already been sent
 
   private:
     void setupArduinoOta();

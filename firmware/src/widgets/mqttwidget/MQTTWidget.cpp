@@ -390,7 +390,7 @@ void MQTTWidget::drawOrb(int orbid) {
     int y = 0; // Starting Y position
     int width = 240; // Width of the orb
     int height = 240; // Height of the orb
-    int centre = 120;
+    int center = 120;
     int screenWidth = SCREEN_SIZE;
     // int screenHeight = display.height();
 
@@ -402,13 +402,13 @@ void MQTTWidget::drawOrb(int orbid) {
     // m_manager.setTextSize(orb->orbsize);
 
     // Display orb description/title
-    // display.drawString(orb->orbdesc, centre, orb->xpostxt, orb->ypostxt);
+    // display.drawString(orb->orbdesc, center, orb->xpostxt, orb->ypostxt);
     m_manager.drawString(orb->orbdesc, orb->xpostxt, orb->ypostxt, orb->orbsize, Align::MiddleCenter);
-    // m_manager.drawString(orb->orbdesc, centre, orb->ypostxt, orb->orbsize, Align::MiddleCenter);
+    // m_manager.drawString(orb->orbdesc, center, orb->ypostxt, orb->orbsize, Align::MiddleCenter);
 
     // Display orb data
     String data = orbDataMap[orb->topicSrc];
-    // display.drawString(data + orb->orbvalunit, centre, orb->xposval, orb->yposval);
+    // display.drawString(data + orb->orbvalunit, center, orb->xposval, orb->yposval);
     m_manager.drawString(data + orb->orbvalunit, orb->xposval, orb->yposval, orb->orbsize, Align::MiddleCenter);
 }
 

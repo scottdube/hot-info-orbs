@@ -32,7 +32,7 @@ repo, because it is public and a station amounts to a home address.
   it.
 - With `TEMPEST_TOKEN` undefined, the build and the orb behave **exactly** as
   on main.
-- Every settings-page state keeps a glyph as well as a colour (✖/✔/⚠).
+- Every settings-page state keeps a glyph as well as a color (✖/✔/⚠).
 
 ## Design
 
@@ -96,7 +96,7 @@ header so the native tests cover it:
 New `SettingsValues` fields: `tstn1`, `tlbl1`, `tstn2`, `tlbl2`.
 - Station ID: 0 = unused. The page accepts 1 to 9 digits. `sv::parseInt` stops
   at 6 characters, so a new `sv::parseStationId` handles this.
-- Label: `normaliseText`, 1–8 characters.
+- Label: `normalizeText`, 1–8 characters.
 - Defaults come from new optional `config.h` macros `TEMPEST_STATION_1`,
   `TEMPEST_LABEL_1`, `TEMPEST_STATION_2` and `TEMPEST_LABEL_2`, and fall back
   to 0 and "".

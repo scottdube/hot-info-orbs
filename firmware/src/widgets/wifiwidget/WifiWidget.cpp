@@ -19,7 +19,7 @@ void WifiWidget::setup() {
     m_manager.selectScreen(statusScreenIndex);
     m_manager.clearScreen();
     m_manager.setFontColor(TFT_WHITE);
-    m_manager.drawCentreString("Connecting", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
+    m_manager.drawCenterString("Connecting", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
 
     WiFi.mode(WIFI_STA); // For WiFiManager explicitly set mode to station, ESP defaults to STA+AP
 
@@ -39,7 +39,7 @@ void WifiWidget::setup() {
     // these are stored by the ESP WiFi library
     if (digitalRead(BUTTON_RIGHT) == Button::PRESSED_LEVEL) {
         wifimgr.resetSettings();
-        m_manager.drawCentreString("Wifi Settings reset", ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
+        m_manager.drawCenterString("Wifi Settings reset", ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
         delay(messageDelay);
     }
 
@@ -64,15 +64,15 @@ void WifiWidget::setup() {
         Serial.println("Configuration portal running.");
         m_manager.selectScreen(statusScreenIndex);
         m_manager.clearScreen();
-        m_manager.drawCentreString("Configure", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
+        m_manager.drawCenterString("Configure", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
         m_manager.selectScreen(statusScreenIndex + 1);
-        m_manager.drawCentreString("Connect", ScreenCenterX, ScreenCenterY - lineHeight * 2, fontSize);
-        m_manager.drawCentreString("phone or PC", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
-        m_manager.drawCentreString("to WiFi network:", ScreenCenterX, ScreenCenterY, fontSize);
+        m_manager.drawCenterString("Connect", ScreenCenterX, ScreenCenterY - lineHeight * 2, fontSize);
+        m_manager.drawCenterString("phone or PC", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
+        m_manager.drawCenterString("to WiFi network:", ScreenCenterX, ScreenCenterY, fontSize);
         m_manager.setFontColor(TFT_SKYBLUE);
-        m_manager.drawCentreString(m_apssid, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
+        m_manager.drawCenterString(m_apssid, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
         m_manager.setFontColor(TFT_GREENYELLOW);
-        m_manager.drawCentreString("192.168.4.1", ScreenCenterX, ScreenCenterY + lineHeight * 2, fontSize);
+        m_manager.drawCenterString("192.168.4.1", ScreenCenterX, ScreenCenterY + lineHeight * 2, fontSize);
     }
 }
 
@@ -112,15 +112,15 @@ void WifiWidget::draw(bool force) {
 
     if (!m_isConnected && !m_connectionFailed) {
         m_manager.fillRect(0, blankRectTop, ScreenWidth, ScreenHeight - blankRectTop, TFT_BLACK);
-        m_manager.drawCentreString(m_dotsString, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
+        m_manager.drawCenterString(m_dotsString, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
     } else if (m_isConnected && !m_hasDisplayedSuccess) {
         m_hasDisplayedSuccess = true;
         m_manager.clearScreen();
-        m_manager.drawCentreString("Success", ScreenCenterX, ScreenCenterY, fontSize);
+        m_manager.drawCenterString("Success", ScreenCenterX, ScreenCenterY, fontSize);
         m_manager.selectScreen(statusScreenIndex + 1);
         m_manager.clearScreen();
-        m_manager.drawCentreString("IP Address", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
-        m_manager.drawCentreString(m_ipaddress, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
+        m_manager.drawCenterString("IP Address", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
+        m_manager.drawCenterString(m_ipaddress, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
         Serial.println();
         Serial.println("Connected to WiFi");
         m_isConnected = true;
@@ -128,7 +128,7 @@ void WifiWidget::draw(bool force) {
     } else if (m_connectionFailed && !m_hasDisplayedError) {
         m_hasDisplayedError = true;
         m_manager.fillRect(0, blankRectTop, ScreenWidth, ScreenHeight - blankRectTop, TFT_BLACK);
-        m_manager.drawCentreString(m_connectionString, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
+        m_manager.drawCenterString(m_connectionString, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
         delay(messageDelay);
     }
 }

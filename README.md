@@ -82,7 +82,7 @@ well; 0 turns it off). Pressing a button restarts the countdown.
 
 **After the first flash, most of `config.h` can be changed from a phone.** Open
 `http://<orb's IP>/settings` to change the rotation time, tickers, weather
-location and units, timezone, clock face and colours, night-dim hours,
+location and units, timezone, clock face and colors, night-dim hours,
 upside-down mounting, and the start-up picture. The orbs restart to apply the
 changes. The values in `config.h` become the defaults, and the page's reset button returns
 to them. See [docs/SETUP.md](docs/SETUP.md#9-change-settings-from-a-browser).

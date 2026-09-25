@@ -48,7 +48,7 @@ private:
     const long m_weatherDelay = 600000; // Weather refresh rate
     unsigned long m_weatherDelayPrev = 0;
 
-    const int centre = 120; // Centre location of the screen(240x240)
+    const int center = 120; // Center location of the screen(240x240)
 
     int m_clockStamp = 0;
 

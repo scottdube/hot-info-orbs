@@ -233,7 +233,7 @@ void ScreenManager::drawString(const String &text, int x, int y, unsigned int fo
     m_render.drawString(text.c_str(), x, y - box.yMin, fgColor, bgColor);
 }
 
-void ScreenManager::drawCentreString(const String &text, int x, int y, unsigned int fontSize) {
+void ScreenManager::drawCenterString(const String &text, int x, int y, unsigned int fontSize) {
     drawString(text, x, y, fontSize, Align::MiddleCenter);
 }
 

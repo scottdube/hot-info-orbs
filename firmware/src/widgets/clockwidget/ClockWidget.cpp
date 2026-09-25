@@ -5,7 +5,7 @@
 
 ClockWidget::ClockWidget(ScreenManager &manager) : Widget(manager) {
     const SettingsValues &s = Settings::get();
-    m_colour = s.clkcol;
+    m_color = s.clkcol;
     m_shadow = s.shdcol;
     // A face whose images were not compiled in would draw nothing
     m_type = ClockType::NORMAL;
@@ -31,31 +31,31 @@ void ClockWidget::draw(bool force) {
     GlobalTime *time = GlobalTime::getInstance();
 
     if (m_lastDisplay1Digit != m_display1Digit || force) {
-        displayDigit(0, m_lastDisplay1Digit, m_display1Digit, m_colour);
+        displayDigit(0, m_lastDisplay1Digit, m_display1Digit, m_color);
         m_lastDisplay1Digit = m_display1Digit;
     }
     if (m_lastDisplay2Digit != m_display2Digit || force) {
-        displayDigit(1, m_lastDisplay2Digit, m_display2Digit, m_colour);
+        displayDigit(1, m_lastDisplay2Digit, m_display2Digit, m_color);
         m_lastDisplay2Digit = m_display2Digit;
     }
     if (m_lastDisplay4Digit != m_display4Digit || force) {
-        displayDigit(3, m_lastDisplay4Digit, m_display4Digit, m_colour);
+        displayDigit(3, m_lastDisplay4Digit, m_display4Digit, m_color);
         m_lastDisplay4Digit = m_display4Digit;
     }
     if (m_lastDisplay5Digit != m_display5Digit || force) {
-        displayDigit(4, m_lastDisplay5Digit, m_display5Digit, m_colour);
+        displayDigit(4, m_lastDisplay5Digit, m_display5Digit, m_color);
         m_lastDisplay5Digit = m_display5Digit;
     }
 
     if (m_secondSingle != m_lastSecondSingle || force) {
         if (m_secondSingle % 2 == 0) {
-            displayDigit(2, "", ":", m_colour, false);
+            displayDigit(2, "", ":", m_color, false);
         } else {
             displayDigit(2, "", ":", m_shadow, false);
         }
 #if SHOW_SECOND_TICKS == true
         displaySeconds(2, m_lastSecondSingle, TFT_BLACK);
-        displaySeconds(2, m_secondSingle, m_colour);
+        displaySeconds(2, m_secondSingle, m_color);
 #endif
         m_lastSecondSingle = m_secondSingle;
         if (!time->getFormat24Hour() && Settings::get().ampm && m_type != ClockType::NIXIE) {
@@ -64,7 +64,7 @@ void ClockWidget::draw(bool force) {
                 displayAmPm(m_lastAmPm, TFT_BLACK);
                 m_lastAmPm = m_amPm;
             }
-            displayAmPm(m_amPm, m_colour);
+            displayAmPm(m_amPm, m_color);
         }
     }
 }
@@ -219,7 +219,7 @@ void ClockWidget::displayDigit(int displayIndex, const String &lastDigit, const 
 }
 
 void ClockWidget::displaySeconds(int displayIndex, int seconds, int color) {
-    if (m_type == ClockType::NIXIE && color == m_colour) {
+    if (m_type == ClockType::NIXIE && color == m_color) {
         // Special color (orange) for nixie
         color = 0xfd40;
     }

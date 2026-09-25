@@ -17,7 +17,7 @@
 - The Tempest token lives only in `firmware/config/secrets.h` (git-ignored). It never appears on the settings page, in the repo, or in any output.
 - Station IDs, names and coordinates never go in the repo: it is **public**. They live in the git-ignored `config.h` and on the orb.
 - With `TEMPEST_TOKEN` undefined, the build and the orb behave **exactly** as on main.
-- Every settings-page state keeps a glyph as well as a colour (✖/✔/⚠).
+- Every settings-page state keeps a glyph as well as a color (✖/✔/⚠).
 - Flash the orb over HTTP: `pio run -e ota` then `curl -F "firmware=@.pio/build/ota/firmware.bin" http://192.168.30.208/update`. Never use espota.
 - Before any commit that changes the build, run the exact CI command, a bare `pio run`, plus `pio test -e native`.
 
@@ -40,7 +40,7 @@
 | `firmware/config/config_helper.h` | + non-empty guard for `TEMPEST_TOKEN` |
 | `firmware/config/config.h.template`, `secrets.h.template` | commented examples |
 | `firmware/src/main.cpp` | one widget per station |
-| `firmware/src/core/widget/WidgetSet.cpp` | `updateAll()` loop counter initialised |
+| `firmware/src/core/widget/WidgetSet.cpp` | `updateAll()` loop counter initialized |
 
 ---
 
@@ -247,7 +247,7 @@ inline bool parseStationLabel(const std::string &in, uint32_t stationId, std::st
         out = "";
         return true;
     }
-    return normaliseText(in, 8, out, err);
+    return normalizeText(in, 8, out, err);
 }
 ```
 
@@ -343,7 +343,7 @@ git commit   # message: why a made-up fixture (public repo), why std-only (host 
 
 ---
 
-### Task 2: Split fetching out of WeatherWidget (no behaviour change)
+### Task 2: Split fetching out of WeatherWidget (no behavior change)
 
 **Files:**
 - Create: `firmware/src/widgets/weatherwidget/WeatherSource.h`, `VisualCrossingSource.h`, `VisualCrossingSource.cpp`
@@ -682,7 +682,7 @@ bool TempestSource::fetch(WeatherDataModel &model) {
     }
 ```
 
-In `WidgetSet.cpp`, `updateAll()`: change `for (int8_t i; i < m_widgetCount; i++)` to `for (int8_t i = 0; i < m_widgetCount; i++)`. The counter was never initialised, so the start-up pass that loads every page's data only worked if the stack happened to hold a zero.
+In `WidgetSet.cpp`, `updateAll()`: change `for (int8_t i; i < m_widgetCount; i++)` to `for (int8_t i = 0; i < m_widgetCount; i++)`. The counter was never initialized, so the start-up pass that loads every page's data only worked if the stack happened to hold a zero.
 
 - [ ] **Step 5: Add the settings page section.** In `SettingsPage.cpp`, add `#include "TempestSource.h"` at the top, then add a helper above `renderForm`:
 

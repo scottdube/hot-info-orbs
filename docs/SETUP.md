@@ -180,7 +180,7 @@ phone or computer on the same network. It uses the same optional `admin` /
   that field, and nothing is saved.
 - **Reset to built-in values** forgets everything saved from the page and goes
   back to what `config.h` says.
-- **Start-up picture:** pick any photo. The page crops it to a centred square
+- **Start-up picture:** pick any photo. The page crops it to a centered square
   and shows the circle the orb will display. **Upload and restart** puts it on the
   middle orb at start-up. **Use the built-in logo** takes it off again.
 

@@ -22,7 +22,7 @@ void SettingsPage::setBootStatus(bool fsMounted, bool storedPictureUnreadable) {
     s_pictureUnreadable = storedPictureUnreadable;
 }
 
-// Colour is never the only signal (docs: colour accessibility) - every state
+// Color is never the only signal (docs: color accessibility) - every state
 // carries a glyph and words as well
 static const char *PAGE_HEAD =
     "<!DOCTYPE html><html><head><meta charset='utf-8'>"
@@ -130,10 +130,10 @@ static String hourSelect(const char *key, const char *label, int value, int def,
     return s + "</select>" + hint("Default: " + hourText(def)) + errorLine(errors, key);
 }
 
-static String colourField(const char *key, const char *label, uint16_t value, uint16_t def, const std::map<std::string, std::string> &errors) {
+static String colorField(const char *key, const char *label, uint16_t value, uint16_t def, const std::map<std::string, std::string> &errors) {
     String defHex = sv::rgb565ToHex(def).c_str();
     return "<label for='" + String(key) + "'>" + label + "</label><input type='color' id='" + key + "' name='" + key + "' value='" +
-           sv::rgb565ToHex(value).c_str() + "'>" + hint("Default: " + defHex + " (the orbs show 65,536 colours, so a picked colour may shift slightly)") +
+           sv::rgb565ToHex(value).c_str() + "'>" + hint("Default: " + defHex + " (the orbs show 65,536 colors, so a picked color may shift slightly)") +
            errorLine(errors, key);
 }
 
@@ -215,8 +215,8 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += "</select>" + hint(String("Default: ") + faceName(d.face) + ". A short press on the middle button still changes it until the next restart; a medium press toggles 12/24-hour the same way.") + errorLine(errors, "face");
     h += boolSelect("h24", "Hours", v.h24, d.h24, "12-hour", "24-hour", errors);
     h += boolSelect("ampm", "AM/PM indicator (12-hour, not Nixie)", v.ampm, d.ampm, "Off", "On", errors);
-    h += colourField("clkcol", "Digit colour", v.clkcol, d.clkcol, errors);
-    h += colourField("shdcol", "Unlit-segment colour", v.shdcol, d.shdcol, errors);
+    h += colorField("clkcol", "Digit color", v.clkcol, d.clkcol, errors);
+    h += colorField("shdcol", "Unlit-segment color", v.shdcol, d.shdcol, errors);
     h += textField("tz", "Timezone", v.tz, d.tz,
                    " &mdash; a name from <a href='https://timezonedb.com/time-zones'>timezonedb.com/time-zones</a>. Not checked until the orb asks for the time.",
                    errors);
@@ -245,7 +245,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
 
     h += "<fieldset><legend>Dim hours</legend>";
     h += boolSelect("dim", "Dim", v.dim, d.dim, "Off", "On", errors);
-    h += hint("Darkens the colours drawn; the backlight itself stays on.");
+    h += hint("Darkens the colors drawn; the backlight itself stays on.");
     h += hourSelect("dimstart", "From", v.dimstart, d.dimstart, errors);
     h += hourSelect("dimend", "Until", v.dimend, d.dimend, errors);
     h += "</fieldset>";
@@ -270,14 +270,14 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
 }
 
 void SettingsPage::handleGet() {
-    if (!m_ota.authorised()) {
+    if (!m_ota.authorized()) {
         return;
     }
     m_ota.server().send(200, "text/html", renderForm(Settings::get(), Errors(), ""));
 }
 
 void SettingsPage::handlePost() {
-    if (!m_ota.authorised()) {
+    if (!m_ota.authorized()) {
         return;
     }
     WebServer &s = m_ota.server();
@@ -318,14 +318,14 @@ void SettingsPage::handlePost() {
         }
     }
 #ifdef STOCK_TICKER_LIST
-    if (has("tickers") && !sv::normaliseTickers(argStr(s, "tickers"), v.tickers, err)) {
+    if (has("tickers") && !sv::normalizeTickers(argStr(s, "tickers"), v.tickers, err)) {
         errors["tickers"] = err;
     }
 #endif
-    if (has("wxloc") && !sv::normaliseText(argStr(s, "wxloc"), 64, v.wxloc, err)) {
+    if (has("wxloc") && !sv::normalizeText(argStr(s, "wxloc"), 64, v.wxloc, err)) {
         errors["wxloc"] = err;
     }
-    if (has("tz") && !sv::normaliseText(argStr(s, "tz"), 48, v.tz, err)) {
+    if (has("tz") && !sv::normalizeText(argStr(s, "tz"), 48, v.tz, err)) {
         errors["tz"] = err;
     }
     readBool("wxmetric", v.wxmetric);
@@ -343,10 +343,10 @@ void SettingsPage::handlePost() {
             errors["face"] = "That clock face is not built into this firmware";
         }
     }
-    if (has("clkcol") && !sv::parseHexColour(argStr(s, "clkcol"), v.clkcol, err)) {
+    if (has("clkcol") && !sv::parseHexColor(argStr(s, "clkcol"), v.clkcol, err)) {
         errors["clkcol"] = err;
     }
-    if (has("shdcol") && !sv::parseHexColour(argStr(s, "shdcol"), v.shdcol, err)) {
+    if (has("shdcol") && !sv::parseHexColor(argStr(s, "shdcol"), v.shdcol, err)) {
         errors["shdcol"] = err;
     }
     if (has("dimstart") && !sv::parseHour(argStr(s, "dimstart"), v.dimstart, err)) {
@@ -399,7 +399,7 @@ void SettingsPage::handlePost() {
 }
 
 void SettingsPage::handleReset() {
-    if (!m_ota.authorised()) {
+    if (!m_ota.authorized()) {
         return;
     }
     if (!Settings::factoryReset()) {
@@ -447,7 +447,7 @@ String SettingsPage::renderBootSection() {
         h += stored ? "Your picture." : "Built-in logo.";
     }
     if (s_fsMounted) {
-        h += "<label for='pic'>New picture (any photo; it is cropped to a centred square)</label>"
+        h += "<label for='pic'>New picture (any photo; it is cropped to a centered square)</label>"
              "<input type='file' id='pic' accept='image/*'>"
              "<canvas id='cv' width='240' height='240' style='display:none;width:120px;height:120px;border-radius:50%;margin-top:.5em'></canvas>"
              "<div><button type='button' id='up' disabled>Upload and restart</button></div><div id='msg' class='hint'></div>";
@@ -470,7 +470,7 @@ void SettingsPage::handleBootUploadChunk() {
 #ifdef OTA_PASSWORD
         // No challenge mid-upload; the done handler sends the 401
         if (!s.authenticate("admin", OTA_PASSWORD)) {
-            m_uploadError = "not authorised";
+            m_uploadError = "not authorized";
             return;
         }
 #endif
@@ -507,7 +507,7 @@ void SettingsPage::handleBootUploadChunk() {
 }
 
 void SettingsPage::handleBootUploadDone() {
-    if (!m_ota.authorised()) {
+    if (!m_ota.authorized()) {
         return;
     }
     WebServer &s = m_ota.server();
@@ -543,7 +543,7 @@ void SettingsPage::handleBootUploadDone() {
 }
 
 void SettingsPage::handleBootReset() {
-    if (!m_ota.authorised()) {
+    if (!m_ota.authorized()) {
         return;
     }
     if (s_fsMounted) {
@@ -553,7 +553,7 @@ void SettingsPage::handleBootReset() {
 }
 
 void SettingsPage::handleBootGet() {
-    if (!m_ota.authorised()) {
+    if (!m_ota.authorized()) {
         return;
     }
     WebServer &s = m_ota.server();

@@ -17,7 +17,7 @@ inline double moonAgeDays(int64_t utcEpoch) {
     return age < 0 ? age + synodic : age;
 }
 
-// The eight traditional names, each centred on its point in the cycle
+// The eight traditional names, each centered on its point in the cycle
 inline const char *moonPhaseName(double ageDays) {
     static const char *names[] = {"New moon", "Waxing crescent", "First quarter", "Waxing gibbous",
                                   "Full moon", "Waning gibbous", "Last quarter", "Waning crescent"};
@@ -43,7 +43,7 @@ inline std::string sunClock(int64_t utcEpoch, long offsetSeconds, bool h24) {
 }
 
 // The lit part of one row of a drawn moon, for a row whose half-width is w
-// (x runs -w..w from the disc's centre). Lit from the right while waxing and
+// (x runs -w..w from the disc's center). Lit from the right while waxing and
 // from the left while waning, as seen from the northern hemisphere. Sets
 // x0 > x1 when nothing on the row is lit.
 inline void moonLitSpan(double ageDays, double w, double &x0, double &x1) {

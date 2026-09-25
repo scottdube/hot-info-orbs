@@ -119,7 +119,7 @@ Two reasons it is set to 0.15 here rather than 0.18:
 
 **Enlarging the vias was tried and made things worse.** Taking the 17 vias to
 0.8 mm gave the required ring but produced 24 clearance violations, because the
-larger pads crowd neighbouring copper. Fixing it properly means moving traces —
+larger pads crowd neighboring copper. Fixing it properly means moving traces —
 real layout work on someone else's board, not a settings change.
 
 **If certainty is wanted before ordering, ask JLC directly whether 0.6/0.3 vias

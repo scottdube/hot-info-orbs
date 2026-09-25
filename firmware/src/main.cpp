@@ -104,25 +104,25 @@ void setup() {
     sm->setFontColor(TFT_WHITE);
 
     sm->selectScreen(0);
-    sm->drawCentreString("Welcome", ScreenCenterX, ScreenCenterY, 29);
+    sm->drawCenterString("Welcome", ScreenCenterX, ScreenCenterY, 29);
     // Running image against one OTA slot: the figure the 92% stop line is
     // measured against, read from the image so it always matches what runs
     uint32_t used = ESP.getSketchSize(), slot = ESP.getFreeSketchSpace();
     if (slot > 0) {
         char line[32];
         snprintf(line, sizeof(line), "Flash %u%%", (unsigned)((used * 100ULL + slot / 2) / slot));
-        sm->drawCentreString(line, ScreenCenterX, ScreenCenterY + 45, 22);
+        sm->drawCenterString(line, ScreenCenterX, ScreenCenterY + 45, 22);
         unsigned u = used / 1024, t = slot / 1024; // KB; under 10,000 on any 4-16 MB part
         snprintf(line, sizeof(line), "%u,%03u / %u,%03u KB", u / 1000, u % 1000, t / 1000, t % 1000);
-        sm->drawCentreString(line, ScreenCenterX, ScreenCenterY + 75, 14);
+        sm->drawCenterString(line, ScreenCenterX, ScreenCenterY + 75, 14);
     }
 
     sm->selectScreen(1);
-    sm->drawCentreString("HOT Info Orbs", ScreenCenterX, ScreenCenterY - 50, 22);
-    sm->drawCentreString("by", ScreenCenterX, ScreenCenterY - 5, 22);
-    sm->drawCentreString("HOT-Team", ScreenCenterX, ScreenCenterY + 30, 22);
+    sm->drawCenterString("HOT Info Orbs", ScreenCenterX, ScreenCenterY - 50, 22);
+    sm->drawCenterString("by", ScreenCenterX, ScreenCenterY - 5, 22);
+    sm->drawCenterString("HOT-Team", ScreenCenterX, ScreenCenterY + 30, 22);
     sm->setFontColor(TFT_RED);
-    sm->drawCentreString("version: " FIRMWARE_VERSION, ScreenCenterX, ScreenCenterY + 65, 14);
+    sm->drawCenterString("version: " FIRMWARE_VERSION, ScreenCenterX, ScreenCenterY + 65, 14);
 
     sm->selectScreen(2);
 

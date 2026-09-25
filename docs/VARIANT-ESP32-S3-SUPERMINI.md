@@ -117,7 +117,7 @@ Not to "from scratch", but no longer to "free". Honestly stated:
   its fan-out, then a full verification pass. Days, not weeks — but not zero,
   and it is work that buys size and native USB rather than function.
 
-The single-sided constraint was doing a lot of the arguing in favour of the
+The single-sided constraint was doing a lot of the arguing in favor of the
 SuperMini. With it gone, the case rests on what it was always really about:
 physical size and nicer flashing.
 
@@ -173,7 +173,7 @@ nobody asked.
 On the mill, mounting holes are free — same op, same G54. Retrofitting means
 hand-drilling a soldered, masked board next to a pour, with no registration.
 Decide before placing the first component. Default is M3 drilled 3.175 mm, NPTH,
-with a ~6.5 mm keepout and centre ≥ 3.2 mm from the board edge.
+with a ~6.5 mm keepout and center ≥ 3.2 mm from the board edge.
 
 ## 6. Power — the regulator is the real constraint
 
@@ -419,7 +419,7 @@ the row. Then:
 - **Pins 1, 3, 4, 5, 7 become straight horizontal lanes**, each at its own pin
   height, hopping connector to connector. No crossings, no detours.
 - **Pin 6 (GND) disappears into the pour** and costs nothing.
-- **Pin 2 is the exception.** Each CS line must reach a pad whose neighbours on
+- **Pin 2 is the exception.** Each CS line must reach a pad whose neighbors on
   both sides are occupied bus lanes.
 
 A CS line heading for a distant connector must route around the intervening pin
@@ -757,7 +757,7 @@ is the same: the display symbol in Brett's `info_orbs.kicad_sch` has seven pins
 (RST CS DC SDA SCL GND VCC), and his firmware never defines `TFT_BL`. So no
 Info Orbs build has ever controlled the backlight. Since the
 backlight is the dominant *continuous* load, a module exposing BL would allow
-PWM dimming — real brightness control instead of the colour desaturation the
+PWM dimming — real brightness control instead of the color desaturation the
 firmware currently uses, and a direct cut in the thermal load. Worth weighing
 when choosing which clone to buy, on either board.
 
