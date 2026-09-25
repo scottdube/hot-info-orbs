@@ -19,7 +19,7 @@
 // CLOCK CONFIGURATION
 #define FORMAT_24_HOUR false            // Toggle 24 hour clock vs 12 hour clock, change between true/false
 #define SHOW_AM_PM_INDICATOR false      // AM/PM on the clock if using 12 hour
-#define SHOW_SECOND_TICKS true          // Ticking indicator on the centre clock
+#define SHOW_SECOND_TICKS true          // Ticking indicator on the center clock
 #define CLOCK_COLOR 0xfc80              // Orange for clock
 #define CLOCK_SHADOW_COLOR 0x20a1       // Clock shadow color (Light brown)
 #define CLOCK_SHADOWING true            // Use clock shadow (set to false to disable)
@@ -95,7 +95,7 @@
 #define SCREEN_5_CS 8
 
 // SW1 / SW2 / SW3 left to right on the board; OK is the middle one, matching
-// upstream's "short press of the middle button" behaviour.
+// upstream's "short press of the middle button" behavior.
 #if INVERTED_ORBS
     #define BUTTON_OK 2
     #define BUTTON_LEFT 10

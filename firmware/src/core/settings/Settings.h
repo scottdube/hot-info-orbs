@@ -11,7 +11,7 @@
 // nothing here changes while widgets are running.
 struct SettingsValues {
     int cycle; // seconds per widget, 0 = no auto-rotate
-    std::string tickers; // "SPY,QQQ" - normalised, 1..5
+    std::string tickers; // "SPY,QQQ" - normalized, 1..5
     std::string wxloc; // weather location as typed, NOT url-encoded
     bool wxmetric;
     bool wxdark;

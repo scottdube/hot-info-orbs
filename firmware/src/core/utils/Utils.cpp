@@ -89,9 +89,9 @@ int32_t Utils::stringToColor(String color) {
         return TFT_PURPLE;
     } else if (color == "olive") {
         return TFT_OLIVE;
-    } else if (color == "lightgrey" || color == "grey") {
+    } else if (color == "lightgray" || color == "gray" || color == "lightgrey" || color == "grey") { // grey kept: existing configs use it
         return TFT_LIGHTGREY;
-    } else if (color == "darkgrey") {
+    } else if (color == "darkgray" || color == "darkgrey") {
         return TFT_DARKGREY;
     } else if (color == "blue") {
         return TFT_BLUE;

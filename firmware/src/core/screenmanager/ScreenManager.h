@@ -51,7 +51,7 @@ public:
     void drawString(const String &text, int x, int y);
 
     // Draw centered string
-    void drawCentreString(const String &text, int x, int y, unsigned int fontSize = 0);
+    void drawCenterString(const String &text, int x, int y, unsigned int fontSize = 0);
 
     // Draw string with a max width/height (auto-sizing)
     void drawFittedString(const String &text, int x, int y, int limit_w, int limit_h, Align align);

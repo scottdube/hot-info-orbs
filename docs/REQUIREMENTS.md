@@ -43,7 +43,7 @@ error that currently catches this goes away.
 7-pin GC9A01 modules do not break out the backlight pin — BL is tied on at the
 module, so the backlight runs at full output whenever the board is powered.
 Upstream's "dimming" is a firmware effect: during the configured hours it
-desaturates the colours so the display *looks* dimmer. It draws exactly the same
+desaturates the colors so the display *looks* dimmer. It draws exactly the same
 current.
 
 So the panel can expose the dim *hours*, and must not offer a brightness slider.
@@ -105,7 +105,7 @@ be reconciled with the `secrets.h` split.
 **Status 2026-09-23: partly implemented — our own page, not upstream's.**
 `http://<orb>/settings` covers rotation time, tickers, weather location,
 units and screen mode, timezone, 12/24 h, AM/PM, starting clock face, clock
-and shadow colours, night-dim hours, upside-down mounting, and an uploadable
+and shadow colors, night-dim hours, upside-down mounting, and an uploadable
 boot picture. It saves to NVS and restarts. It has no brightness control.
 It uses the same password as `/update`, and holds no secrets.
 Tested from a phone on 2026-09-23: a 310×372 transparent PNG went through the

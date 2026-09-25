@@ -27,8 +27,8 @@ the server that OTA already runs.
 | 24-hour clock | `h24` | bool | `FORMAT_24_HOUR` | `GlobalTime.h:82`, `ClockWidget.cpp:50,93` |
 | AM/PM indicator | `ampm` | bool | `SHOW_AM_PM_INDICATOR` | `ClockWidget.cpp:50` |
 | Starting clock face | `face` | Normal / Nixie (Custom only if built with `USE_CLOCK_CUSTOM`) | `DEFAULT_CLOCK` | `ClockWidget.h:99` |
-| Clock colour | `clkcol` | RGB565 via colour picker | `CLOCK_COLOR` | `ClockWidget.cpp:23,27,31,211` |
-| Clock shadow colour | `shdcol` | RGB565 via colour picker | `CLOCK_SHADOW_COLOR` | `ClockWidget.cpp:43,168,185` |
+| Clock color | `clkcol` | RGB565 via color picker | `CLOCK_COLOR` | `ClockWidget.cpp:23,27,31,211` |
+| Clock shadow color | `shdcol` | RGB565 via color picker | `CLOCK_SHADOW_COLOR` | `ClockWidget.cpp:43,168,185` |
 | Night dim | `dim` | bool | `DIM_START_HOUR` defined? | `WidgetSet.cpp:96` |
 | Dim start / end hour | `dimstart`, `dimend` | int 0–23, may wrap midnight | `DIM_START_HOUR`, `DIM_END_HOUR` | `WidgetSet.cpp:99–104` |
 | Orbs upside down | `invert` | bool | `INVERTED_ORBS` | `ScreenManager.cpp:13,87` |
@@ -36,7 +36,7 @@ the server that OTA already runs.
 
 Night dim exposes **hours only**. The dim *level* stays at `DIM_BRIGHTNESS`
 from `config.h`, or 128 (the template's commented value) when that is undefined. The page has no brightness control. Upstream's dimming
-darkens colours. The backlight is hard-wired on (REQUIREMENTS R1).
+darkens colors. The backlight is hard-wired on (REQUIREMENTS R1).
 
 ### Later — needs restructuring first
 
@@ -68,13 +68,13 @@ any widget is constructed.
 
 **`SettingsValidation`** (`firmware/src/core/settings/SettingsValidation.h`) is
 pure functions, with no Arduino types beyond `String`. For each field it either
-normalises the raw form value (trims, upper-cases tickers, collapses spaces) or
+normalizes the raw form value (trims, upper-cases tickers, collapses spaces) or
 returns a message saying what is wrong. Kept separate so it can be unit-tested
 on the host.
 
 **`SettingsPage`** (`firmware/src/core/settings/SettingsPage.{h,cpp}`) holds HTTP
 handlers registered on the `WebServer` that `OtaUpdater` owns. `OtaUpdater`
-gains `WebServer &server()` and `bool authorised()` so that both pages share one
+gains `WebServer &server()` and `bool authorized()` so that both pages share one
 server and one password check rather than each binding port 80.
 
 - `GET /settings` returns the form, filled with current values. Every field
@@ -92,7 +92,7 @@ The page links to `/update` and back, and shows the running commit and uptime.
 ### Why restart on save
 
 Every v1 setting is read at construction or in `setup()`, as a `const` member
-or at a single initialisation point. Applying settings live would mean a setter on every widget
+or at a single initialization point. Applying settings live would mean a setter on every widget
 and invalidating what is on screen. A restart costs about 14 s, measured
 during OTA, and settings change rarely. **Rejected: live apply.**
 
@@ -113,7 +113,7 @@ check it on the orb before and after this change.
 ## Boot picture
 
 Upload path: in the browser, the page draws the chosen file onto a 240×240
-canvas, centre-cropped to a square, and previews it inside a circle. The circle
+canvas, center-cropped to a square, and previews it inside a circle. The circle
 is what the orb shows. The browser then sends `canvas.toBlob("image/jpeg", q)`. The browser always
 produces a **baseline** JPEG, which TJpg_Decoder requires, since it cannot decode
 progressive ones. Quality starts at 0.85 and steps down until the file is at
@@ -144,7 +144,7 @@ minimum a password") binds when keys move onto the page. The
 
 ## Error handling
 
-| Failure | Behaviour |
+| Failure | Behavior |
 |---|---|
 | Field fails validation | Form re-shown with the message beside that field; nothing saved |
 | NVS write fails | Page says so; no restart; old values still in effect |
@@ -159,7 +159,7 @@ minimum a password") binds when keys move onto the page. The
   environment with Unity, run via `pio test -e native`. It covers the ticker list
   (1–5, symbols like `BTC/USD` and `SHOP&country=Canada` that the ticker
   comment in `config.h` allows), hour wrap, cycle bounds, empty and over-long text, and
-  colour hex to RGB565.
+  color hex to RGB565.
 - **On the orb**, over OTA. First confirm that a board which never opened the page shows
   exactly what it does today. Then change each v1 setting and check the result on the
   orb, one at a time, reading back from the device and not from the form.

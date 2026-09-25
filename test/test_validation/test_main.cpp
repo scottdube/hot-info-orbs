@@ -81,28 +81,28 @@ void test_list_contains() {
 
 void test_tickers() {
     std::string out, err;
-    TEST_ASSERT_TRUE(normaliseTickers("spy, qqq ,AAPL", out, err));
+    TEST_ASSERT_TRUE(normalizeTickers("spy, qqq ,AAPL", out, err));
     TEST_ASSERT_EQUAL_STRING("SPY,QQQ,AAPL", out.c_str());
-    TEST_ASSERT_TRUE(normaliseTickers("BTC/USD", out, err));
+    TEST_ASSERT_TRUE(normalizeTickers("BTC/USD", out, err));
     TEST_ASSERT_EQUAL_STRING("BTC/USD", out.c_str());
-    TEST_ASSERT_TRUE(normaliseTickers("shop&country=Canada", out, err));
+    TEST_ASSERT_TRUE(normalizeTickers("shop&country=Canada", out, err));
     TEST_ASSERT_EQUAL_STRING("SHOP&country=Canada", out.c_str());
-    TEST_ASSERT_FALSE(normaliseTickers("A,B,C,D,E,F", out, err));
-    TEST_ASSERT_FALSE(normaliseTickers("", out, err));
-    TEST_ASSERT_FALSE(normaliseTickers(",,", out, err));
-    TEST_ASSERT_FALSE(normaliseTickers("SP Y", out, err));
+    TEST_ASSERT_FALSE(normalizeTickers("A,B,C,D,E,F", out, err));
+    TEST_ASSERT_FALSE(normalizeTickers("", out, err));
+    TEST_ASSERT_FALSE(normalizeTickers(",,", out, err));
+    TEST_ASSERT_FALSE(normalizeTickers("SP Y", out, err));
 }
 
 // --- text --------------------------------------------------------------------
 
 void test_text() {
     std::string out, err;
-    TEST_ASSERT_TRUE(normaliseText("  The   Villages,  FL ", 64, out, err));
+    TEST_ASSERT_TRUE(normalizeText("  The   Villages,  FL ", 64, out, err));
     TEST_ASSERT_EQUAL_STRING("The Villages, FL", out.c_str());
-    TEST_ASSERT_FALSE(normaliseText(std::string(65, 'a'), 64, out, err));
-    TEST_ASSERT_TRUE(normaliseText(std::string(64, 'a'), 64, out, err));
-    TEST_ASSERT_FALSE(normaliseText("a\tb", 64, out, err));
-    TEST_ASSERT_FALSE(normaliseText("   ", 64, out, err));
+    TEST_ASSERT_FALSE(normalizeText(std::string(65, 'a'), 64, out, err));
+    TEST_ASSERT_TRUE(normalizeText(std::string(64, 'a'), 64, out, err));
+    TEST_ASSERT_FALSE(normalizeText("a\tb", 64, out, err));
+    TEST_ASSERT_FALSE(normalizeText("   ", 64, out, err));
 }
 
 // --- urlEncode ---------------------------------------------------------------
@@ -113,21 +113,21 @@ void test_url_encode() {
     TEST_ASSERT_EQUAL_STRING("A-z_0.~", urlEncode("A-z_0.~").c_str());
 }
 
-// --- colours -----------------------------------------------------------------
+// --- colors -----------------------------------------------------------------
 
-void test_colour() {
+void test_color() {
     uint16_t c = 0;
     std::string err;
-    TEST_ASSERT_TRUE(parseHexColour("#fc8000", c, err));
+    TEST_ASSERT_TRUE(parseHexColor("#fc8000", c, err));
     TEST_ASSERT_EQUAL_HEX16(0xFC00, c);
-    TEST_ASSERT_TRUE(parseHexColour("#FFFFFF", c, err));
+    TEST_ASSERT_TRUE(parseHexColor("#FFFFFF", c, err));
     TEST_ASSERT_EQUAL_HEX16(0xFFFF, c);
-    TEST_ASSERT_FALSE(parseHexColour("fc8000", c, err));
-    TEST_ASSERT_FALSE(parseHexColour("#zzzzzz", c, err));
+    TEST_ASSERT_FALSE(parseHexColor("fc8000", c, err));
+    TEST_ASSERT_FALSE(parseHexColor("#zzzzzz", c, err));
     TEST_ASSERT_EQUAL_STRING("#ffffff", rgb565ToHex(0xFFFF).c_str());
     TEST_ASSERT_EQUAL_STRING("#000000", rgb565ToHex(0x0000).c_str());
-    // Round trip is stable once a colour has been through RGB565
-    TEST_ASSERT_TRUE(parseHexColour(rgb565ToHex(0xfc80), c, err));
+    // Round trip is stable once a color has been through RGB565
+    TEST_ASSERT_TRUE(parseHexColor(rgb565ToHex(0xfc80), c, err));
     TEST_ASSERT_EQUAL_HEX16(0xfc80, c);
 }
 
@@ -181,7 +181,7 @@ int main() {
     RUN_TEST(test_tickers);
     RUN_TEST(test_text);
     RUN_TEST(test_url_encode);
-    RUN_TEST(test_colour);
+    RUN_TEST(test_color);
     RUN_TEST(test_html_escape);
     RUN_TEST(test_jpeg_baseline_logo_passes);
     RUN_TEST(test_jpeg_progressive_rejected);

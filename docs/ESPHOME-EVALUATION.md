@@ -28,7 +28,7 @@ ESPHome supports GC9A01A through the `ili9xxx` display component (added March
 2024). That component **allocates a full framebuffer per display**. There is an
 open feature request for partial buffering on low-RAM devices
 ([esphome/feature-requests#3131](https://github.com/esphome/feature-requests/issues/3131)),
-which is itself confirmation that full-buffer is the current behaviour.
+which is itself confirmation that full-buffer is the current behavior.
 
 The numbers, using the DRAM budget measured from our own build rather than a
 datasheet figure:
@@ -39,12 +39,12 @@ current firmware uses           53,084 B   (16.2%)
 free                           274,596 B
 ```
 
-| Colour depth | Per display | Five displays |                        |
+| Color depth | Per display | Five displays |                        |
 |--------------|------------:|--------------:|------------------------|
 | 16-bit       |   115,200 B |     576,000 B | **2.1× the free DRAM** |
 | 8-bit        |    57,600 B |     288,000 B | **still over**         |
 
-Even at 8-bit colour, five buffers exceed the entire free DRAM before ESPHome's
+Even at 8-bit color, five buffers exceed the entire free DRAM before ESPHome's
 own runtime, the WiFi stack, or anything else is accounted for.
 
 ESPHome's own documentation says as much in passing: *"16 bit colors requires

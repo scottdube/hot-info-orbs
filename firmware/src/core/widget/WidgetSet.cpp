@@ -116,7 +116,7 @@ void WidgetSet::showCenteredLine(int screen, const String &text) {
     m_screenManager->selectScreen(screen);
     m_screenManager->fillScreen(TFT_BLACK);
     m_screenManager->setFontColor(TFT_WHITE);
-    m_screenManager->drawCentreString(text, ScreenCenterX, ScreenCenterY, 22);
+    m_screenManager->drawCenterString(text, ScreenCenterX, ScreenCenterY, 22);
 }
 
 void WidgetSet::showLoading() {
@@ -124,7 +124,7 @@ void WidgetSet::showLoading() {
 }
 
 void WidgetSet::updateAll() {
-    for (int8_t i = 0; i < m_widgetCount; i++) { // upstream left i uninitialised
+    for (int8_t i = 0; i < m_widgetCount; i++) { // upstream left i uninitialized
         if (!isShown(i)) {
             continue; // a hidden widget never fetches
         }
