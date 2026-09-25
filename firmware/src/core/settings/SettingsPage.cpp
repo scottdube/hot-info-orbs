@@ -1,6 +1,7 @@
 #include "SettingsPage.h"
 
 #include "SettingsValidation.h"
+#include "weatherwidget/TempestSource.h"
 #include "Utils.h"
 #include "build_id.h"
 #include "clockwidget/ClockWidget.h"
@@ -77,6 +78,39 @@ static String textField(const char *key, const char *label, const std::string &v
     return "<label for='" + String(key) + "'>" + label + "</label><input type='text' id='" + key + "' name='" + key + "' value='" +
            esc(value) + "'>" + hint("Default: " + esc(def) + extra) + errorLine(errors, key);
 }
+
+#ifdef TEMPEST_TOKEN
+// The last fetch per station. There is no serial on the SuperMini, so this is
+// how a failing station is seen without walking over to the orbs.
+static String tempestStatusLine(int slot) {
+    const TempestStatus &st = TempestSource::status(slot);
+    if (!st.attempted) {
+        return hint("&#9888; Not fetched since start-up.");
+    }
+    uint32_t mins = (millis() - st.at) / 60000;
+    String when = mins == 0 ? String("under a minute ago") : mins < 120 ? String(mins) + " min ago" : String(mins / 60) + " h ago";
+    String line = String(st.ok ? "&#10004; " : "&#10006; ") + "Last fetch " + when + ", took " + String(st.ms / 1000.0, 1) +
+                  " s, free heap " + String(st.freeHeap / 1024) + " KB";
+    if (!st.ok) {
+        line += " &mdash; " + esc(st.error.c_str());
+    }
+    return "<div class='" + String(st.ok ? "hint" : "err") + "'>" + line + "</div>";
+}
+
+static String stationRow(int slot, const char *idKey, const char *lblKey, uint32_t id, const std::string &lbl, uint32_t defId,
+                         const std::string &defLbl, const std::map<std::string, std::string> &errors) {
+    String n = String(slot + 1);
+    String h = "<label for='" + String(idKey) + "'>Station " + n + " ID</label><input type='text' inputmode='numeric' id='" +
+               idKey + "' name='" + idKey + "' value='" + (id ? String(id) : String("")) + "'>";
+    h += hint("Blank = no page. Default: " + (defId ? String(defId) : String("none"))) + errorLine(errors, idKey);
+    String label = "Station " + n + " label (16 characters)";
+    h += textField(lblKey, label.c_str(), lbl, defLbl, "", errors);
+    if (id) {
+        h += tempestStatusLine(slot);
+    }
+    return h;
+}
+#endif
 
 static String option(const String &value, const String &text, bool selected) {
     return "<option value='" + value + "'" + (selected ? " selected" : "") + ">" + text + "</option>";
@@ -208,6 +242,14 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += boolSelect("wxdark", "Weather screens", v.wxdark, d.wxdark, "Light", "Dark", errors);
     h += "</fieldset>";
 
+#ifdef TEMPEST_TOKEN
+    h += "<fieldset><legend>Tempest stations</legend>";
+    h += hint("Token set in secrets.h. Each station gets its own weather page, and the location above is then not used. Units follow the setting above.");
+    h += stationRow(0, "tstn1", "tlbl1", v.tstn1, v.tlbl1, d.tstn1, d.tlbl1, errors);
+    h += stationRow(1, "tstn2", "tlbl2", v.tstn2, v.tlbl2, d.tstn2, d.tlbl2, errors);
+    h += "</fieldset>";
+#endif
+
     h += "<fieldset><legend>Dim hours</legend>";
     h += boolSelect("dim", "Dim", v.dim, d.dim, "Off", "On", errors);
     h += hint("Darkens the colors drawn; the backlight itself stays on.");
@@ -329,6 +371,21 @@ void SettingsPage::handlePost() {
     if (v.off && v.offstart == v.offend && !errors.count("offstart") && !errors.count("offend")) {
         errors["offend"] = "Start and end are the same hour";
     }
+#ifdef TEMPEST_TOKEN
+    // IDs first: whether a label is required depends on its station
+    if (has("tstn1") && !sv::parseStationId(argStr(s, "tstn1"), v.tstn1, err)) {
+        errors["tstn1"] = err;
+    }
+    if (has("tstn2") && !sv::parseStationId(argStr(s, "tstn2"), v.tstn2, err)) {
+        errors["tstn2"] = err;
+    }
+    if (has("tlbl1") && !sv::parseStationLabel(argStr(s, "tlbl1"), v.tstn1, v.tlbl1, err)) {
+        errors["tlbl1"] = err;
+    }
+    if (has("tlbl2") && !sv::parseStationLabel(argStr(s, "tlbl2"), v.tstn2, v.tlbl2, err)) {
+        errors["tlbl2"] = err;
+    }
+#endif
     // Equal hours would mean "dim around the clock" (WidgetSet's wrap branch)
     if (v.dim && v.dimstart == v.dimend && !errors.count("dimstart") && !errors.count("dimend")) {
         errors["dimend"] = "Start and end are the same hour";

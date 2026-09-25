@@ -10,23 +10,22 @@
 // 4
 // factor out the text wrapping (there's a utils for that already, if that doesn't work, why not?)
 
+#include "SunMoon.h"
 #include "WeatherWidget.h"
 #include "icons.h"
 
 #include "Settings.h"
-#include "SettingsValidation.h"
-#include "config_helper.h"
 
-WeatherWidget::WeatherWidget(ScreenManager &manager) : Widget(manager) {
+WeatherWidget::WeatherWidget(ScreenManager &manager, WeatherSource *source) : Widget(manager), m_source(source) {
     m_mode = MODE_HIGHS;
-    const SettingsValues &s = Settings::get();
-    httpRequestAddress = String("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/") +
-                         sv::urlEncode(s.wxloc).c_str() + "/next3days?key=" + weatherApiKey +
-                         "&unitGroup=" + (s.wxmetric ? "metric" : "us") +
-                         "&include=days,current&iconSet=icons1&lang=" + LOC_LANG;
+    String label = m_source->label();
+    if (label.length() > 0) {
+        model.setCityName(label); // orb 1 names the page before the first fetch
+    }
 }
 
 WeatherWidget::~WeatherWidget() {
+    delete m_source;
 }
 
 void WeatherWidget::changeMode() {
@@ -59,7 +58,12 @@ void WeatherWidget::draw(bool force) {
 
     if (force || model.isChanged()) {
         weatherText(1);
-        drawWeatherIcon(2, model.getCurrentIcon(), 0, 0, 1);
+        // Half size (the decoder only scales by 1/2/4/8): the full-size art runs
+        // y 32-205 and left no room for the sun and moon lines
+        m_manager.selectScreen(2);
+        m_manager.fillScreen(m_backgroundColor);
+        drawWeatherIcon(2, model.getCurrentIcon(), 60, 60, 2);
+        sunMoon(2);
         singleWeatherDeg(3);
         threeDayWeather(4);
         model.setChangedStatus(false);
@@ -71,65 +75,14 @@ void WeatherWidget::update(bool force) {
         setBusy(true);
         if (force) {
             int retry = 0;
-            while (!getWeatherData() && retry++ < MAX_RETRIES)
+            while (!m_source->fetch(model) && retry++ < MAX_RETRIES)
                 ;
         } else {
-            getWeatherData();
+            m_source->fetch(model);
         }
         setBusy(false);
         m_weatherDelayPrev = millis();
     }
-}
-
-bool WeatherWidget::getWeatherData() {
-    HTTPClient http;
-    http.begin(httpRequestAddress);
-    int httpCode = http.GET();
-    if (httpCode > 0) {
-        // Check for the return code   TODO: factor out
-        JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getString());
-        http.end();
-
-        if (!error) {
-            model.setCityName(doc["resolvedAddress"].as<String>());
-            model.setCurrentTemperature(doc["currentConditions"]["temp"].as<float>());
-            model.setCurrentText(doc["days"][0]["description"].as<String>());
-
-            model.setCurrentIcon(doc["currentConditions"]["icon"].as<String>());
-            model.setTodayHigh(doc["days"][0]["tempmax"].as<float>());
-            model.setTodayLow(doc["days"][0]["tempmin"].as<float>());
-            for (int i = 0; i < 3; i++) {
-                model.setDayIcon(i, doc["days"][i + 1]["icon"].as<String>());
-                model.setDayHigh(i, doc["days"][i + 1]["tempmax"].as<float>());
-                model.setDayLow(i, doc["days"][i + 1]["tempmin"].as<float>());
-            }
-        } else {
-            // Handle JSON deserialization error
-            switch (error.code()) {
-            case DeserializationError::Ok:
-                Serial.print(F("Deserialization succeeded"));
-                break;
-            case DeserializationError::InvalidInput:
-                Serial.print(F("Invalid input!"));
-                break;
-            case DeserializationError::NoMemory:
-                Serial.print(F("Not enough memory"));
-                break;
-            default:
-                Serial.print(F("Deserialization failed"));
-                break;
-            }
-
-            return false;
-        }
-    } else {
-        // Handle HTTP request error
-        Serial.printf("HTTP request failed, error: %s\n", http.errorToString(httpCode).c_str());
-        http.end();
-        return false;
-    }
-    return true;
 }
 
 void WeatherWidget::displayClock(int displayIndex) {
@@ -198,6 +151,39 @@ void WeatherWidget::drawWeatherIcon(int displayIndex, const String &condition, i
     }
 }
 
+// Sunrise/sunset above the half-size icon and the moon phase below it. Not a
+// page of its own: that would cost flash we are short of. Redrawn whenever the weather refreshes.
+void WeatherWidget::sunMoon(int displayIndex) {
+    m_manager.selectScreen(displayIndex);
+    int offset = m_time->getTimeZoneOffset();
+    bool h24 = m_time->getFormat24Hour();
+    std::string rise = sunClock(model.getSunrise(), offset, h24), set = sunClock(model.getSunset(), offset, h24);
+    m_manager.setFontColor(m_foregroundColor);
+    if (!rise.empty() && !set.empty()) { // stacked: one line was too wide for the round top
+        m_manager.drawCenterString(("Sunrise " + rise).c_str(), center, 30, 17);
+        m_manager.drawCenterString(("Sunset " + set).c_str(), center, 52, 17);
+    }
+    int64_t utc = (int64_t)m_time->getUnixEpoch() - offset; // getUnixEpoch() is local-shifted
+    drawMoon(center, 202, 20, moonAgeDays(utc));
+}
+
+// A small moon showing today's phase: pale lit part on a dark disc, outlined
+// so a new moon still reads. Drawn row by row, so it costs no image flash.
+// The picture replaced the phase name, which few people could decode.
+void WeatherWidget::drawMoon(int cx, int cy, int r, double ageDays) {
+    const uint32_t dark = 0x39E7, lit = 0xFFF6; // gray, pale yellow
+    m_manager.fillCircle(cx, cy, r, dark);
+    for (int dy = -r; dy <= r; dy++) {
+        double w = std::sqrt((double)(r * r - dy * dy)), x0, x1;
+        moonLitSpan(ageDays, w, x0, x1);
+        int a = (int)std::lround(x0), b = (int)std::lround(x1);
+        if (b > a) {
+            m_manager.fillRect(cx + a, cy + dy, b - a, 1, lit);
+        }
+    }
+    m_manager.drawCircle(cx, cy, r, m_foregroundColor);
+}
+
 // Displays the current temperature on a single screen.
 // doesn't round deg, just removes all text after the decimal
 void WeatherWidget::singleWeatherDeg(int displayIndex) {
@@ -234,15 +220,25 @@ void WeatherWidget::weatherText(int displayIndex) {
 
     String message = model.getCurrentText() + " ";
     String messageArr[4];
-    int variableRangeS = 0;
-    int variableRangeE = 18;
-    for (int i = 0; i < 4; i++) {
-        while (message.substring(variableRangeE - 1, variableRangeE) != " ") {
-            variableRangeE--;
+    if (message.indexOf('\n') >= 0) {
+        // Already laid out one line per reading (Tempest's station readings)
+        int start = 0;
+        for (int i = 0; i < 4 && start < (int)message.length(); i++) {
+            int nl = message.indexOf('\n', start);
+            messageArr[i] = message.substring(start, nl < 0 ? message.length() : nl);
+            start = nl < 0 ? message.length() : nl + 1;
         }
-        messageArr[i] = message.substring(variableRangeS, variableRangeE);
-        variableRangeS = variableRangeE;
-        variableRangeE = variableRangeS + 18;
+    } else {
+        int variableRangeS = 0;
+        int variableRangeE = 18;
+        for (int i = 0; i < 4; i++) {
+            while (message.substring(variableRangeE - 1, variableRangeE) != " ") {
+                variableRangeE--;
+            }
+            messageArr[i] = message.substring(variableRangeS, variableRangeE);
+            variableRangeS = variableRangeE;
+            variableRangeE = variableRangeS + 18;
+        }
     }
     //=== OVERFLOW END ==============================
 
@@ -324,5 +320,5 @@ void WeatherWidget::configureColors() {
 }
 
 String WeatherWidget::getName() {
-    return "Weather";
+    return m_source->name();
 }

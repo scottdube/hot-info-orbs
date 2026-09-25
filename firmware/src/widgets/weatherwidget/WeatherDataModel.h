@@ -41,6 +41,11 @@ public:
     float getDayLow(int num);
     String getDayLow(int8_t num, int8_t digits);
 
+    // UTC epoch seconds for today; 0 = the source gave none
+    WeatherDataModel &setSunTimes(int64_t sunrise, int64_t sunset);
+    int64_t getSunrise() { return m_sunrise; }
+    int64_t getSunset() { return m_sunset; }
+
     bool isChanged();
     WeatherDataModel &setChangedStatus(bool changed);
 
@@ -55,6 +60,9 @@ private:
     String m_daysIcons[3] = {"", "", ""};
     float m_daysHigh[3] = {NaN, NaN, NaN};
     float m_daysLow[3] = {NaN, NaN, NaN};
+
+    int64_t m_sunrise = 0;
+    int64_t m_sunset = 0;
 
     bool m_changed = false;
 };

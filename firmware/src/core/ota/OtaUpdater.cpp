@@ -103,7 +103,9 @@ void OtaUpdater::setupArduinoOta() {
     ArduinoOTA.begin();
 }
 
+
 void OtaUpdater::setupWebUpdate() {
+
     s_server.on("/update", HTTP_GET, [this]() {
         if (!authorized()) {
             return;

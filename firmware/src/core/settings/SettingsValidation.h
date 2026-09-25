@@ -163,6 +163,39 @@ inline bool normalizeText(const std::string &in, size_t maxLen, std::string &out
     return true;
 }
 
+// Tempest station ID: blank = unused (0), otherwise 1..9 digits. parseInt
+// stops at 6 characters, and station IDs are already 6 digits long.
+inline bool parseStationId(const std::string &in, uint32_t &out, std::string &err) {
+    std::string s = trim(in);
+    if (s.empty()) {
+        out = 0;
+        return true;
+    }
+    if (s.size() > 9) {
+        err = "A station ID is at most 9 digits";
+        return false;
+    }
+    for (char c : s) {
+        if (!isdigit((unsigned char)c)) {
+            err = "Digits only - the number in the station's tempestwx.com address";
+            return false;
+        }
+    }
+    out = (uint32_t)std::stoul(s);
+    return true;
+}
+
+// Label shown on the orb in place of the town name: 1..16 characters (orb 1
+// shrinks the text to fit, "Salt Lake City" is 14), and
+// only required when the station is in use
+inline bool parseStationLabel(const std::string &in, uint32_t stationId, std::string &out, std::string &err) {
+    if (trim(in).empty() && stationId == 0) {
+        out = "";
+        return true;
+    }
+    return normalizeText(in, 16, out, err);
+}
+
 // RFC 3986: unreserved characters kept, everything else %XX
 inline std::string urlEncode(const std::string &in) {
     static const char hex[] = "0123456789ABCDEF";

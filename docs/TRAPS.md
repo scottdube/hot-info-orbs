@@ -2,6 +2,17 @@
 
 Things that cost time once. Each entry says what broke and what proved it.
 
+## A privacy grep that names what it looks for is the leak
+
+2026-09-24, branch `tempest`. The plan's check that a test fixture held no
+real station data was a grep whose pattern listed the real station IDs and
+name fragments. So the check itself put them in a public repo. It was caught
+after the push and removed from the branch history.
+
+Keep private values out of anything committed, including commands that
+search for them. Read them from the git-ignored `config.h` at run time, and
+grep the staged diff before pushing, not after.
+
 ## `config_helper.h` is force-included into C files, not just C++
 
 `platformio.ini` passes `-include "firmware/config/config_helper.h"`, so that

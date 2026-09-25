@@ -28,6 +28,10 @@ struct SettingsValues {
     int offstart; // hour 0..23
     int offend; // hour 0..23; where it overlaps the dim hours, off wins
     bool invert;
+    uint32_t tstn1; // Tempest station ID, 0 = unused
+    std::string tlbl1; // its label on the page, "" when unused
+    uint32_t tstn2;
+    std::string tlbl2;
     std::string hidden; // widget names left out of the rotation, '\n'-separated; "" = show all
 };
 

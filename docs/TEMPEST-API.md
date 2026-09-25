@@ -18,7 +18,8 @@ orb's own settings.
 - **~96 KB per reply** (95–97 KB for both stations). About 100 KB of that is
   `forecast.hourly`: 231 entries nobody on the orbs needs. `http.getString()`,
   which the Visual Crossing code uses, would hold all of it in RAM. The
-  SuperMini has no PSRAM, so the reply has to be **streamed through an
+  build does not enable PSRAM (the chip has 2 MB, measured 2026-09-24; see
+  VARIANT-ESP32-S3-SUPERMINI.md), so the reply has to be **streamed through an
   ArduinoJson filter**.
 - **Field order in the raw stream:** `current_conditions` at byte 1,
   `forecast.daily` at byte 906, `forecast.hourly` at byte 3,584, and `station`
@@ -26,6 +27,13 @@ orb's own settings.
   first ~3.6 KB.
 - `current_conditions`: `conditions` (text, e.g. "Partly Cloudy"), `icon`,
   `air_temperature`, `feels_like`, `relative_humidity`, `wind_avg`, and more.
+- `forecast.daily[*]` also carries `sunrise` and `sunset` as epoch seconds
+  (ints). Measured 2026-09-24; the keys are `air_temp_high`, `air_temp_low`,
+  `conditions`, `day_num`, `day_start_local`, `icon`, `month_num`,
+  `precip_icon`, `precip_probability`, `precip_type`, `sunrise` and `sunset`.
+  **There is no moon phase anywhere in the reply**, in `current_conditions` or
+  `daily`, so it has to be computed on the orb (it is date arithmetic) or come
+  from another source.
 - `forecast.daily`: 10 days. **`daily[0]` is today** (`day_num` = today's
   date): `conditions`, `icon`, `air_temp_high`, `air_temp_low`. Visual
   Crossing's `days[0]` is also today, and the page shows `days[1..3]`.
@@ -42,3 +50,20 @@ The orb's icon set (`WeatherWidget::drawWeatherIcon`) knows
 `fog`/`wind`/`cloudy`. Tempest's names need a translation table. The names
 Tempest documents but that were not seen on this day (`foggy`, `windy`,
 `sleet`, `snow`, `possibly-snow-*`, `possibly-sleet-*`) are unmeasured.
+
+## On the orb (measured 2026-09-24, branch `tempest`)
+
+Streamed with `useHTTP10(true)` and the filter from `TempestParse.h`:
+
+- **The filter keeps 744 bytes** of a real ~96 KB reply (measured on the host
+  against a saved reply).
+- **Fetch time**, connect to parse, as reported on the settings page for
+  two stations: 1.4 to 2.7 s. The loop is blocked for that long, the same way as
+  for the Visual Crossing fetch.
+- **Free heap after a fetch:** 210 to 211 KB.
+- **Flash:** 1,728,589 bytes, 87.9% of a slot, with the token compiled in.
+  Without it: 1,710,645 bytes. That is +960 over main: +460 for the source
+  split and +500 for the two extra string fields in the settings struct.
+- **The start-up fetch runs before the clock has synced**, so the settings page
+  gives the fetch's age from `millis()`, not a clock time. Measured: the first
+  version stamped both fetches `00:00`.

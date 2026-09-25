@@ -4,6 +4,7 @@
 #include "GlobalTime.h"
 #include "Utils.h"
 #include "WeatherDataModel.h"
+#include "WeatherSource.h"
 #include "Widget.h"
 #include "config_helper.h"
 #include <ArduinoJson.h>
@@ -13,7 +14,7 @@
 
 class WeatherWidget : public Widget {
 public:
-    WeatherWidget(ScreenManager &manager);
+    WeatherWidget(ScreenManager &manager, WeatherSource *source); // takes ownership of source
     ~WeatherWidget() override;
     void setup() override;
     void update(bool force = false) override;
@@ -28,9 +29,10 @@ private:
     void showJPG(int displayIndex, int x, int y, const byte jpgData[], int size, int scale);
     void drawWeatherIcon(int displayIndex, const String &condition, int x, int y, int scale);
     void singleWeatherDeg(int displayIndex);
+    void sunMoon(int displayIndex);
+    void drawMoon(int cx, int cy, int r, double ageDays);
     void weatherText(int displayIndex);
     void threeDayWeather(int displayIndex);
-    bool getWeatherData();
     int getClockStamp();
     void configureColors();
 
@@ -52,16 +54,7 @@ private:
 
     WeatherDataModel model;
 
-// This is a hack to support old config.h files that have WEATHER_LOCAION instead of LOCATION.
-#ifndef WEATHER_LOCATION
-    #define WEATHER_LOCATION WEATHER_LOCAION
-#endif
-
-    // Built in the constructor from Settings (location and units are on the
-    // settings page). The location is url-encoded: "The Villages, FL" has spaces
-    // and a comma, and upstream issue #337 reports spaces failing.
-    const String weatherApiKey = WEATHER_API_KEY;
-    String httpRequestAddress;
+    WeatherSource *m_source;
 
     const int MODE_HIGHS = 0;
     const int MODE_LOWS = 1;

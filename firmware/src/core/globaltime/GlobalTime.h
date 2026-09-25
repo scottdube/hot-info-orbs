@@ -52,6 +52,7 @@ public:
     String getDayAndMonth();
     bool isPM();
     bool getFormat24Hour();
+    int getTimeZoneOffset(); // seconds east of UTC; 0 until the zone lookup answers
     bool setFormat24Hour(bool format24hour);
 
 private:

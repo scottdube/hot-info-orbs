@@ -189,3 +189,12 @@ WeatherDataModel &WeatherDataModel::setChangedStatus(bool changed) {
     m_changed = changed;
     return *this;
 }
+
+WeatherDataModel &WeatherDataModel::setSunTimes(int64_t sunrise, int64_t sunset) {
+    if (m_sunrise != sunrise || m_sunset != sunset) {
+        m_sunrise = sunrise;
+        m_sunset = sunset;
+        m_changed = true;
+    }
+    return *this;
+}

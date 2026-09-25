@@ -32,6 +32,13 @@
 #define WEATHER_LOCATION "The Villages, FL" // City/state for the weather, look it up on https://www.visualcrossing.com/weather-data
 #define WEATHER_SCREEN_MODE Dark        // Can be either Light or Dark
 //#define WEATHER_UNITS_METRIC          // Uncomment this line if you want metric units for the weather
+// Tempest stations, only used when TEMPEST_TOKEN is set in secrets.h. The ID is
+// the number in the station's tempestwx.com address; the label replaces the
+// town name on the page (16 characters at most). Also changeable on /settings.
+//#define TEMPEST_STATION_1 123456
+//#define TEMPEST_LABEL_1 "HOME"
+//#define TEMPEST_STATION_2 0
+//#define TEMPEST_LABEL_2 ""
 
 // STOCK TICKER CONFIGURATION
 #define STOCK_TICKER_LIST "SPY,QQQ,AAPL,MSFT,BTC/USD" // Choose 5 securities to track. You can track forex, crypto (symbol/USD) or stocks from any exchange (if one ticker is part of multiple exchanges you can add on "&country=Canada" to narrow down to your ticker)

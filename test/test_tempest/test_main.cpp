@@ -1,0 +1,138 @@
+// Host tests for TempestParse.h:  pio test -e native
+// The fixture is made up (no real station): the repo is public.
+#include "TempestParse.h"
+#include <fstream>
+#include <unity.h>
+
+void setUp() {}
+void tearDown() {}
+
+void test_icons_unchanged() {
+    const char *same[] = {"clear-day", "clear-night", "cloudy", "partly-cloudy-day", "partly-cloudy-night"};
+    for (auto s : same) {
+        TEST_ASSERT_EQUAL_STRING(s, tempestIcon(s).c_str());
+    }
+}
+
+void test_icons_rain() {
+    const char *rain[] = {"rainy", "possibly-rainy-day", "possibly-rainy-night", "thunderstorm",
+                          "possibly-thunderstorm-day", "possibly-thunderstorm-night"};
+    for (auto s : rain) {
+        TEST_ASSERT_EQUAL_STRING("rain", tempestIcon(s).c_str());
+    }
+}
+
+void test_icons_snow_fog_wind_unknown() {
+    const char *snow[] = {"snow", "sleet", "possibly-snow-day", "possibly-snow-night", "possibly-sleet-day", "possibly-sleet-night"};
+    for (auto s : snow) {
+        TEST_ASSERT_EQUAL_STRING("snow", tempestIcon(s).c_str());
+    }
+    TEST_ASSERT_EQUAL_STRING("fog", tempestIcon("foggy").c_str());
+    TEST_ASSERT_EQUAL_STRING("wind", tempestIcon("windy").c_str());
+    TEST_ASSERT_EQUAL_STRING("cloudy", tempestIcon("something-new").c_str());
+    TEST_ASSERT_EQUAL_STRING("cloudy", tempestIcon("").c_str());
+}
+
+void test_parse_fixture_through_filter() {
+    std::ifstream in("test/fixtures/tempest_sample.json");
+    TEST_ASSERT_TRUE(in.good());
+    JsonDocument filter;
+    tempestFilter(filter);
+    JsonDocument doc;
+    TEST_ASSERT_TRUE(deserializeJson(doc, in, DeserializationOption::Filter(filter)) == DeserializationError::Ok);
+    TEST_ASSERT_TRUE(doc["forecast"]["hourly"].isNull()); // dropped while streaming
+    TempestReading r;
+    std::string err;
+    TEST_ASSERT_TRUE(tempestParse(doc, r, err));
+    TEST_ASSERT_EQUAL_STRING("Clear", r.conditions.c_str());
+    TEST_ASSERT_EQUAL_STRING("clear-day", r.icon.c_str());
+    TEST_ASSERT_EQUAL_FLOAT(50.0f, r.temp);
+    TEST_ASSERT_EQUAL_FLOAT(62.0f, r.days[0].high); // daily[0] is today
+    TEST_ASSERT_EQUAL_FLOAT(42.0f, r.days[0].low);
+    TEST_ASSERT_TRUE(r.days[0].sunrise == 1700000000); // epoch seconds, today
+    TEST_ASSERT_TRUE(r.days[0].sunset == 1700040000);
+    TEST_ASSERT_EQUAL_STRING("rain", r.days[1].icon.c_str()); // translated
+    TEST_ASSERT_EQUAL_STRING("rain", r.days[3].icon.c_str());
+    TEST_ASSERT_EQUAL_FLOAT(51.0f, r.days[3].low);
+    // What survives the filter is tiny next to the ~80 KB fixture
+    TEST_ASSERT_TRUE(measureJson(doc) < 2000);
+}
+
+void test_parse_rejects_short_forecast() {
+    JsonDocument doc;
+    deserializeJson(doc, R"({"current_conditions":{"conditions":"Clear","icon":"clear-day","air_temperature":50},
+                          "forecast":{"daily":[{"icon":"clear-day","air_temp_high":1,"air_temp_low":0}]}})");
+    TempestReading r;
+    std::string err;
+    TEST_ASSERT_FALSE(tempestParse(doc, r, err));
+    TEST_ASSERT_NOT_EQUAL(std::string::npos, err.find("days"));
+}
+
+void test_parse_rejects_missing_current() {
+    // What an error reply looks like: no current_conditions at all
+    JsonDocument doc;
+    deserializeJson(doc, R"({"status":{"status_code":2,"status_message":"UNAUTHORIZED"}})");
+    TempestReading r;
+    std::string err;
+    TEST_ASSERT_FALSE(tempestParse(doc, r, err));
+}
+
+void test_summary_from_fixture() {
+    std::ifstream in("test/fixtures/tempest_sample.json");
+    JsonDocument filter;
+    tempestFilter(filter);
+    JsonDocument doc;
+    deserializeJson(doc, in, DeserializationOption::Filter(filter));
+    TempestReading r;
+    std::string err;
+    TEST_ASSERT_TRUE(tempestParse(doc, r, err));
+    TEST_ASSERT_EQUAL_STRING("Clear\nFeels like 49\nHumidity 82%\nWind W 4-7 mph", tempestSummary(r, "mph").c_str());
+}
+
+void test_summary_lines_fit() {
+    TempestReading r;
+    r.conditions = "Thunderstorms Possible";
+    r.feels = 101.4f;
+    r.humidity = 100;
+    r.windAvg = 34;
+    r.windGust = 58;
+    r.windDir = "NNW";
+    std::string s = tempestSummary(r, "kph");
+    TEST_ASSERT_EQUAL_STRING("T-storms Possible\nFeels like 101\nHumidity 100%\nWind NNW 34-58 kph", s.c_str());
+    size_t start = 0;
+    while (start <= s.size()) {
+        size_t nl = s.find('\n', start);
+        size_t len = (nl == std::string::npos ? s.size() : nl) - start;
+        TEST_ASSERT_TRUE(len <= TEMPEST_LINE);
+        if (nl == std::string::npos) break;
+        start = nl + 1;
+    }
+    r.conditions = "Wintry Mix Possible Later";
+    TEST_ASSERT_EQUAL_STRING("Wintry Mix", tempestFitLine(r.conditions).c_str());
+}
+
+void test_summary_calm_and_missing() {
+    TempestReading r;
+    r.conditions = "Clear";
+    r.windAvg = 0.3f;
+    r.windGust = 0.4f;
+    r.windDir = "N";
+    TEST_ASSERT_EQUAL_STRING("Clear\nWind calm", tempestSummary(r, "mph").c_str()); // no feels/humidity in reply
+    r.windGust = 0.2f; // gust not above average: no range
+    r.windAvg = 5;
+    TEST_ASSERT_EQUAL_STRING("Clear\nWind N 5 mph", tempestSummary(r, "mph").c_str());
+}
+
+int main() {
+    UNITY_BEGIN();
+    RUN_TEST(test_icons_unchanged);
+    RUN_TEST(test_icons_rain);
+    RUN_TEST(test_icons_snow_fog_wind_unknown);
+    RUN_TEST(test_parse_fixture_through_filter);
+    RUN_TEST(test_parse_rejects_short_forecast);
+    RUN_TEST(test_parse_rejects_missing_current);
+    RUN_TEST(test_summary_from_fixture);
+    RUN_TEST(test_summary_lines_fit);
+    RUN_TEST(test_summary_calm_and_missing);
+    return UNITY_END();
+}
