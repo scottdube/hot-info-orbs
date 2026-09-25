@@ -62,11 +62,13 @@ hours, sends the GC9A01's display-off and sleep-in commands (0x28, 0x10) to all
 five panels. Each schedule has its own switch, so an orb can dim in the evening
 and go off at bedtime, or use only one. Where the two overlap, off wins. The
 HOT meeting that day asked for it, and the controller datasheet lists the
-commands. Scott's first look in daylight: "looks pretty good". **Not yet
-measured:** how much the backlight still glows in a dark room, and the current
-draw. The LED is wired to VCC on the module, not to the controller, so it
-probably still draws full current. Until that's checked, call this "blanks the
-panels", not "turns the backlight off".
+commands. Scott's first look in daylight: "looks pretty good". **Checked by
+eye 2026-09-25:** the backlight stays on, so the panels glow with no content,
+"not black by any stretch". Dim hours also checked and work. That fits the
+LEDPWM result below: the LED runs off VCC on the module, not the controller.
+So this "blanks the panels"; it does not turn the backlight off, and it
+probably still draws full backlight current. **Not yet measured:** the
+current draw.
 
 **The controller does have backlight control; whether our module uses it is
 untested (found 2026-09-25).** The GalaxyCore GC9A01 datasheet (V1.0
