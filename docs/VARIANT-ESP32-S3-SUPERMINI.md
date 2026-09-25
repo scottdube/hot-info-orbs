@@ -817,7 +817,13 @@ Levers, cheapest first (measured unless marked):
   −35 KB, not measured. Risk: any glyph outside the subset (a ticker or a
   weather description with other characters) draws as nothing.
 
-Together that's roughly 150–180 KB, about 89% down to 80%. By contrast, the
+**Done 2026-09-25, first two levers:** FinalFrontier left out, and the nixie
+digits and logo re-saved at q80 (the custom clock JPGs are 983-byte
+placeholders and gained nothing, so they were left alone). The image went
+from 1,749,229 to 1,671,701 bytes (**89.0% to 85.0%**, −77.5 KB). Nixie
+look: Scott's check pending.
+
+Together the four levers come to roughly 150–180 KB, about 89% down to 80%. By contrast, the
 framework (printf, mbedTLS, lwIP, WiFi) is precompiled and not ours to trim.
 
 ## 2026-09-24: a more capable variant on the same carrier?

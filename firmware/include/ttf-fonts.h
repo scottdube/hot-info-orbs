@@ -26,8 +26,12 @@ const TTF_FontMetric ttfFontMetrics[] = {{ROBOTO_REGULAR, 1.37}, {FINAL_FRONTIER
 extern const byte robotoRegular_start[] asm("_binary_fonts_RobotoRegular_ttf_start");
 extern const byte robotoRegular_end[] asm("_binary_fonts_RobotoRegular_ttf_end");
 
+// FinalFrontier (19.8 KB) is left out of the image because no widget uses it.
+// To use it: uncomment it in platformio.ini and add -D USE_FINAL_FRONTIER.
+#ifdef USE_FINAL_FRONTIER
 extern const byte finalFrontier_start[] asm("_binary_fonts_FinalFrontier_ttf_start");
 extern const byte finalFrontier_end[] asm("_binary_fonts_FinalFrontier_ttf_end");
+#endif
 
 // Choose either Classic or Modern here and remember to also adjust platformio.ini
 // *******************************************************************************

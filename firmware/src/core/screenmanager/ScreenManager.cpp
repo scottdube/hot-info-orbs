@@ -55,9 +55,11 @@ void ScreenManager::setFont(TTF_Font font) {
         error = m_render.loadFont(robotoRegular_start, robotoRegular_end - robotoRegular_start);
         break;
 
+#ifdef USE_FINAL_FRONTIER
     case FINAL_FRONTIER:
         error = m_render.loadFont(finalFrontier_start, finalFrontier_end - finalFrontier_start);
         break;
+#endif
 
     case DSEG7:
         error = m_render.loadFont(dseg7_start, dseg7_end - dseg7_start);
