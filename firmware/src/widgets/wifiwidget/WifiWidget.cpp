@@ -1,4 +1,5 @@
 #include "WifiWidget.h"
+#include "RoamPolicy.h"
 #include "Utils.h"
 #include <WiFi.h>
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
@@ -22,6 +23,9 @@ void WifiWidget::setup() {
     m_manager.drawCenterString("Connecting", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
 
     WiFi.mode(WIFI_STA); // For WiFiManager explicitly set mode to station, ESP defaults to STA+AP
+    // The default fast scan joins the first AP it hears, not the strongest
+    WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+    WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
 
 #if (defined WIFI_SSID && defined WIFI_PASS)
     m_hardCodedWiFi = true;
@@ -102,6 +106,78 @@ void WifiWidget::update(bool force) {
             m_connectionFailed = true;
             connectionTimedOut();
         }
+    }
+}
+
+// First look 20 s after connecting (so a restart lands on the right AP), then
+// every 2 minutes. Scans only while the signal is weak.
+const unsigned long roamFirstCheckMs = 20000;
+const unsigned long roamCheckMs = 120000;
+// If the chosen AP hasn't taken us within this long, rejoin by name only
+const unsigned long roamJoinTimeoutMs = 20000;
+
+void WifiWidget::roamIfWeak() {
+    const unsigned long now = millis();
+
+    if (m_roamJoinStarted) {
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.printf("Roam: now on %s, %d dBm\n", WiFi.BSSIDstr().c_str(), WiFi.RSSI());
+            m_roamJoinStarted = 0;
+        } else if (now - m_roamJoinStarted > roamJoinTimeoutMs) {
+            Serial.println("Roam: chosen AP didn't take us, rejoining any AP");
+            WiFi.begin(m_roamSsid.c_str(), WiFi.psk().c_str());
+            m_roamJoinStarted = 0;
+        }
+        return;
+    }
+
+    if (m_roamScanning) {
+        const int n = WiFi.scanComplete();
+        if (n == WIFI_SCAN_RUNNING) {
+            return;
+        }
+        m_roamScanning = false;
+        if (n < 0) {
+            return; // scan failed; try again at the next check
+        }
+        std::vector<ApSeen> seen;
+        for (int i = 0; i < n; i++) {
+            ApSeen ap{WiFi.SSID(i).c_str(), {}, (int)WiFi.RSSI(i), (int)WiFi.channel(i)};
+            memcpy(ap.bssid, WiFi.BSSID(i), 6);
+            seen.push_back(ap);
+        }
+        WiFi.scanDelete();
+        if (WiFi.status() != WL_CONNECTED) {
+            return;
+        }
+        uint8_t current[6];
+        memcpy(current, WiFi.BSSID(), 6);
+        const int rssi = WiFi.RSSI();
+        const String ssid = WiFi.SSID();
+        const int pick = pickRoamTarget(ssid.c_str(), current, rssi, seen);
+        if (pick < 0) {
+            Serial.printf("Roam: staying on %s, %d dBm; no AP %d dB better\n", WiFi.BSSIDstr().c_str(), rssi, ROAM_MARGIN_DB);
+            return;
+        }
+        Serial.printf("Roam: %d dBm here, moving to an AP at %d dBm on channel %d\n", rssi, seen[pick].rssi, seen[pick].channel);
+        m_roamSsid = ssid;
+        WiFi.begin(ssid.c_str(), WiFi.psk().c_str(), seen[pick].channel, seen[pick].bssid);
+        m_roamJoinStarted = now ? now : 1;
+        return;
+    }
+
+    if (m_nextRoamCheck == 0) {
+        m_nextRoamCheck = now + roamFirstCheckMs;
+    }
+    if ((long)(now - m_nextRoamCheck) < 0) {
+        return;
+    }
+    m_nextRoamCheck = now + roamCheckMs;
+    if (WiFi.status() != WL_CONNECTED || WiFi.RSSI() >= ROAM_SCAN_BELOW_DBM) {
+        return;
+    }
+    if (WiFi.scanNetworks(true) == WIFI_SCAN_RUNNING) {
+        m_roamScanning = true;
     }
 }
 

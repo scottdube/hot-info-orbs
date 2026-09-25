@@ -15,6 +15,8 @@ public:
     String getName() override;
 
     bool isConnected() { return m_isConnected; }
+    // Call from the main loop once connected; see RoamPolicy.h for why
+    void roamIfWeak();
 
 private:
     void connectionTimedOut();
@@ -32,6 +34,11 @@ private:
     String m_apssid{""};
     int m_connectionTimer{0};
     const int m_connectionTimeout{10000};
+
+    unsigned long m_nextRoamCheck{0};
+    bool m_roamScanning{false};
+    unsigned long m_roamJoinStarted{0};
+    String m_roamSsid{""};
 };
 
 #endif // WIFIWIDGET_H

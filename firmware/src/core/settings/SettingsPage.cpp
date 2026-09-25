@@ -7,6 +7,7 @@
 #include "config_helper.h"
 #include "icons.h"
 #include <LittleFS.h>
+#include <WiFi.h>
 
 static const char *BOOT_PATH = "/boot.jpg";
 static const char *BOOT_TMP = "/boot.tmp";
@@ -147,6 +148,12 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h.reserve(9000);
     h += PAGE_HEAD;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
+    {
+        // Glyph as well as the number. Rule-of-thumb bands, not measured on the orb
+        const int rssi = WiFi.RSSI();
+        h += String(rssi >= -65 ? "&#10004;" : rssi >= -75 ? "&#9888;" : "&#10006;") + " WiFi " + String(rssi) + " dBm on access point " +
+             WiFi.BSSIDstr() + ", channel " + String(WiFi.channel()) + ".<br>";
+    }
     h += Settings::hasStored() ? "Using settings saved from this page." : "Nothing saved yet &mdash; using the values built into the firmware.";
     h += "</p>";
 #ifndef OTA_PASSWORD

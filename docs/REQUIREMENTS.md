@@ -113,9 +113,26 @@ Tested from a phone on 2026-09-23: a 310×372 transparent PNG went through the
 page's crop-and-shrink and arrived as a 16.7 KB baseline 240×240 JPEG, which the
 orb stored and serves back. Not yet checked by eye on the displays.
 Design and reasons: `docs/superpowers/specs/2026-09-23-web-settings-design.md`.
-Not done yet: API keys on the page (needs the per-key status above first), WiFi
-signal and last-API-call status, and enabling/disabling widgets. Flash is
+Not done yet: API keys on the page (needs the per-key status above first),
+last-API-call status, and enabling/disabling widgets. WiFi signal, access
+point and channel were added 2026-09-25, along with roaming (below). Flash is
 87.0% of a slot, and the stop line is 92%.
+
+**WiFi roaming (added 2026-09-25).** An orb moved across a building kept its
+far access point: 341 ms average ping and 5% loss, while the router answered
+in 3 ms, and every 96 KB Tempest reply arrived cut short. Restarting didn't
+help. The ESP32's default connect takes the first AP it hears, not the
+strongest, and it never moves until the link dies. Now it scans every channel
+and joins the strongest at connect. While connected, it checks 20 s after
+joining and every 2 minutes after that. If the signal is below -65 dBm, it
+scans in the background and moves to an AP at least 8 dB stronger on the same
+network. The margin keeps two similar APs from trading the orb back and forth.
+If the new AP doesn't take it within 20 s, it rejoins by network name.
+Decision logic: `firmware/src/core/wifi/RoamPolicy.h`, tested on the host.
+Rejected: the router steering clients (UniFi "lock to AP" is a per-device
+setting someone has to know to change, and not every owner runs UniFi), and
+802.11k/v/r roaming (it needs router support and ESP-IDF config this build
+doesn't expose).
 
 ## R2 — Over-the-air firmware updates
 
