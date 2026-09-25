@@ -96,6 +96,61 @@ and at 0%, whatever the room light, so this settles it for these 7-pin modules:
 the "no brightness control" rule stands, and real dimming still needs a module
 that brings out BL. The route was removed once answered.
 
+**What real screens-off would take (written 2026-09-25, not built).** No
+command can darken these modules (above), so turning the backlight off means
+cutting power to the displays. Nothing here has been built or measured on a
+prototype, so treat it as a design to try.
+
+*The load.* The displays run on **5 V**, each through its own onboard
+regulator. The whole orb measures 342 mA at 5 V, so the display share is less
+than that. A switch rated about 1 A leaves margin for the surge at turn-on.
+
+*The switch.* It goes on the **5 V feed to the displays only**, high side.
+Two ways to build it:
+
+| | Parts | Notes |
+|---|---|---|
+| Discrete | P-channel MOSFET (e.g. AO3401A) in the 5 V line, 10 kΩ gate to 5 V; N-channel MOSFET (e.g. 2N7002) pulling that gate to ground; 10 kΩ from the 2N7002 gate to 3.3 V | The 2N7002 is needed because a 3.3 V pin cannot turn off a P-FET whose source is at 5 V. With the pull-up on the 2N7002, the displays are **on** by default, during boot and on firmware that knows nothing about the switch. The firmware drives the pin low to turn them off. |
+| Load-switch chip | One IC rated to 5.5 V with a logic-level enable and controlled turn-on (TI TPS22918 is one; check the datasheet before choosing) | One part instead of three, and it ramps on gently. That matters because the ESP32's regulator is fed from the same 5 V line, and a hard switch-on dip could reset it. Needs a pull-up on the enable pin for the same displays-on default. |
+
+*The pin.* The firmware already uses GPIO 1, 2 and 4–15. The vendor pinout
+lists 16, 17, 18 and 21 as broken out and safe to use, but nobody has checked
+them on the board we have. Look on the back pads before designing around one.
+Avoid the strapping pins (0, 3, 45, 46). GPIO 14 is taken: it's the dummy
+chip-select that TFT_eSPI still toggles. GPIO 15 is taken too: it's the
+activity-light output (`BUSY_PIN`).
+
+*Firmware, in order:*
+1. **Off:** stop SPI, then drive MOSI, SCLK, DC, RST and all five CS lines
+   **low**, then switch the power off. If those lines stay high, current leaks
+   into the unpowered display chips through their input pins. That half-powers
+   them and can make the backlight glow faintly, which defeats the point.
+2. **On:** switch the power on, wait for the module regulators (start with
+   50 ms and measure), restart SPI, re-initialize all five panels (power loss
+   wipes the controller), then redraw everything. The existing screens-off
+   schedule and 60-second button wake stay as they are; only what "off" does
+   changes.
+
+*Checks once built:* the orb's current at 5 V with screens off against on
+(the saving we'd be buying); a meter on one module's VCC while off, which
+should read about 0 V (a volt or two means a line is still high); and a
+dark-room look.
+
+*Rejected:*
+- Switching the ground side. A logic-level N-FET is simpler to drive, but
+  with ground cut, the modules find ground through the signal lines.
+- Pulsing the supply rapidly on and off (PWM) to dim. It resets the display
+  controller every cycle.
+- The controller's LEDPWM pin. It isn't wired on these modules (tested above).
+
+Dimming for real would need the LED switched on its own, which means modifying
+each module. A look at the back of one would show whether there's a transistor
+or pad to tap.
+
+*Cost against the project's constraints:* three small parts or one IC, one
+pin, and firmware sequencing. Worth it on a new carrier board. As a fix for
+one existing orb, it's a lot of work.
+
 **Security floor:** the panel holds WiFi credentials and API keys. It needs at
 minimum a password, and it must never display stored secrets back in plaintext.
 An unauthenticated page on the LAN that reveals WiFi credentials is not
