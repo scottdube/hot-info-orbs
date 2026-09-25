@@ -67,6 +67,24 @@ draw. The LED is wired to VCC on the module, not to the controller, so it
 probably still draws full current. Until that's checked, call this "blanks the
 panels", not "turns the backlight off".
 
+**The controller does have backlight control; whether our module uses it is
+untested (found 2026-09-25).** The GalaxyCore GC9A01 datasheet (V1.0
+Preliminary), chapter 6 "Command", lists everything raised at the HOT
+meeting: 10h/11h sleep in/out, 12h partial, 13h normal, 20h/21h inversion,
+28h/29h display off/on. There is no separate power-down or deep-standby
+command; Sleep In (10h) is the lowest-power state ("DC/DC converter is
+stopped, Internal oscillator is stopped, and panel scanning is stopped").
+Display Off (28h) only blanks the output, "no change of contents of frame
+memory". Section 5.10.3, though, has an **LEDPWM output pin** meant to drive
+an external LED driver, with Write Display Brightness (51h, DBV 0-255 = PWM
+duty) and Write CTRL Display (53h, bits BCTRL, DD, BL, where BL = 0 means
+"completely turn off backlight circuit"). That only works if the module
+maker routed LEDPWM to the backlight. On the 7-pin modules the backlight
+appears to run straight off VCC, but nobody has tested it. **Test:** send 53h
+with BL = 0, and separately 53h = 0x24 plus 51h = 0x00, then look in a dark
+room. If the backlight goes out, both real screens-off and real dimming become
+possible on this hardware, and the "no brightness control" rule above changes.
+
 **Security floor:** the panel holds WiFi credentials and API keys. It needs at
 minimum a password, and it must never display stored secrets back in plaintext.
 An unauthenticated page on the LAN that reveals WiFi credentials is not
