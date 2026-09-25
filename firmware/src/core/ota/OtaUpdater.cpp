@@ -103,40 +103,8 @@ void OtaUpdater::setupArduinoOta() {
     ArduinoOTA.begin();
 }
 
-// Backlight test (2026-09-25). The GC9A01 has an LEDPWM output driven by
-// 53h (BCTRL/BL bits) and 51h (brightness); unknown whether our modules route
-// it to the backlight. Evidence against: LEDPWM is Low after reset, nothing
-// ever writes 53h/51h, and the backlights are on. That still allows an
-// inverted driver, which only these commands can reveal. Look in a dark room;
-// /bltest?m=restart undoes it (a reset puts LEDPWM back Low).
-static void backlightTest(ScreenManager &m, const String &mode) {
-    if (mode == "off") { // BL = 0: "completely turn off backlight circuit"
-        m.sendToAllPanels(0x53, 0x00);
-    } else if (mode == "pwm0" || mode == "pwm50" || mode == "full") {
-        m.sendToAllPanels(0x53, 0x24); // BCTRL = 1, BL = 1
-        m.sendToAllPanels(0x51, mode == "pwm0" ? 0x00 : mode == "pwm50" ? 0x80 : 0xFF);
-    }
-}
 
 void OtaUpdater::setupWebUpdate() {
-    s_server.on("/bltest", HTTP_GET, [this]() {
-        if (!authorized()) {
-            return;
-        }
-        String m = s_server.arg("m");
-        if (m == "restart") {
-            s_server.send(200, "text/plain", "Restarting\n");
-            delay(200);
-            ESP.restart();
-        }
-        if (m != "off" && m != "pwm0" && m != "pwm50" && m != "full") {
-            s_server.send(400, "text/plain", "m = off | pwm0 | pwm50 | full | restart\n");
-            return;
-        }
-        backlightTest(m_manager, m);
-        Serial.printf("Backlight test: %s\n", m.c_str());
-        s_server.send(200, "text/plain", "Sent " + m + " to all panels. Undo: /bltest?m=restart\n");
-    });
 
     s_server.on("/update", HTTP_GET, [this]() {
         if (!authorized()) {

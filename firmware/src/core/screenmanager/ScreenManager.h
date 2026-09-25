@@ -33,7 +33,6 @@ public:
 
     bool setBrightness(uint8_t brightness);
     void setPanelsAsleep(bool asleep);
-    void sendToAllPanels(uint8_t cmd, int data = -1); // raw GC9A01 command, data < 0 = none
     uint8_t getBrightness();
 
     // Set TTF parameters for next drawString()
