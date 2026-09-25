@@ -785,6 +785,41 @@ them. **The ceiling is 4 MB of in-package flash split into two OTA slots**,
 and only a module with more flash moves it. A board change still means a new
 carrier footprint and fan-out (§3).
 
+**Correction 2026-09-25: the symbol sort above missed a quarter of the
+image.** Files embedded with `board_build.embed_files` show up to `nm` as
+unsized `_binary_*` symbols, so a size sort never lists them. Their
+`_binary_*_size` symbols add up to **440,199 bytes, 22% of a slot** (image
+1,749,229 bytes, 89.0%):
+
+| Embedded | Bytes | Where it's used |
+|---|---:|---|
+| Nixie clock JPGs (12) | 152,276 | nixie clock face |
+| DSEG14ModernBold.ttf | 71,756 | only the AM/PM text on the clock |
+| RobotoRegular.ttf | 62,420 | all ordinary text |
+| logo.jpg | 35,557 | boot screen |
+| Weather icons, dark + light (14) | 64,058 | weather page |
+| DSEG7ModernBold.ttf | 22,524 | clock digits |
+| FinalFrontier.ttf | 19,812 | **nothing**: loadable, but no widget selects it |
+| Custom clock JPGs (12) | 11,796 | custom clock face |
+
+Levers, cheapest first (measured unless marked):
+- **Drop FinalFrontier:** −19,812 bytes, no visible change. It removes a
+  font that upstream's config could select.
+- **Re-save the JPGs at quality 80** (PIL, baseline, optimized): 263,687 to
+  198,672 bytes, **−65 KB**. Most of it is the nixie digits (−45 KB) and the
+  logo (−12.5 KB). The icons barely shrink; they're already at about q80. Needs an eye
+  check on the panels, and re-encoding a JPG loses a little each time, so
+  use the originals if they can be found.
+- **Subset DSEG14 to the glyphs AM/PM needs:** estimated −60 KB or more,
+  not measured. Needs fonttools. DSEG is OFL; check its Reserved Font Name
+  terms before shipping a modified copy.
+- **Subset Roboto to Latin-1 plus the symbols we draw:** estimated −20 to
+  −35 KB, not measured. Risk: any glyph outside the subset (a ticker or a
+  weather description with other characters) draws as nothing.
+
+Together that's roughly 150–180 KB, about 89% down to 80%. By contrast, the
+framework (printf, mbedTLS, lwIP, WiFi) is precompiled and not ours to trim.
+
 ## 2026-09-24: a more capable variant on the same carrier?
 
 **PSRAM on our unit: 2 MB, present and working. Measured 2026-09-24.** The
