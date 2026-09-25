@@ -177,6 +177,13 @@ with a ~6.5 mm keepout and center ≥ 3.2 mm from the board edge.
 
 ## 6. Power — the regulator is the real constraint
 
+> **Superseded for the current build (noted 2026-09-25).** The displays now
+> run on **5 V**, each through its own onboard regulator, so the SuperMini's
+> regulator carries only the ESP32 (see `docs/features.html`: 342 mA / 1.71 W
+> for the whole orb at 5 V, measured). The netlist analysis below describes
+> the upstream wiring, and it is kept for the reasoning. Its load figures are
+> estimates that the measurement replaces.
+
 **Correction:** an earlier draft of this section said the displays run off 5 V.
 They do not. The netlist is explicit — display connector pin 7 is
 `Net-(U1-3.3v)` and pin 6 is GND. All five displays hang off the **module's
