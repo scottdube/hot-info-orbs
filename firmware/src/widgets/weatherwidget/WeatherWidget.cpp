@@ -160,8 +160,8 @@ void WeatherWidget::sunMoon(int displayIndex) {
     std::string rise = sunClock(model.getSunrise(), offset, h24), set = sunClock(model.getSunset(), offset, h24);
     m_manager.setFontColor(m_foregroundColor);
     if (!rise.empty() && !set.empty()) { // stacked: one line was too wide for the round top
-        m_manager.drawCenterString(("Rise " + rise).c_str(), center, 30, 17);
-        m_manager.drawCenterString(("Set " + set).c_str(), center, 52, 17);
+        m_manager.drawCenterString(("Sunrise " + rise).c_str(), center, 30, 17);
+        m_manager.drawCenterString(("Sunset " + set).c_str(), center, 52, 17);
     }
     int64_t utc = (int64_t)m_time->getUnixEpoch() - offset; // getUnixEpoch() is local-shifted
     drawMoon(center, 202, 20, moonAgeDays(utc));
