@@ -882,3 +882,52 @@ None is a drop-in: the power pins and SPI pins sit in different places.
 held high on the board. Unmeasured on these panels; test it before an adapter
 depends on it.
 
+
+## 2026-09-27: more app room on the same 4 MB, before any hardware
+
+Revisited the Advanced module because flash is the limit. **A partition layout
+that nobody had costed yet gets most of what a bigger module would.** The two
+OTA slots each hold a full copy of the app, embedded pictures and fonts included,
+so half the chip is always a spare copy.
+
+**Factory recovery layout.** Keep one full app slot, and put a small recovery app
+in `factory` whose only job is WiFi plus an upload page. An update restarts into
+recovery, which writes the main slot and boots it.
+
+**Measured:** a minimal recovery app (WiFi + `WebServer` + `Update`, same
+unpinned `espressif32` platform as the firmware) builds to **716,256 bytes**.
+
+| | Today (two OTA slots) | Factory + one slot |
+|---|---|---|
+| factory | none | 0x10000, 0xD0000 (832 KB, 116 KB margin over the 716 KB measured) |
+| app slot | 2 × 0x1E0000 (1,966,080 B) | 1 × 0x2F0000 at 0xE0000 (**3,080,192 B**) |
+| spiffs, coredump | unchanged | unchanged |
+| current image (1,671,701 B) | 85.0% | **54.3%** |
+
+About +1.1 MB for the app, 1.57× today's slot, with no module change, no
+adapter board and no new pin map.
+
+What it costs:
+- **A bad update lands in recovery, not the old firmware.** The orb stays
+  reachable over WiFi and can take another upload, but the displays show nothing
+  until it does (unless recovery also drives one panel, which adds TFT_eSPI).
+  Today a bad update rolls back to the previous version.
+- **Updates are two hops:** the app restarts into recovery, then the upload goes
+  to recovery. `pio run -e ota` and the `/update` page both change.
+- The app can't update itself (`esp_ota_get_next_update_partition` has nowhere
+  else to write), so the recovery app is load-bearing. It has to be small,
+  boring and rarely changed.
+- **One more USB flash** per orb for the new partition table, as with the OTA
+  change.
+
+Not measured: rollback into `factory` on this bootloader (the A/B rollback was
+tested 2026-09-23; the factory path was not), and the 5 V/WiFi-connect time of the extra restart.
+
+**Still true for the Advanced module (XIAO ESP32S3 Plus, 16 MB):** it also
+brings 8 MB octal PSRAM and keeps A/B rollback, but it needs the adapter board, a
+JLCPCB turnaround, a second pin map and the untested `TFT_RST -1`. Worth it for a
+feature that needs PSRAM or several MB of assets; not needed for flash alone
+until the factory layout's 3 MB slot fills.
+
+A web search on 2026-09-27 turned up no SuperMini-footprint board with 8 or
+16 MB. AliExpress is still unbrowsed.
