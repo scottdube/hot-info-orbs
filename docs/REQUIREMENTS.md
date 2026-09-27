@@ -185,7 +185,8 @@ per-source status the note above asks for. The Tempest token is deliberately
 Not done yet: API keys on the page (needs the per-key status above first),
 last-API-call status, and enabling/disabling widgets. WiFi signal, access
 point and channel were added 2026-09-25, along with roaming (below). Flash is
-87.0% of a slot, and the stop line is 92%.
+54.0% of the app slot since the 2026-09-27 recovery layout (R2), and the
+stop line is 92%.
 
 **WiFi roaming (added 2026-09-25).** An orb moved across a building kept its
 far access point: 341 ms average ping and 5% loss, while the router answered
@@ -207,7 +208,24 @@ doesn't expose).
 
 **Firmware updates must not require a USB cable.**
 
-**Status 2026-09-23: implemented and tested on the SuperMini.** USB flash of the
+**2026-09-27: reworked to one app slot plus a recovery app.** Flash was the
+limit (85.0% of a 1.875 MB slot). The two slots each held a full copy of the
+app, so `partitions.csv` now has a `factory` recovery app (832 KB partition,
+768,624-byte image, `firmware/src/recovery`) and one 3,080,192-byte app slot:
+the app went from 85.0% to **54.0%**. The app no longer writes itself. `/update`
+restarts it into recovery (NVS flag + `esp_ota_set_boot_partition(factory)`),
+recovery takes the upload and writes app0. ArduinoOTA/espota is gone (nothing
+to write to, and espota never worked from the Mac anyway); `pio run -e ota` now
+runs `tools/ota_upload.py`. Recovery's boot decisions are in
+`RecoveryPolicy.h`, tested on the host: it never boots a slot that fails
+`esp_image_verify` or that the bootloader rolled back, returns to a good app
+when nobody asked for recovery (a power cut), and gives up waiting after 10
+minutes idle. **Trade accepted:** a bad update now lands in recovery, not the
+previous firmware; the *Must* ("a half-written image must not brick the
+device") still holds. Design and the alternatives:
+`docs/VARIANT-ESP32-S3-SUPERMINI.md`, 2026-09-27.
+
+**Status 2026-09-23 (two-slot layout, superseded above): implemented and tested on the SuperMini.** USB flash of the
 new layout, then a browser-style multipart upload to `/update` by IP: 11 s
 upload, back on the network 14 s later. otadata read back over USB afterwards:
 highest sequence 2 → running `app1`, state `VALID`, i.e. the new image reached

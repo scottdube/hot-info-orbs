@@ -231,3 +231,33 @@ Fix: `default_envs = esp32-s3-devkitc-1, ota` under `[platformio]`, plus an
 explicit `pio test -e native` step in CI. This is the "change the build
 contract, change CI in the same commit" trap above, a second time. **Before a
 merge, run the exact CI command (`pio run`, no `-e`) locally.**
+
+## PlatformIO measures and flashes the app against `factory`, not app0 (2026-09-27)
+
+With a `factory` partition in `partitions.csv`, PlatformIO takes it as the
+app's home: the size check reported the app at **195.4% of 851,968 bytes** and
+failed, and a USB upload would have written the app at 0x10000, over the
+recovery app. Both need saying per env: `board_build.app_partition_name = app0`
+(what the size check measures against) and `board_upload.offset_address =
+0xE0000` (where upload writes it). The recovery env names `factory`. Check with
+`pio run -e <env> -t upload -v` and read the offsets in the `write_flash` line.
+
+## A USB flash never lands in recovery; only a request or a bad app does (2026-09-27)
+
+Every USB upload also writes the core's `boot_app0.bin` at 0xe000. It is not
+blank otadata: it selects **ota_0** (sequence 1). So after a USB flash the
+bootloader starts the app directly, and after flashing only the recovery env
+(app0 empty) it falls through to `factory`. Recovery runs on purpose only when
+the app set the NVS `recovery/stay` flag, and otherwise only when app0 fails
+verification or was rolled back. `esp_ota_set_boot_partition(factory)` erases
+otadata, so a power cut while in recovery also boots recovery; it sees no flag
+and a good app0, and hands straight back.
+
+## An orb on the old two-slot layout can run the new app but can't update from it (2026-09-27)
+
+A new app uploaded over HTTP to an orb still on the old layout lands in its idle
+1.875 MB slot and runs (it fits at 1.66 MB). But its `/recovery` finds no
+`factory` partition and answers 500 "Flash it once over USB". Partition tables
+can't be safely changed over the air, so every orb needs one USB flash of both
+envs (SETUP.md step 6).
+

@@ -124,13 +124,21 @@ Other things you can turn on here: dim hours and screens-off hours (separate sch
 
 1. Plug the orbs into USB.
 2. Click the **PlatformIO icon** (the alien head) in the left bar.
-3. Under **Project Tasks → esp32-s3-devkitc-1 → General**, click **Upload**.
+3. Under **Project Tasks → recovery → General**, click **Upload**. This writes
+   the small updater that later network updates go through. It only needs doing
+   once.
+4. Under **Project Tasks → esp32-s3-devkitc-1 → General**, click **Upload**.
+
+From a terminal the same two steps are
+`pio run -e recovery -t upload` then `pio run -e esp32-s3-devkitc-1 -t upload`.
+**An orb flashed before 2026-09-27 needs both steps once over USB**: the
+partition layout changed, and the old layout has no room for the updater.
 
 The first build downloads the ESP32 platform and compiler — several hundred MB,
 several minutes, once. Later builds take about 15 seconds.
 
 When it starts, one orb shows **Welcome** and how full the firmware slot is,
-e.g. `Flash 87%`. The project keeps that under 92% so updates always fit.
+e.g. `Flash 54%`. The project keeps that under 92% so updates always fit.
 
 If upload cannot find the board, put it in download mode by hand: unplug the
 USB cable, hold the **BOOT** button on the SuperMini, plug the cable back in,
@@ -152,22 +160,32 @@ Once the orbs are on your WiFi, new firmware goes over the network. The **first*
 flash has to be over USB (step 6), because it also writes the partition layout
 that makes network updates possible.
 
-- **From a browser:** build as usual, then open `http://info-orbs.local/update`,
-  choose `.pio/build/esp32-s3-devkitc-1/firmware.bin` and press Upload. If
-  `.local` names do not resolve on your computer, use the IP address shown on
-  the orbs when they connect.
-- **From PlatformIO:** `pio run -e ota -t upload`. This needs the orb to connect
-  *back* to your computer, which fails when the two are on different subnets,
-  and a failed attempt restarts the orb. If it says `No response from device`,
-  wait until the update page loads again and use the browser.
+Updates go through a small updater that sits beside the orbs' firmware. The
+orbs restart into it, it takes the upload, then it starts the orbs again. It
+has no display code, so the orbs show "Updater" and the IP address while it
+runs.
+
+- **From a browser:** build as usual, then open `http://<orb's IP>/update` and
+  press **Restart into the updater**. About 20 seconds later the updater's page
+  opens in the same tab; choose
+  `.pio/build/esp32-s3-devkitc-1/firmware.bin` and press Upload.
+- **From PlatformIO:** `pio run -e ota -t upload --upload-port <orb's IP>`. It
+  does the restart, the upload and the wait for you, and prints the commit the
+  orbs came back on. Use the IP; `.local` names are unreliable from a Mac.
+
+If you open the updater and walk away, it goes back to the orbs after 10
+minutes. Unplugging it does the same.
 
 **The password is optional.** Set `OTA_PASSWORD` in `secrets.h` and the browser
 asks for user `admin` and that password on both the update and settings pages.
 Without one, anyone on your network can flash the orbs or change their
 settings, and both pages show a ⚠ warning saying so.
 
-A failed or interrupted update keeps the old firmware. A new firmware that
-installs but cannot get back on WiFi is rolled back when it next restarts.
+A failed or interrupted upload leaves the orb in the updater, still on WiFi,
+waiting for another try; it never starts a half-written firmware. A new
+firmware that installs but cannot get back on WiFi is stopped when it next
+restarts, and the orb comes up in the updater. Unlike the old layout, it does
+**not** go back to the previous firmware on its own: upload a working one.
 
 ## 9. Change settings from a browser
 
