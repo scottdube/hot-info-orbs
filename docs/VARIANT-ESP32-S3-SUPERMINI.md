@@ -921,7 +921,7 @@ What it costs:
   change.
 
 Not measured: rollback into `factory` on this bootloader (the A/B rollback was
-tested 2026-09-23; the factory path was not), and the 5 V/WiFi-connect time of the extra restart.
+tested 2026-09-23; the factory path was not), and how long the extra restart and WiFi reconnect add to an update.
 
 **Still true for the Advanced module (XIAO ESP32S3 Plus, 16 MB):** it also
 brings 8 MB octal PSRAM and keeps A/B rollback, but it needs the adapter board, a
