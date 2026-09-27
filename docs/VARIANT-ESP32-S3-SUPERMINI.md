@@ -931,3 +931,14 @@ until the factory layout's 3 MB slot fills.
 
 A web search on 2026-09-27 turned up no SuperMini-footprint board with 8 or
 16 MB. AliExpress is still unbrowsed.
+
+**Built 2026-09-27 (branch `recovery`):** recovery image 768,624 bytes (90.2% of
+its 832 KB; mDNS and NVS added ~52 KB over the bare measurement), app **54.0%**
+of the 3 MB slot. See `docs/REQUIREMENTS.md` R2.
+
+**A v2 carrier board is planned (Scott, 2026-09-27), and a new pin design is
+acceptable.** That removes the main cost of the Advanced module: no adapter
+board and no "one carrier" constraint, since v2 can take a different module's
+footprint directly. The module choice for v2 is open again, judged on
+PSRAM, GPIO count and price rather than on fitting the SuperMini socket. Flash
+alone no longer forces it: the recovery layout covers that on 4 MB.
