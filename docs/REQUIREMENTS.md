@@ -81,7 +81,11 @@ Display Off (28h) only blanks the output, "no change of contents of frame
 memory". Section 5.10.3, though, has an **LEDPWM output pin** meant to drive
 an external LED driver, with Write Display Brightness (51h, DBV 0-255 = PWM
 duty) and Write CTRL Display (53h, bits BCTRL, DD, BL, where BL = 0 means
-"completely turn off backlight circuit"). That only works if the module
+"completely turn off backlight circuit"). The pin table names it **BC**
+(pad 92 on the die, "output pin for PWM signal of LED driving; if not used,
+open this pad"); LEDPWM is the name the brightness section uses. It is a
+logic-level PWM signal meant to drive an LED driver or transistor, not a pin
+that can power the LEDs itself. That only works if the module
 maker routed LEDPWM to the backlight. On the 7-pin modules the backlight
 appears to run straight off VCC, but nobody has tested it. **Test:** send 53h
 with BL = 0, and separately 53h = 0x24 plus 51h = 0x00, then look in a dark
