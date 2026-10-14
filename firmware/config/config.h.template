@@ -82,6 +82,37 @@
 
 #define TFT_SDA_READ
 
+#if defined(BOARD_XIAO_ESP32S3)
+// ===== HoT Info Orbs board, XIAO variant (hardware/hot-info-orbs-xiao) =====
+// Seeed XIAO ESP32-S3 / S3 Plus on its 14 edge pins. Read off
+// hot_info_orbs_xiao.kicad_pcb (U2 pad -> net); D-numbers are the XIAO silk.
+// Selected by the `xiao-esp32s3` PlatformIO env (-D BOARD_XIAO_ESP32S3).
+#define TFT_MOSI 9   // D10
+#define TFT_MISO -1
+#define TFT_SCLK 7   // D8
+#define TFT_CS 10    // not connected to anything; TFT_eSPI needs a pin, each display has its own CS below
+#define TFT_DC 8     // D9
+#define TFT_RST -1   // no GPIO left: the panels' RST is an RC power-on reset (R1 10k / C2 1u)
+                     // and TFT_eSPI sends the software reset (TFT_SWRST) when TFT_RST < 0
+#define USE_HSPI_PORT
+
+#define SCREEN_1_CS 3   // D2  (strapping pin: a CS idles high, which is its default level)
+#define SCREEN_2_CS 4   // D3
+#define SCREEN_3_CS 5   // D4
+#define SCREEN_4_CS 43  // D6 / U0TXD - fine as an output, so the UART pins went to CS, not buttons
+#define SCREEN_5_CS 44  // D7 / U0RXD
+
+// SW1 / SW2 / SW3 left to right on the board; OK is the middle one.
+#if INVERTED_ORBS
+    #define BUTTON_OK 2     // D1
+    #define BUTTON_LEFT 6   // D5
+    #define BUTTON_RIGHT 1  // D0
+#else
+    #define BUTTON_OK 2     // D1
+    #define BUTTON_LEFT 1   // D0
+    #define BUTTON_RIGHT 6  // D5
+#endif
+#else
 // ===== HoT Info Orbs board, Rev 1.1 - ESP32-S3 SuperMini =====
 // These are read off hot_info_orbs.kicad_pcb, not copied from another project.
 // Do NOT substitute HackerBoxes' published map: theirs uses GPIO10 for TFT_CS
@@ -112,13 +143,20 @@
     #define BUTTON_LEFT 1
     #define BUTTON_RIGHT 10
 #endif
+#endif // BOARD_XIAO_ESP32S3
 
 #define BUTTON_DEBOUNCE_TIME 35        // Debounce buttons for X ms
 #define BUTTON_MEDIUM_PRESS_TIME 500    // Medium press is registered after X ms
 #define BUTTON_LONG_PRESS_TIME 2000     // Long press is registered after X ms
 
 #define BUTTON_MODE INPUT_PULLDOWN
-#define BUSY_PIN 15 // was 2 on the dev kit; GPIO2 is SW2 on this board
+#if defined(BOARD_XIAO_ESP32S3)
+    #define BUSY_PIN 21        // the XIAO's own user LED; no edge pin was left for it
+    #define BUSY_ON LOW        // that LED is wired to 3V3 through a resistor: LOW lights it
+    #define BUSY_OFF HIGH
+#else
+    #define BUSY_PIN 15 // was 2 on the dev kit; GPIO2 is SW2 on this board
+#endif
 
 
 #define NTP_SERVER "pool.ntp.org"

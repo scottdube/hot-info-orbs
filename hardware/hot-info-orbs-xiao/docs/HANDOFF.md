@@ -45,8 +45,19 @@ continue without re-deriving anything. Newest at the bottom.
      into one oval THT pad per pin (hole at ±7.62, copper to ±9.671).
      Hand-routing the leftover net was tried first and just moved the
      failure to the next net — rejected.
-4. [ ] Firmware: `xiao-esp32s3` PlatformIO env + pin block in
-   config.h.template (board json `seeed_xiao_esp32s3`; it sets USB CDC on
-   boot — that is the XIAO's normal console, the TRAPS.md warning was about
-   the SuperMini's build).
+4. [x] Firmware (commit after 4ef5421): `[env:xiao-esp32s3]` + `[env:xiao-ota]`
+   in platformio.ini (board `seeed_xiao_esp32s3`, 8 MB, same partitions.csv,
+   `-D BOARD_XIAO_ESP32S3`). config.h.template: XIAO pin block under
+   `#if defined(BOARD_XIAO_ESP32S3)`, SuperMini block verbatim in the
+   `#else`. TFT_RST -1 (RC reset + TFT_eSPI's TFT_SWRST). BUSY_PIN 21 with
+   `BUSY_ON LOW / BUSY_OFF HIGH`; Widget.cpp `setBusy` uses the macros and
+   defaults them to HIGH/LOW so the SuperMini build is unchanged. Both envs
+   compile (xiao 84.0 % flash of the 1.9 MB app slot, devkitc 85.0 %).
+   The board json sets USB CDC on boot — that is the XIAO's normal console,
+   the TRAPS.md warning was about the SuperMini's build. Not flashed: no
+   XIAO board exists yet.
+   Trap: config.h reaches the build through `-include config_helper.h`, and
+   SCons does not track that, so after editing config.h an incremental
+   `pio run` rebuilt nothing (flash size byte-identical to the SuperMini
+   build). `pio run -e xiao-esp32s3 -t clean` first.
 5. [ ] Docs: features.html / VARIANT doc mention; 3D step not regenerated.
