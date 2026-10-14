@@ -21,10 +21,19 @@ continue without re-deriving anything. Newest at the bottom.
 ## Steps
 1. [x] Copy project to `hardware/hot-info-orbs-xiao/`, rename files, add
    Seeed symbol + DIP footprint, register libs.
-2. [ ] Schematic: replace SuperMini symbol with XIAO symbol, net labels per
-   the pin map, add R1/C2 RC reset, remove the 3 no_connects.
-3. [ ] PCB: swap U2 footprint (B.Cu, where the SuperMini was), add R1/C2,
-   rip up tracks, Freerouting, re-pour zones, DRC + schematic parity clean.
+2. [x] Schematic: `tools/swap_to_xiao_sch.py` (run once against e6ea813).
+   ERC 0. Symbol trimmed to the 14 edge pins and renamed
+   `XIAO-ESP32-S3-edge` so PCB parity has no pad-less pins.
+3. [~] PCB: `tools/swap_to_xiao_pcb.py` (run once against e6ea813) places
+   U2/R1/C2, re-nets every pad, rips tracks, fixes silk. Then
+   `kicad-cli pcb drc --schematic-parity --severity-all --refill-zones
+   --save-board` → 0 errors, 0 parity, 45 unconnected (expected, unrouted),
+   14 warnings = Seeed's own footprint outline crossing its castellation
+   pads (cosmetic, fab clips silk off pads; accepted). **Routing still to
+   do**: `tools/route_xiao.py` (Freerouting) is next.
+   Trap: `FOOTPRINT.SetField(FIELD_T_DESCRIPTION, txt)` creates a stray user
+   field named "5" that prints on silk — use `GetField(..).SetText()`.
+   Trap: board texts are left/top justified; SetPosition moves the corner.
 4. [ ] Firmware: `xiao-esp32s3` PlatformIO env + pin block in
    config.h.template (board json `seeed_xiao_esp32s3`; it sets USB CDC on
    boot — that is the XIAO's normal console, the TRAPS.md warning was about

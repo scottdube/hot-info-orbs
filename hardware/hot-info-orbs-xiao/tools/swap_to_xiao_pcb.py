@@ -57,7 +57,9 @@ def place(lib_nick, lib_dir, name, ref, value, x, y, rot, back=False):
     assert fp, (lib_dir, name)
     fp.SetFPID(pcbnew.LIB_ID(lib_nick, name))
     fp.SetReference(ref); fp.SetValue(value)
-    fp.GetFieldByName("Description").SetText(sch_desc.get(ref, ""))
+    # SetField(FIELD_T_DESCRIPTION, ..) creates a stray user field named "5"
+    # that lands on the silkscreen; edit the existing field instead.
+    fp.GetField(pcbnew.FIELD_T_DESCRIPTION).SetText(sch_desc.get(ref, ""))
     board.Add(fp)
     fp.SetPosition(pcbnew.VECTOR2I(mm(x), mm(y)))
     if back:
@@ -83,8 +85,10 @@ for rot in (0, 90, 180, 270):
 else:
     sys.exit("no orientation puts the USB end at +y")
 print("U2 rot", rot, "pad1 y", pad_y(u2, "1"), "pad7 y", pad_y(u2, "7"))
-u2.Reference().SetPosition(pcbnew.VECTOR2I(mm(120.0), mm(95.0)))
-u2.Reference().SetTextAngleDegrees(90)
+# reference and the "goes on this side" note sit inside the module outline,
+# clear of the pad columns (x 124.2..138.0) and of DS2 which ends at x 121.0
+u2.Reference().SetPosition(pcbnew.VECTOR2I(mm(131.1), mm(90.5)))
+u2.Reference().SetTextAngleDegrees(0)
 u2.Value().SetVisible(False)
 
 # ---------- 2. R1, C2 on the display side, under DS1/DS2, beside C1 ----------
@@ -101,11 +105,16 @@ for d in list(board.GetDrawings()):
         txt = d.GetText()
         if txt.startswith("ESP32"):
             d.SetText(txt.replace("ESP32", "XIAO"))
+            # the originals are left/top justified, so SetPosition would set the
+            # corner; center them so a 9 mm text fits the 13.7 mm between pad rows
+            d.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_CENTER)
+            d.SetVertJustify(pcbnew.GR_TEXT_V_ALIGN_CENTER)
             if d.GetLayerName() == "B.Silkscreen":   # was under the module outline
-                d.SetPosition(pcbnew.VECTOR2I(mm(116.5), mm(96.0)))
-                d.SetTextAngleDegrees(90)
-        elif txt == "Antenna":                       # now overlaps the longer module
-            d.SetPosition(pcbnew.VECTOR2I(d.GetPosition().x, mm(81.2)))
+                d.SetPosition(pcbnew.VECTOR2I(mm(131.1), mm(96.5)))
+            else:                                    # F.Silk copy: keep inside the outline rect
+                d.SetPosition(pcbnew.VECTOR2I(mm(131.1), mm(96.5)))
+        elif txt == "Antenna":                       # now overlaps the longer module; edge is y 79.26
+            d.SetPosition(pcbnew.VECTOR2I(d.GetPosition().x, mm(82.0)))
         elif txt.startswith("HoT Info Orbs"):
             d.SetText("HoT Info Orbs\nXIAO X0.1")
     elif d.GetClass() == "PCB_SHAPE" and d.GetShapeStr() == "Rect":
