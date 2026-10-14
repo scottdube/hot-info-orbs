@@ -121,8 +121,10 @@ for d in list(board.GetDrawings()):
         if d.GetLayerName() == "B.Silkscreen" and 125 < x0 < 126 and 82 < y0 < 83:
             board.Remove(d)                          # keepout marker, collides with U2 silk; rule area stays
         elif d.GetLayerName() == "F.Silkscreen" and 122 < x0 < 123 and 83 < y0 < 85:
-            d.SetStart(pcbnew.VECTOR2I(mm(122.2), mm(84.5)))   # module outline as seen from the front
-            d.SetEnd(pcbnew.VECTOR2I(mm(140.0), mm(105.5)))
+            # module outline as seen from the front; the merged oval pads reach
+            # x 121.43/140.77, DS2 silk ends at 121.0 and DS3 starts at 141.2
+            d.SetStart(pcbnew.VECTOR2I(mm(121.1), mm(84.5)))
+            d.SetEnd(pcbnew.VECTOR2I(mm(141.1), mm(105.5)))
 
 # ---------- 3. nets + paths for every footprint ----------
 def net(name):

@@ -24,16 +24,27 @@ continue without re-deriving anything. Newest at the bottom.
 2. [x] Schematic: `tools/swap_to_xiao_sch.py` (run once against e6ea813).
    ERC 0. Symbol trimmed to the 14 edge pins and renamed
    `XIAO-ESP32-S3-edge` so PCB parity has no pad-less pins.
-3. [~] PCB: `tools/swap_to_xiao_pcb.py` (run once against e6ea813) places
-   U2/R1/C2, re-nets every pad, rips tracks, fixes silk. Then
-   `kicad-cli pcb drc --schematic-parity --severity-all --refill-zones
-   --save-board` → 0 errors, 0 parity, 45 unconnected (expected, unrouted),
-   14 warnings = Seeed's own footprint outline crossing its castellation
-   pads (cosmetic, fab clips silk off pads; accepted). **Routing still to
-   do**: `tools/route_xiao.py` (Freerouting) is next.
-   Trap: `FOOTPRINT.SetField(FIELD_T_DESCRIPTION, txt)` creates a stray user
-   field named "5" that prints on silk — use `GetField(..).SetText()`.
-   Trap: board texts are left/top justified; SetPosition moves the corner.
+3. [x] PCB. Pipeline, each run from the e6ea813 copy of the .kicad_pcb:
+   `tools/merge_xiao_pads.py` (once, edits the footprint in lib/) →
+   `tools/swap_to_xiao_pcb.py` → `tools/route_xiao.py` (Freerouting,
+   headless, ~5 s). Result: 0 errors, 0 unconnected, 0 parity, 14 warnings
+   = Seeed's own B.Silk outline crossing its pads (cosmetic, fab clips
+   silk off pads; accepted). 276 tracks+vias, GND routed as tracks with
+   the pour on top.
+   Traps found on the way (all written into the scripts' docstrings):
+   - `FOOTPRINT.SetField(FIELD_T_DESCRIPTION, txt)` creates a stray user
+     field "5" that prints on silk — use `GetField(..).SetText()`.
+   - board texts are left/top justified; SetPosition moves the corner.
+   - a second `pcbnew.LoadBoard()` in one interpreter, and the board after
+     `ImportSpecctraSES`, come back as bare SwigPyObjects — one board per
+     process. `Zones()` breaks after `Remove(track)`: take zones first.
+   - with the GND pour in the DSN Freerouting routes nothing for GND and
+     the tracks cut the pour into islands — export without the pour.
+   - Seeed's two pads per pin (PTH + castellation SMD) gave Freerouting 14
+     "violations", a stub per pin and one unrouted net per run; merged
+     into one oval THT pad per pin (hole at ±7.62, copper to ±9.671).
+     Hand-routing the leftover net was tried first and just moved the
+     failure to the next net — rejected.
 4. [ ] Firmware: `xiao-esp32s3` PlatformIO env + pin block in
    config.h.template (board json `seeed_xiao_esp32s3`; it sets USB CDC on
    boot — that is the XIAO's normal console, the TRAPS.md warning was about
