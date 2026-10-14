@@ -28,9 +28,12 @@ no A-02 dimensions. Measure one before ordering boards and rerun with
 
 Schematic ERC 0; board autorouted, DRC 0 errors / 0 unconnected / 0 parity
 (14 silk warnings = Seeed's module outline over its own pads, accepted).
-Firmware env `xiao-esp32s3` compiles. Nothing ordered, nothing flashed; the
-3D STEP has not been regenerated. `docs/HANDOFF.md` has the step log and the
-traps; `../../docs/VARIANT-XIAO-ESP32S3.md` has the reasoning.
+Firmware env `xiao-esp32s3` compiles. Nothing ordered, nothing flashed.
+3D: every footprint resolves its model (Seeed's XIAO ESP32S3 PLUS STEP on U2,
+the GC9A01 STEP on DS1–DS5, both project-local under `lib/3d/`), and the board
+assembly is exported to `3d-assembly/hot_info_orbs_xiao_assembly.step`
+(2026-10-14). `docs/HANDOFF.md` has the step log and the traps;
+`../../docs/VARIANT-XIAO-ESP32S3.md` has the reasoning.
 
 ## Regenerating the board
 
@@ -87,5 +90,6 @@ Project-local, as in the parent project. Added here:
 |---|---|---|
 | `_Seeed XIAO` | `XIAO-ESP32-S3-edge` symbol (Seeed's 25-pin symbol trimmed to the 14 edge pins, so PCB parity has no pad-less pins) | Seeed `OPL_Kicad_Library`, CC BY-SA 4.0 |
 | `_ESP32 modules` | `XIAO-ESP32-S3-DIP` footprint, 14 oval THT pads (hole at the header position, copper out to the castellation edge) | same, modified |
+| `lib/3d/_ESP32 modules/XIAO-ESP32S3-PLUS-v4.step` | U2's 3D model (Seeed assembly "XIAO ESP32S3 PLUS_V1.0_241025"), attached by `tools/xiao_model.py` with offset (-1.778, -7.62, 0) / rotate (-90, 0, 0), found by rendering. Also stands in for the plain S3 (same outline, same USB end). | Seeed product page download, 2026-10-14 |
 
 The SuperMini symbol/footprint are still in `lib/` but unused.

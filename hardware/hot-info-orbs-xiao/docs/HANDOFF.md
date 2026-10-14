@@ -63,7 +63,7 @@ continue without re-deriving anything. Newest at the bottom.
 5. [x] Docs: `docs/VARIANT-XIAO-ESP32S3.md` (new), README.md row + intro,
    features.html Advanced card rewritten from "adapter, proposed" to
    "second carrier, designed not built", this folder's README (status,
-   regeneration recipe, library table). 3D STEP NOT regenerated.
+   regeneration recipe, library table). 3D STEP regenerated in step 8.
 
 6. [x] XIAO-only (Scott, 2026-10-14: "this branch is xiao only", S3 and S3
    Plus interchangeable). SuperMini env, pin block and `hardware/hot-info-orbs/`
@@ -96,9 +96,33 @@ continue without re-deriving anything. Newest at the bottom.
    then failed to import with no hint — it now asserts size > 0 and passes
    `-mt 1` (2.4.1 warns its multi-threaded optimizer is broken).
 
+8. [x] 3D models (2026-10-14, Scott: "add the xiao 3d model"). Scott's own
+   STEP export that morning logged six "Could not add 3D model": U2's
+   AMz3D footprint carried five `${AMZPATH}` models (AMZPATH undefined here)
+   and DS1–DS5 on the board still said `${KICAD_USER_3DMODEL_DIR}` from v1.1
+   while the library footprint already said `${KIPRJMOD}`. `tools/xiao_model.py`
+   (KiCad closed) puts Seeed's "XIAO ESP32S3 PLUS v4.step" (assembly
+   'XIAO ESP32S3 PLUS_V1.0_241025', from Downloads, copied to
+   `lib/3d/_ESP32 modules/XIAO-ESP32S3-PLUS-v4.step`) on U2 in the board
+   and the library footprint, and rewrites the five DS model paths to
+   `${KIPRJMOD}/lib/3d/_Displays/`. Fit found by rendering
+   (`kicad-cli pcb render --side bottom --zoom 9 --pivot "-1.97,0,0"`):
+   offset (-1.778, -7.62, 0), rotate (-90, 0, 0) — Seeed's STEP stands the
+   module on edge, and at zero offset it sat one castellation column over.
+   Then `kicad-cli pcb export step --subst-models --include-silkscreen
+   --include-soldermask --grid-origin --min-distance=0.001mm` →
+   `3d-assembly/hot_info_orbs_xiao_assembly.step`, no missing models.
+   One model only, the Plus: the plain S3 has the same outline and USB end.
+   Traps: `FOOTPRINT.Models()` iterates copies — setting `m_Filename` on
+   them changes nothing; rebuild the list with `clear()` + `push_back()`.
+   KiCad's STEP export dialog defaults the output name to the project's
+   `~….kicad_pro.lck` lock file; Scott's export landed as
+   `~hot_info_orbs_xiao.kicad_pro.lck.step` in the project folder (removed).
+   A raw CARTESIAN_POINT bounding box of an assembly STEP is meaningless
+   (sub-part local frames): render, don't parse.
+
 ## Open
 - Measure the A-02 FPC antenna and pigtail; resize/move the patch if 40 × 7.5
   mm is wrong (routing margin: 7.5 mm tall at this x is the limit).
 - Order / build / flash a board; measure the RC reset and LED polarity.
-- Regenerate the 3D STEP for the XIAO board.
 - Branch has no upstream until pushed (`git push -u origin xiao-esp32s3-plus`).
