@@ -125,15 +125,28 @@ first.
 ## Antenna
 
 The SuperMini has a PCB antenna and the v1.1 board keeps copper away from
-it. The XIAO has none: a U.FL connector and a supplied rod/flex antenna that
-must be placed and stuck down somewhere. The inherited "Antenna" silk and
-keepout rule areas are now just a reserved bare patch — harmless, not yet
-reworked (KiCad had the project open when this was noticed).
+it. The XIAO has none: a U.FL connector and a stick-on 2.4 GHz FPC antenna
+(Seeed A-02, inventory part 102) on a short pigtail. A flex antenna stuck
+over copper detunes, and the back of this board is one GND pour, so the
+board now has a copper-free patch for it: rule area `ANTENNA_PATCH` on both
+copper layers, **40 × 7.5 mm** at x 143.5–183.5, y 99.5–107.0 — the bottom
+strip right of the XIAO, a few cm from its U.FL — outlined and labelled
+"STICK FPC ANTENNA HERE" on B.Silk. The SuperMini keepouts and "Antenna"
+silk are removed (`hardware/hot-info-orbs-xiao/tools/antenna_patch.py`).
+
+The height was set by the router, not the antenna. That strip is also the
+SPI bus's second channel to DS4/DS5 and the switches: at 10.5 mm tall
+Freerouting left 3 nets unrouted, at 9 mm one (CS2), at 7.5 mm none, and
+narrowing the patch instead did not help. **40 × 7.5 mm is an assumption**:
+Seeed publishes no A-02 dimensions (product page, distributors checked
+2026-10-14). Measure an A-02 and its pigtail before ordering boards; the
+script takes `PATCH=x0,x1,y0,y1` to move or resize it, then re-route.
 
 ## Not done
 
 - No board ordered, nothing flashed; the RC reset timing and the active-low
   LED are reasoned, not measured.
 - 3D STEP not regenerated for the XIAO board.
-- Antenna placement (U.FL pigtail) not designed; keepout/silk are SuperMini leftovers.
+- Antenna patch is sized to the board's free space (40 × 7.5 mm), not to a
+  measured A-02; measure one and adjust before fab.
 - Plain XIAO ESP32-S3 price not checked (Plus: $7.90 at Seeed, 2026-10-14).

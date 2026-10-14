@@ -57,10 +57,10 @@ passes = sys.argv[1] if len(sys.argv) > 1 else "20"
 subprocess.run([sys.executable, __file__, "--export"], check=True, capture_output=True)
 print("dsn", DSN.stat().st_size, "bytes")
 
-r = subprocess.run([JAVA, "-jar", str(JAR), "-de", str(DSN), "-do", str(SES), "-mp", passes],
+r = subprocess.run([JAVA, "-jar", str(JAR), "-de", str(DSN), "-do", str(SES), "-mp", passes, "-mt", "1"],   # -mt 1: Freerouting 2.4.1 warns its multi-threaded optimizer is broken
                    capture_output=True, text=True, timeout=1800)
 print("\n".join(l for l in (r.stdout + r.stderr).strip().splitlines()[-4:] if "WARNING" not in l))
-assert SES.exists(), "no SES produced"
+assert SES.exists() and SES.stat().st_size > 0, "no SES produced: Freerouting writes a 0-byte file when nets are left unrouted - read its log above"
 
 subprocess.run([sys.executable, __file__, "--import"], check=True, capture_output=True)
 txt = PCB.read_text()

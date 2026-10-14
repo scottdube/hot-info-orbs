@@ -74,10 +74,31 @@ continue without re-deriving anything. Newest at the bottom.
    Interchangeability verified against the Seeed wiki (same D0-D10 map, LED,
    size, PSRAM; flash 8 vs 16 MB) - build stays 8 MB so one binary fits both.
 
+7. [x] Antenna patch (2026-10-14, Scott: "fix that"). The XIAO has a U.FL
+   and a stick-on FPC antenna (Seeed A-02, inventory part 102), not a PCB
+   antenna, so the inherited "Antenna" keepouts/silk were wrong.
+   `tools/antenna_patch.py` (run on the e6ea813-derived board BEFORE
+   `route_xiao.py`): removes the two SuperMini keepouts and both "Antenna"
+   texts, adds rule area `ANTENNA_PATCH` on F.Cu + B.Cu (no pour/tracks/vias)
+   at x 143.5–183.5, y 99.5–107.0 = **40 × 7.5 mm** on the bottom strip
+   right of the XIAO, plus a B.Silk box and label "STICK FPC ANTENNA HERE".
+   Re-routed: 0 errors, 0 unconnected, 0 parity, 14 silk warnings (same),
+   268 tracks+vias, GND pour has no fill inside the patch.
+   Height was measured against the router, not chosen: 10.5 mm left 3 nets
+   unrouted, 9.0 mm left CS2 unrouted, 7.5 mm routes; narrowing instead
+   (x from 150 or 155) did not help, x 160.5–183.5 routes at 10.5 mm but is
+   only 23 mm long. The bottom strip under DS3 is the bus's second channel
+   and needs ~4 mm. **The patch size is an assumption** — Seeed publishes no
+   A-02 dimensions; measure one and rerun with `PATCH=x0,x1,y0,y1`.
+   Traps: `ZONE.Outline()` returns a bare SwigPyObject (no NewOutline) —
+   build the outline with `z.AppendCorner(VECTOR2I, -1)`; Freerouting can
+   write a **0-byte SES** when nets are left unrouted, which `route_xiao.py`
+   then failed to import with no hint — it now asserts size > 0 and passes
+   `-mt 1` (2.4.1 warns its multi-threaded optimizer is broken).
+
 ## Open
-- Antenna: the XIAO uses a U.FL external antenna, not a PCB antenna. The
-  board's "Antenna" silk + keepouts are SuperMini leftovers; decide where the
-  pigtail antenna goes.
+- Measure the A-02 FPC antenna and pigtail; resize/move the patch if 40 × 7.5
+  mm is wrong (routing margin: 7.5 mm tall at this x is the limit).
 - Order / build / flash a board; measure the RC reset and LED polarity.
 - Regenerate the 3D STEP for the XIAO board.
 - Branch has no upstream until pushed (`git push -u origin xiao-esp32s3-plus`).
