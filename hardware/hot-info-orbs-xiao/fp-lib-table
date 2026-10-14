@@ -1,0 +1,6 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "_ESP32 modules")(type "KiCad")(uri "${KIPRJMOD}/lib/_ESP32_modules.pretty")(options "")(descr "ESP32-S3 SuperMini footprint"))
+  (lib (name "_Displays")(type "KiCad")(uri "${KIPRJMOD}/lib/_Displays.pretty")(options "")(descr "GC9A01 7-pin header footprint"))
+  (lib (name "_Logos")(type "KiCad")(uri "${KIPRJMOD}/lib/_Logos.pretty")(options "")(descr "Recovered from the board file - Yang's zip omitted this library"))
+)
