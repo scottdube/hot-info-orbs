@@ -1,7 +1,9 @@
 # HoT Info Orbs
 
 Five round 240×240 displays on one SPI bus, driven by an ESP32-S3 SuperMini, on
-a custom carrier board. Clock, weather, stocks — and whatever else gets written.
+a custom carrier board. This branch adds a second carrier for the Seeed XIAO
+ESP32-S3 Plus (`hardware/hot-info-orbs-xiao/`, designed, not built); the
+SuperMini board is unchanged. Clock, weather, stocks — and whatever else gets written.
 
 Built as a club project, which shapes the whole thing: it is assembled by people
 at a wide range of skill levels, so the build has to be hard to get wrong and
@@ -108,6 +110,7 @@ for the order parameters and the drill-tool cross-check.
 | [docs/TRAPS.md](docs/TRAPS.md) | things that cost time once, so they cost it once |
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | web control panel and OTA, with the traps that will bite whoever builds them |
 | [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | why the S3 SuperMini, including the arguments that reversed |
+| [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | the XIAO ESP32-S3 Plus carrier: edge pins only, where the twelfth pin went, what the autorouter rejected |
 | [docs/ESPHOME-EVALUATION.md](docs/ESPHOME-EVALUATION.md) | why this is not an ESPHome project |
 
 The variant and ESPHome documents keep the reasoning that changed rather than

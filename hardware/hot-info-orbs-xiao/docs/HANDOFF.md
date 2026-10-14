@@ -60,4 +60,12 @@ continue without re-deriving anything. Newest at the bottom.
    SCons does not track that, so after editing config.h an incremental
    `pio run` rebuilt nothing (flash size byte-identical to the SuperMini
    build). `pio run -e xiao-esp32s3 -t clean` first.
-5. [ ] Docs: features.html / VARIANT doc mention; 3D step not regenerated.
+5. [x] Docs: `docs/VARIANT-XIAO-ESP32S3.md` (new), README.md row + intro,
+   features.html Advanced card rewritten from "adapter, proposed" to
+   "second carrier, designed not built", this folder's README (status,
+   regeneration recipe, library table). 3D STEP NOT regenerated.
+
+## Open
+- Order / build / flash a board; measure the RC reset and LED polarity.
+- Regenerate the 3D STEP for the XIAO board.
+- Branch has no upstream until pushed (`git push -u origin xiao-esp32s3-plus`).

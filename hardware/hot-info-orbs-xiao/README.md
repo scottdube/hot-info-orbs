@@ -6,15 +6,30 @@ ESP32-S3 SuperMini. Copied from `../hot-info-orbs` (v1.1, the board that was
 ordered 2026-08-29) on 2026-10-14; that project is untouched and stays the
 SuperMini board.
 
-## Status — IN PROGRESS, not fabricated
+## Status — DESIGNED, not fabricated (2026-10-14)
 
-See `docs/HANDOFF.md` in this folder for exactly where the work stands.
+Schematic ERC 0; board autorouted, DRC 0 errors / 0 unconnected / 0 parity
+(14 silk warnings = Seeed's module outline over its own pads, accepted).
+Firmware env `xiao-esp32s3` compiles. Nothing ordered, nothing flashed; the
+3D STEP has not been regenerated. `docs/HANDOFF.md` has the step log and the
+traps; `../../docs/VARIANT-XIAO-ESP32S3.md` has the reasoning.
+
+## Regenerating the board
+
+All with KiCad CLOSED. `tools/swap_to_xiao_sch.py` and `tools/merge_xiao_pads.py`
+were run once and their results are committed; do not rerun them. The board
+itself is reproducible from the v1.1 copy of the .kicad_pcb (commit e6ea813):
+`tools/swap_to_xiao_pcb.py` (KiCad's Python) then `tools/route_xiao.py`
+(Freerouting headless, ~5 s, ends with a DRC + parity count). Each script's
+docstring says why it does what it does.
 
 ## Module fit
 
 Only the 14 castellated edge pins are used, so the footprint
-(`_ESP32 modules:XIAO-ESP32-S3-DIP`, Seeed's own, CC BY-SA 4.0) takes the module on
-2.54 mm headers **or** soldered flat on its castellations. Any XIAO ESP32-S3
+(`_ESP32 modules:XIAO-ESP32-S3-DIP`, Seeed's own, CC BY-SA 4.0, with each pin's
+PTH + castellation pad pair merged into one oval through-hole pad — see
+`tools/merge_xiao_pads.py`) takes the module on 2.54 mm headers **or** soldered
+flat on its castellations. Any XIAO ESP32-S3
 (plain, Sense, Plus) has the same 14 edge pins and fits; the Plus's nine extra
 pads under the module are not used.
 
@@ -52,7 +67,7 @@ Project-local, as in the parent project. Added here:
 
 | Nickname | Provides | Source |
 |---|---|---|
-| `_Seeed XIAO` | `XIAO-ESP32-S3-SMD` symbol (14-pin) | Seeed `OPL_Kicad_Library`, CC BY-SA 4.0 |
-| `_ESP32 modules` | `XIAO-ESP32-S3-DIP` footprint (THT + castellation pads) | same |
+| `_Seeed XIAO` | `XIAO-ESP32-S3-edge` symbol (Seeed's 25-pin symbol trimmed to the 14 edge pins, so PCB parity has no pad-less pins) | Seeed `OPL_Kicad_Library`, CC BY-SA 4.0 |
+| `_ESP32 modules` | `XIAO-ESP32-S3-DIP` footprint, 14 oval THT pads (hole at the header position, copper out to the castellation edge) | same, modified |
 
 The SuperMini symbol/footprint are still in `lib/` but unused.
