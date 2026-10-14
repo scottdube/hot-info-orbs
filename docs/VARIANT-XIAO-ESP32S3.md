@@ -1,9 +1,10 @@
-# Variant: Seeed XIAO ESP32-S3 Plus
+# Variant: Seeed XIAO ESP32-S3 / ESP32-S3 Plus
 
 Status: **DESIGNED, NOT BUILT.** Branch `xiao-esp32s3-plus`, 2026-10-14.
-Schematic and board are done and DRC-clean, the firmware env compiles, and
-no board has been ordered or flashed. The SuperMini carrier
-(`hardware/hot-info-orbs`, v1.1) is untouched and stays the club board.
+Schematic and board are done and DRC-clean, the firmware compiles, and no
+board has been ordered or flashed. **The branch is XIAO-only** (Scott,
+2026-10-14): the SuperMini env, pin block and hardware folder are gone from
+it; the v1.1 SuperMini board and its firmware live on `main`.
 
 Date: 2026-10-14
 
@@ -24,6 +25,27 @@ supply, the ground pour, the outline — is the v1.1 board. Two projects rather
 than one with a configurable U2, because KiCad has no clean way to carry two
 footprints for one symbol and the two boards will be ordered separately
 anyway.
+
+## S3 and S3 Plus: interchangeable
+
+Scott wants either module to drop in. Checked against the Seeed wiki
+(`wiki.seeedstudio.com/xiao_esp32s3_getting_started/`, 2026-10-14):
+
+| | XIAO ESP32-S3 | XIAO ESP32-S3 Plus |
+|---|---|---|
+| D0–D10 → GPIO | 1 2 3 4 5 6 43 44 7 8 9 | identical |
+| User LED | GPIO21 | GPIO21 |
+| Size | 21 × 17.8 mm | 21 × 17.8 mm |
+| Antenna | U.FL, external | U.FL, external |
+| PSRAM | 8 MB | 8 MB |
+| Flash | 8 MB | **16 MB** |
+| GPIO | 11 | 18 (D11–D19 on the back, not reachable from this board) |
+
+So the same board and the same binary serve both, provided the binary is
+built for 8 MB flash — which it is (`board_upload.flash_size = 8MB`, 4 MB
+partition layout). A 16 MB build would gain the Plus's extra flash and stop
+running on the plain S3; rejected until there is something to put in it.
+Not verified on hardware: no XIAO of either kind has run this firmware.
 
 ## Mounting: edge pins only
 
@@ -67,10 +89,9 @@ Full map with notes: `hardware/hot-info-orbs-xiao/README.md`.
 
 ## Firmware
 
-`pio run -e xiao-esp32s3` (board `seeed_xiao_esp32s3`, `-D BOARD_XIAO_ESP32S3`);
-`xiao-ota` for espota. `config.h.template` has the XIAO pin block under
-`#if defined(BOARD_XIAO_ESP32S3)` with the SuperMini block verbatim in the
-`#else`. The XIAO board definition turns on USB CDC on boot itself: the
+`pio run` (default envs `xiao-esp32s3`, board `seeed_xiao_esp32s3`, and
+`ota` for espota). `config.h.template` carries only the XIAO pin block; the
+SuperMini block is on `main`. The XIAO board definition turns on USB CDC on boot itself: the
 XIAO's console *is* the native USB (no bridge chip), so the TRAPS.md warning
 against those flags — written for the SuperMini — does not apply.
 
@@ -101,9 +122,18 @@ first.
   warnings that are Seeed's own module outline crossing its pads (accepted;
   fabs clip silk off copper). Pipeline and traps: `hardware/hot-info-orbs-xiao/docs/HANDOFF.md`.
 
+## Antenna
+
+The SuperMini has a PCB antenna and the v1.1 board keeps copper away from
+it. The XIAO has none: a U.FL connector and a supplied rod/flex antenna that
+must be placed and stuck down somewhere. The inherited "Antenna" silk and
+keepout rule areas are now just a reserved bare patch — harmless, not yet
+reworked (KiCad had the project open when this was noticed).
+
 ## Not done
 
 - No board ordered, nothing flashed; the RC reset timing and the active-low
   LED are reasoned, not measured.
 - 3D STEP not regenerated for the XIAO board.
-- `docs/features.html` still lists the module price from 24 Sept 2026.
+- Antenna placement (U.FL pigtail) not designed; keepout/silk are SuperMini leftovers.
+- Plain XIAO ESP32-S3 price not checked (Plus: $7.90 at Seeed, 2026-10-14).

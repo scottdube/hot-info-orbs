@@ -1,9 +1,12 @@
 # HoT Info Orbs
 
-Five round 240×240 displays on one SPI bus, driven by an ESP32-S3 SuperMini, on
-a custom carrier board. This branch adds a second carrier for the Seeed XIAO
-ESP32-S3 Plus (`hardware/hot-info-orbs-xiao/`, designed, not built); the
-SuperMini board is unchanged. Clock, weather, stocks — and whatever else gets written.
+Five round 240×240 displays on one SPI bus, driven by a Seeed XIAO ESP32-S3 or
+ESP32-S3 Plus (interchangeable — same edge pins), on a custom carrier board.
+Clock, weather, stocks — and whatever else gets written.
+
+**This branch (`xiao-esp32s3-plus`) is the XIAO build only** — board in
+`hardware/hot-info-orbs-xiao/`, designed and not yet fabricated. The ESP32-S3
+SuperMini board (v1.1, the boards in hand) and its firmware are on `main`.
 
 Built as a club project, which shapes the whole thing: it is assembled by people
 at a wide range of skill levels, so the build has to be hard to get wrong and
@@ -30,10 +33,10 @@ this repository is public.
 
 | | Upstream | This |
 |---|---|---|
-| Microcontroller | ESP32 dev kit (30/38-pin) | **ESP32-S3 SuperMini** |
+| Microcontroller | ESP32 dev kit (30/38-pin) | **Seeed XIAO ESP32-S3 / S3 Plus** (`main`: ESP32-S3 SuperMini) |
 | Display supply | 3.3 V, off the module's regulator | **5 V, each module regulates its own** |
 | API keys | compiled into `config.h`, shipped with live keys in the template | **`secrets.h`, gitignored, build fails without it** |
-| Board | upstream's 2-layer design | **new carrier board, v1.1** |
+| Board | upstream's 2-layer design | **new carrier board** (XIAO carrier here; v1.1 SuperMini carrier on `main`) |
 | Firmware updates | USB cable every time | **over WiFi** — browser page or `pio run -e ota` |
 | Boot splash | "Info Orbs by brett.tech", Brett's logo | **"HOT Info Orbs by HOT-Team"**, Yang's avatar for now; the Hands-On Tech hand (`images/hot-logo.jpg`) replaces it once Yang has this version |
 | Settings | edit `config.h`, rebuild, reflash | **a page in the browser**: `http://<orb's IP>/settings` |
@@ -43,7 +46,7 @@ this repository is public.
 **Upgrading a board flashed before 2026-09-23? Flash it once more over USB.**
 The WiFi updates need a new flash layout (two firmware slots instead of one), and
 only a USB flash writes that layout. Every update after that can go over WiFi:
-open `http://<orb's IP>/update`, choose `.pio/build/esp32-s3-devkitc-1/firmware.bin`
+open `http://<orb's IP>/update`, choose `.pio/build/xiao-esp32s3/firmware.bin`
 and upload. The page also shows which commit is running. Set `OTA_PASSWORD` in
 `secrets.h`, or anyone on your network can flash your orbs. Details in
 [docs/SETUP.md](docs/SETUP.md#8-later-updates-no-cable-needed).
@@ -109,8 +112,8 @@ for the order parameters and the drill-tool cross-check.
 | [docs/SETUP.md](docs/SETUP.md) | empty machine to running orb |
 | [docs/TRAPS.md](docs/TRAPS.md) | things that cost time once, so they cost it once |
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | web control panel and OTA, with the traps that will bite whoever builds them |
-| [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | why the S3 SuperMini, including the arguments that reversed |
-| [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | the XIAO ESP32-S3 Plus carrier: edge pins only, where the twelfth pin went, what the autorouter rejected |
+| [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | why `main` uses the S3 SuperMini, including the arguments that reversed; its measurements are of that board |
+| [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | this branch's board: XIAO ESP32-S3 / S3 Plus on edge pins only, where the twelfth pin went, what the autorouter rejected |
 | [docs/ESPHOME-EVALUATION.md](docs/ESPHOME-EVALUATION.md) | why this is not an ESPHome project |
 
 The variant and ESPHome documents keep the reasoning that changed rather than

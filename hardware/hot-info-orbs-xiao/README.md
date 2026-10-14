@@ -1,10 +1,22 @@
 # HoT Info Orbs — XIAO ESP32-S3 variant (KiCad project)
 
-Carrier for five GC9A01 displays and three buttons, taking a
-**Seeed Studio XIAO ESP32-S3 Plus** (SKU 102010671) in place of the
-ESP32-S3 SuperMini. Copied from `../hot-info-orbs` (v1.1, the board that was
-ordered 2026-08-29) on 2026-10-14; that project is untouched and stays the
-SuperMini board.
+Carrier for five GC9A01 displays and three buttons, taking a **Seeed Studio
+XIAO ESP32-S3 or XIAO ESP32-S3 Plus** (SKU 102010671) in place of the ESP32-S3
+SuperMini. Copied on 2026-10-14 from the v1.1 SuperMini board (`main` branch,
+`hardware/hot-info-orbs/`, tag `v1.1-run1`, the boards ordered 2026-08-29);
+this branch is XIAO-only and no longer carries that project.
+
+**S3 and S3 Plus are interchangeable here** (Seeed wiki, checked 2026-10-14):
+identical D0–D10 → GPIO map, user LED GPIO21 on both, 21 × 17.8 mm both,
+U.FL antenna both, 8 MB PSRAM both. Flash 8 MB vs 16 MB; the firmware builds
+for 8 MB and uses 4 MB, so one binary runs on either. The Plus's extra
+D11–D19 are on its back and are not used by this board.
+
+**Antenna:** the XIAO has no PCB antenna — it ships with a U.FL rod/flex
+antenna that has to be stuck somewhere. The "Antenna" silk and the keepout
+rule areas on this board are inherited from the SuperMini and are now only a
+reserved patch of bare board (harmless, not yet re-purposed; board not edited
+while KiCad was open).
 
 ## Status — DESIGNED, not fabricated (2026-10-14)
 
@@ -33,7 +45,7 @@ flat on its castellations. Any XIAO ESP32-S3
 (plain, Sense, Plus) has the same 14 edge pins and fits; the Plus's nine extra
 pads under the module are not used.
 
-## Pin map (decided 2026-10-14)
+## Pin map (decided 2026-10-14; same for S3 and S3 Plus)
 
 11 GPIOs are available on the edge; the SuperMini board used 12, so the
 display RST line moves off the MCU onto an RC power-on reset (R1 10 kΩ to

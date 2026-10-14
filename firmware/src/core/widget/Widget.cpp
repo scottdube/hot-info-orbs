@@ -2,8 +2,8 @@
 
 Widget::Widget(ScreenManager &manager) : m_manager(manager) {}
 
-// BUSY_ON / BUSY_OFF come from config.h when the indicator is active-low (the
-// XIAO's on-board LED); the SuperMini board drives an external LED high.
+// BUSY_ON / BUSY_OFF come from config.h: the XIAO's on-board LED is active-low.
+// The fallback keeps an older config.h (external LED, driven high) building.
 #ifndef BUSY_ON
     #define BUSY_ON HIGH
     #define BUSY_OFF LOW

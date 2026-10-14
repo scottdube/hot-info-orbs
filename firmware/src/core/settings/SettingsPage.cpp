@@ -80,7 +80,7 @@ static String textField(const char *key, const char *label, const std::string &v
 }
 
 #ifdef TEMPEST_TOKEN
-// The last fetch per station. There is no serial on the SuperMini, so this is
+// The last fetch per station. An orb in service has no serial cable, so this is
 // how a failing station is seen without walking over to the orbs.
 static String tempestStatusLine(int slot) {
     const TempestStatus &st = TempestSource::status(slot);

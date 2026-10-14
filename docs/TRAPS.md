@@ -138,6 +138,13 @@ the USB port, so nothing services a CDC endpoint and macOS keeps losing it.
 -D ARDUINO_USB_CDC_ON_BOOT=1
 ```
 
+> **XIAO branch (2026-10-14):** this trap is the SuperMini's. The
+> `seeed_xiao_esp32s3` board definition sets exactly these two flags itself,
+> and on the XIAO they are right: its USB-C is wired to the ESP32-S3's native
+> USB with no bridge chip, so the application *must* own the CDC endpoint for
+> there to be a console at all. Do not remove them here. Untested on hardware
+> until a XIAO board exists.
+
 With those set, the *application* takes ownership of the USB peripheral instead
 of leaving it to the ROM. It then fails to enumerate, and the board disappears
 from the host completely — no `/dev/cu.usbmodem*`, nothing in
@@ -225,9 +232,9 @@ The web-settings merge added `[env:native]` for host unit tests. CI runs a bare
 `pio run`, which builds **every** env, so it tried to compile `firmware/src`
 for the host: `'Arduino.h' file not found`. It failed on all three OSes from
 983c037 until the fix. Locally everything was green, because every local command
-named its env (`-e esp32-s3-devkitc-1`, `-e ota`, `pio test -e native`).
+named its env (`-e esp32-s3-devkitc-1` — now `xiao-esp32s3` on this branch —, `-e ota`, `pio test -e native`).
 
-Fix: `default_envs = esp32-s3-devkitc-1, ota` under `[platformio]`, plus an
+Fix: `default_envs = <firmware env>, ota` under `[platformio]`, plus an
 explicit `pio test -e native` step in CI. This is the "change the build
 contract, change CI in the same commit" trap above, a second time. **Before a
 merge, run the exact CI command (`pio run`, no `-e`) locally.**

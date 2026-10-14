@@ -231,7 +231,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="group">
       <h3>Port and branding</h3>
       <ul>
-        <li>Ported to the ESP32-S3 SuperMini pin map. Every pin is a setting in <span class="num">config.h</span>, so a different module needs a new pin map, not new code.</li>
+        <li>Ported to the Seeed XIAO ESP32-S3 pin map (this branch; <span class="num">main</span> carries the ESP32-S3 SuperMini map). Every pin is a setting in <span class="num">config.h</span>, so a different module needs a new pin map, not new code.</li>
         <li>The splash reads “HOT Info Orbs by HOT-Team”. The Hands-On Tech logo is in the repo, ready to become the built-in picture.<span class="was">Was: “Info Orbs by brett.tech” and Brett's logo.</span></li>
       </ul>
     </div>
@@ -257,7 +257,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <h3>A new carrier board</h3>
       <ul>
         <li>Carrier board v1.1, Yang's KiCad 10 design. The libraries live inside the project, so you clone it and open it; there's nothing to install.<span class="was">Was: upstream's 2-layer board for an ESP32 dev kit.</span></li>
-        <li>The ESP32-S3 SuperMini sits in machined-pin sockets, so a module can be swapped without desoldering.<span class="was">Was: a 30/38-pin ESP32 dev kit.</span></li>
+        <li>The XIAO ESP32-S3 goes on 2.54 mm headers (swappable) or solders flat on its castellations. The S3 and S3 Plus share the edge pins, so either fits.<span class="was">Was: a 30/38-pin ESP32 dev kit; on <span class="num">main</span>, an ESP32-S3 SuperMini in machined-pin sockets.</span></li>
         <li>Fixed in review before fab: the fifth display's DC line connected, a button moved off a strapping pin, and a ground pour added.</li>
       </ul>
     </div>
@@ -283,36 +283,36 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <div class="head">
     <div class="eyebrow">Two builds, one carrier board</div>
     <h2>Basic and Advanced</h2>
-    <p><b>Basic</b> is the club kit: cheap, proven and shipping. <b>Advanced</b> is for builders who want room to grow. It is a second carrier board for a larger module, the same board as Basic except for the module footprint (the adapter-into-the-socket idea was dropped 14 Oct 2026 when the carrier was reworked instead). Advanced is designed and not yet built: the board is DRC-clean and the firmware compiles, nothing has been ordered.</p>
+    <p><b>Basic</b> is the Seeed XIAO ESP32-S3; <b>Advanced</b> is the XIAO ESP32-S3 Plus. Same carrier board, same edge pins, same firmware binary — the Plus only adds flash the build does not yet use. Neither is built: the board is DRC-clean and the firmware compiles, nothing has been ordered. (The club kit shipping today is the SuperMini board on <span class="num">main</span>.)</p>
   </div>
   <div class="tiers">
     <article class="tier">
-      <div class="top"><h3>Basic</h3><span class="st ship">✔ Shipping</span></div>
+      <div class="top"><h3>Basic</h3><span class="st prop">◔ Designed, not built</span></div>
       <dl>
-        <dt>Module</dt><dd>ESP32-S3 SuperMini (FH4R2)</dd>
-        <dt>Flash</dt><dd><span class="num">4 MB</span>, split into two 1.875 MB firmware slots so updates are safe</dd>
-        <dt>Headroom</dt><dd>Firmware fills <span class="num">89.0%</span> of a slot with Tempest built in. Without a Tempest token it was <span class="num">87.4%</span>, measured just before the merge added sunrise, sunset and the moon. The stop line is <span class="num">92%</span>.</dd>
-        <dt>PSRAM</dt><dd><span class="num">2 MB</span>, measured present, not yet switched on</dd>
-        <dt>Carrier</dt><dd>v1.1, module in machined-pin sockets</dd>
-        <dt>Pins</dt><dd>12 GPIO used: 9 for the displays (5 chip selects plus data, clock, DC and reset) and 3 for the buttons</dd>
-        <dt>Module price</dt><dd><span class="num">$4.25</span>, Scott's last purchase</dd>
-        <dt>For</dt><dd>Every club build. Everything on this sheet marked ✔ runs on it.</dd>
+        <dt>Module</dt><dd>Seeed XIAO ESP32-S3 (plain), on headers or soldered flat on its castellations</dd>
+        <dt>Flash</dt><dd><span class="num">8 MB</span>; the build uses the first 4 MB as two 1.875 MB firmware slots so updates are safe</dd>
+        <dt>Headroom</dt><dd>Firmware fills <span class="num">84.0%</span> of a slot (build of 14 Oct 2026). The stop line is <span class="num">92%</span>.</dd>
+        <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal; the board definition enables it, not yet measured on hardware</dd>
+        <dt>Carrier</dt><dd><span class="num">hardware/hot-info-orbs-xiao</span>: the v1.1 board with the module footprint swapped</dd>
+        <dt>Pins</dt><dd>11 GPIO used: 8 for the displays (5 chip selects plus data, clock and DC; reset is an RC circuit) and 3 for the buttons; the busy light is the XIAO's own LED</dd>
+        <dt>Module price</dt><dd>not checked</dd>
+        <dt>For</dt><dd>Every build of this board. Everything on this sheet marked ✔ is expected to run on it; none of it has run on a XIAO yet.</dd>
       </dl>
     </article>
     <article class="tier adv">
       <div class="top"><h3>Advanced</h3><span class="st prop">◔ Designed, not built</span></div>
       <dl>
-        <dt>Module</dt><dd>Seeed XIAO ESP32-S3 Plus, on headers or soldered flat on its castellations</dd>
-        <dt>Flash</dt><dd><span class="num">16 MB</span>, about four times the room for new widgets, fonts and pictures</dd>
+        <dt>Module</dt><dd>Seeed XIAO ESP32-S3 Plus — drop-in for the plain S3: identical D0–D10 pins, LED and size (Seeed wiki, checked 14 Oct 2026)</dd>
+        <dt>Flash</dt><dd><span class="num">16 MB</span>. The shared binary uses 4 MB; a 16 MB build would open the rest for widgets, fonts and pictures but would no longer run on the plain S3</dd>
         <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal</dd>
-        <dt>Carrier</dt><dd>v1.1 with the module footprint swapped (<span class="num">hardware/hot-info-orbs-xiao</span>). Same displays, buttons, 5 V supply and outline.</dd>
-        <dt>Pins</dt><dd>11 on the edge, one short of the SuperMini board. The display reset line moved off the MCU onto an RC power-on reset and the firmware uses the panels' software reset; the busy light is the XIAO's own LED.</dd>
-        <dt>Firmware</dt><dd>The same code base with a second pin map, <span class="num">pio run -e xiao-esp32s3</span>. Fills <span class="num">84.0%</span> of a slot, same partition layout as Basic.</dd>
-        <dt>Module price</dt><dd><span class="num">$7.99</span> at Seeed, in stock, checked 24 Sept 2026</dd>
+        <dt>Carrier</dt><dd>The same board as Basic</dd>
+        <dt>Pins</dt><dd>The same 11 edge pins as Basic. The Plus's nine extra GPIO (D11–D19) are on its back and are not reachable from this board.</dd>
+        <dt>Firmware</dt><dd>The same binary as Basic, <span class="num">pio run -e xiao-esp32s3</span></dd>
+        <dt>Module price</dt><dd><span class="num">$7.90</span> at Seeed, in stock, checked 14 Oct 2026</dd>
       </dl>
     </article>
   </div>
-  <p class="note">Also considered for Advanced: the Unexpected Maker TinyS3 (8 MB flash / 8 MB PSRAM; not stocked at Adafruit) and the Waveshare ESP32-S3-Pico (16 MB / 2 MB, a larger 40-pin Pico layout). None of the three plugs straight into the SuperMini socket, which is why an adapter was the original plan.</p>
+  <p class="note">Also considered for Advanced, on <span class="num">main</span>: the Unexpected Maker TinyS3 and the Waveshare ESP32-S3-Pico, both needing an adapter into the SuperMini socket. Dropped 14 Oct 2026 when this carrier was reworked for the XIAO instead.</p>
 </section>
 
 <section>

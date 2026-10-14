@@ -65,7 +65,19 @@ continue without re-deriving anything. Newest at the bottom.
    "second carrier, designed not built", this folder's README (status,
    regeneration recipe, library table). 3D STEP NOT regenerated.
 
+6. [x] XIAO-only (Scott, 2026-10-14: "this branch is xiao only", S3 and S3
+   Plus interchangeable). SuperMini env, pin block and `hardware/hot-info-orbs/`
+   removed from the branch (all on `main`, tag `v1.1-run1`). Default envs are
+   now `xiao-esp32s3, ota`; no `BOARD_XIAO_ESP32S3` define any more. Docs
+   (README, SETUP, TRAPS, TEMPEST-API, features.html Basic = S3 / Advanced =
+   Plus) rewritten; VARIANT-ESP32-S3-SUPERMINI.md kept as history.
+   Interchangeability verified against the Seeed wiki (same D0-D10 map, LED,
+   size, PSRAM; flash 8 vs 16 MB) - build stays 8 MB so one binary fits both.
+
 ## Open
+- Antenna: the XIAO uses a U.FL external antenna, not a PCB antenna. The
+  board's "Antenna" silk + keepouts are SuperMini leftovers; decide where the
+  pigtail antenna goes.
 - Order / build / flash a board; measure the RC reset and LED polarity.
 - Regenerate the 3D STEP for the XIAO board.
 - Branch has no upstream until pushed (`git push -u origin xiao-esp32s3-plus`).
