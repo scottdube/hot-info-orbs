@@ -147,6 +147,20 @@ continue without re-deriving anything. Newest at the bottom.
    Board texts carry mixed justifications, so `SetPosition` lands them off
    the board — move by bounding-box delta. Copy Datasheet/Description onto
    swapped footprints or parity flags `footprint_symbol_field_mismatch`.
+   Same day, second pass (script extended, still one run from 1d4623f):
+   Scott — "bottom of the board" meant the SIDE, "all on the same side as
+   the xiao": C1, C2, R1, SW1-3 flipped to the back (switches stay on the top
+   edge); and "bring the board edge up even with the top of the displays":
+   top edge y 79.28 -> 62.0, measured from an orthographic top render of the
+   placed board against a footprint-free copy at the same camera (19.4
+   px/mm, tallest display top at y 61.99). Top mounting holes and the GND
+   pour's top corners moved up 17.28 mm too. DRC: 0 parity, 46 unconnected,
+   19 silk warnings (the SW1-over-XIAO overlap is gone — the switches are
+   17 mm higher now).
+   Traps: a left-right `Flip()` mirrors about the footprint origin = pad 1,
+   so R1 swung into DS1's socket pads (4 shorts) — re-centre on the pre-flip
+   pad midpoint. `ZONE` has no `SetCornerPosition`: rebuild with
+   `RemoveAllContours()` + `AppendCorner(v, -1)`.
    **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
    `tools/antenna_patch.py` is retired.
 
@@ -155,7 +169,5 @@ continue without re-deriving anything. Newest at the bottom.
   (`route_xiao.py`) and refill the pour.
 - Measure a uxcell right-angle switch: tab pitch 6.5 vs 7.0 mm decides
   whether the stock PTS645 footprint is usable.
-- SW1's tabs (y 84.3) sit on the XIAO's top edge (y 84.5) on the back: fine
-  on headers, a clash if the XIAO is flat-soldered by its castellations.
 - Order / build / flash a board; measure the RC reset and LED polarity.
 - Branch has no upstream until pushed (`git push -u origin xiao-esp32s3-plus`).

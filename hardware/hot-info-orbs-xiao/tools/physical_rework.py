@@ -17,7 +17,7 @@ Scott asked for, and how each was read:
    display lifted 8.5 mm (socket body). Pad row at y = PIN_ROW_Y: the lowest
    it goes with the 1.7 mm pads 0.5 mm (min_copper_edge_clearance) inside the
    edge and the socket body still on the board.
-3. Buttons on the TOP edge (Scott corrected "bottom" to top), right-angle,
+3. Buttons on the TOP edge (Scott corrected "bottom" to top; see 5.), right-angle,
    spaced equally across the centre third of the board. The part is uxcell's
    6 x 6 x 8 mm right-angle tact switch (Amazon); footprint is KiCad's stock
    PTS645Vx39 (C&K PTS645VL39, 8.05 mm overall from body back to actuator tip
@@ -30,6 +30,17 @@ Scott asked for, and how each was read:
 4. C1, C2, R1 to the bottom edge, in the gaps between display sockets:
    R1 between DS1 and DS2, C2 + C1 between DS3 and DS4. Not between DS2 and
    DS3: the XIAO sits there on the back and THT leads would hit it.
+5. (Later 2026-10-16, Scott) "bottom of the board" meant the SIDE: C1, C2,
+   R1 and SW1-3 all go on the back, "the same side as the xiao". The
+   switches stay on the top edge; C1/C2/R1 keep their bottom-edge spots
+   (the XIAO is not there). Flipped left-right, so a switch's pad 1 lands
+   CX left of its centre instead of right.
+6. Top board edge brought up even with the tops of the displays:
+   DISPLAY_TOP_Y, measured off an orthographic kicad-cli top render of the
+   placed board against a bare-board render at the same camera (19.4 px/mm,
+   tallest display at y 61.99). The two top mounting holes and the B.Cu GND
+   pour's top corners move up by the same amount; the holes keep their 3 mm
+   corner inset.
 
 Footprint swaps keep the symbol path so parity still matches, and the
 schematic's Footprint fields are rewritten to the new names at the end.
@@ -46,6 +57,8 @@ b = pcbnew.LoadBoard(str(PCB))
 edge = b.GetBoardEdgesBoundingBox()
 X0, X1 = pcbnew.ToMM(edge.GetLeft()), pcbnew.ToMM(edge.GetRight())
 Y0, Y1 = pcbnew.ToMM(edge.GetTop()), pcbnew.ToMM(edge.GetBottom())
+DISPLAY_TOP_Y = 62.0   # render-measured 61.99, see 6. above
+RISE = Y0 - DISPLAY_TOP_Y
 
 # TRAP: after the first b.Remove() in a process, SWIG stops typing return
 # values - b.Zones()/GetDrawings()/GetTracks() AND methods on handles taken
@@ -82,10 +95,31 @@ for d in drawings:
                for x, y in STALE_RECTS):
             doomed.append(d)
 
+# --- 6. top edge up to the display tops ---------------------------------------
+for d in drawings:
+    if d.GetLayerName() != "Edge.Cuts":
+        continue
+    if d.GetShape() == pcbnew.SHAPE_T_RECT:
+        s = d.GetStart()
+        d.SetStart(pcbnew.VECTOR2I(s.x, MM(DISPLAY_TOP_Y)))
+    elif d.GetShape() == pcbnew.SHAPE_T_CIRCLE and pcbnew.ToMM(d.GetCenter().y) < (Y0 + Y1) / 2:
+        d.Move(pcbnew.VECTOR2I(0, -MM(RISE)))
+for z in zones:
+    if z.GetIsRuleArea():
+        continue
+    # ZONE has no SetCornerPosition: rebuild the single outline instead
+    pts = [z.GetCornerPosition(i) for i in range(z.GetNumCorners())]
+    pts = [pcbnew.VECTOR2I(c.x, c.y - MM(RISE)) if pcbnew.ToMM(c.y) < (Y0 + Y1) / 2
+           else pcbnew.VECTOR2I(c.x, c.y) for c in pts]
+    z.RemoveAllContours()
+    for c in pts:
+        z.AppendCorner(c, -1)
+Y0 = DISPLAY_TOP_Y
+
 # --- tracks out: reroute comes after the 3D check ---------------------------
 doomed += tracks
 
-def swap(old, lib, name, pos, rot_deg):
+def swap(old, lib, name, pos, rot_deg, back=False):
     """Add lib:name in place of `old`, keeping identity and nets; old is
     queued for removal."""
     new = pcbnew.FootprintLoad(str(lib), name)
@@ -105,6 +139,8 @@ def swap(old, lib, name, pos, rot_deg):
             p.SetNet(nets[p.GetNumber()])
     new.SetOrientationDegrees(rot_deg)
     new.SetPosition(pos)
+    if back:
+        new.Flip(pos, pcbnew.FLIP_DIRECTION_LEFT_RIGHT)
     b.Add(new)
     doomed.append(old)
     return new
@@ -130,9 +166,10 @@ c0 = X0 + third
 centres = [c0 + third * k / 6 for k in (1, 3, 5)]
 sw_y = Y0 + BODY_FRONT
 for ref, cx in zip(("SW1", "SW2", "SW3"), centres):
-    # rotation 0: actuator toward -y = the top edge
+    # rotation 0: actuator toward -y = the top edge. Flipped to the back the
+    # footprint mirrors in x, so its centre is CX LEFT of the origin
     swap(fps[ref], STOCK / "Button_Switch_THT.pretty", SW,
-         pcbnew.VECTOR2I(MM(cx - CX), MM(sw_y)), 0)
+         pcbnew.VECTOR2I(MM(cx + CX), MM(sw_y)), 0, back=True)
 
 def place_box(d, left, top):
     """Put a text's bounding box at (left, top). Board texts here carry mixed
@@ -150,6 +187,8 @@ labels = sorted((d for d in drawings
                 key=lambda d: d.GetPosition().x)
 for d, cx in zip(labels, centres):
     w = pcbnew.ToMM(d.GetBoundingBox().GetWidth())
+    d.SetLayer(pcbnew.B_SilkS)   # labels follow the switches to the back
+    d.SetMirrored(True)
     place_box(d, cx - w / 2, sw_y + 2.49 + 1.05 + 0.4)  # below the tab pads
 
 # --- 4. R1, C2, C1 to the bottom edge -----------------------------------------
@@ -163,6 +202,14 @@ fps["C2"].SetPosition(pcbnew.VECTOR2I(MM(g34 - 7.0), MM(ROW)))
 fps["C1"].SetPosition(pcbnew.VECTOR2I(MM(g34 + 7.0), MM(Y1 - 0.5 - 3.42)))
 # its reference sat below the body, off the board: put it above
 fps["C1"].Reference().SetPosition(pcbnew.VECTOR2I(MM(g34 + 7.0 - 1.25), MM(Y1 - 0.5 - 6.84 - 1.2)))
+for ref in ("R1", "C2", "C1"):   # 5.: on the XIAO's side
+    # flipping mirrors about the origin = pad 1, which swung R1 into DS1's
+    # socket pads; put the pad midpoint back where it was
+    f = fps[ref]
+    mid = lambda: sum(pd.GetPosition().x for pd in f.Pads()) // len(list(f.Pads()))
+    before = mid()
+    f.Flip(f.GetPosition(), pcbnew.FLIP_DIRECTION_LEFT_RIGHT)
+    f.Move(pcbnew.VECTOR2I(before - mid(), 0))
 
 # --- board texts that now sit under a socket move to the top band -------------
 for d in drawings:

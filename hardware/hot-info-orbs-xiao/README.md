@@ -23,6 +23,11 @@ retired and kept as history.
   2.54 mm female socket (footprint `_Displays:GC9A01_SOCKET`, same pads as
   `GC9A01_PINS`, display lifted 8.5 mm in 3D). Pad row at y 106.01, as low as
   the 0.5 mm copper-to-edge rule allows.
+- Board top edge raised 17.28 mm to y 62.0, even with the tops of the
+  displays (measured off a render); top mounting holes and the GND pour
+  moved up with it. Board is now 198.8 x 45.78 mm.
+- C1, C2, R1 and SW1-3 are on the BACK, the XIAO's side (Scott: "all on
+  the same side as the xiao").
 - Buttons: right-angle 6 x 6 x 8 mm tact switches (uxcell, Amazon) on the TOP
   edge, actuators out past it, centres x 128.68 / 150.78 / 172.87 = equal
   spacing across the centre third. Footprint is KiCad's stock
@@ -36,7 +41,8 @@ retired and kept as history.
 
 The 2026-10-14 status below describes the routed board before the physical
 rework; tracks were stripped for the re-route. Current DRC: 46 unconnected
-(no tracks), 0 parity.
+(no tracks), 0 parity, 19 silk warnings (14 = Seeed's U2 outline, 5 = the
+socket tab boxes at the bottom edge).
 
 ### 2026-10-14 (superseded)
 

@@ -154,6 +154,7 @@ script takes `PATCH=x0,x1,y0,y1` to move or resize it, then re-route.
   rendering, `tools/xiao_model.py`), display models re-pointed, assembly
   exported to `hardware/hot-info-orbs-xiao/3d-assembly/`.
 - Board is placed but NOT routed since the 2026-10-16 physical rework
-  (sockets, right-angle switches on the top edge); right-angle switch
+  (sockets, board edge up to the display tops, switches + passives on the
+  XIAO's side, switches on the top edge); right-angle switch
   footprint unverified against the uxcell part.
 - Plain XIAO ESP32-S3 price not checked (Plus: $7.90 at Seeed, 2026-10-14).
