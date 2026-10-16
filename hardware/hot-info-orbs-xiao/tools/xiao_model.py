@@ -36,7 +36,7 @@ DISP_NEW = "${KIPRJMOD}/lib/3d/_Displays/"
 # its castellation columns on the footprint's holes (it was one column off);
 # -1.778 in x lines the seven pads up along the column. z 0 seats it on the
 # copper.
-FIT = [-1.778, -7.62, 0.0, -90.0, 0.0, 0.0]
+FIT = [-1.778, -7.62, 0.0, -90.0, 0.0, 0.0]   # DIP-era fit; 1.49 mm off the holes. The SOCKET footprint carries the measured (-1.651, -6.13, 11).
 ox, oy, oz, rx, ry, rz = (list(map(float, sys.argv[1:7])) + FIT[len(sys.argv) - 1:])[:6]
 
 def xiao_model():

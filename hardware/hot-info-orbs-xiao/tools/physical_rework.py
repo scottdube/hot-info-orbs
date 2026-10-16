@@ -77,6 +77,18 @@ Scott asked for, and how each was read:
    PinHeader_1x07 models, upside down (rotate 180/0/+90, plastic z 8.5-11
    under the module, tails through it). -90 like the sockets ran the rows
    the wrong way: the X flip reverses the row first.
+13. (Scott, pass 7: "why don't the holes in the esp line up with the
+   pins?") The Seeed module model sat 1.49 mm across the rows and 0.127 mm
+   along them off the header pins (measured on its hole faces in Fusion).
+   Its offset was fitted by eye against the old DIP footprint's copper,
+   never checked against holes. Footprint model offset (-1.778, -7.62, 11)
+   -> (-1.651, -6.13, 11). Trap: on this back-side footprint the model
+   offset's y does NOT map the way the pads do - pads take local y to +x,
+   the model offset took it to -x; -9.11 moved it 1.49 the wrong way.
+   Same pass (Scott: "move the caps and resistors left 3mm to leave room
+   to create castellated pads"): 11.'s column goes from 5.5 to 8.5 mm out
+   of the pin column - away from the XIAO, which is left seen from the
+   back.
 
 Footprint swaps keep the symbol path so parity still matches, and the
 schematic's Footprint fields are rewritten to the new names at the end.
@@ -363,7 +375,7 @@ place_box(credit, BX - w / 2, top)
 
 # --- 11. C1, R1, C2 beside the XIAO -------------------------------------------
 u2pad = {p.GetNumber(): p.GetPosition() for p in nu2.Pads()}
-COL = pcbnew.ToMM(u2pad["14"].x) + 5.5       # 5V/3V3/GND pin column + 5.5 mm
+COL = pcbnew.ToMM(u2pad["14"].x) + 8.5       # 5V/3V3/GND pin column + 8.5 mm (3 mm kept clear for castellation pads)
 
 
 def pads_at(f, a, ta, b, tb):

@@ -238,3 +238,19 @@ Fix: `default_envs = <firmware env>, ota` under `[platformio]`, plus an
 explicit `pio test -e native` step in CI. This is the "change the build
 contract, change CI in the same commit" trap above, a second time. **Before a
 merge, run the exact CI command (`pio run`, no `-e`) locally.**
+
+## A 3D model fitted by eye can sit a castellation column off the holes (2026-10-16)
+
+Branch `xiao-esp32s3-plus`, carrier board. On 2026-10-14 the Seeed XIAO
+STEP was fitted by rendering against the DIP footprint's copper. It looked
+right. When the module went onto headers, Scott saw that its holes missed
+the pins. Fusion `find_geometry` on the hole faces measured the error at
+1.49 mm across the rows and 0.127 mm along them.
+
+Fit a model by measuring its holes against the pad positions. A render
+can't show this: the module is 11 mm up, so parallax hides it.
+
+The fix had a sign trap. On a back-side (flipped) footprint, the model
+offset's local y went to -x on the board while the pads' local y went to
++x. Make one move, re-measure, and only then trust the direction.
+

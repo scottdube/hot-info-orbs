@@ -41,7 +41,8 @@ retired and kept as history.
 - C1 (+5V bulk for the displays) right beside the XIAO's 5V/GND pins;
   R1 + C2 (display RC reset) in the same column above it, R1 off the 3V3
   pin. Pass 1 had them in the bottom-edge gaps between sockets, ~36 mm
-  from the 5V pin.
+  from the 5V pin. The column sits 8.5 mm out from the pins, leaving 3 mm
+  beside the XIAO free for castellation pads if we ever solder it down.
 - Board ID is on the back: a 28 mm HOT hand logo (`_Logos:Hot_Logo_28mm`,
   the 5 mm logo's polygons scaled) with "The Villages / Hands-On Tech Club"
   at one end; "HoT Info Orbs", "XIAO ESP32-S3 · rev X0.1" and the
@@ -127,6 +128,6 @@ Project-local, as in the parent project. Added here:
 |---|---|---|
 | `_Seeed XIAO` | `XIAO-ESP32-S3-edge` symbol (Seeed's 25-pin symbol trimmed to the 14 edge pins, so PCB parity has no pad-less pins) | Seeed `OPL_Kicad_Library`, CC BY-SA 4.0 |
 | `_ESP32 modules` | `XIAO-ESP32-S3-DIP` footprint, 14 oval THT pads (hole at the header position, copper out to the castellation edge) | same, modified |
-| `lib/3d/_ESP32 modules/XIAO-ESP32S3-PLUS-v4.step` | U2's 3D model (Seeed assembly "XIAO ESP32S3 PLUS_V1.0_241025"), attached by `tools/xiao_model.py` with offset (-1.778, -7.62, 0) / rotate (-90, 0, 0), found by rendering. Also stands in for the plain S3 (same outline, same USB end). | Seeed product page download, 2026-10-14 |
+| `lib/3d/_ESP32 modules/XIAO-ESP32S3-PLUS-v4.step` | U2's 3D model (Seeed assembly "XIAO ESP32S3 PLUS_V1.0_241025"), attached by `tools/xiao_model.py` (offset (-1.778, -7.62, 0) / rotate (-90, 0, 0), found by rendering against the DIP footprint). In the SOCKET footprint the offset is (-1.651, -6.13, 11): the old fit left the module's holes 1.49 mm off the header pins, measured in Fusion 2026-10-16. Also stands in for the plain S3 (same outline, same USB end). | Seeed product page download, 2026-10-14 |
 
 The SuperMini symbol/footprint are still in `lib/` but unused.

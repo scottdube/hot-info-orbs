@@ -379,7 +379,7 @@
 	)
 	(model "${KIPRJMOD}/lib/3d/_ESP32 modules/XIAO-ESP32S3-PLUS-v4.step"
 		(offset
-			(xyz -1.778 -7.62 11)
+			(xyz -1.651 -6.13 11)
 		)
 		(scale
 			(xyz 1 1 1)

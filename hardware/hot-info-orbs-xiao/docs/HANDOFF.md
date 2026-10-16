@@ -198,6 +198,18 @@ continue without re-deriving anything. Newest at the bottom.
    before the Z turn. (180, 0, 90) is right; checked with a `--side left`
    render. Also a seventh hole at (170.27, 102.78), straight below the right
    mid hole. DRC 0 / 46 unconnected / 0 parity.
+   Seventh pass (Scott: "why don't the holes in the esp line up with the
+   pins?"). Measured in Fusion: the module's hole faces sat 1.49 mm across
+   the rows and 0.127 mm along them off the header pins. The cause was the
+   2026-10-14 model offset: it was fitted by render against the DIP
+   footprint's copper and never checked against holes. The SOCKET
+   footprint's model offset is now (-1.651, -6.13, 11). Re-measured: the
+   pin-8 hole is at (138.715, -87.380) against the pin at (138.72, -87.38).
+   Trap: on the back-side footprint the model offset's local y goes to -x
+   while the pads' local y goes to +x. The first try, -9.11, moved it
+   1.49 mm the wrong way. Same pass: C1/R1/C2 moved 3 mm farther from the
+   XIAO (column 8.5 mm out of the pins), leaving room for castellation
+   pads. DRC 0 / 46 / 0.
    **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
    `tools/antenna_patch.py` is retired.
 
