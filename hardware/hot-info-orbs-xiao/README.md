@@ -36,7 +36,8 @@ retired and kept as history.
   4.5 mm (switch pins) and 7.0 mm (mounting tabs). Measure one.
 - XIAO plugs in like the displays: male headers into two 1x07 female
   sockets (footprint `_ESP32 modules:XIAO-ESP32-S3-SOCKET`, holes at the
-  header positions +-7.62 mm, 1.0 mm drill; module 11 mm off the board in 3D).
+  header positions +-7.62 mm, 1.0 mm drill; module 11 mm off the board in 3D,
+  with the male headers modelled under it, upside down, plastic on the sockets).
 - C1 (+5V bulk for the displays) right beside the XIAO's 5V/GND pins;
   R1 + C2 (display RC reset) in the same column above it, R1 off the 3V3
   pin. Pass 1 had them in the bottom-edge gaps between sockets, ~36 mm
@@ -50,7 +51,9 @@ retired and kept as history.
   mid-board holes on the top row at x 131.28 and 170.27 (centre +-19.5 mm,
   in the gaps above DS2/DS3 and DS3/DS4; 22.5 mm from each display centre
   against a 16.2 mm display radius). Not on the bottom row: the XIAO, its
-  sockets and the display socket row are there.
+  sockets and the display socket row are there. A seventh hole on the
+  bottom row straight below the right mid hole (170.27, 102.78), DS3/DS4
+  gap, about 6 mm from each display tab; its left twin would hit the XIAO.
 
 ## Status — PLACED, NOT ROUTED (2026-10-16)
 

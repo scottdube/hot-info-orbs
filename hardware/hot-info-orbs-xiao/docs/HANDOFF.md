@@ -190,6 +190,14 @@ continue without re-deriving anything. Newest at the bottom.
    because R1 takes 3V3 from the XIAO. DRC 0 / 46 unconnected / 0 parity.
    The zoomed kicad-cli render makes R1 look under the module (the module
    is 11 mm up); courtyards say 1.1 mm clear.
+   Sixth pass (Scott): XIAO "on male headers into the females" - the
+   sockets were already there, but the headers were not modelled, so in
+   Fusion the module floated. Added two PinHeader_1x07 models, upside down.
+   Trap: rotate (180, 0, -90), the sockets' -90 plus the flip, ran the
+   rows 15 mm out past the module end, because the X flip reverses the row
+   before the Z turn. (180, 0, 90) is right; checked with a `--side left`
+   render. Also a seventh hole at (170.27, 102.78), straight below the right
+   mid hole. DRC 0 / 46 unconnected / 0 parity.
    **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
    `tools/antenna_patch.py` is retired.
 

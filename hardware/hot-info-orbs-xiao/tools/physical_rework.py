@@ -71,6 +71,12 @@ Scott asked for, and how each was read:
    box). R1/C2 are the display RC reset, not decoupling, but R1 takes 3V3
    from the XIAO, so they move into the same free column above C1. This
    supersedes 4.'s bottom-edge gaps.
+12. (Scott, pass 6) One more hole on the bottom row straight below the
+   right mid hole (x 170.27, y 102.78), in the DS3/DS4 gap. Its left twin
+   would land on the XIAO. Same pass: the XIAO footprint gained two
+   PinHeader_1x07 models, upside down (rotate 180/0/+90, plastic z 8.5-11
+   under the module, tails through it). -90 like the sockets ran the rows
+   the wrong way: the X flip reverses the row first.
 
 Footprint swaps keep the symbol path so parity still matches, and the
 schematic's Footprint fields are rewritten to the new names at the end.
@@ -168,6 +174,16 @@ for hx in ((X0 + X1) / 2 - 19.5, (X0 + X1) / 2 + 19.5):
     h.SetStart(pcbnew.VECTOR2I(MM(hx), MM(HOLE_Y)))
     h.SetEnd(pcbnew.VECTOR2I(MM(hx + HOLE_R), MM(HOLE_Y)))
     b.Add(h)
+# (Scott, pass 6) one more on the bottom row, straight below the right mid
+# hole; its left twin would land on the XIAO
+HOLE_Y_LOW = pcbnew.ToMM(max(d.GetCenter().y for d in corner))
+h = pcbnew.PCB_SHAPE(b)
+h.SetShape(pcbnew.SHAPE_T_CIRCLE)
+h.SetLayer(pcbnew.Edge_Cuts)
+h.SetWidth(corner[0].GetWidth())
+h.SetStart(pcbnew.VECTOR2I(MM((X0 + X1) / 2 + 19.5), MM(HOLE_Y_LOW)))
+h.SetEnd(pcbnew.VECTOR2I(MM((X0 + X1) / 2 + 19.5 + HOLE_R), MM(HOLE_Y_LOW)))
+b.Add(h)
 
 # --- tracks out: reroute comes after the 3D check ---------------------------
 doomed += tracks
