@@ -1009,7 +1009,7 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "_Displays:GC9A01_PINS"
+			(property "Footprint" "_Displays:GC9A01_SOCKET"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2879,7 +2879,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "_Displays:GC9A01_PINS"
+		(property "Footprint" "_Displays:GC9A01_SOCKET"
 			(at 163.83 60.96 0)
 			(hide yes)
 			(show_name no)
@@ -3209,7 +3209,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "_Displays:GC9A01_PINS"
+		(property "Footprint" "_Displays:GC9A01_SOCKET"
 			(at 104.14 60.96 0)
 			(hide yes)
 			(show_name no)
@@ -3304,7 +3304,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Button_Switch_THT:SW_PUSH_6mm_H5mm"
+		(property "Footprint" "Button_Switch_THT:SW_Tactile_SPST_Angled_PTS645Vx39-2LFS"
 			(at 58.42 140.97 0)
 			(hide yes)
 			(show_name no)
@@ -3462,7 +3462,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "_Displays:GC9A01_PINS"
+		(property "Footprint" "_Displays:GC9A01_SOCKET"
 			(at 133.35 60.96 0)
 			(hide yes)
 			(show_name no)
@@ -3715,7 +3715,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "_Displays:GC9A01_PINS"
+		(property "Footprint" "_Displays:GC9A01_SOCKET"
 			(at 74.93 60.96 0)
 			(hide yes)
 			(show_name no)
@@ -3810,7 +3810,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Button_Switch_THT:SW_PUSH_6mm_H5mm"
+		(property "Footprint" "Button_Switch_THT:SW_Tactile_SPST_Angled_PTS645Vx39-2LFS"
 			(at 69.85 153.67 0)
 			(hide yes)
 			(show_name no)
@@ -3891,7 +3891,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "_Displays:GC9A01_PINS"
+		(property "Footprint" "_Displays:GC9A01_SOCKET"
 			(at 46.99 60.96 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3985,7 +3985,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Button_Switch_THT:SW_PUSH_6mm_H5mm"
+		(property "Footprint" "Button_Switch_THT:SW_Tactile_SPST_Angled_PTS645Vx39-2LFS"
 			(at 80.01 166.37 0)
 			(hide yes)
 			(show_name no)

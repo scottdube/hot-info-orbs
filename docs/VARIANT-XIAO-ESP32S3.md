@@ -124,6 +124,10 @@ first.
 
 ## Antenna
 
+**Superseded 2026-10-16:** the FPC antenna will not be mounted on the board
+(Scott), so the patch below was removed by
+`hardware/hot-info-orbs-xiao/tools/physical_rework.py`. Kept as history.
+
 The SuperMini has a PCB antenna and the v1.1 board keeps copper away from
 it. The XIAO has none: a U.FL connector and a stick-on 2.4 GHz FPC antenna
 (Seeed A-02, inventory part 102) on a short pigtail. A flex antenna stuck
@@ -149,6 +153,7 @@ script takes `PATCH=x0,x1,y0,y1` to move or resize it, then re-route.
 - 3D: done 2026-10-14 — Seeed's XIAO ESP32S3 PLUS STEP on U2 (fit by
   rendering, `tools/xiao_model.py`), display models re-pointed, assembly
   exported to `hardware/hot-info-orbs-xiao/3d-assembly/`.
-- Antenna patch is sized to the board's free space (40 × 7.5 mm), not to a
-  measured A-02; measure one and adjust before fab.
+- Board is placed but NOT routed since the 2026-10-16 physical rework
+  (sockets, right-angle switches on the top edge); right-angle switch
+  footprint unverified against the uxcell part.
 - Plain XIAO ESP32-S3 price not checked (Plus: $7.90 at Seeed, 2026-10-14).

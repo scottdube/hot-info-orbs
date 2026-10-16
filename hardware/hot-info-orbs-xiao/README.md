@@ -12,19 +12,33 @@ U.FL antenna both, 8 MB PSRAM both. Flash 8 MB vs 16 MB; the firmware builds
 for 8 MB and uses 4 MB, so one binary runs on either. The Plus's extra
 D11–D19 are on its back and are not used by this board.
 
-**Antenna:** the XIAO has no PCB antenna — it ships with a U.FL pigtail and
-a stick-on 2.4 GHz FPC antenna (Seeed A-02, inventory part 102). An FPC
-antenna detunes over copper, and the whole back of this board is a GND pour,
-so the board carries a copper-free patch for it: rule area `ANTENNA_PATCH`
-(no pour, tracks or vias on either layer) at x 143.5–183.5, y 99.5–107.0,
-**40 × 7.5 mm**, on the back right of the XIAO, outlined and labelled on
-B.Silk. The SuperMini's "Antenna" keepouts and silk are gone.
-`tools/antenna_patch.py` makes it; its docstring records why 7.5 mm (taller
-patches leave nets unrouted). **The size is an assumption** — Seeed publishes
-no A-02 dimensions. Measure one before ordering boards and rerun with
-`PATCH=x0,x1,y0,y1` if it does not fit.
+**Antenna:** the XIAO has a U.FL pigtail and a stick-on FPC antenna (Seeed
+A-02, inventory part 102), and **the antenna is not mounted on this board**
+(Scott, 2026-10-16), so the board has no copper keepout for it. The
+2026-10-14 `ANTENNA_PATCH` rule area is removed; `tools/antenna_patch.py` is
+retired and kept as history.
 
-## Status — DESIGNED, not fabricated (2026-10-14)
+**Physical layout (2026-10-16, `tools/physical_rework.py`, NOT yet routed):**
+- Displays plug in: each GC9A01 keeps its male header and seats in a 1x07
+  2.54 mm female socket (footprint `_Displays:GC9A01_SOCKET`, same pads as
+  `GC9A01_PINS`, display lifted 8.5 mm in 3D). Pad row at y 106.01, as low as
+  the 0.5 mm copper-to-edge rule allows.
+- Buttons: right-angle 6 x 6 x 8 mm tact switches (uxcell, Amazon) on the TOP
+  edge, actuators out past it, centres x 128.68 / 150.78 / 172.87 = equal
+  spacing across the centre third. Footprint is KiCad's stock
+  `SW_Tactile_SPST_Angled_PTS645Vx39-2LFS` - **unverified for the uxcell
+  part**: the listing says 6.5 mm and 4.5 mm pin pitch, the footprint has
+  4.5 mm (switch pins) and 7.0 mm (mounting tabs). Measure one.
+- R1 between DS1 and DS2, C2 + C1 between DS3 and DS4, all on the bottom edge.
+- Board texts moved to the top band (under the display overhang).
+
+## Status — PLACED, NOT ROUTED (2026-10-16)
+
+The 2026-10-14 status below describes the routed board before the physical
+rework; tracks were stripped for the re-route. Current DRC: 46 unconnected
+(no tracks), 0 parity.
+
+### 2026-10-14 (superseded)
 
 Schematic ERC 0; board autorouted, DRC 0 errors / 0 unconnected / 0 parity
 (14 silk warnings = Seeed's module outline over its own pads, accepted).

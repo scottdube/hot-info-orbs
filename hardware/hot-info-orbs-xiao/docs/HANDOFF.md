@@ -121,8 +121,41 @@ continue without re-deriving anything. Newest at the bottom.
    A raw CARTESIAN_POINT bounding box of an assembly STEP is meaningless
    (sub-part local frames): render, don't parse.
 
+9. [x] Physical rework, NOT routed (2026-10-16, Scott: no antenna on the
+   board; displays as low as possible on headers into female sockets;
+   right-angle switches on the TOP edge, equally spaced in the centre third;
+   C1/C2/R1 to the bottom). `tools/physical_rework.py` runs on the committed
+   1d4623f board (`git checkout` the .kicad_pcb/.kicad_sch first), KiCad
+   closed. Removes ANTENNA_PATCH + its B.Silk, the SuperMini antenna F.Silk
+   box and three old button frames, strips all 268 tracks/vias and unfills
+   the pour; swaps DS1–5 to new `_Displays:GC9A01_SOCKET` (GC9A01_PINS pads +
+   PinSocket_1x07 model, display lifted 8.5 mm) with the pad row at y 106.01,
+   and SW1–3 to stock `SW_Tactile_SPST_Angled_PTS645Vx39-2LFS` at centres
+   x 128.68 / 150.78 / 172.87, body front on the top edge. R1 in the DS1/DS2
+   gap, C2 + C1 in the DS3/DS4 gap; NOT the DS2/DS3 gap because the XIAO is
+   on the back there. Club/title texts moved to the top band. Schematic
+   Footprint fields rewritten; DRC 0 parity, 46 unconnected (no tracks),
+   5 silk_edge + 19 silk_over_copper warnings. STEP re-exported.
+   Choice of Vx39: the 8.05 mm overall depth is the PTS645 right-angle
+   variant nearest the uxcell "6x6x8". Its tab pitch (7.0 mm) is
+   UNVERIFIED against the listing's "6.5 mm" — measure a switch.
+   Socket model needed rotate z **-90** (+90 put it beside the pins).
+   Traps: after the first `b.Remove()` in a process SWIG stops typing ALL
+   return values, not just `Zones()` — `GetFootprints()`, `GetTracks()` and
+   methods on handles taken earlier (`fp.GetPosition()`) come back as bare
+   SwigPyObjects. Read and move everything first, Add, then Remove last.
+   Board texts carry mixed justifications, so `SetPosition` lands them off
+   the board — move by bounding-box delta. Copy Datasheet/Description onto
+   swapped footprints or parity flags `footprint_symbol_field_mismatch`.
+   **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
+   `tools/antenna_patch.py` is retired.
+
 ## Open
-- Measure the A-02 FPC antenna and pigtail; resize/move the patch if 40 × 7.5
-  mm is wrong (routing margin: 7.5 mm tall at this x is the limit).
+- Scott reviews the 2026-10-16 physicals in the STEP, then re-route
+  (`route_xiao.py`) and refill the pour.
+- Measure a uxcell right-angle switch: tab pitch 6.5 vs 7.0 mm decides
+  whether the stock PTS645 footprint is usable.
+- SW1's tabs (y 84.3) sit on the XIAO's top edge (y 84.5) on the back: fine
+  on headers, a clash if the XIAO is flat-soldered by its castellations.
 - Order / build / flash a board; measure the RC reset and LED polarity.
 - Branch has no upstream until pushed (`git push -u origin xiao-esp32s3-plus`).
