@@ -214,6 +214,13 @@ continue without re-deriving anything. Newest at the bottom.
    on both sides, set in the stackup by `physical_rework.py` step 14. The
    fab order has to choose the same colors, since the stackup only drives
    the 3D/STEP colors.
+   Display faces black (Scott: "can the faces on the displays still be
+   black?"). The model's glass is one face colored 'Acrylic (Clear)' at
+   96% white, and STEP has no transparency, so it always rendered white
+   over the black LCD body. The model file is unchanged since e6ea813, so
+   the mask change didn't cause it. That one COLOUR_RGB in
+   `lib/3d/_Displays/Round TFT 1.28 Inch GC9A01 240x240 v1.step` is now
+   0.03 grey, renamed 'Glass (black, was Acrylic Clear)'.
    **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
    `tools/antenna_patch.py` is retired.
 
