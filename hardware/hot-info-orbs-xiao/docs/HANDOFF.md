@@ -182,6 +182,14 @@ continue without re-deriving anything. Newest at the bottom.
    from the Edge.Cuts rect's start/end. That moved the pin row to 105.98
    and the switches to 117.64 / 150.77 / 183.91, and cleared the 5
    silk_edge warnings: DRC 0 violations, 46 unconnected, 0 parity.
+   Fifth pass (Scott: "shouldn't the caps be closer to the esp?"): yes for
+   C1, which is the +5V bulk cap and the displays run off +5V; it was ~36 mm
+   from the 5V pin. Now 5.5 mm right of the XIAO's 5V/GND pins, 3.6 mm up so
+   its silk clears DS3's B.Silk outline box (first try sat 1.3 mm up and
+   hit it). R1/C2 are the display RC reset, not decoupling; grouped above C1
+   because R1 takes 3V3 from the XIAO. DRC 0 / 46 unconnected / 0 parity.
+   The zoomed kicad-cli render makes R1 look under the module (the module
+   is 11 mm up); courtyards say 1.1 mm clear.
    **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
    `tools/antenna_patch.py` is retired.
 

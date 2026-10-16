@@ -65,6 +65,12 @@ Scott asked for, and how each was read:
    and of the switches and XIAO on the back. Not the bottom middle: the
    XIAO and its sockets are there. Same 3.2 mm Edge.Cuts circles as the
    corners.
+11. (Scott: "shouldn't the caps be closer to the esp?") C1 is the +5V bulk
+   cap for the displays' supply, so it goes beside the XIAO's 5V/GND pins
+   (5.5 mm out, pulled up 3.6 mm so its silk clears DS3's B.Silk outline
+   box). R1/C2 are the display RC reset, not decoupling, but R1 takes 3V3
+   from the XIAO, so they move into the same free column above C1. This
+   supersedes 4.'s bottom-edge gaps.
 
 Footprint swaps keep the symbol path so parity still matches, and the
 schematic's Footprint fields are rewritten to the new names at the end.
@@ -338,6 +344,41 @@ top += 1.2 + h + 1.6
 credit = back_text(ids["credit"], "Based on https://github.com/brettdottech/info-orbs", 1.5)
 w, h = size(credit)
 place_box(credit, BX - w / 2, top)
+
+# --- 11. C1, R1, C2 beside the XIAO -------------------------------------------
+u2pad = {p.GetNumber(): p.GetPosition() for p in nu2.Pads()}
+COL = pcbnew.ToMM(u2pad["14"].x) + 5.5       # 5V/3V3/GND pin column + 5.5 mm
+
+
+def pads_at(f, a, ta, b, tb):
+    """Rotate/move f so pad a lands on ta and pad b on tb (mm), or fail."""
+    for deg in (0, 90, 180, 270):
+        f.SetOrientationDegrees(deg)
+        pa = {p.GetNumber(): p.GetPosition() for p in f.Pads()}
+        f.Move(pcbnew.VECTOR2I(MM(ta[0]) - pa[a].x, MM(ta[1]) - pa[a].y))
+        pb = [p.GetPosition() for p in f.Pads() if p.GetNumber() == b][0]
+        if abs(pb.x - MM(tb[0])) < 1000 and abs(pb.y - MM(tb[1])) < 1000:
+            return
+    raise AssertionError(f"{f.GetReference()}: no orientation fits")
+
+
+y14 = pcbnew.ToMM(u2pad["14"].y)             # +5V
+y13 = pcbnew.ToMM(u2pad["13"].y)             # GND
+y12 = pcbnew.ToMM(u2pad["12"].y)             # 3V3
+# C1 (+5V bulk) beside the 5V/GND pins, pulled up 3.6 mm so its silk circle
+# clears DS3's B.Silk outline box (top at y ~101.7)
+C1_Y = y14 - 3.6
+pads_at(fps["C1"], "1", (COL, C1_Y), "2", (COL, C1_Y - 2.5))
+fps["C1"].Reference().SetPosition(pcbnew.VECTOR2I(MM(COL + 4.6), MM(C1_Y - 1.25)))
+# R1 from the 3V3 pin's row upward to RST; C2 from RST to GND in the next column
+r1_rst = (COL - 1.5, y12 - 6.0 - 10.16)
+pads_at(fps["R1"], "1", (COL - 1.5, y12 - 6.0), "2", r1_rst)
+pads_at(fps["C2"], "1", (COL + 2.5, r1_rst[1]), "2", (COL + 2.5, r1_rst[1] + 5.0))
+for ref in ("R1", "C2"):
+    fps[ref].Reference().SetPosition(pcbnew.VECTOR2I(
+        MM(COL + 0.5), MM(r1_rst[1] - 2.2 - (1.6 if ref == "C2" else 0))))
+    fps[ref].Reference().SetTextAngleDegrees(0)
+fps["C1"].Reference().SetTextAngleDegrees(0)
 
 summary = (f"pin row y {PIN_ROW_Y}, switch pad-1 row y {sw_y:.3f}, "
            f"centres {[round(c, 2) for c in centres]}, gaps {g12:.2f} {g34:.2f}, "

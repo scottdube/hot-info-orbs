@@ -37,7 +37,10 @@ retired and kept as history.
 - XIAO plugs in like the displays: male headers into two 1x07 female
   sockets (footprint `_ESP32 modules:XIAO-ESP32-S3-SOCKET`, holes at the
   header positions +-7.62 mm, 1.0 mm drill; module 11 mm off the board in 3D).
-- R1 between DS1 and DS2, C2 + C1 between DS3 and DS4, all on the bottom edge.
+- C1 (+5V bulk for the displays) right beside the XIAO's 5V/GND pins;
+  R1 + C2 (display RC reset) in the same column above it, R1 off the 3V3
+  pin. Pass 1 had them in the bottom-edge gaps between sockets, ~36 mm
+  from the 5V pin.
 - Board ID is on the back: a 28 mm HOT hand logo (`_Logos:Hot_Logo_28mm`,
   the 5 mm logo's polygons scaled) with "The Villages / Hands-On Tech Club"
   at one end; "HoT Info Orbs", "XIAO ESP32-S3 · rev X0.1" and the
