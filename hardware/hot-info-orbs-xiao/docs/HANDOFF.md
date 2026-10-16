@@ -174,6 +174,14 @@ continue without re-deriving anything. Newest at the bottom.
    the 14 Seeed silk_over_copper warnings went with the smaller pads.
    Not a trap, a near-miss: the DIP pads' `(drill … (offset …))` moves the
    COPPER, not the hole — the holes were at the header positions all along.
+   Fourth pass (Scott, same day): corner holes 2 mm in on each axis, plus
+   two holes "near the middle for support" on the top row at x 131.28 /
+   170.27 (y 67.0) — the top row because the bottom middle is the XIAO
+   and its sockets. Trap: `GetBoardEdgesBoundingBox()` includes half the
+   0.05 mm edge line, so every extent was 0.025 mm off; extents now come
+   from the Edge.Cuts rect's start/end. That moved the pin row to 105.98
+   and the switches to 117.64 / 150.77 / 183.91, and cleared the 5
+   silk_edge warnings: DRC 0 violations, 46 unconnected, 0 parity.
    **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
    `tools/antenna_patch.py` is retired.
 

@@ -58,6 +58,13 @@ Scott asked for, and how each was read:
    the brettdottech credit as one centred block on the other end. The two
    B.Silk "VCC"/"GND" labels went: they marked nothing even on 1d4623f
    (SuperMini leftovers).
+10. (Scott) Mounting holes in 2 mm from each edge (3 -> 5 mm inset), and two
+   more near the middle for support: top band, symmetric about the board
+   centre at +-19.5 mm = in the DS1/DS2 and DS2/DS3 gaps. Clear of the
+   displays on the front (22.5 mm from each display centre, radius 16.2)
+   and of the switches and XIAO on the back. Not the bottom middle: the
+   XIAO and its sockets are there. Same 3.2 mm Edge.Cuts circles as the
+   corners.
 
 Footprint swaps keep the symbol path so parity still matches, and the
 schematic's Footprint fields are rewritten to the new names at the end.
@@ -71,9 +78,12 @@ STOCK = Path("/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints")
 MM = pcbnew.FromMM
 
 b = pcbnew.LoadBoard(str(PCB))
-edge = b.GetBoardEdgesBoundingBox()
-X0, X1 = pcbnew.ToMM(edge.GetLeft()), pcbnew.ToMM(edge.GetRight())
-Y0, Y1 = pcbnew.ToMM(edge.GetTop()), pcbnew.ToMM(edge.GetBottom())
+# Extents from the Edge.Cuts rectangle itself: GetBoardEdgesBoundingBox()
+# includes half the 0.05 mm line width, which put the holes 0.025 mm off
+outline = [d for d in b.GetDrawings()
+           if d.GetLayerName() == "Edge.Cuts" and d.GetShape() == pcbnew.SHAPE_T_RECT][0]
+X0, X1 = sorted(pcbnew.ToMM(v) for v in (outline.GetStart().x, outline.GetEnd().x))
+Y0, Y1 = sorted(pcbnew.ToMM(v) for v in (outline.GetStart().y, outline.GetEnd().y))
 DISPLAY_TOP_Y = 62.0   # render-measured 61.99, see 6. above
 RISE = Y0 - DISPLAY_TOP_Y
 
@@ -132,6 +142,26 @@ for z in zones:
     for c in pts:
         z.AppendCorner(c, -1)
 Y0 = DISPLAY_TOP_Y
+
+# --- 10. holes 2 mm further in, plus two mid-board -----------------------------
+HOLE_IN = 2.0
+corner = [d for d in drawings
+          if d.GetLayerName() == "Edge.Cuts" and d.GetShape() == pcbnew.SHAPE_T_CIRCLE]
+for d in corner:
+    c = d.GetCenter()
+    sx = 1 if pcbnew.ToMM(c.x) < (X0 + X1) / 2 else -1
+    sy = 1 if pcbnew.ToMM(c.y) < (Y0 + Y1) / 2 else -1
+    d.Move(pcbnew.VECTOR2I(sx * MM(HOLE_IN), sy * MM(HOLE_IN)))
+HOLE_R = pcbnew.ToMM(corner[0].GetRadius())
+HOLE_Y = pcbnew.ToMM(min(d.GetCenter().y for d in corner))
+for hx in ((X0 + X1) / 2 - 19.5, (X0 + X1) / 2 + 19.5):
+    h = pcbnew.PCB_SHAPE(b)
+    h.SetShape(pcbnew.SHAPE_T_CIRCLE)
+    h.SetLayer(pcbnew.Edge_Cuts)
+    h.SetWidth(corner[0].GetWidth())
+    h.SetStart(pcbnew.VECTOR2I(MM(hx), MM(HOLE_Y)))
+    h.SetEnd(pcbnew.VECTOR2I(MM(hx + HOLE_R), MM(HOLE_Y)))
+    b.Add(h)
 
 # --- tracks out: reroute comes after the 3D check ---------------------------
 doomed += tracks
@@ -311,6 +341,7 @@ place_box(credit, BX - w / 2, top)
 
 summary = (f"pin row y {PIN_ROW_Y}, switch pad-1 row y {sw_y:.3f}, "
            f"centres {[round(c, 2) for c in centres]}, gaps {g12:.2f} {g34:.2f}, "
+           f"holes {[(round(pcbnew.ToMM(d.GetCenter().x), 2), round(pcbnew.ToMM(d.GetCenter().y), 2)) for d in corner]} + mid y {HOLE_Y}, "
            f"removing {len(doomed)} items")
 for item in doomed:
     b.Remove(item)

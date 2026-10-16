@@ -21,7 +21,7 @@ retired and kept as history.
 **Physical layout (2026-10-16, `tools/physical_rework.py`, NOT yet routed):**
 - Displays plug in: each GC9A01 keeps its male header and seats in a 1x07
   2.54 mm female socket (footprint `_Displays:GC9A01_SOCKET`, same pads as
-  `GC9A01_PINS`, display lifted 8.5 mm in 3D). Pad row at y 106.01, as low as
+  `GC9A01_PINS`, display lifted 8.5 mm in 3D). Pad row at y 105.98, as low as
   the 0.5 mm copper-to-edge rule allows.
 - Board top edge raised 17.28 mm to y 62.0, even with the tops of the
   displays (measured off a render); top mounting holes and the GND pour
@@ -30,7 +30,7 @@ retired and kept as history.
   the same side as the xiao").
 - Buttons: right-angle 6 x 6 x 8 mm tact switches (uxcell, Amazon) on the TOP
   edge, actuators out past it, centred on the board's 1/3 line, its 2/3
-  line and midway: x 117.63 / 150.78 / 183.92. Footprint is KiCad's stock
+  line and midway: x 117.64 / 150.77 / 183.91. Footprint is KiCad's stock
   `SW_Tactile_SPST_Angled_PTS645Vx39-2LFS` - **unverified for the uxcell
   part**: the listing says 6.5 mm and 4.5 mm pin pitch, the footprint has
   4.5 mm (switch pins) and 7.0 mm (mounting tabs). Measure one.
@@ -42,13 +42,18 @@ retired and kept as history.
   the 5 mm logo's polygons scaled) with "The Villages / Hands-On Tech Club"
   at one end; "HoT Info Orbs", "XIAO ESP32-S3 · rev X0.1" and the
   brettdottech credit at the other, in Comic Sans as on v1.1.
+- Mounting holes: the four corner holes moved 2 mm in on each axis (now
+  5 mm from each edge: x 56.37 / 245.18, y 67.0 / 102.78), plus two
+  mid-board holes on the top row at x 131.28 and 170.27 (centre +-19.5 mm,
+  in the gaps above DS2/DS3 and DS3/DS4; 22.5 mm from each display centre
+  against a 16.2 mm display radius). Not on the bottom row: the XIAO, its
+  sockets and the display socket row are there.
 
 ## Status — PLACED, NOT ROUTED (2026-10-16)
 
 The 2026-10-14 status below describes the routed board before the physical
-rework; tracks were stripped for the re-route. Current DRC: 46 unconnected
-(no tracks), 0 parity, 19 silk warnings (14 = Seeed's U2 outline, 5 = the
-socket tab boxes at the bottom edge) — by the third pass only the 5 remain.
+rework; tracks were stripped for the re-route. Current DRC (fourth pass):
+0 violations, 46 unconnected (no tracks), 0 parity.
 
 ### 2026-10-14 (superseded)
 
