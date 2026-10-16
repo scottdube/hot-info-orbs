@@ -43,6 +43,7 @@ retired and kept as history.
   pin. Pass 1 had them in the bottom-edge gaps between sockets, ~36 mm
   from the 5V pin. The column sits 8.5 mm out from the pins, leaving 3 mm
   beside the XIAO free for castellation pads if we ever solder it down.
+- White solder mask, black silkscreen (stackup colors; order the same at the fab).
 - Board ID is on the back: a 28 mm HOT hand logo (`_Logos:Hot_Logo_28mm`,
   the 5 mm logo's polygons scaled) with "The Villages / Hands-On Tech Club"
   at one end; "HoT Info Orbs", "XIAO ESP32-S3 · rev X0.1" and the

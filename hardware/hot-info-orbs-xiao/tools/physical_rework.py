@@ -89,6 +89,10 @@ Scott asked for, and how each was read:
    to create castellated pads"): 11.'s column goes from 5.5 to 8.5 mm out
    of the pin column - away from the XIAO, which is left seen from the
    back.
+14. (Scott: "change the color scheme to black on white") White solder
+   mask, black silkscreen, both sides - a stock fab option. Written into
+   the stackup as text after the save; it is what the STEP export and the
+   3D viewer colour by, and the fab order must say the same.
 
 Footprint swaps keep the symbol path so parity still matches, and the
 schematic's Footprint fields are rewritten to the new names at the end.
@@ -415,6 +419,15 @@ summary = (f"pin row y {PIN_ROW_Y}, switch pad-1 row y {sw_y:.3f}, "
 for item in doomed:
     b.Remove(item)
 b.Save(str(PCB))
+
+t = PCB.read_text()
+for kind, colour in (("Silk Screen", "Black"), ("Solder Mask", "White")):
+    for side in ("Top", "Bottom"):
+        tag = f'(type "{side} {kind}")'
+        assert t.count(tag) == 1, tag
+        indent = t.split(tag)[0].rsplit("\n", 1)[1]
+        t = t.replace(tag, f'{tag}\n{indent}(color "{colour}")')
+PCB.write_text(t)
 
 SCH = HERE / "hot_info_orbs_xiao.kicad_sch"
 s = SCH.read_text()

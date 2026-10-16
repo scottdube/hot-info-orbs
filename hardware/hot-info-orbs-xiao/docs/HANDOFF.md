@@ -210,6 +210,10 @@ continue without re-deriving anything. Newest at the bottom.
    1.49 mm the wrong way. Same pass: C1/R1/C2 moved 3 mm farther from the
    XIAO (column 8.5 mm out of the pins), leaving room for castellation
    pads. DRC 0 / 46 / 0.
+   Same day (Scott: "black on white"): white solder mask, black silkscreen
+   on both sides, set in the stackup by `physical_rework.py` step 14. The
+   fab order has to choose the same colors, since the stackup only drives
+   the 3D/STEP colors.
    **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
    `tools/antenna_patch.py` is retired.
 
