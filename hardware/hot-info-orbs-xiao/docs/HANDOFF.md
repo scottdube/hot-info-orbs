@@ -161,6 +161,19 @@ continue without re-deriving anything. Newest at the bottom.
    so R1 swung into DS1's socket pads (4 shorts) — re-centre on the pre-flip
    pad midpoint. `ZONE` has no `SetCornerPosition`: rebuild with
    `RemoveAllContours()` + `AppendCorner(v, -1)`.
+   Third pass (Scott, same day): switches on the THIRDS — one on the 1/3
+   line, one on the 2/3 line, one midway (x 117.63 / 150.78 / 183.92); pass
+   1 had centred them in three equal slots of the centre third, which is not
+   what he meant. XIAO "on the same pin arrangement as the displays": new
+   `_ESP32 modules:XIAO-ESP32-S3-SOCKET` (Seeed DIP with plain 1.7 mm pads /
+   1.0 mm drills at the header holes, two PinSocket_1x07 models, module z
+   11.0 = 8.5 socket + 2.5 header plastic; header pins themselves not
+   modelled). Board ID silk to the back with the HOT logo scaled to 28 mm;
+   orphan B.Silk "VCC"/"GND" removed (they marked nothing on 1d4623f
+   either). DRC: 0 parity, 46 unconnected, 5 silk_edge (socket tab boxes);
+   the 14 Seeed silk_over_copper warnings went with the smaller pads.
+   Not a trap, a near-miss: the DIP pads' `(drill … (offset …))` moves the
+   COPPER, not the hole — the holes were at the header positions all along.
    **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
    `tools/antenna_patch.py` is retired.
 

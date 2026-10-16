@@ -29,20 +29,26 @@ retired and kept as history.
 - C1, C2, R1 and SW1-3 are on the BACK, the XIAO's side (Scott: "all on
   the same side as the xiao").
 - Buttons: right-angle 6 x 6 x 8 mm tact switches (uxcell, Amazon) on the TOP
-  edge, actuators out past it, centres x 128.68 / 150.78 / 172.87 = equal
-  spacing across the centre third. Footprint is KiCad's stock
+  edge, actuators out past it, centred on the board's 1/3 line, its 2/3
+  line and midway: x 117.63 / 150.78 / 183.92. Footprint is KiCad's stock
   `SW_Tactile_SPST_Angled_PTS645Vx39-2LFS` - **unverified for the uxcell
   part**: the listing says 6.5 mm and 4.5 mm pin pitch, the footprint has
   4.5 mm (switch pins) and 7.0 mm (mounting tabs). Measure one.
+- XIAO plugs in like the displays: male headers into two 1x07 female
+  sockets (footprint `_ESP32 modules:XIAO-ESP32-S3-SOCKET`, holes at the
+  header positions +-7.62 mm, 1.0 mm drill; module 11 mm off the board in 3D).
 - R1 between DS1 and DS2, C2 + C1 between DS3 and DS4, all on the bottom edge.
-- Board texts moved to the top band (under the display overhang).
+- Board ID is on the back: a 28 mm HOT hand logo (`_Logos:Hot_Logo_28mm`,
+  the 5 mm logo's polygons scaled) with "The Villages / Hands-On Tech Club"
+  at one end; "HoT Info Orbs", "XIAO ESP32-S3 · rev X0.1" and the
+  brettdottech credit at the other, in Comic Sans as on v1.1.
 
 ## Status — PLACED, NOT ROUTED (2026-10-16)
 
 The 2026-10-14 status below describes the routed board before the physical
 rework; tracks were stripped for the re-route. Current DRC: 46 unconnected
 (no tracks), 0 parity, 19 silk warnings (14 = Seeed's U2 outline, 5 = the
-socket tab boxes at the bottom edge).
+socket tab boxes at the bottom edge) — by the third pass only the 5 remain.
 
 ### 2026-10-14 (superseded)
 

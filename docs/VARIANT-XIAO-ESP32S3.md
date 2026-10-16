@@ -155,6 +155,7 @@ script takes `PATCH=x0,x1,y0,y1` to move or resize it, then re-route.
   exported to `hardware/hot-info-orbs-xiao/3d-assembly/`.
 - Board is placed but NOT routed since the 2026-10-16 physical rework
   (sockets, board edge up to the display tops, switches + passives on the
-  XIAO's side, switches on the top edge); right-angle switch
+  XIAO's side, switches on the top edge at the 1/3, 1/2, 2/3 lines, XIAO
+  on female sockets, board ID + HOT logo on the back); right-angle switch
   footprint unverified against the uxcell part.
 - Plain XIAO ESP32-S3 price not checked (Plus: $7.90 at Seeed, 2026-10-14).

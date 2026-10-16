@@ -41,6 +41,23 @@ Scott asked for, and how each was read:
    tallest display at y 61.99). The two top mounting holes and the B.Cu GND
    pour's top corners move up by the same amount; the holes keep their 3 mm
    corner inset.
+7. (Scott, same day) Switches on the THIRDS: board split into thirds, one
+   switch centred on the 1/3 line, one on the 2/3 line, one midway. (Pass 1
+   had read "equally spaced in the centre third" as the centres of three
+   equal slots, 1/6-1/2-5/6 of it - wrong.)
+8. XIAO on the same pin arrangement as the displays: male headers into two
+   1x07 female sockets. New footprint _ESP32 modules:XIAO-ESP32-S3-SOCKET =
+   Seeed's DIP with every hole at the header position (+-7.62, where the
+   DIP's PTH already was - its drill offset moves only the COPPER out to the
+   castellation), 1.0 mm drill / 1.7 mm pad like the display sockets, two
+   PinSocket_1x07 models, module lifted 11.0 mm (8.5 socket + 2.5 header
+   plastic). Pad positions are asserted against the old footprint's holes.
+9. Board ID silk to the back with the HOT logo: the 5 mm logo (G***, front,
+   under DS5) becomes _Logos:Hot_Logo_28mm - the same polygons scaled
+   5.726x - on the back with the club name beside it; title, revision and
+   the brettdottech credit as one centred block on the other end. The two
+   B.Silk "VCC"/"GND" labels went: they marked nothing even on 1d4623f
+   (SuperMini leftovers).
 
 Footprint swaps keep the symbol path so parity still matches, and the
 schematic's Footprint fields are rewritten to the new names at the end.
@@ -119,7 +136,7 @@ Y0 = DISPLAY_TOP_Y
 # --- tracks out: reroute comes after the 3D check ---------------------------
 doomed += tracks
 
-def swap(old, lib, name, pos, rot_deg, back=False):
+def swap(old, lib, name, pos, rot_deg, back=False, nick=None):
     """Add lib:name in place of `old`, keeping identity and nets; old is
     queued for removal."""
     new = pcbnew.FootprintLoad(str(lib), name)
@@ -132,7 +149,7 @@ def swap(old, lib, name, pos, rot_deg, back=False):
     for fid in (pcbnew.FIELD_T_DATASHEET, pcbnew.FIELD_T_DESCRIPTION):
         # GetField().SetText, never SetField: that makes a stray user field "5"
         new.GetField(fid).SetText(old.GetField(fid).GetText())
-    new.SetFPIDAsString(f"{Path(str(lib)).stem}:{name}")
+    new.SetFPIDAsString(f"{nick or Path(str(lib)).stem}:{name}")
     nets = {p.GetNumber(): p.GetNet() for p in old.Pads()}
     for p in new.Pads():
         if p.GetNumber() in nets:
@@ -163,7 +180,7 @@ BODY_FRONT = 2.59      # body front face is 2.59 mm above pad 1 (footprint F.Fab
 CX = 2.25              # switch centre is 2.25 mm right of pad 1
 third = (X1 - X0) / 3
 c0 = X0 + third
-centres = [c0 + third * k / 6 for k in (1, 3, 5)]
+centres = [X0 + third, X0 + 1.5 * third, X0 + 2 * third]   # 7.: the thirds
 sw_y = Y0 + BODY_FRONT
 for ref, cx in zip(("SW1", "SW2", "SW3"), centres):
     # rotation 0: actuator toward -y = the top edge. Flipped to the back the
@@ -211,16 +228,86 @@ for ref in ("R1", "C2", "C1"):   # 5.: on the XIAO's side
     f.Flip(f.GetPosition(), pcbnew.FLIP_DIRECTION_LEFT_RIGHT)
     f.Move(pcbnew.VECTOR2I(before - mid(), 0))
 
-# --- board texts that now sit under a socket move to the top band -------------
+# --- 8. XIAO on sockets ----------------------------------------------------------
+u2 = fps["U2"]
+holes = {p.GetNumber(): p.GetPosition() for p in u2.Pads()}
+nu2 = swap(u2, HERE / "lib/_ESP32_modules.pretty", "XIAO-ESP32-S3-SOCKET",
+           u2.GetPosition(), 0, back=True, nick="_ESP32 modules")
+nu2.SetOrientation(u2.GetOrientation())
+# Seeed's library reference is 0.635 mm, under the 0.8 mm silk minimum
+nu2.Reference().SetTextSize(pcbnew.VECTOR2I(MM(1.0), MM(1.0)))
+nu2.Reference().SetTextThickness(MM(0.15))
+for p in nu2.Pads():
+    h = holes[p.GetNumber()]
+    assert abs(p.GetPosition().x - h.x) < 1000 and abs(p.GetPosition().y - h.y) < 1000, \
+        (p.GetNumber(), pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(h.x))
+
+# --- 9. board ID on the back, with the HOT logo ---------------------------------
+ids = {}
 for d in drawings:
-    if not isinstance(d, pcbnew.PCB_TEXT) or d.GetLayerName() != "F.Silkscreen":
+    if not isinstance(d, pcbnew.PCB_TEXT):
         continue
     txt = d.GetText()
     if txt.startswith("The Villages"):
-        place_box(d, X0 + 7.0, Y0 + 1.5)
+        ids["club"] = d
     elif txt.startswith("HoT Info Orbs"):
-        w = pcbnew.ToMM(d.GetBoundingBox().GetWidth())
-        place_box(d, X1 - 7.0 - w, Y0 + 1.5)
+        ids["title"] = d
+    elif txt.startswith("Based on"):
+        ids["credit"] = d
+    elif txt.strip() in ("VCC", "GND") and d.GetLayerName() == "B.Silkscreen":
+        doomed.append(d)
+FONT = ids["title"].GetFont()   # Comic Sans MS, as Yang's v1.1 board
+
+def back_text(d, s, h, bold=False):
+    d.SetText(s)
+    d.SetLayer(pcbnew.B_SilkS)
+    d.SetMirrored(True)
+    d.SetFont(FONT)
+    d.SetTextSize(pcbnew.VECTOR2I(MM(h), MM(h)))
+    d.SetTextThickness(MM(h * 0.15))
+    d.SetBold(bold)
+    d.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_CENTER)
+    d.SetVertJustify(pcbnew.GR_TEXT_V_ALIGN_TOP)
+    return d
+
+def new_text():
+    d = pcbnew.PCB_TEXT(b)
+    b.Add(d)
+    return d
+
+def size(d):
+    bb = d.GetBoundingBox()
+    return pcbnew.ToMM(bb.GetWidth()), pcbnew.ToMM(bb.GetHeight())
+
+# logo + club name at the high-x end (the LEFT end seen from the back)
+LOGO_X, LOGO_Y = 232.0, 83.0          # 28 x 20.8 mm; clear of the 3.2 mm hole
+swap(fps["G***"], HERE / "lib/_Logos.pretty", "Hot_Logo_28mm",
+     pcbnew.VECTOR2I(MM(LOGO_X), MM(LOGO_Y)), 0, back=True)
+club = back_text(ids["club"], "The Villages\nHands-On Tech Club", 2.5)
+club.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_LEFT)
+w, h = size(club)
+place_box(club, LOGO_X - 10.4 - 4.0 - w, LOGO_Y - h / 2)
+
+# title block at the low-x end, centred between the hole and DS1's gap
+BX = 84.5
+title = back_text(ids["title"], "HoT Info Orbs", 5.0, bold=True)
+w, h = size(title)
+place_box(title, BX - w / 2, 72.5)
+top = 72.5 + h + 1.2
+rule = pcbnew.PCB_SHAPE(b)
+rule.SetShape(pcbnew.SHAPE_T_SEGMENT)
+rule.SetLayer(pcbnew.B_SilkS)
+rule.SetWidth(MM(0.25))
+rule.SetStart(pcbnew.VECTOR2I(MM(BX - w / 2), MM(top)))
+rule.SetEnd(pcbnew.VECTOR2I(MM(BX + w / 2), MM(top)))
+b.Add(rule)
+sub = back_text(new_text(), "XIAO ESP32-S3  ·  rev X0.1", 2.0)
+w, h = size(sub)
+place_box(sub, BX - w / 2, top + 1.2)
+top += 1.2 + h + 1.6
+credit = back_text(ids["credit"], "Based on https://github.com/brettdottech/info-orbs", 1.5)
+w, h = size(credit)
+place_box(credit, BX - w / 2, top)
 
 summary = (f"pin row y {PIN_ROW_Y}, switch pad-1 row y {sw_y:.3f}, "
            f"centres {[round(c, 2) for c in centres]}, gaps {g12:.2f} {g34:.2f}, "
@@ -232,6 +319,8 @@ b.Save(str(PCB))
 SCH = HERE / "hot_info_orbs_xiao.kicad_sch"
 s = SCH.read_text()
 s = s.replace('"Footprint" "_Displays:GC9A01_PINS"', '"Footprint" "_Displays:GC9A01_SOCKET"')
+s = s.replace('"Footprint" "_ESP32 modules:XIAO-ESP32-S3-DIP"',
+              '"Footprint" "_ESP32 modules:XIAO-ESP32-S3-SOCKET"')
 s = s.replace('"Footprint" "Button_Switch_THT:SW_PUSH_6mm_H5mm"',
               f'"Footprint" "Button_Switch_THT:{SW}"')
 SCH.write_text(s)
