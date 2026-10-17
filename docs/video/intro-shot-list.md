@@ -35,6 +35,8 @@ card made in the edit.
 | S18 | 5 | CAM | Bare v1.1 carrier board | 4 s | One of the 10 from JLCPCB, if one is unbuilt. Otherwise skip to S19. |
 | S19 | 5 | LAPTOP | KiCad: the v1.1 board, 2D then 3D view | 5 s | `hardware/hot-info-orbs/` on main. |
 | S20 | 5 | CAM | USB cable plugs in; the orbs light on the boot screen | 6 s | Boot picture set to the HOT hand first (S28). |
+| S20a | 5 | STILL | Thermal image: the ESP32 module, 42.7 °C hottest point | 4 s | `docs/assets/thermal/module-2026-10-17.jpg`. Black is hot in this palette: add a caption ("black = hottest") or reshoot in a color palette. |
+| S20b | 5 | STILL | Thermal image: the back of a display, 36.3 °C | 3 s | `docs/assets/thermal/display-back-2026-10-17.jpg`. Same palette note. |
 | S21 | 5 | LAPTOP | GitHub repo page, scrolling the README | 4 s | `github.com/scottdube/hot-info-orbs` |
 | S22 | 6 | LAPTOP + CAM | The first USB flash: upload progress on the laptop, the orb beside it | 6 s | Staged: re-run the same USB flash on camera. |
 | S23 | 6 | PHONE + CAM | Split screen: settings page on the phone, the orb beside it; change the town or the tickers, Save, the orb restarts | 12 s | Scroll **past** the Tempest station fields. |
@@ -50,7 +52,7 @@ card made in the edit.
 | S32 | 8 | CARD | Credits: Brett Turner — Info Orbs · HackerBoxes — #0129 Orbital · Yang — board design · the members who built the first kit | 5 s | |
 | S33 | 8 | CAM + CARD | End card: logo over the orbs running | 3 s | Reuse S01 footage. |
 
-The listed lengths add up to 3:11, and the narration runs about 3:30. Every
+The listed lengths add up to 3:18, and the narration runs about 3:30. Every
 shot is cut to the narration, so roll at least twice the listed length.
 
 ---
@@ -71,7 +73,7 @@ camera films the orb; sync on the Save tap.
 same build. Settings live in NVS and survive it, but the orb restarts, so do
 S22 before setups A and B or after them, not in between.
 
-**F. Gather and make**: S02, S05, S06, S29, S30, S31, S32, S33.
+**F. Gather and make**: S02, S05, S06, S20a, S20b, S29, S30, S31, S32, S33.
 
 ---
 
@@ -95,6 +97,10 @@ S22 before setups A and B or after them, not in between.
 - Screenshot: HackerBoxes #0129 "Orbital" product page (S06).
 - **Render to make:** XIAO board 3D view (S29). Only the STEP exists
   (`hardware/hot-info-orbs-xiao/3d-assembly/`); render from KiCad.
+- On hand: thermal images for S20a/S20b, taken 2026-10-17 at 75 °F room
+  (`docs/assets/thermal/`, main and this branch). Grayscale, black = hot. A
+  color-palette reshoot reads faster for viewers; take it after the orb has
+  run 20+ minutes.
 - On hand: HOT logos (`docs/assets/hot-smcomp-logo.png`,
   `images/hot-logo.jpg`); enclosure concept (main,
   `docs/assets/enclosure-concept-3-winged-speedster.png`).

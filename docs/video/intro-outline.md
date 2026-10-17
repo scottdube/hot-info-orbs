@@ -90,8 +90,8 @@ then the buttons stepping between them.
   (180 °F) running only a graphics demo, Wi-Fi off. Here each display takes
   5 V and regulates its own, so the module carries only itself. Measured on
   this board with a thermal camera: **42.7 °C** at the module's hottest point,
-  room 75 °F. A thermal image would make a good insert here
-  (`docs/assets/thermal/`). Source and numbers: `docs/POWER-MEASURED.md`,
+  room 75 °F; the display backs reach 36.3 °C. Show both thermal images,
+  the module and a display back (`docs/assets/thermal/`). Source and numbers: `docs/POWER-MEASURED.md`,
   `docs/VARIANT-ESP32-S3-SUPERMINI.md`.
 - Open source: the board files and firmware are on GitHub.
 

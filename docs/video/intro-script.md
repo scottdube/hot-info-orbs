@@ -1,7 +1,7 @@
 # HOT Info Orbs — intro video script
 
 Follows [intro-outline.md](intro-outline.md). Every line works as voice-over;
-any line can be said on camera instead. About **525 words**, which is about
+any line can be said on camera instead. About **540 words**, which is about
 3:30 at a relaxed 150 words a minute. Add the silent cold open and pauses on
 the page tour and it lands around 3:45.
 
@@ -114,10 +114,18 @@ it.
 
 **[USB cable plugging in; the orbs light up on the boot screen.]**
 
-It runs off a USB cable and draws under two watts. The displays run on five
-volts, each with its own regulator. On the original kit they all ran off the
-little computer's regulator, and builders found it too hot to touch. On this
-board it runs at about forty-three degrees Celsius, measured.
+It runs off a USB cable and draws under two watts.
+
+**[Thermal image: the ESP32 module, 42.7 °C on its hottest point.]**
+
+The displays run on five volts, each with its own regulator. On the original
+kit they all ran off the little computer's regulator, and builders found it
+too hot to touch. On this board it runs at about forty-three degrees Celsius,
+measured.
+
+**[Thermal image: the back of a display, 36.3 °C.]**
+
+The displays carry their own share now, and stay warm, not hot.
 
 **[GitHub repo page.]**
 
