@@ -120,8 +120,10 @@ Show the phone screen next to the orb reacting.
 ## Before the shoot
 
 - **Scott's orb is running the display-edge test firmware**, not the orb
-  firmware. It needs a USB reflash with a SuperMini `config.h` (the local one
-  is the XIAO pin map) before segments 1, 2, 4, 5 or 6 can be filmed.
+  firmware. It needs a USB reflash before segments 1, 2, 4, 5 or 6 can be
+  filmed. Ready since 2026-10-17: a worktree on main with a SuperMini
+  `config.h` is built. Plug the orb in, then run
+  `cd ~/code/hot-info-orbs-main && pio run -e esp32-s3-devkitc-1 -t upload`.
 - Re-tick all pages on `/settings` (the orb was left Clock-only for testing).
 - Set the boot picture to the HOT hand for the title beat.
 - Shoot the Stocks page on a weekday during market hours, or the stock
