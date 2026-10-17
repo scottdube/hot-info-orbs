@@ -1,86 +1,118 @@
 # HOT Info Orbs — intro video outline
 
-Target length **~3:00** (window 2:00–4:00). Six segments; times are budgets,
+Target length **~3:30** (window 2:00–4:00). Eight segments; times are budgets,
 not cues. Script and shot list follow from this.
 
-Shot on the **prototype**: the v1.1 carrier board (ESP32-S3 SuperMini, five
-GC9A01 displays, three buttons). The XIAO board and the enclosure appear only
-as renders, labeled as designed and not yet built.
+**What the video is:** an introduction to the whole project for someone who
+has never heard of it, Brett Turner's Info Orbs or HackerBoxes. It explains
+what the orbs are, what they show, how they're built and how you use them.
+The two sources are credited as inspiration and explained in a sentence each.
+It is not a list of differences from them.
 
-**Audience: club members.** It goes on the club site (password-protected,
-lightly). Viewers know the club, so explain HackerBox in a line, not a
-segment. Because the protection is light, treat the video as public anyway:
-no station IDs, tokens or home-network detail on screen.
+**Audience:** club members, on the club site (lightly password-protected).
+Assume no prior knowledge of the project. Because the protection is light,
+treat the video as public: no station IDs, tokens or home-network detail on
+screen.
 
-**Delivery: narration, voice-over or a mix, decided during the shoot.** Write
+**Delivery:** narration, voice-over or a mix, decided during the shoot. Write
 every line so it works as voice-over. On-camera pieces are optional inserts.
+
+**Hardware on camera:** the **prototype**, the v1.1 carrier board (ESP32-S3
+SuperMini, five 1.28" round displays, three buttons). The next board and the
+enclosure appear only as renders, labeled as designs.
 
 ---
 
-## 1. Cold open — what it is (0:00–0:15)
+## 1. Cold open (0:00–0:15)
 
-- Five orbs on a desk, cycling Clock → Weather → Stocks. No talking for the
-  first few seconds.
-- One line: "Five round screens that show the time, the weather and the
-  markets, set up from your phone."
-- Title card: **HOT Info Orbs**, Hands-On Tech club logo.
+- Five orbs on a desk cycling through their pages. No talking for the first
+  few seconds.
+- Title card: **HOT Info Orbs**, Hands-On Tech logo.
 
-## 2. Where it came from (0:15–0:45)
+## 2. What it is (0:15–0:35)
 
-- Brett Turner's open-source **Info Orbs** (ESP32, five displays). Credit him
-  by name.
-- **HackerBox 0129 "Orbital"** (2026) shipped a kit version on the ESP32-S3.
-- Club members (Donald and others) built the HackerBox kit. Don't name them
-  in the video; say "a couple of club members". → The club looked at it and
-  decided to redesign it as a club build: easy to get right, cheap to get
-  into.
-- Beat to land: "a derivative, not a copy" — what follows is what the club
-  changed.
+- A desk display: five small round screens on one board, driven by a tiny
+  Wi-Fi computer (an ESP32).
+- It shows the time, the weather and the markets, and updates itself over
+  Wi-Fi.
+- It's a club build, designed so any member can put one together and set it
+  up from a phone.
 
-## 3. The hardware (0:45–1:25)
+## 3. Where it came from (0:35–0:55)
 
-- Close-up tour of the prototype: SuperMini in sockets, five displays on one
-  SPI bus, three buttons.
-- **Yang's carrier board** (KiCad, libraries in the project so it opens with
-  nothing to install).
-- Design changes to call out (pick 3, keep each to one sentence):
-  - Each display runs on 5 V through its own regulator, so the ESP32's small
-    regulator only feeds the ESP32. Whole orb measured **1.71 W**.
-  - Fixed in review before fab: fifth display's DC line connected, a button
-    moved off a strapping pin (GPIO3 on the HackerBox), ground pour added.
-  - Ordered from JLCPCB; 10 boards.
+Credit, briefly. Assume the viewer knows neither source.
 
-## 4. The software, in use (1:25–2:30) — the longest segment
+- **Brett Turner's Info Orbs:** an open-source project (free plans and
+  software) that first put five round screens on a desk. That's the starting
+  point.
+- **HackerBoxes:** a monthly electronics kit. Their kit #0129 "Orbital" was a
+  version of the orbs on a newer chip.
+- A couple of club members built that kit (unnamed). The club liked it and
+  decided to make its own version: a new board, new features, and a build
+  anyone in the club could follow.
 
-Show each on the phone screen next to the orb reacting. In priority order;
-cut from the bottom if long.
+## 4. Tour of the pages (0:55–1:50) — the longest segment
 
-1. **Settings page** in a browser: rotation time, tickers, town, 12/24 h,
-   colors, which pages show. Save → orb restarts with it. *(Was: edit a file,
-   rebuild, reflash over USB.)*
-2. **Firmware updates over Wi-Fi** at `/update`, with automatic rollback if
-   the new image can't reach Wi-Fi. *(Was: USB cable every time.)*
-3. **Tempest personal weather station** page, plus sunrise/sunset and the moon
-   phase drawn on the orb.
-4. **Night mode**: separate dim hours and screens-off hours; any button wakes.
-5. **Your own boot picture**, uploaded from the phone.
-6. Under the hood, one line each over B-roll: Wi-Fi roaming to the strongest
-   access point, API keys kept out of the code, unit tests in CI.
+Each page uses all five orbs together. Show each one full-frame on the desk,
+then the buttons stepping between them.
 
-## 5. What's next (2:30–2:50)
+1. **Clock:** large digits across the orbs. Three faces: standard, **nixie
+   tube**, and a custom face. 12 or 24 hour, your choice of colors.
+2. **Weather:** current conditions and a forecast for any town.
+3. **Your own weather station:** if you have a Tempest station, its live
+   readings get their own page (wind, feels-like, humidity). Up to two
+   stations.
+4. **Sun and moon:** sunrise and sunset times above the weather icon, and
+   tonight's moon phase drawn below it.
+5. **Stocks:** five tickers, one per orb, with price, percent change and the
+   day's high and low. Stocks, funds or crypto.
+6. **Buttons:** left and right step through the pages. On the clock, the
+   middle button changes the face; hold it to switch 12/24 hour. Pages also rotate on their own on a timer.
+7. One line for tinkerers: it can also show data from Home Assistant (MQTT) or
+   any web address.
 
-- **XIAO ESP32-S3 carrier board**: routed and DRC-clean, not yet
-  fabricated. Buttons on the top edge. Show the KiCad 3D render.
-- **Enclosure, "Winged Speedster"**: brass bezels, finned end caps,
-  multi-part print. Show the concept render.
-- Say plainly these are designs, not built.
+## 5. How it's built (1:50–2:30)
 
-## 6. Close (2:50–3:05)
+- Close-up tour of the prototype board.
+- **The brain:** an ESP32-S3 module about the size of a postage stamp, with
+  Wi-Fi built in.
+- **Five 1.28" round color displays** sharing one connection to the module.
+- **Three buttons** along the board.
+- **The carrier board**, designed by club member Yang (KiCad), made by
+  JLCPCB. The display modules and the ESP32 plug in, so it's a socket and
+  solder-the-headers build.
+- **Power:** a USB cable. The whole orb draws about 1.7 W (measured). Each display regulates its own power, so nothing runs hot.
+- Open source: the board files and firmware are on GitHub.
+
+## 6. Setting it up and living with it (2:30–3:05)
+
+Show the phone screen next to the orb reacting.
+
+- **First setup:** load the firmware once over USB. After that, no cable.
+- **Settings from a phone browser:** town, tickers, time zone, colors,
+  rotation speed, which pages to show, upside-down mounting. Save, and the
+  orb restarts with the new settings.
+- **Updates over Wi-Fi:** new firmware uploads from the browser. If an
+  update fails, the orb goes back to the version that worked.
+- **Night mode:** dim hours and screens-off hours. Any button wakes it.
+- **Your own boot picture:** upload one from your phone.
+- One line over B-roll: it moves to the strongest Wi-Fi access point on its
+  own, and your API keys stay out of the shared code.
+
+## 7. What's next (3:05–3:20)
+
+- **The next board** for the Seeed XIAO ESP32-S3: buttons on the top edge,
+  everything plugs in. Designed and checked, not built yet. KiCad 3D render.
+- **An enclosure**, "Winged Speedster": brass bezels around each display,
+  finned end caps, 3D-printed. Concept render.
+- Say plainly these are designs.
+
+## 8. Close (3:20–3:30)
 
 - Where to get it: GitHub `scottdube/hot-info-orbs` and the feature sheet
   (scottdube.github.io/hot-info-orbs/features.html).
-- Credits: Brett Turner (original), HackerBoxes (0129 Orbital), Yang (board),
-  and "the club members who built the kit", left unnamed.
+- Credits on screen: Brett Turner (Info Orbs), HackerBoxes (#0129 Orbital),
+  Yang (board design), the club members who built the first kit.
 - End card: Hands-On Tech logo, orbs running.
 
 ---
@@ -89,20 +121,25 @@ cut from the bottom if long.
 
 - **Scott's orb is running the display-edge test firmware**, not the orb
   firmware. It needs a USB reflash with a SuperMini `config.h` (the local one
-  is the XIAO pin map) before anything in segments 1, 3 or 4 can be filmed.
+  is the XIAO pin map) before segments 1, 2, 4, 5 or 6 can be filmed.
 - Re-tick all pages on `/settings` (the orb was left Clock-only for testing).
 - Set the boot picture to the HOT hand for the title beat.
-- Phone screen recording for segment 4; the orb on camera at the same time.
-- In the settings recording, scroll past the Tempest station fields. The
-  station IDs are private.
+- Shoot the Stocks page on a weekday during market hours, or the stock
+  tickers show the last close and don't move. BTC/USD moves around the clock.
+- Phone screen recording for segment 6, with the orb on camera at the same
+  time. Scroll past the Tempest station fields: the station IDs are private.
+- Check the custom clock face has images loaded before filming segment 4.
 
 ## Decided (2026-10-17)
 
-- HackerBox builders: Donald and others, not named in the video.
+- Introduces the whole project to newcomers; Brett Turner and HackerBoxes are
+  credited as inspiration and explained, not assumed known.
+- Stocks is part of the page tour.
+- HackerBox builders (Donald and others) are not named in the video.
 - Audience: club members, on the lightly password-protected club site.
 - Delivery: narration, voice-over or a mix, decided during the shoot.
 
 ## Open questions
 
-- Stocks page: show it only in the cold-open rotation, or give it its own
-  beat in segment 4? Recommended: cold open only.
+- Show a parts cost? A price for the prototype build has not been worked out.
+  The XIAO BOM's per-board figure is for the next board, not this one.
