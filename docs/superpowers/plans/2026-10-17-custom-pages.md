@@ -1654,7 +1654,7 @@ Create `docs/CUSTOM-PAGES.md` with these sections, in this order:
 
 - [ ] **Step 5: Check and commit**
 
-Run: `grep -rnE "192\.168\.30|\.internal|SLN|LRD|Dover" docs/CUSTOM-PAGES.md docs/custom-pages firmware/config/*.template` — expected: nothing (the template's `192.168.3.40` is upstream's example and stays).
+Run: `grep -rnE "192\.168\.|10\.[0-9]+\.|\.local\b" docs/CUSTOM-PAGES.md docs/custom-pages firmware/config/*.template` and read every hit: the only addresses allowed are upstream's `192.168.3.40` example in the template and the deliberately unreachable `10.255.255.1`. Also read the new docs once for any site, street or station name.
 
 ```bash
 git add docs/CUSTOM-PAGES.md docs/custom-pages/sample.json firmware/config/config.h.template firmware/config/secrets.h.template firmware/src/widgets/mqttwidget/README.md docs/features.html docs/REQUIREMENTS.md
