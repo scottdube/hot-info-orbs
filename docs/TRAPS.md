@@ -231,3 +231,19 @@ Fix: `default_envs = esp32-s3-devkitc-1, ota` under `[platformio]`, plus an
 explicit `pio test -e native` step in CI. This is the "change the build
 contract, change CI in the same commit" trap above, a second time. **Before a
 merge, run the exact CI command (`pio run`, no `-e`) locally.**
+
+## One display lit but blank — cleared by a reset, cause unknown (2026-10-17)
+
+Scott's SuperMini orb (MAC e0:72:a1:ea:ab:84) showed display 1 with its
+backlight on and no content; displays 2–5 were not checked before the fix. Three
+USB resets happened while probing — opening the USB-JTAG port resets the S3, and
+so does `esptool flash_id` — and afterwards all five displays showed data.
+
+**Measured:** the board boots normally and the app never logs over USB (Serial is
+on UART0, see above), so the USB port tells you nothing about the displays. A
+lit backlight proves only that 5 V reaches the module: the backlight is wired to
+VCC. **Not established:** why display 1 missed its content. One candidate is that
+DS1 (CS GPIO4) missed initialization at power-up, but that is a hypothesis. If it
+comes back: note which displays are blank, and **before resetting anything**,
+swap DS1 with DS2. If the blank moves with the module, the module is at fault; if
+it stays in position 1, the cause is the board, the GPIO4 path or that socket.
