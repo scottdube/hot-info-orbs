@@ -93,10 +93,18 @@ Scott asked for, and how each was read:
    mask, black silkscreen, both sides - a stock fab option. Written into
    the stackup as text after the save; it is what the STEP export and the
    3D viewer colour by, and the fab order must say the same.
+15. (Scott, 2026-10-17: "add a couple mm at the bottom edge below the
+   displays to give some routing space") Bottom edge 2 mm lower; the pour
+   follows. Display pin rows, parts and holes stay put, so the bottom holes
+   are now 7 mm in. Why: with the rows 1.8 mm from the edge nothing could pass
+   under them, and Freerouting left one connection every run (SCLK, or DC
+   DS4->DS5, by run). Rejected: leaving GND to the pour (6 GND pads islanded),
+   reordering nets (12 orders, identical result - it sorts them itself).
 
 Footprint swaps keep the symbol path so parity still matches, and the
 schematic's Footprint fields are rewritten to the new names at the end.
 """
+import re
 from pathlib import Path
 import pcbnew
 
@@ -427,6 +435,18 @@ for kind, colour in (("Silk Screen", "Black"), ("Solder Mask", "White")):
         assert t.count(tag) == 1, tag
         indent = t.split(tag)[0].rsplit("\n", 1)[1]
         t = t.replace(tag, f'{tag}\n{indent}(color "{colour}")')
+BOTTOM_EXTRA = 2.0
+# 15. bottom edge 2 mm lower (pin rows, parts and holes stay): text, not pcbnew,
+# so PIN_ROW_Y/C1 (derived from Y1 above) cannot ride down with it
+rect = re.search(r'\(gr_rect\s+\(start [-0-9.]+ [-0-9.]+\)\s+\(end [-0-9.]+ ([-0-9.]+)\)'
+                 r'(?:(?!\(gr_rect).)*?\(layer "Edge.Cuts"\)', t, re.S)
+assert rect and abs(float(rect.group(1)) - Y1) < 1e-3, "Edge.Cuts rect not found"
+t = t[:rect.start(1)] + f"{Y1 + BOTTOM_EXTRA:g}" + t[rect.end(1):]
+pour_y = Y1 - 0.78                    # pour outline's bottom sits 0.78 inside the edge
+poly = re.search(r'\(zone\b.*?\(polygon\s+\(pts\s+([^)]*\)[^(]*(?:\(xy [^)]*\)\s*)*)\)', t, re.S)
+pts = poly.group(1)
+assert pts.count(f" {pour_y:g})") == 2, f"pour bottom corners: {pts}"
+t = t[:poly.start(1)] + pts.replace(f" {pour_y:g})", f" {pour_y + BOTTOM_EXTRA:g})") + t[poly.end(1):]
 PCB.write_text(t)
 
 SCH = HERE / "hot_info_orbs_xiao.kicad_sch"

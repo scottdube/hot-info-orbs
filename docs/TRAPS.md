@@ -254,3 +254,22 @@ The fix had a sign trap. On a back-side (flipped) footprint, the model
 offset's local y went to -x on the board while the pads' local y went to
 +x. Make one move, re-measure, and only then trust the direction.
 
+
+## Freerouting's empty SES is an exit race, not unrouted nets (2026-10-17)
+
+Branch `xiao-esp32s3-plus`, `tools/route_xiao.py`. The script asserted that
+a 0-byte SES meant "nets left unrouted" and stopped there. That reading was
+wrong. A run whose log said `0 unrouted and 0 violations` wrote 0 bytes, and
+an identical rerun wrote the file. Runs with 1 unrouted connection wrote
+21 KB. Freerouting 2.4.1 logs `Saving ...` and sometimes exits before the
+write lands.
+
+Fix: take the unrouted count from the log's `final score` line, and rerun on
+an empty file. The script does both now.
+
+Same session, two more: the DSN exports the mounting-hole Edge.Cuts circles
+as keepouts at the bare hole radius. Freerouting keeps only its 0.2 mm track
+clearance from them, so KiCad flagged `copper_edge_clearance` (0.5 mm). The
+script now grows them by 0.4 mm. And reordering the nets in the DSN changes
+nothing: 12 shuffles gave a byte-identical result, because Freerouting
+orders them itself.

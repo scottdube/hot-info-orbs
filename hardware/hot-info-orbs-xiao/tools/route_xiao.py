@@ -24,7 +24,7 @@ Seeed's two pads per pin Freerouting reported 14 violations, stubbed every
 pin and left one net unrouted every run (CS4, then MOSI once CS4 was
 pre-routed by hand). One oval pad per pin: 0 violations, 0 unrouted.
 """
-import json, subprocess, sys
+import json, math, re, subprocess, sys
 from pathlib import Path
 import pcbnew
 
@@ -55,12 +55,38 @@ if len(sys.argv) > 1 and sys.argv[1] == "--import":
 
 passes = sys.argv[1] if len(sys.argv) > 1 else "20"
 subprocess.run([sys.executable, __file__, "--export"], check=True, capture_output=True)
-print("dsn", DSN.stat().st_size, "bytes")
+# The mounting holes export as keepouts at the bare 1.6 mm radius and
+# Freerouting keeps only its 0.2 mm clearance from them; KiCad wants 0.5 mm
+# to any Edge.Cuts (2026-10-17: two copper_edge_clearance errors). Grow each
+# keepout radially by 0.4 mm about its centroid.
+def _grow(m, grow=400.0):
+    nums = [float(v) for v in m.group(2).split()]
+    pts = list(zip(nums[0::2], nums[1::2]))
+    cx = sum(p[0] for p in pts[:-1]) / (len(pts) - 1)
+    cy = sum(p[1] for p in pts[:-1]) / (len(pts) - 1)
+    out = []
+    for x, y in pts:
+        k = (math.hypot(x - cx, y - cy) + grow) / math.hypot(x - cx, y - cy)
+        out.append(f"{cx + (x - cx) * k:.1f} {cy + (y - cy) * k:.1f}")
+    return m.group(1) + "  ".join(out) + "))"
+dsn, n = re.subn(r'(\(keepout "" \(polygon signal 0\s+)([-0-9.\s]+?)\)\)', _grow, DSN.read_text())
+DSN.write_text(dsn)
+print("dsn", DSN.stat().st_size, "bytes,", n, "hole keepouts grown 0.4 mm")
 
-r = subprocess.run([JAVA, "-jar", str(JAR), "-de", str(DSN), "-do", str(SES), "-mp", passes, "-mt", "1"],   # -mt 1: Freerouting 2.4.1 warns its multi-threaded optimizer is broken
-                   capture_output=True, text=True, timeout=1800)
-print("\n".join(l for l in (r.stdout + r.stderr).strip().splitlines()[-4:] if "WARNING" not in l))
-assert SES.exists() and SES.stat().st_size > 0, "no SES produced: Freerouting writes a 0-byte file when nets are left unrouted - read its log above"
+# A 0-byte SES is NOT "nets left unrouted" (that was this script's old reading):
+# 2026-10-17 a 0-unrouted run wrote 0 bytes and an identical rerun wrote the
+# file - Freerouting 2.4.1 exits before the save flushes. Unrouted count comes
+# from its log; an empty file just means run it again.
+for attempt in range(5):
+    SES.unlink(missing_ok=True)
+    r = subprocess.run([JAVA, "-jar", str(JAR), "-de", str(DSN), "-do", str(SES), "-mp", passes, "-mt", "1"],   # -mt 1: Freerouting 2.4.1 warns its multi-threaded optimizer is broken
+                       capture_output=True, text=True, timeout=1800)
+    log = (r.stdout + r.stderr).splitlines()
+    print("\n".join(l[:200] for l in log if "final score" in l and "Auto-routing stage" in l or l.startswith("  Net '")))
+    if SES.exists() and SES.stat().st_size > 0:
+        break
+    print(f"empty SES (attempt {attempt + 1}), rerunning")
+assert SES.stat().st_size > 0, "Freerouting wrote an empty SES five times running"
 
 subprocess.run([sys.executable, __file__, "--import"], check=True, capture_output=True)
 txt = PCB.read_text()
