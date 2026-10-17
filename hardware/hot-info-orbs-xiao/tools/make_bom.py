@@ -22,7 +22,7 @@ need the +40% estimate mark.
 import csv
 from pathlib import Path
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
 HERE = Path(__file__).resolve().parent.parent
@@ -76,10 +76,10 @@ ROWS = [
      "Exact part: https://lcsc.com/product-detail/Tactile-Switches_C-K-PTS645VL392LFS_C285523.html"],
     ["C1", 1, "Electrolytic capacitor 100 uF 16 V, +5V bulk", "100 uF 16 V, 6.3 mm dia, 2.5 mm pitch",
      "CP_Radial_D6.3mm_P2.50mm", "Panasonic EEU-FC1C101H (reference)",
-     AMZ + "B0CPDF3HHB", ALI + "3256812824344961.html",
-     "Value set by Scott 2026-10-17 and now in the schematic. The Amazon listing gives no size, so "
-     "6.3 mm dia / 2.5 mm pitch is NOT VERIFIED for it; AliExpress is Nichicon 6.3x7. "
-     "Height is on the back side; check enclosure clearance."],
+     AMZ + "B0992PZC82", ALI + "3256812824344961.html",
+     "Value set by Scott 2026-10-17. Both listings state 6.3 mm dia (Amazon 6.3x11, AliExpress "
+     "Nichicon 6.3x7); neither states pitch, and 6.3 mm radials are 2.5 mm by convention. Mounted on "
+     "the back: the 11 mm Amazon part stands 4 mm taller than the AliExpress one, so check enclosure clearance."],
     ["C2", 1, "Ceramic capacitor 1 uF (105)", "50 V, radial, 5.08 mm lead spacing",
      "C_Disc_D5.0mm_W2.5mm_P5.00mm", "KEMET C330C105K5R5TA7301 (reference)",
      AMZ + "B08BF91KY3", ALI + "3256811560978404.html",
@@ -109,7 +109,7 @@ PRICES = {
     "J (XIAO)": (6.99, 60, 0),         # out of the line above's 60-pack
     "P (XIAO)": (6.29, 100, None),     # 20 strips x 40 pins = 100 1x7 pieces
     "SW1-SW3": (7.39, 20, None),
-    "C1": (5.49, 50, None),
+    "C1": (6.60, 10, None),          # iProtool 6.3x11; the 50-pack gave no size
     "C2": (6.99, 120, None),
     "R1": (4.99, 100, None),
     "H1-H7": (7.49, 120, None),
@@ -169,30 +169,57 @@ terms = "+".join(f"C{i + 2}/K{i + 2}*J{i + 2}" for i, r in enumerate(OUT_ROWS) i
 ws.cell(tot + 1, 11, "Per-board share")
 ws.cell(tot + 1, 12, "=" + terms)
 ws.cell(tot + 1, 13, "Each pack pro-rated over the boards it covers.")
-head = PatternFill("solid", fgColor="D9D9D9")
+# Navy header, banded body, flagged lines yellow, totals block shaded. The flag also stays
+# in words (NOT VERIFIED ...) so it never rests on color alone.
+NAVY, BAND, FLAG, TOTAL, RULE = "1F3A5F", "F2F5F9", "FFF2CC", "DCE6F1", "D0D7DE"
+thin = Side(style="thin", color=RULE)
+box = Border(left=thin, right=thin, top=thin, bottom=thin)
+CENTER = (1, 3, 11)                       # Item, Qty / board, Pack qty
+VENDORS = {"amazon": "Amazon", "aliexpress": "AliExpress", "seeedstudio": "Seeed",
+           "jlcpcb": "JLCPCB", "pcbway": "PCBWay"}
+
+
+def vendor(url):
+    host = url.split("/")[2]
+    return next((v for k, v in VENDORS.items() if k in host), host)
+
+
 for c in ws[1]:
-    c.font = Font(bold=True)
-    c.fill = head
-widths = [6, 13, 10, 34, 42, 34, 30, 40, 40, 12, 9, 12, 60]
+    c.font = Font(bold=True, color="FFFFFF")
+    c.fill = PatternFill("solid", fgColor=NAVY)
+    c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    c.border = box
+ws.row_dimensions[1].height = 30
+widths = [6, 13, 10, 34, 42, 34, 30, 14, 14, 12, 9, 12, 60]
 for j, wd in enumerate(widths, 1):
     ws.column_dimensions[get_column_letter(j)].width = wd
 for row in ws.iter_rows(min_row=2, max_row=n + 1):
+    flagged = any(k in str(row[4].value) + str(row[12].value)
+                  for k in ("NOT IN SCHEMATIC", "NOT CHOSEN", "NOT VERIFIED"))
+    fill = FLAG if flagged else (BAND if row[0].row % 2 else None)
     for c in row:
-        c.alignment = Alignment(wrap_text=True, vertical="top")
-    for c in (row[7], row[8]):            # Link 1, Link 2
+        c.alignment = Alignment(wrap_text=True, vertical="top",
+                                horizontal="center" if c.column in CENTER else None)
+        c.border = box
+        if fill:
+            c.fill = PatternFill("solid", fgColor=fill)
+    row[1].font = Font(bold=True)          # Refs
+    for c in (row[7], row[8]):            # Link 1, Link 2: vendor name, linked
         if c.value:
-            c.hyperlink = c.value
+            c.hyperlink, c.value = c.value, vendor(c.value)
             c.font = Font(color="0563C1", underline="single")
     for c in (row[9], row[11]):
         c.number_format = '"$"#,##0.00'
-    if any(k in str(row[4].value) + str(row[12].value) for k in ("NOT IN SCHEMATIC", "NOT CHOSEN", "NOT VERIFIED")):
-        for c in row:
-            c.fill = PatternFill("solid", fgColor="FFF2CC")
 for x in (tot, tot + 1):
+    for j in (11, 12, 13):
+        c = ws.cell(x, j)
+        c.fill = PatternFill("solid", fgColor=TOTAL)
+        c.border = box
+        c.alignment = Alignment(wrap_text=True, vertical="top")
     ws.cell(x, 11).font = Font(bold=True)
-    ws.cell(x, 12).font = Font(bold=True)
+    ws.cell(x, 12).font = Font(bold=True, size=12)
     ws.cell(x, 12).number_format = '"$"#,##0.00'
-    ws.cell(x, 13).alignment = Alignment(wrap_text=True, vertical="top")
+ws.sheet_properties.tabColor = NAVY
 ws.freeze_panes = "C2"
 ws.auto_filter.ref = f"A1:{get_column_letter(len(COLS))}{n + 1}"
 wb.save(OUT / "hot_info_orbs_xiao_bom.xlsx")
