@@ -110,8 +110,12 @@ bool WebDataWidget::fetch() {
                 JsonArray array = doc["displays"].is<JsonArray>() ? doc["displays"].as<JsonArray>()
                                                                    : doc.as<JsonArray>(); // legacy: a bare array
                 if (m_showingProblem) {
+                    // Model colors start at -1 (white), so set them or the cleared orb repaints white
                     m_obj[2].setLabel("");
                     m_obj[2].setData("", m_defaultColor, m_defaultBackground);
+                    m_obj[2].setBackgroundColor(m_defaultBackground);
+                    m_obj[2].setDataColor(m_defaultColor);
+                    m_obj[2].setLabelColor(m_defaultColor);
                     m_obj[2].setInitializedStatus(false); // clear the problem text
                     m_showingProblem = false;
                 }
@@ -145,8 +149,15 @@ bool WebDataWidget::fetch() {
 // through the normal label/data path. Once data has arrived it stays on
 // screen through later failures.
 void WebDataWidget::showProblem(const String &reason) {
+    if (m_obj[2].getData() != reason) {
+        m_obj[2].setInitializedStatus(false); // fillScreen before the new text, or it overdraws the old reason
+    }
     m_obj[2].setLabel(m_name);
     m_obj[2].setData(reason, m_defaultColor, m_defaultBackground);
+    // setData ignores its color arguments and the model defaults to -1 (white on white)
+    m_obj[2].setBackgroundColor(m_defaultBackground);
+    m_obj[2].setDataColor(m_defaultColor);
+    m_obj[2].setLabelColor(m_defaultColor);
     m_showingProblem = true;
 }
 
