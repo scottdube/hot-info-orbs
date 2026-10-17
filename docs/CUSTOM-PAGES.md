@@ -14,8 +14,11 @@ set, and not before. Saving restarts the orb. You can untick a custom page
 under **Rotation → Show** like any other page. The tick box uses the page's
 name, so renaming a page shows it again if it was unticked.
 
-No rebuild is needed. The `WEB_DATA_*` and `MQTT_*` defines in `config.h` and
-`secrets.h` are only defaults for an orb that has never saved settings.
+No rebuild is needed. `WEB_DATA_WIDGET_URL` (in `secrets.h`) and the `MQTT_*`
+defines (in `config.h` and `secrets.h`) are only defaults for an orb that has
+never saved settings. `WEB_DATA_STOCK_WIDGET_URL` is not: it still adds a
+separate, always-on "WebData" page at build time, which the settings page
+cannot change (untick it under Rotation → Show to hide it).
 
 ## Web Data format
 
@@ -35,9 +38,9 @@ Each display object may have:
 | `label` | Small text near the top of the orb. |
 | `data` | The main text. It wraps at 10 characters per line, so keep each word short. Instead of text it can be an array of drawing elements (text, character, line, rectangle, triangle, circle, arc, image), as upstream's Web Data page. |
 | `color` | Color of `data`. |
-| `labelColor` | Color of `label`. |
+| `labelColor` | Color of `label`. It does not follow `color`: set it separately or the label is white. |
 | `background` | Background color of the orb. |
-| `fullDraw` | `true` to clear and repaint the whole orb on every refresh. Default `false`. |
+| `fullDraw` | `true` to clear and repaint the whole orb on every refresh. Default `false`. Set it to `true` if the text changes between refreshes, or a shorter new value can leave pieces of the old one behind. |
 
 Anything left out uses white text on black.
 
@@ -47,8 +50,7 @@ The names the orb accepts:
 `black`, `navy`, `darkgreen`, `darkcyan`, `maroon`, `purple`, `olive`,
 `lightgray` (also `gray`, `lightgrey`, `grey`), `darkgray` (also `darkgrey`),
 `blue`, `green`, `cyan`, `red`, `magenta`, `yellow`, `white`, `orange`,
-`greenyellow`, `pink`, `brown`, `gold`, `silver`, `skyblue`, and violet, which
-the firmware spells `vilolet` (a typo kept as is: `violet` is not recognized).
+`greenyellow`, `pink`, `brown`, `gold`, `silver`, `skyblue`, `violet`.
 An unknown name draws black.
 
 **Limits.** The reply must be 16 KB or smaller, it is given 5 seconds to
@@ -99,11 +101,11 @@ Fields on the settings page:
   the rows until the next restart (see `firmware/src/widgets/mqttwidget/README.md`).
 
 A value is the topic's payload as text. Each orb shows the label on top, the
-value large in the middle (stepping down in size until it fits) and the unit
+value in the middle at the largest size that fits and the unit
 below. It shows an en dash (–) until the first value arrives.
 
-**It never blocks the orb.** The orb makes one connection attempt (3 second
-socket timeout), then at most one more every 30 seconds, while the buttons and
+**It never blocks the orb.** The orb makes one connection attempt that gives
+up after a few seconds, then at most one more every 30 seconds, while the buttons and
 the settings page keep working. The settings page says why it is not connected:
 `can't reach broker`, `login refused`, `broker refused the connection`,
 `connection lost`, or `not connected`.
@@ -150,9 +152,9 @@ On-orb tests, run by hand. Each result records what was done and what was seen.
 
 | # | Test | Result | Date |
 |---|---|---|---|
-| 1 | The sample page from GitHub Pages over https draws on all five orbs | pending, Task 9 | pending |
-| 2 | An unreachable address shows the failure on the page and on `/settings`; buttons and the settings page still respond | pending, Task 9 | pending |
-| 3 | A large web page as the address is refused as `too big`, with no restart | pending, Task 9 | pending |
-| 4 | MQTT against a home broker shows live Home Assistant values | pending, Task 9 | pending |
-| 5 | A wrong broker host shows the failure; buttons and the settings page still respond | pending, Task 9 | pending |
-| 6 | Flash use of the final build, as a share of the OTA slot (stop line 92%) | pending, Task 9 | pending |
+| 1 | The sample page from GitHub Pages over https draws on all five orbs | not yet tested | pending |
+| 2 | An unreachable address shows the failure on the page and on `/settings`; buttons and the settings page still respond | not yet tested | pending |
+| 3 | A large web page as the address is refused as `too big`, with no restart | not yet tested | pending |
+| 4 | MQTT against a home broker shows live Home Assistant values | not yet tested | pending |
+| 5 | A wrong broker host shows the failure; buttons and the settings page still respond | not yet tested | pending |
+| 6 | Flash use of the final build, as a share of the OTA slot (stop line 92%) | not yet tested | pending |
