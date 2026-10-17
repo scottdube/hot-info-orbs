@@ -459,4 +459,19 @@ inline bool parsePassword(const std::string &in, bool clear, const std::string &
     return true;
 }
 
+// Hint under the password field. `v` is what the form holds after parsing,
+// `stored` what is saved. They differ only on a rejected save (some other
+// field failed), where the field comes back empty: say so, or the member
+// resubmits blank and silently keeps the OLD password. Never echoes either.
+inline const char *passwordHint(const std::string &v, const std::string &stored) {
+    if (v == stored) {
+        return stored.empty() ? "No password stored." : "&#10004; A password is stored. It is never shown; leave this blank to keep it.";
+    }
+    if (v.empty()) {
+        return "&#9888; Not saved: tick the box below again to clear the stored password. A password is still stored.";
+    }
+    return stored.empty() ? "&#9888; Not saved: type the password again. No password is stored."
+                          : "&#9888; Not saved: type the password again. The stored one is unchanged.";
+}
+
 } // namespace sv

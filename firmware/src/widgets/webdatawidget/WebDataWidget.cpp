@@ -103,6 +103,8 @@ bool WebDataWidget::fetch() {
             DeserializationError e = deserializeJson(doc, in);
             if (in.exceeded()) {
                 st.error = "too big";
+            } else if (e == DeserializationError::IncompleteInput && webDataRanToTimeout(millis() - start)) {
+                st.error = "timeout"; // the body stalled mid-stream; the read gave up, not the sender
             } else if (e) {
                 st.error = String("bad JSON (") + e.c_str() + ")";
             } else {
@@ -127,10 +129,13 @@ bool WebDataWidget::fetch() {
                 m_hasData = true;
             }
         }
-    } else if (st.code == HTTPC_ERROR_READ_TIMEOUT) {
-        st.error = "timeout";
+    } else if (const char *why = webDataConnectError(st.code, millis() - start)) {
+        st.error = why;
     } else {
         st.error = st.code > 0 ? String("HTTP ") + st.code : http.errorToString(st.code);
+    }
+    if (!st.ok) {
+        m_updateDelay = webDataRetryDelay(m_updateDelay);
     }
     http.end();
     st.ms = millis() - start;

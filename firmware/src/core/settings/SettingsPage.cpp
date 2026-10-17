@@ -214,8 +214,9 @@ void SettingsPage::begin() {
 
 String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, const String &banner) {
     const SettingsValues d = Settings::defaults();
+    const SettingsValues &stored = Settings::get(); // differs from `v` only on a rejected save
     String h;
-    h.reserve(14000);
+    h.reserve(18000); // measured page: 15.6-16.2 KB; below that every append reallocs a big block on a heap with no PSRAM
     h += PAGE_HEAD;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
     {
@@ -293,11 +294,18 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += "<h4>Web Data</h4>";
     h += textField("wdname", "Page name (16 characters)", v.wdname, d.wdname,
                    ". Its tick box above uses this name, so renaming it shows it again if it was unticked.", errors);
+    // A new address from a rejected save is not echoed (its key would show, and the
+    // masked form would resubmit as the OLD address): show the stored one and say so
+    const bool wdurlLost = v.wdurl != stored.wdurl;
     h += "<label for='wdurl'>JSON address</label><input type='text' id='wdurl' name='wdurl' inputmode='url' value='" +
-         esc(sv::maskUrl(v.wdurl)) + "'>";
-    h += hint("Blank = no page. http:// or https://. Anything after ? is hidden here because it often holds a key: leave it as shown to keep it. "
+         esc(sv::maskUrl(wdurlLost ? stored.wdurl : v.wdurl)) + "'>";
+    h += hint("Blank = no page. http:// or https://. Only the part after ? is hidden here, so put keys there: leave it as shown to keep it. "
+              "A key in the path or as user:pass@ shows in full. "
               "Default: " + (d.wdurl.empty() ? String("none") : esc(sv::maskUrl(d.wdurl)))) +
          errorLine(errors, "wdurl");
+    if (wdurlLost && !errors.count("wdurl")) {
+        h += "<div class='err'>&#9888; Not saved: type the address again.</div>";
+    }
     if (!v.wdurl.empty()) {
         h += webDataStatusLine();
     }
@@ -311,7 +319,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += hint("Default: " + String(d.mqport)) + errorLine(errors, "mqport");
     h += textField("mquser", "Username", v.mquser, d.mquser.empty() ? std::string("none") : d.mquser, ". Blank = no login.", errors);
     h += "<label for='mqpass'>Password</label><input type='password' id='mqpass' name='mqpass' value='' autocomplete='new-password'>";
-    h += hint(v.mqpass.empty() ? "No password stored." : "&#10004; A password is stored. It is never shown; leave this blank to keep it.") +
+    h += hint(sv::passwordHint(v.mqpass, stored.mqpass)) +
          errorLine(errors, "mqpass");
     h += "<label class='chk'><input type='checkbox' name='mqpassclr' value='1'> Clear the stored password</label>";
     h += "<label>One value per orb: topic, label, unit</label>"

@@ -291,6 +291,21 @@ void test_password() {
     TEST_ASSERT_FALSE(parsePassword("a\nb", false, "old", out, err));
 }
 
+void test_password_hint() {
+    // Untouched: the old wording
+    TEST_ASSERT_EQUAL_STRING("No password stored.", passwordHint("", ""));
+    TEST_ASSERT_NOT_NULL(strstr(passwordHint("old", "old"), "A password is stored"));
+    // Rejected save with a newly typed password: must NOT claim the stored one is kept as typed
+    TEST_ASSERT_NOT_NULL(strstr(passwordHint("new", "old"), "Not saved: type the password again"));
+    TEST_ASSERT_NOT_NULL(strstr(passwordHint("new", ""), "Not saved: type the password again"));
+    TEST_ASSERT_NULL(strstr(passwordHint("new", "old"), "A password is stored"));
+    // Rejected save with Clear ticked
+    TEST_ASSERT_NOT_NULL(strstr(passwordHint("", "old"), "Not saved: tick the box"));
+    // Neither text may carry either password
+    TEST_ASSERT_NULL(strstr(passwordHint("hunter2", "swordfish"), "hunter2"));
+    TEST_ASSERT_NULL(strstr(passwordHint("hunter2", "swordfish"), "swordfish"));
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_cycle);
@@ -315,5 +330,6 @@ int main() {
     RUN_TEST(test_optional_text);
     RUN_TEST(test_topic);
     RUN_TEST(test_password);
+    RUN_TEST(test_password_hint);
     return UNITY_END();
 }
