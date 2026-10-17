@@ -123,7 +123,7 @@ Show the phone screen next to the orb reacting.
   back to main). That happened off camera, so shot S22 has to be staged with
   the same command: `cd ~/code/hot-info-orbs-main && pio run -e
   esp32-s3-devkitc-1 -t upload`.
-- Re-tick all pages on `/settings` (the orb was left Clock-only for testing).
+- Check every page is ticked on `/settings` (the orb cycles pages again since the 2026-10-17 reflash).
 - Set the boot picture to the HOT hand for the title beat.
 - Shoot the Stocks page on a weekday during market hours, or the stock
   tickers show the last close and don't move. BTC/USD moves around the clock.

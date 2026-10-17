@@ -78,7 +78,7 @@ S22 before setups A and B or after them, not in between.
 1. The orb firmware went back on over USB on 2026-10-17, off camera. For S22,
    re-run the same flash on camera:
    `cd ~/code/hot-info-orbs-main && pio run -e esp32-s3-devkitc-1 -t upload`.
-2. On `/settings`: re-tick every page; set the boot picture to the HOT hand.
+2. On `/settings`: check every page is ticked (they cycle since the 2026-10-17 reflash); set the boot picture to the HOT hand.
 3. Check a Tempest fetch shows ✔ for station 1 before filming S11.
 4. Weekday, market hours for S13.
 5. Phone: Do Not Disturb on, full battery, screen recording on.
