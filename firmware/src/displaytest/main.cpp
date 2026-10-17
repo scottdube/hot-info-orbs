@@ -3,8 +3,9 @@
 // file to nothing. Written for enclosure design (2026-10-17): it answers
 // whether there is dead black space between the lit area and the glass edge.
 //
-// Patterns, shown on all five displays at once. Any button steps to the next
-// one and stops the 10 s auto-advance, so a pattern can be held for measuring.
+// The three patterns run side by side: DS1 FULL, DS2 RINGS, DS3 GRID, DS4 FULL,
+// DS5 RINGS. Any button moves every display on to its next pattern, so three
+// presses put each pattern on each display.
 //   1 FULL   - every pixel white, corners included. Caliper the lit diameter
 //              against the glass and the module outline.
 //   2 RINGS  - 2 px white/black bands from r=120 inwards; the outermost white
@@ -27,9 +28,7 @@ static const float C = 119.5f; // pixel centers run 0..239, so the center falls 
 
 static TFT_eSPI tft;
 static uint16_t row[N];
-static int pattern = 0;
-static bool autoAdvance = true;
-static unsigned long shownAt = 0;
+static int offset = 0; // display s shows pattern (s + offset) % 3
 
 static void selectScreen(int s) {
     for (int i = 0; i < 5; i++) {
@@ -87,7 +86,7 @@ static void drawGrid() {
 
 static const char *NAMES[3] = {"FULL", "RINGS", "GRID"};
 
-static void label(int screen) {
+static void label(int screen, int pattern) {
     // Dark text on the white pattern, white elsewhere.
     uint16_t fg = (pattern == 0) ? TFT_BLACK : TFT_WHITE;
     uint16_t bg = (pattern == 0) ? TFT_WHITE : (pattern == 1 ? TFT_NAVY : TFT_BLACK);
@@ -101,20 +100,19 @@ static void label(int screen) {
     if (pattern == 1) tft.drawString("outer white r118-120", 120, 144, 2);
     if (pattern == 1) tft.drawString("2 px = 0.27 mm nom.", 120, 162, 2);
     if (pattern == 2) tft.drawString("grid 10 px", 120, 144, 2);
-    if (pattern == 0 && autoAdvance) tft.drawString("auto 10 s", 120, 144, 2);
+    if (pattern == 0) tft.drawString("any button: next", 120, 144, 2);
 }
 
 static void show() {
-    selectScreen(-1);
-    if (pattern == 0) drawFull();
-    if (pattern == 1) drawRings();
-    if (pattern == 2) drawGrid();
-    for (int s = 0; s < 5; s++) {
-        selectScreen(s);
-        label(s);
+    for (int scr = 0; scr < 5; scr++) {
+        int pattern = (scr + offset) % 3;
+        selectScreen(scr);
+        if (pattern == 0) drawFull();
+        if (pattern == 1) drawRings();
+        if (pattern == 2) drawGrid();
+        label(scr, pattern);
     }
     selectScreen(-1);
-    shownAt = millis();
 }
 
 void setup() {
@@ -139,16 +137,11 @@ void loop() {
         down |= digitalRead(BUTTONS[i]) == HIGH;
     }
     if (down && !wasDown) {
-        autoAdvance = false;
-        pattern = (pattern + 1) % 3;
+        offset = (offset + 1) % 3;
         show();
         delay(250); // crude debounce; this is a test tool
     }
     wasDown = down;
-    if (autoAdvance && millis() - shownAt > 10000) {
-        pattern = (pattern + 1) % 3;
-        show();
-    }
     delay(10);
 }
 
