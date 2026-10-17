@@ -46,14 +46,17 @@
 // PARQET.COM PORTFOLIO CONFIGURATION
 //#define PARQET_PORTFOLIO_ID "" // set the id of your parqet.com portfolio. Make sure the portfolio is set to public!
 
-// WEB DATA CONFIGURATION
-// WEB_DATA_WIDGET_URL and WEB_DATA_STOCK_WIDGET_URL live in secrets.h - a data
-// URL routinely carries an API key in its query string.
-
-// MQTT CONFIGURATION
+// WEB DATA and MQTT pages
+// Set these up on the settings page (http://<orb>/settings -> Custom pages);
+// no rebuild needed. See docs/CUSTOM-PAGES.md. The MQTT_* defines below and
+// WEB_DATA_WIDGET_URL (in secrets.h) are only defaults for an orb that has
+// never saved settings. WEB_DATA_STOCK_WIDGET_URL (also in secrets.h) is not:
+// it still adds a separate build-time page.
+// Both web data URLs live in secrets.h - a data URL routinely carries an API
+// key in its query string.
 //#define MQTT_WIDGET_HOST "192.168.3.40" // MQTT broker host
 //#define MQTT_WIDGET_PORT 1883 // MQTT broker port
-//#define MQTT_SETUP_TOPIC "info-orbs/setup/orbs" // Setup topic
+//#define MQTT_SETUP_TOPIC "info-orbs/setup/orbs" // Advanced: layout topic
 // MQTT_WIDGET_USER and MQTT_WIDGET_PASS live in secrets.h
 
 // OTA UPDATE CONFIGURATION

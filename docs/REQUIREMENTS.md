@@ -242,6 +242,37 @@ alongside NVS and SPIFFS. **The partition table in `partitions.csv` will need
 reworking, and that is a bigger change than it sounds** — it is worth confirming
 the layout before building against the current one.
 
+## R3 — Custom pages
+
+**A member must be able to add a page of their own without rebuilding the
+firmware.**
+
+Upstream's Web Data and MQTT pages are switched on by `#define`s in `config.h`
+and `secrets.h`, so using one means the same edit-build-USB cycle R1 exists to
+remove. The reason people want them is the point of the club: a board that
+shows the member's own number, a schedule, or a Home Assistant sensor.
+
+**Must:**
+- Set up on `/settings`: a Web Data address (JSON file from an http/https
+  URL), and an MQTT broker with, per orb, a topic, label and unit
+- Off until configured: a page appears in the rotation only once its address or
+  broker is set; the build-time defines are only defaults for an orb that has
+  never saved settings
+- Neither page may stop the buttons or the settings page responding: Web Data
+  has a fetch timeout and a size limit, MQTT makes one short attempt and then
+  retries at most every 30 s (upstream looped forever on a mistyped broker)
+- Secrets never go back to the browser: the part of the Web Data address after
+  `?` and the MQTT password are not shown on the page; leaving them as shown
+  keeps the stored value
+- Show each page's last result (✔/✖, age, reason) on the settings page
+
+**Should:**
+- Keep the last good data on screen when a fetch fails
+
+Format, limits, a sample page and a Home Assistant recipe: `docs/CUSTOM-PAGES.md`.
+Design and reasons: `docs/superpowers/specs/2026-10-17-custom-pages-design.md`.
+On-orb results are recorded in `docs/CUSTOM-PAGES.md`.
+
 ## Prior art
 
 [JoeAWagner/orbital-orbs](https://github.com/JoeAWagner/orbital-orbs) — Info

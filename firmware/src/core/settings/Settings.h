@@ -33,6 +33,19 @@ struct SettingsValues {
     uint32_t tstn2;
     std::string tlbl2;
     std::string hidden; // widget names left out of the rotation, '\n'-separated; "" = show all
+    // Custom pages (docs/superpowers/specs/2026-10-17-custom-pages-design.md).
+    // A page is registered at boot only when its URL / host is set.
+    std::string wdname; // Web Data page name, 1..16
+    std::string wdurl; // "" = no Web Data page
+    std::string mqname; // MQTT page name, 1..16
+    std::string mqhost; // "" = no MQTT page
+    int mqport;
+    std::string mquser;
+    std::string mqpass; // write-only on the page
+    std::string mqt[5]; // per-orb topic, "" = orb left blank
+    std::string mql[5]; // per-orb label
+    std::string mqu[5]; // per-orb unit
+    std::string mqsetup; // advanced layout topic, "" = none
 };
 
 // Night-dim level. The page sets hours only; the level stays a build choice.
