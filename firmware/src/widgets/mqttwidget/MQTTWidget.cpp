@@ -335,11 +335,11 @@ void MQTTWidget::drawOrb(int orbid) {
     m_manager.setFontColor(orb->orbTextColor, orb->orbBgColor);
     if (orb->autoLayout) {
         // Label on top, the value as large as fits in the middle, unit below.
-        // An en dash until the first value arrives.
+        // A hyphen until the first value arrives (the font has no en dash: it drew a box).
         if (orb->orbdesc.length()) {
             m_manager.drawString(orb->orbdesc, ScreenCenterX, 62, 22, Align::MiddleCenter);
         }
-        String v = orb->value.length() ? orb->value : String("\xE2\x80\x93");
+        String v = orb->value.length() ? orb->value : String("-");
         m_manager.drawFittedString(v, ScreenCenterX, ScreenCenterY, 190, 80, Align::MiddleCenter);
         if (orb->orbvalunit.length()) {
             m_manager.drawString(orb->orbvalunit, ScreenCenterX, 180, 22, Align::MiddleCenter);

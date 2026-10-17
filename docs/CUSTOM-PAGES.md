@@ -110,7 +110,7 @@ Fields on the settings page:
 
 A value is the topic's payload as text. Each orb shows the label on top, the
 value in the middle at the largest size that fits and the unit
-below. It shows an en dash (–) until the first value arrives.
+below. It shows a dash (-) until the first value arrives.
 
 **It never blocks the orb.** The orb makes one connection attempt that gives
 up after a few seconds, then at most one more every 30 seconds, while the buttons and
@@ -160,7 +160,7 @@ On-orb tests, run by hand. Each result records what was done and what was seen.
 
 | # | Test | Result | Date |
 |---|---|---|---|
-| 1 | The sample page from GitHub Pages over https draws on all five orbs | ✔ on `/settings`: fetched over https from the raw GitHub copy, ✔ in 0.5–0.7 s. Drawing on the orbs: not yet checked by eye | 2026-10-17 |
+| 1 | The sample page from GitHub Pages over https draws on all five orbs | ✔ Fetched over https from the raw GitHub copy, ✔ in 0.5–0.7 s on `/settings`; all five orbs drew the sample's text and colors, checked by eye and photo. One earlier look, before a restart, showed other content on four orbs and the page name on the center one; it did not recur and its cause is not known | 2026-10-17 |
 | 2 | An unreachable address shows the failure on the page and on `/settings`; buttons and the settings page still respond | ✔ `http://10.255.255.1/x.json`: ✖ after 5.0 s on `/settings`. The reason read `connection refused` although the try ran the full 5 s; the wording was fixed after this run (a silent host now reads `timeout`, a quick refusal `can't connect`) and the re-run on build 33230ff read `✖ … took 5.0 s — timeout`. `/settings` answered in 0.08–0.39 s throughout a 75 s sample. Center orb and buttons: not yet checked by eye | 2026-10-17 |
 | 3 | A large web page as the address is refused as `too big`, with no restart | ✔ A 344 KB Wikipedia page: ✖ `too big` after 1.0 s, refetched while on screen, uptime kept counting (no restart) | 2026-10-17 |
 | 4 | MQTT against a home broker shows live Home Assistant values | not yet tested (needs an orb user on the broker) |  |
