@@ -23,8 +23,8 @@ card made in the edit.
 | S07 | 3 | CAM | A member's built HackerBox kit, running | 8 s | Borrow one if possible; otherwise reuse S03. |
 | S08 | 4 | CAM | Clock page, standard face, full frame | 5 s | |
 | S09 | 4 | CAM | Finger presses the middle button → nixie face | 5 s | Close enough to see the finger and the face change in one shot. |
-| S10 | 4 | CAM | Weather page, full frame | 5 s | Dover. |
-| S11 | 4 | CAM | Tempest page, full frame | 5 s | The label reads "Dover"; no station ID shows on the orb. |
+| S10 | 4 | CAM | Weather page, full frame | 5 s | |
+| S11 | 4 | CAM | Tempest page, full frame | 5 s | The station label shows; no station ID appears on the orb. |
 | S12 | 4 | CAM | Close-up: the weather-icon orb, sunrise/sunset on top, moon below | 5 s | Tight; the moon drawing is 40 px. |
 | S13 | 4 | CAM | Stocks page, full frame | 5 s | **Weekday, market hours**, so prices move. |
 | S14 | 4 | CAM | Hand stepping right, right, left through the pages | 6 s | Over-the-shoulder or 3/4 angle. |
@@ -78,7 +78,7 @@ reflash, so do setup E's S22 **first, before anything else**.
    `cd ~/code/hot-info-orbs-main && pio run -e esp32-s3-devkitc-1 -t upload`.
    OTA can't do this one, because the display-test firmware has no Wi-Fi.
 2. On `/settings`: re-tick every page; set the boot picture to the HOT hand.
-3. Check a Tempest fetch shows ✔ for Dover before filming S11.
+3. Check a Tempest fetch shows ✔ for station 1 before filming S11.
 4. Weekday, market hours for S13.
 5. Phone: Do Not Disturb on, full battery, screen recording on.
 
