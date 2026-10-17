@@ -110,8 +110,8 @@ it.
 
 It runs off a USB cable and draws under two watts. The displays run on five
 volts, each with its own regulator. On the original kit they all ran off the
-little computer's regulator, and builders found it too hot to touch. Here
-that regulator only powers the computer.
+little computer's regulator, and builders found it too hot to touch. On this
+board it runs at about forty-three degrees Celsius, measured.
 
 **[GitHub repo page.]**
 
@@ -188,8 +188,9 @@ members who built the first kit.
 - **"Under two watts"** is the measured 1.71 W at 5 V (features.html).
 - **"Too hot to touch"** is a HackerBox 0129 builder's report: 82 °C (180 °F)
   on the module running only a graphics demo (`docs/VARIANT-ESP32-S3-SUPERMINI.md`).
-  The module's temperature on this board was never measured, so the script
-  doesn't claim it runs cool.
+- **"About forty-three degrees"** is the thermal-camera reading of 42.7 °C at
+  the module's hottest point, room 75 °F, after hours of running
+  (`docs/POWER-MEASURED.md`, 2026-10-17). Surface reading, not junction.
 - **"Inch and a quarter"** = the 1.28" GC9A01 panel.
 - Weather is three days ahead: `threeDayWeather(4)` in WeatherWidget.cpp.
 - Button behavior checked against `main.cpp` (left/right = previous/next

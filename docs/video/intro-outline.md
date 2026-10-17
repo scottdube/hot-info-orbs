@@ -86,8 +86,11 @@ then the buttons stepping between them.
   ran from the ESP32 module's own small 3.3 V regulator. Builders of the
   HackerBox kit reported the module too hot to touch: one measured 82 °C
   (180 °F) running only a graphics demo, Wi-Fi off. Here each display takes
-  5 V and regulates its own, so the module carries only itself. Source and
-  numbers: `docs/POWER-MEASURED.md`, `docs/VARIANT-ESP32-S3-SUPERMINI.md`.
+  5 V and regulates its own, so the module carries only itself. Measured on
+  this board with a thermal camera: **42.7 °C** at the module's hottest point,
+  room 75 °F. A thermal image would make a good insert here
+  (`docs/assets/thermal/`). Source and numbers: `docs/POWER-MEASURED.md`,
+  `docs/VARIANT-ESP32-S3-SUPERMINI.md`.
 - Open source: the board files and firmware are on GitHub.
 
 ## 6. Setting it up and living with it (2:30–3:05)
