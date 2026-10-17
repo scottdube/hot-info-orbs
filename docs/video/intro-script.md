@@ -166,13 +166,13 @@ And it starts up with any picture you like.
 
 **[KiCad 3D render of the XIAO board.]**
 
-Two things are on the drawing board. A new board for an even smaller chip,
-with the buttons on top.
+Two things are coming. A new board for an even smaller chip, with the
+buttons on top. It's being made now.
 
 **[Winged Speedster enclosure concept render.]**
 
 And a case: brass rings around each screen and finned end caps, all 3D
-printed. Both are designs for now.
+printed. That one is still a design.
 
 ## 8. Close (3:20–3:30)
 

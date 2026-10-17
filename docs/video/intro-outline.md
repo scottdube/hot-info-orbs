@@ -116,10 +116,13 @@ Show the phone screen next to the orb reacting.
 ## 7. What's next (3:05–3:20)
 
 - **The next board** for the Seeed XIAO ESP32-S3: buttons on the top edge,
-  everything plugs in. Designed and checked, not built yet. KiCad 3D render.
+  everything plugs in. Expected to be in manufacturing by the shoot (Scott,
+  2026-10-17). KiCad 3D render; if bare boards are in hand by then, film one
+  instead. Confirm the status on the day and say only that.
 - **An enclosure**, "Winged Speedster": brass bezels around each display,
   finned end caps, 3D-printed. Concept render.
-- Say plainly these are designs.
+- Say plainly where each stands: the board in manufacturing, the enclosure a
+  design.
 
 ## 8. Close (3:20–3:30)
 

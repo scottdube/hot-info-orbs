@@ -46,7 +46,7 @@ card made in the edit.
 | S26 | 6 | CAM | Blank screens; a finger presses a button and they wake | 5 s | The backlight stays on, so film in a lit room and don't call it dark. |
 | S27 | 6 | CAM | Boot screen with the Hands-On Tech hand | 4 s | |
 | S28 | 6 | PHONE | Uploading the boot picture from the phone | 6 s | Optional insert under S27's narration. |
-| S29 | 7 | STILL | KiCad 3D render of the XIAO board | 6 s | Render needed (see Assets). Label: "Design: not built yet". |
+| S29 | 7 | STILL | KiCad 3D render of the XIAO board | 6 s | Render needed (see Assets). Label to match the day: "In manufacturing" (expected). If boards have arrived, shoot a bare one instead. |
 | S30 | 7 | STILL | Winged Speedster enclosure concept | 6 s | `docs/assets/enclosure-concept-3-winged-speedster.png` on main. Label: "Concept". |
 | S31 | 8 | CARD | GitHub URL + feature-sheet URL | 4 s | |
 | S32 | 8 | CARD | Credits: Brett Turner — Info Orbs · HackerBoxes — #0129 Orbital · Yang — board design · the members who built the first kit | 5 s | |
