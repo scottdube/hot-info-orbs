@@ -221,12 +221,26 @@ continue without re-deriving anything. Newest at the bottom.
    the mask change didn't cause it. That one COLOUR_RGB in
    `lib/3d/_Displays/Round TFT 1.28 Inch GC9A01 240x240 v1.step` is now
    0.03 grey, renamed 'Glass (black, was Acrylic Clear)'.
-   **Routing waits for Scott's review of the STEP.** Then `route_xiao.py`.
    `tools/antenna_patch.py` is retired.
+15. Routed 2026-10-17 (Scott: "let's get the board routed"). Freerouting
+   left one connection every run (SCLK, or DC DS4->DS5): the display pin
+   rows sat 1.8 mm from the bottom edge, so nothing passed under them.
+   Rejected first: GND left to the B.Cu pour (6 GND pads islanded) and
+   reordering the DSN nets (12 orders, identical result). Scott offered a
+   couple of mm at the bottom; `physical_rework.py` step 15 drops the bottom
+   edge 2 mm (pour follows, holes stay) and it routes in one pass: DRC 0
+   errors / 0 warnings / 0 unconnected / 0 parity. `route_xiao.py` now grows
+   the hole keepouts 0.4 mm (else 2 copper_edge_clearance) and reruns on an
+   empty SES. The 0-byte SES is an exit race, NOT unrouted nets: the trap in
+   step 7 above was wrong (docs/TRAPS.md). STEP re-exported with
+   `--include-tracks --include-pads --include-zones`. BOM via
+   `tools/make_bom.py` -> `bom/`.
 
 ## Open
-- Scott reviews the 2026-10-16 physicals in the STEP, then re-route
-  (`route_xiao.py`) and refill the pour.
+- C1 has no capacitance in the schematic; pick one (BOM suggests 100 uF
+  16 V, EEU-FC1C101H, 12.2 mm tall on the back) and write it into Value.
+- Bottom holes are 7 mm in after the 2 mm extension; move them if the
+  enclosure wants 5 mm.
 - Measure a uxcell right-angle switch: tab pitch 6.5 vs 7.0 mm decides
   whether the stock PTS645 footprint is usable.
 - Order / build / flash a board; measure the RC reset and LED polarity.
