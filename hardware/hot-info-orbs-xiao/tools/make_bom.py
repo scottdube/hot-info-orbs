@@ -43,11 +43,11 @@ ROWS = [
      "Check the listing's pin order before buying; the footprint is pad 1 = VCC (+5V) .. pad 7 = RST. "
      "The module's own male header plugs into the female socket below. Lit area ~32.5 mm dia "
      "(docs/DISPLAY-EDGE-TEST.md)."],
-    ["LENS1-LENS5", 5, "Display lens: mineral watch crystal, double dome", "2.0 mm thick; DIAMETER NOT CHOSEN (26-45 mm offered)",
+    ["LENS1-LENS5", 5, "Display lens: mineral watch crystal, double dome", "35.5 mm dia, 2.0 mm thick",
      "enclosure part, no footprint", "generic",
      ALI + "3256806569387664.html", "",
-     "Diameter is set by the enclosure bezel, not chosen yet; must clear the ~32.5 mm lit area. "
-     "Pick the size option on the listing. No Amazon source found yet."],
+     "Choose the Diameter 35.5mm option on the listing (Scott, 2026-10-17); clears the ~32.5 mm "
+     "lit area. No Amazon source found yet."],
     ["J (displays)", 5, "Female socket 1x07, 2.54 mm, straight", "8.5 mm body, through hole",
      "PinSocket_1x07_P2.54mm_Vertical (in GC9A01_SOCKET)", "Sullins PPTC071LFBN-RC (reference)",
      AMZ + "B0GM7T6XWP", ALI + "3256812879331298.html",
