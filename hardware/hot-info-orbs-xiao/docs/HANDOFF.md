@@ -235,12 +235,17 @@ continue without re-deriving anything. Newest at the bottom.
    step 7 above was wrong (docs/TRAPS.md). STEP re-exported with
    `--include-tracks --include-pads --include-zones`. BOM via
    `tools/make_bom.py` -> `bom/`.
+16. (Scott, after the Fusion check) handsontech.org on the back silk under
+   the club name, and the bottom-row holes down 2 mm with the edge, so all
+   seven are 5 mm in. Re-routed clean: 0/0/0/0, 314 tracks+vias.
+17. (Scott: "the display id silkscreens are backward") DS1-DS5 were at 180
+   deg, riding the footprint's rotation. KiCad draws that upright; the STEP
+   export does not, so Fusion showed them flipped. Set to 0 deg
+   (docs/TRAPS.md).
 
 ## Open
 - C1 has no capacitance in the schematic; pick one (BOM suggests 100 uF
   16 V, EEU-FC1C101H, 12.2 mm tall on the back) and write it into Value.
-- Bottom holes are 7 mm in after the 2 mm extension; move them if the
-  enclosure wants 5 mm.
 - Measure a uxcell right-angle switch: tab pitch 6.5 vs 7.0 mm decides
   whether the stock PTS645 footprint is usable.
 - Order / build / flash a board; measure the RC reset and LED polarity.

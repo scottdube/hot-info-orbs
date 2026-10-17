@@ -255,6 +255,18 @@ offset's local y went to -x on the board while the pads' local y went to
 +x. Make one move, re-measure, and only then trust the direction.
 
 
+## KiCad draws 180-degree silk upright; the STEP export does not (2026-10-17)
+
+The XIAO board's display footprints sit at 180 degrees, and their DS1-DS5
+reference text rode along at 180. In KiCad's editor and its 3D viewer the
+labels read upright, so the board looked right. The STEP export
+(`kicad-cli pcb export step --include-silkscreen`) does not apply that
+correction: in Fusion every DS label read flipped, and Scott caught it, not
+a check. Fix: set the text to 0 degrees absolute
+(`Reference().SetTextAngleDegrees(0)` in `physical_rework.py`), which is
+upright in both places. **Review silk in the STEP, not in KiCad, whenever
+a footprint is rotated 180.**
+
 ## Freerouting's empty SES is an exit race, not unrouted nets (2026-10-17)
 
 Branch `xiao-esp32s3-plus`, `tools/route_xiao.py`. The script asserted that

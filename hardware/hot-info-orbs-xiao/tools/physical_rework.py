@@ -100,6 +100,20 @@ Scott asked for, and how each was read:
    under them, and Freerouting left one connection every run (SCLK, or DC
    DS4->DS5, by run). Rejected: leaving GND to the pour (6 GND pads islanded),
    reordering nets (12 orders, identical result - it sorts them itself).
+16. (Scott, 2026-10-17: "add the hot club website url to the silk near the
+   arrow and should we lower those holes for consistency?") handsontech.org
+   under the club name, the pair re-centred on the logo; the domain, not
+   handsontechorg.weebly.com, because it is the club's own name for the site
+   (page title HANDSONTECH.ORG) and 301s to weebly - if the host changes, the
+   silk stays right. Bottom-row holes (both corners and the mid one) 2 mm
+   lower with the edge, back to 5 mm in like the top row. Rejected: leaving
+   them at 7 mm to keep the new routing channel clear - the corner holes are
+   outside it and the reroute is the test for the mid one.
+17. (Scott, 2026-10-17: "I think the display id silkscreens are backward")
+   DS1-DS5 front silk set to 0 deg. The socket footprint is placed at 180
+   (pad 1 at the right seen from the front) and its reference rode along at
+   180; KiCad's editor draws that upright, but the STEP export does not, so
+   Fusion showed every label flipped. 0 deg absolute is upright in both.
 
 Footprint swaps keep the symbol path so parity still matches, and the
 schematic's Footprint fields are rewritten to the new names at the end.
@@ -181,6 +195,7 @@ Y0 = DISPLAY_TOP_Y
 
 # --- 10. holes 2 mm further in, plus two mid-board -----------------------------
 HOLE_IN = 2.0
+BOTTOM_EXTRA = 2.0     # 15./16.: bottom edge (text edit at the end) and bottom holes
 corner = [d for d in drawings
           if d.GetLayerName() == "Edge.Cuts" and d.GetShape() == pcbnew.SHAPE_T_CIRCLE]
 for d in corner:
@@ -208,6 +223,11 @@ h.SetWidth(corner[0].GetWidth())
 h.SetStart(pcbnew.VECTOR2I(MM((X0 + X1) / 2 + 19.5), MM(HOLE_Y_LOW)))
 h.SetEnd(pcbnew.VECTOR2I(MM((X0 + X1) / 2 + 19.5 + HOLE_R), MM(HOLE_Y_LOW)))
 b.Add(h)
+# 16. the bottom row follows the edge down, so every hole is 5 mm in again
+for d in corner + [h]:
+    if pcbnew.ToMM(d.GetCenter().y) > (Y0 + Y1) / 2:
+        d.Move(pcbnew.VECTOR2I(0, MM(BOTTOM_EXTRA)))
+HOLE_Y_LOW += BOTTOM_EXTRA
 
 # --- tracks out: reroute comes after the 3D check ---------------------------
 doomed += tracks
@@ -247,8 +267,9 @@ for ref in ("DS1", "DS2", "DS3", "DS4", "DS5"):
     x = old.GetPosition().x
     ds_pads[ref] = [pcbnew.ToMM(p.GetPosition().x) for p in old.Pads()]
     # footprint origin is 3.48 mm above the pad row once rotated 180
-    swap(old, HERE / "lib/_Displays.pretty", "GC9A01_SOCKET",
-         pcbnew.VECTOR2I(x, MM(PIN_ROW_Y - 3.48)), old.GetOrientationDegrees())
+    new = swap(old, HERE / "lib/_Displays.pretty", "GC9A01_SOCKET",
+               pcbnew.VECTOR2I(x, MM(PIN_ROW_Y - 3.48)), old.GetOrientationDegrees())
+    new.Reference().SetTextAngleDegrees(0)   # 17. upright in the STEP, not just the editor
 
 # --- 3. right-angle switches on the top edge, centre third --------------------
 SW = "SW_Tactile_SPST_Angled_PTS645Vx39-2LFS"
@@ -362,7 +383,13 @@ swap(fps["G***"], HERE / "lib/_Logos.pretty", "Hot_Logo_28mm",
 club = back_text(ids["club"], "The Villages\nHands-On Tech Club", 2.5)
 club.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_LEFT)
 w, h = size(club)
-place_box(club, LOGO_X - 10.4 - 4.0 - w, LOGO_Y - h / 2)
+# 16. the club's site under its name; the two re-centred on the logo
+url = back_text(new_text(), "handsontech.org", 2.0)
+uw, uh = size(url)
+GAP = 1.5
+top = LOGO_Y - (h + GAP + uh) / 2
+place_box(club, LOGO_X - 10.4 - 4.0 - w, top)
+place_box(url, LOGO_X - 10.4 - 4.0 - uw, top + h + GAP)   # same reading start as the name
 
 # title block at the low-x end, centred between the hole and DS1's gap
 BX = 84.5
@@ -435,8 +462,7 @@ for kind, colour in (("Silk Screen", "Black"), ("Solder Mask", "White")):
         assert t.count(tag) == 1, tag
         indent = t.split(tag)[0].rsplit("\n", 1)[1]
         t = t.replace(tag, f'{tag}\n{indent}(color "{colour}")')
-BOTTOM_EXTRA = 2.0
-# 15. bottom edge 2 mm lower (pin rows, parts and holes stay): text, not pcbnew,
+# 15. bottom edge 2 mm lower (pin rows and parts stay; holes moved in 16.): text, not pcbnew,
 # so PIN_ROW_Y/C1 (derived from Y1 above) cannot ride down with it
 rect = re.search(r'\(gr_rect\s+\(start [-0-9.]+ [-0-9.]+\)\s+\(end [-0-9.]+ ([-0-9.]+)\)'
                  r'(?:(?!\(gr_rect).)*?\(layer "Edge.Cuts"\)', t, re.S)
