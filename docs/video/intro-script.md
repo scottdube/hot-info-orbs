@@ -1,9 +1,9 @@
 # HOT Info Orbs — intro video script
 
 Follows [intro-outline.md](intro-outline.md). Every line works as voice-over;
-any line can be said on camera instead. About **490 words**, which is about
-3:15 at a relaxed 150 words a minute. Add the silent cold open and pauses on
-the page tour and it lands around 3:30.
+any line can be said on camera instead. About **525 words**, which is about
+3:30 at a relaxed 150 words a minute. Add the silent cold open and pauses on
+the page tour and it lands around 3:45.
 
 **[brackets]** = picture. Plain text = narration.
 
@@ -85,9 +85,15 @@ day's range. Stocks, funds or crypto.
 Left and right step through the pages. Leave it alone and it rotates on its
 own.
 
-**[Brief B-roll of a Home Assistant dashboard, no addresses visible.]**
+**[Right button → MQTT page: five live Home Assistant values, one per orb.]**
 
-If you run Home Assistant, it can show your own data too.
+And for the tinkerers, two pages you build yourself. This one shows live
+values from Home Assistant, or anything else that speaks MQTT.
+
+**[Right button → Web Data page: the sample, five colored orbs.]**
+
+This one draws a small JSON file from any web address. You set both up from
+your phone, with no new firmware.
 
 ## 5. How it's built (1:50–2:30)
 

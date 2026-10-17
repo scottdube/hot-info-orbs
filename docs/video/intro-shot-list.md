@@ -28,7 +28,8 @@ card made in the edit.
 | S12 | 4 | CAM | Close-up: the weather-icon orb, sunrise/sunset on top, moon below | 5 s | Tight; the moon drawing is 40 px. |
 | S13 | 4 | CAM | Stocks page, full frame | 5 s | **Weekday, market hours**, so prices move. |
 | S14 | 4 | CAM | Hand stepping right, right, left through the pages | 6 s | Over-the-shoulder or 3/4 angle. |
-| S15 | 4 | LAPTOP | Home Assistant dashboard | 4 s | Crop out the URL bar and any addresses. |
+| S15 | 4 | CAM | MQTT page, full frame: a live Home Assistant value on each orb | 5 s | Five topics fed beforehand (see Before the shoot). Generic labels (Outside, Humidity…), no room or place names. |
+| S15a | 4 | CAM | Web Data page, full frame: the sample | 4 s | The Pages sample, five colored orbs. |
 | S16 | 5 | CAM | Macro: ESP32-S3 SuperMini in its socket | 5 s | Orb off or on, whichever reads better. |
 | S17 | 5 | CAM | Slow pan across the five displays, then the three buttons | 6 s | |
 | S18 | 5 | CAM | Bare v1.1 carrier board | 4 s | One of the 10 from JLCPCB, if one is unbuilt. Otherwise skip to S19. |
@@ -49,14 +50,14 @@ card made in the edit.
 | S32 | 8 | CARD | Credits: Brett Turner — Info Orbs · HackerBoxes — #0129 Orbital · Yang — board design · the members who built the first kit | 5 s | |
 | S33 | 8 | CAM + CARD | End card: logo over the orbs running | 3 s | Reuse S01 footage. |
 
-The listed lengths add up to 3:06, and the narration runs about 3:30. Every
+The listed lengths add up to 3:11, and the narration runs about 3:30. Every
 shot is cut to the narration, so roll at least twice the listed length.
 
 ---
 
 ## Setups (order to film)
 
-**A. Desk wide (tripod, slider)**: S01, S03, S08, S10, S11, S13, plus extra
+**A. Desk wide (tripod, slider)**: S01, S03, S08, S10, S11, S13, S15, S15a, plus extra
 footage of the orbs running for the end card. Lock exposure on the screens.
 
 **B. Close-ups at the desk**: S09, S12, S14, S25, S26, S27. Same light as A.
@@ -66,7 +67,7 @@ footage of the orbs running for the end card. Lock exposure on the screens.
 **D. Phone beside the orb**: S23, S23a, S24, S28. Screen-record the phone while the
 camera films the orb; sync on the Save tap.
 
-**E. Laptop captures**: S15, S19, S21, S22. S22 is a staged USB flash of the
+**E. Laptop captures**: S19, S21, S22. S22 is a staged USB flash of the
 same build. Settings live in NVS and survive it, but the orb restarts, so do
 S22 before setups A and B or after them, not in between.
 
@@ -82,7 +83,8 @@ S22 before setups A and B or after them, not in between.
 2. On `/settings`: check every page is ticked (they cycle since the 2026-10-17 reflash); set the boot picture to the HOT hand.
    **Tick Web Data and MQTT**: they are off on purpose until the shoot.
    Web Data shows ✔ for the sample; MQTT reads ✔ Connected with a value fed
-   from Home Assistant (otherwise every orb shows a dash).
+   from Home Assistant (otherwise every orb shows a dash). For S15 fill all
+   five MQTT rows, so no orb sits on a dash.
 3. Check a Tempest fetch shows ✔ for station 1 before filming S11.
 4. Weekday, market hours for S13.
 5. Phone: Do Not Disturb on, full battery, screen recording on.

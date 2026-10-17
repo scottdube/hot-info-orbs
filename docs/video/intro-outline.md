@@ -68,8 +68,10 @@ then the buttons stepping between them.
    day's high and low. Stocks, funds or crypto.
 6. **Buttons:** left and right step through the pages. On the clock, the
    middle button changes the face; hold it to switch 12/24 hour. Pages also rotate on their own on a timer.
-7. One line for tinkerers: it can also show data from Home Assistant (MQTT) or
-   any web address.
+7. **For the tinkerers, two pages you build yourself**, each shown full-frame
+   on the orbs: **MQTT** (live values from Home Assistant or any MQTT source,
+   one per orb) and **Web Data** (a small JSON file from any web address).
+   Both set up from the phone, no new firmware.
 
 ## 5. How it's built (1:50–2:30)
 
@@ -140,7 +142,8 @@ Show the phone screen next to the orb reacting.
   the shoot, because they have no live data: tick them both before filming.
 - **Web Data:** confirm `/settings` shows ✔ for the sample
   (`https://scottdube.github.io/hot-info-orbs/custom-pages/sample.json`).
-- **MQTT:** the page shows a dash (-) on every orb until a value arrives.
+- **MQTT:** fill all five rows (topic, label, unit) with generic labels, no
+  room or place names. The page shows a dash (-) on every orb until a value arrives.
   Before filming, either publish a value from Home Assistant to the orb's
   topic, or set up a sensor that publishes on its own (an automation with
   `retain: true`, see `docs/CUSTOM-PAGES.md` on main). Check `/settings`
@@ -155,6 +158,10 @@ Show the phone screen next to the orb reacting.
 
 ## Decided (2026-10-17)
 
+- **Something for every skill level.** Members range from first-time builders
+  to experienced tinkerers, so the video carries both: the plain tour for
+  newcomers, and the custom pages (MQTT, Web Data) shown on the orbs for the
+  tinkerers, not just mentioned.
 - Introduces the whole project to newcomers; Brett Turner and HackerBoxes are
   credited as inspiration and explained, not assumed known.
 - Stocks is part of the page tour.
@@ -166,6 +173,5 @@ Show the phone screen next to the orb reacting.
 
 ## Open questions
 
-- **Custom pages (settled 2026-10-17, on main):** Web Data and MQTT are set
-  up from `/settings`, no rebuild, and tick on and off like any page. Open:
-  how much screen time they get. Today segment 4 gives them one line.
+None open. (Custom pages: settled 2026-10-17, on main and set up from
+`/settings`; each gets a full-frame shot in segment 4.)
