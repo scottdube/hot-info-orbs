@@ -1,0 +1,158 @@
+# Custom pages
+
+## What it is
+
+Two pages of your own that you set up on the orb's settings page
+(`http://<orb>/settings`, the **Custom pages** section):
+
+- **Web Data** draws a JSON file from any `http://` or `https://` address.
+- **MQTT** shows one live value per orb from an MQTT broker, for example
+  Home Assistant.
+
+A page appears in the rotation once its address (Web Data) or broker (MQTT) is
+set, and not before. Saving restarts the orb. You can untick a custom page
+under **Rotation → Show** like any other page. The tick box uses the page's
+name, so renaming a page shows it again if it was unticked.
+
+No rebuild is needed. The `WEB_DATA_*` and `MQTT_*` defines in `config.h` and
+`secrets.h` are only defaults for an orb that has never saved settings.
+
+## Web Data format
+
+The address must return JSON with two top-level keys:
+
+| Key | Meaning |
+|---|---|
+| `interval` | Refresh time in milliseconds. At least `10000` (10 s); anything lower is raised to 10 s. `60000` (60 s) if left out. |
+| `displays` | Up to five objects, the left orb first. Extra objects are ignored. |
+
+(A bare array of display objects, with no `interval`, is also accepted.)
+
+Each display object may have:
+
+| Key | Meaning |
+|---|---|
+| `label` | Small text near the top of the orb. |
+| `data` | The main text. It wraps at 10 characters per line, so keep each word short. Instead of text it can be an array of drawing elements (text, character, line, rectangle, triangle, circle, arc, image), as upstream's Web Data page. |
+| `color` | Color of `data`. |
+| `labelColor` | Color of `label`. |
+| `background` | Background color of the orb. |
+| `fullDraw` | `true` to clear and repaint the whole orb on every refresh. Default `false`. |
+
+Anything left out uses white text on black.
+
+**Colors** are names, not hex codes. Capital letters and spaces do not matter.
+The names the orb accepts:
+
+`black`, `navy`, `darkgreen`, `darkcyan`, `maroon`, `purple`, `olive`,
+`lightgray` (also `gray`, `lightgrey`, `grey`), `darkgray` (also `darkgrey`),
+`blue`, `green`, `cyan`, `red`, `magenta`, `yellow`, `white`, `orange`,
+`greenyellow`, `pink`, `brown`, `gold`, `silver`, `skyblue`, and violet, which
+the firmware spells `vilolet` (a typo kept as is: `violet` is not recognized).
+An unknown name draws black.
+
+**Limits.** The reply must be 16 KB or smaller, it is given 5 seconds to
+connect and 5 seconds per read, and https addresses are not certificate-checked.
+
+**When a fetch fails** the orbs keep the last good data on screen. Before any
+good data has arrived, the center orb shows the page name and the reason (for
+example `timeout`, `HTTP 404`, `too big`, `bad JSON`). The settings page shows
+the same reason next to a failure mark.
+
+### Sample
+
+This is `docs/custom-pages/sample.json`:
+
+```json
+{
+  "interval": 300000,
+  "displays": [
+    { "label": "HOT", "data": "Info Orbs", "color": "white", "background": "navy" },
+    { "label": "This is", "data": "a custom", "color": "yellow" },
+    { "label": "page from", "data": "a JSON", "color": "cyan" },
+    { "label": "file you", "data": "host", "color": "green" },
+    { "label": "Edit me", "data": "anywhere", "color": "orange" }
+  ]
+}
+```
+
+Its address, once this branch is merged to `main` and served from GitHub
+Pages: `https://scottdube.github.io/hot-info-orbs/custom-pages/sample.json`.
+
+Before that merge, use the file on the branch:
+`https://raw.githubusercontent.com/scottdube/hot-info-orbs/custom-pages/docs/custom-pages/sample.json`.
+
+## MQTT
+
+Fields on the settings page:
+
+- **Page name** (16 characters).
+- **Broker host name or IP address.** Blank means no MQTT page.
+- **Port** (default 1883).
+- **Username**, blank for no login.
+- **Password.** Write-only: the page never shows it back. Leave the field blank
+  to keep the stored one, or tick **Clear the stored password**.
+- **One value per orb: topic, label, unit.** Five rows, orbs left to right.
+  A blank topic leaves that orb blank. No `#` or `+` wildcards. The label is up
+  to 16 characters and the unit up to 8.
+- **Layout topic (advanced).** A JSON layout published on this topic replaces
+  the rows until the next restart (see `firmware/src/widgets/mqttwidget/README.md`).
+
+A value is the topic's payload as text. Each orb shows the label on top, the
+value large in the middle (stepping down in size until it fits) and the unit
+below. It shows an en dash (–) until the first value arrives.
+
+**It never blocks the orb.** The orb makes one connection attempt (3 second
+socket timeout), then at most one more every 30 seconds, while the buttons and
+the settings page keep working. The settings page says why it is not connected:
+`can't reach broker`, `login refused`, `broker refused the connection`,
+`connection lost`, or `not connected`.
+
+## Home Assistant recipe
+
+Either of these gives an orb a topic to read.
+
+**(a) MQTT Statestream** publishes every state change of the entities you list:
+
+```yaml
+mqtt_statestream:
+  base_topic: homeassistant/statestream
+  include:
+    entities:
+      - sensor.outdoor_temperature
+```
+
+The topic for an orb is
+`homeassistant/statestream/sensor/outdoor_temperature/state`.
+
+**(b) An automation** publishes whatever you choose to a topic you choose:
+
+```yaml
+- alias: "Orb: garage door"
+  triggers:
+    - trigger: state
+      entity_id: cover.garage_door
+  actions:
+    - action: mqtt.publish
+      data:
+        topic: orbs/garage
+        payload: "{{ states('cover.garage_door') }}"
+        retain: true
+```
+
+With `retain: true` the broker hands the last value to the orb as soon as it
+subscribes, so the page is not blank after a restart. Whether Statestream
+retains is recorded below once it has been tested on an orb.
+
+## Tested
+
+On-orb tests, run by hand. Each result records what was done and what was seen.
+
+| # | Test | Result | Date |
+|---|---|---|---|
+| 1 | The sample page from GitHub Pages over https draws on all five orbs | pending, Task 9 | pending |
+| 2 | An unreachable address shows the failure on the page and on `/settings`; buttons and the settings page still respond | pending, Task 9 | pending |
+| 3 | A large web page as the address is refused as `too big`, with no restart | pending, Task 9 | pending |
+| 4 | MQTT against a home broker shows live Home Assistant values | pending, Task 9 | pending |
+| 5 | A wrong broker host shows the failure; buttons and the settings page still respond | pending, Task 9 | pending |
+| 6 | Flash use of the final build, as a share of the OTA slot (stop line 92%) | pending, Task 9 | pending |
