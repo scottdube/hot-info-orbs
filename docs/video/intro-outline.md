@@ -19,7 +19,8 @@ every line so it works as voice-over. On-camera pieces are optional inserts.
 
 **Hardware on camera:** the **prototype**, the v1.1 carrier board (ESP32-S3
 SuperMini, five 1.28" round displays, three buttons). The next board and the
-enclosure appear only as renders, labeled as designs.
+enclosure appear as renders (or a bare next board, if one has arrived),
+labeled with where each stands.
 
 ---
 
