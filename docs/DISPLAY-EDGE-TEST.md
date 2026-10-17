@@ -21,8 +21,12 @@ light. The enclosure can cover it freely.
 **For the enclosure:** a round opening of ~32.5 mm shows every pixel and none of
 the dark band. Anything wider shows up to 1.5 mm of black glass per side, out to
 ~35.5 mm. The band looked even all round, so by eye the active area is centered
-in the glass. These are rough caliper readings (Scott's word); measure the
-module's own outline before setting a pocket size.
+in the glass. These are rough caliper readings (Scott's word).
+
+**The module pocket comes from the 3D model**, `hardware/hot-info-orbs/lib/3d/_Displays/Round TFT 1.28 Inch GC9A01 240x240 v1.step`
+(the same file is in the XIAO project). Scott checked its PCB diameter and height
+against the real module with calipers on 2026-10-17 and calls it accurate. The
+window is the ~32.5 mm lit circle above; the pocket is the model's outline.
 
 Not yet checked: whether all five displays match the one measured.
 
