@@ -6,6 +6,15 @@ board has been ordered or flashed. **The branch is XIAO-only** (Scott,
 2026-10-14): the SuperMini env, pin block and hardware folder are gone from
 it; the v1.1 SuperMini board and its firmware live on `main`.
 
+**This branch becomes `main` soon** (Scott, 2026-10-17), which reverses the
+earlier plan to keep it apart. Work done on `main` since the branch split has
+to come across when that happens:
+
+- the `displaytest` env and `firmware/src/displaytest/` (built with SuperMini
+  pins, so it needs the XIAO pin set)
+- `docs/ENCLOSURE.md` with its concept image, and `docs/DISPLAY-EDGE-TEST.md`
+- the 2026-10-17 entry in `docs/TRAPS.md`
+
 Date: 2026-10-14
 
 ---
