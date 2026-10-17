@@ -37,6 +37,7 @@ card made in the edit.
 | S21 | 5 | LAPTOP | GitHub repo page, scrolling the README | 4 s | `github.com/scottdube/hot-info-orbs` |
 | S22 | 6 | LAPTOP + CAM | The first USB flash: upload progress on the laptop, the orb beside it | 6 s | Staged: re-run the same USB flash on camera. |
 | S23 | 6 | PHONE + CAM | Split screen: settings page on the phone, the orb beside it; change the town or the tickers, Save, the orb restarts | 12 s | Scroll **past** the Tempest station fields. |
+| S23a | 6 | PHONE + CAM | Untick Stocks on the phone, Save; the orb rotates Clock → Weather with no Stocks | 10 s | Re-tick Stocks afterwards. |
 | S24 | 6 | PHONE + CAM | Update page on the phone; the orb shows "Updating nn%" | 8 s | Send the same build over Wi-Fi again just for this shot. |
 | S25 | 6 | CAM | The orbs dimming | 4 s | Set the dim hours to start a minute ahead, then roll. |
 | S26 | 6 | CAM | Blank screens; a finger presses a button and they wake | 5 s | The backlight stays on, so film in a lit room and don't call it dark. |
@@ -62,7 +63,7 @@ footage of the orbs running for the end card. Lock exposure on the screens.
 
 **C. Board on the table (overhead and macro)**: S04, S16, S17, S18, S20.
 
-**D. Phone beside the orb**: S23, S24, S28. Screen-record the phone while the
+**D. Phone beside the orb**: S23, S23a, S24, S28. Screen-record the phone while the
 camera films the orb; sync on the Save tap.
 
 **E. Laptop captures**: S15, S19, S21, S22. S22 is a staged USB flash of the

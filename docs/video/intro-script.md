@@ -124,8 +124,12 @@ You load the software once, over USB. After that, there's no cable.
 Tempest station fields.]**
 
 Settings live on a web page you open from your phone: your town, your
-tickers, time zone, colors, which pages to show. Save, and the orb restarts
-with them.
+tickers, time zone, colors. Save, and the orb restarts with them.
+
+**[Phone: untick Stocks, Save; the orb's rotation skips it.]**
+
+And you pick the pages. Not interested in the markets? Untick Stocks, and it
+drops out of the rotation. Tick just one page, and that page stays put.
 
 **[Phone on the update page; the orb showing "Updating nn%".]**
 

@@ -90,8 +90,11 @@ Show the phone screen next to the orb reacting.
 
 - **First setup:** load the firmware once over USB. After that, no cable.
 - **Settings from a phone browser:** town, tickers, time zone, colors,
-  rotation speed, which pages to show, upside-down mounting. Save, and the
-  orb restarts with the new settings.
+  rotation speed, upside-down mounting. Save, and the orb restarts with the
+  new settings.
+- **Pick your pages:** untick any page you don't want (Yang's example: he
+  doesn't care about stocks). Tick one and it stays on screen. Show it
+  unticking Stocks.
 - **Updates over Wi-Fi:** new firmware uploads from the browser. If an
   update fails, the orb goes back to the version that worked.
 - **Night mode:** dim hours and screens-off hours. Any button wakes it.
@@ -141,3 +144,12 @@ Show the phone screen next to the orb reacting.
 - Delivery: narration, voice-over or a mix, decided during the shoot.
 
 - No parts cost in the video for now.
+
+## Open questions
+
+- **Custom page:** today you can turn the built-in pages on and off, but
+  there's no "make your own page" option on the settings page. The firmware
+  does have a Web Data page (draws text and shapes from a JSON URL) and an
+  MQTT page, but both are switched on only at build time. Decide whether to
+  expose one of them on /settings, or keep it to on/off. The script says
+  nothing about custom pages until this is settled.
