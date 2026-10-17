@@ -1,6 +1,7 @@
 // Host tests for SettingsValidation.h:  pio test -e native
 #include "SettingsValidation.h"
 #include <cstdio>
+#include <cstring>
 #include <unity.h>
 #include <vector>
 
