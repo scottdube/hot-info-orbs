@@ -1,6 +1,4 @@
-#ifdef MQTT_WIDGET_HOST
-
-    #include "MQTTWidget.h"
+#include "MQTTWidget.h"
 
 // Initialize the static instance pointer
 MQTTWidget *MQTTWidget::instance = nullptr;
@@ -12,19 +10,36 @@ void MQTTWidget::staticCallback(char *topic, byte *payload, unsigned int length)
     }
 }
 
-// Constructor
-MQTTWidget::MQTTWidget(ScreenManager &manager, const String &host, uint16_t port)
-    : Widget(manager), mqttHost(host), mqttPort(port), mqttClient(wifiClient) {
+MqttStatus MQTTWidget::s_status;
 
-    // Assign the current instance to the static pointer
+MQTTWidget::MQTTWidget(ScreenManager &manager, const SettingsValues &s)
+    : Widget(manager), mqttHost(s.mqhost.c_str()), mqttPort((uint16_t)s.mqport), mqttClient(wifiClient),
+      m_name(s.mqname.c_str()), m_user(s.mquser.c_str()), m_pass(s.mqpass.c_str()), m_setupTopic(s.mqsetup.c_str()) {
     instance = this;
-
-    // Set MQTT broker server and port
-    mqttClient.setServer(mqttHost.c_str(), mqttPort);
+    mqttClient.setServer(mqttHost.c_str(), mqttPort); // mqttHost is a member, so the pointer stays valid
     mqttClient.setBufferSize(2048);
-
-    // Set the static callback proxy
+    mqttClient.setSocketTimeout(MQTT_SOCKET_TIMEOUT_S);
     mqttClient.setCallback(staticCallback);
+
+    // One orb per settings row with a topic; the others stay blank
+    for (int i = 0; i < 5; i++) {
+        if (s.mqt[i].empty()) {
+            continue;
+        }
+        OrbConfig c{}; // value-initialized: the layout-topic fields stay zero
+        c.orbid = i;
+        c.topicSrc = s.mqt[i].c_str();
+        c.orbdesc = s.mql[i].c_str();
+        c.orbvalunit = s.mqu[i].c_str();
+        c.orbBgColor = TFT_BLACK;
+        c.orbTextColor = TFT_WHITE;
+        c.autoLayout = true;
+        orbConfigs.push_back(c);
+    }
+}
+
+const MqttStatus &MQTTWidget::status() {
+    return s_status;
 }
 
 // Helper function to map color strings to uint16_t color values
@@ -83,39 +98,68 @@ uint16_t MQTTWidget::getColorFromString(const String &colorStr) {
     return TFT_BLACK; // Default color if unknown
 }
 
-// Setup method
-void MQTTWidget::setup() {
-    //    Serial.println("Inside setup method");
-    /*
-        // Initialize MQTT connection
-        reconnect();
+// Connecting is service()'s job: setup() runs on every page switch and must not block
+void MQTTWidget::setup() {}
 
-        // Subscribe to the setup topic
-        if (mqttClient.connected()) {
-            mqttClient.subscribe(MQTT_SETUP_TOPIC);
-            Serial.println("Subscribed to setup topic1: " + String(MQTT_SETUP_TOPIC));
-        }
-        // Additional setup (e.g., initializing display elements) can be added here
-    */
-}
-
-// Update method
 void MQTTWidget::update(bool force) {
-    //    Serial.println("Inside update method - " + String(mqttClient.connected()));
-
-    if (!mqttClient.connected()) {
-        reconnect();
-    }
-    mqttClient.loop(); // Process incoming MQTT messages
+    service();
 }
 
-// Draw method: Draws all orbs (can be used for initial drawing or full refresh)
+void MQTTWidget::service() {
+    if (mqttClient.connected()) {
+        mqttClient.loop();
+        return;
+    }
+    if (m_wasConnected) { // dropped since the last pass
+        m_wasConnected = false;
+        s_status.connected = false;
+        s_status.reason = mqttStateText(mqttClient.state());
+    }
+    uint32_t now = millis();
+    if (!mqttShouldAttempt(m_attempted, now, m_lastAttempt)) {
+        return;
+    }
+    m_attempted = true;
+    m_lastAttempt = now;
+    tryConnect();
+}
+
+// One attempt. Blocks for at most the TCP connect plus MQTT_SOCKET_TIMEOUT_S;
+// test 5 in docs/CUSTOM-PAGES.md records the measured time (attemptMs).
+void MQTTWidget::tryConnect() {
+    String clientId = "info-orbs-" + String((uint32_t)ESP.getEfuseMac(), HEX); // stable, so a reconnect replaces the old session
+    uint32_t start = millis();
+    bool ok = m_user.length() ? mqttClient.connect(clientId.c_str(), m_user.c_str(), m_pass.length() ? m_pass.c_str() : nullptr)
+                              : mqttClient.connect(clientId.c_str());
+    s_status.attempted = true;
+    s_status.at = millis();
+    s_status.attemptMs = s_status.at - start;
+    s_status.connected = ok;
+    s_status.reason = mqttStateText(mqttClient.state());
+    Serial.printf("MQTT %s: %s (%u ms)\n", mqttHost.c_str(), s_status.reason.c_str(), (unsigned)s_status.attemptMs);
+    if (!ok) {
+        return;
+    }
+    m_wasConnected = true;
+    if (m_setupTopic.length()) {
+        mqttClient.subscribe(m_setupTopic.c_str());
+    }
+    subscribeToOrbs(); // the rows, and after a reconnect whatever the layout topic set
+}
+
+// Draw method: only the current page's draw() is called, so this is the only place orbs are painted
 void MQTTWidget::draw(bool force) {
     m_manager.setFont(DEFAULT_FONT);
-
-    if (force) {
-        for (const auto &orb : orbConfigs) {
-            drawOrb(orb.orbid);
+    for (int i = 0; i < 5; i++) {
+        OrbConfig *orb = nullptr;
+        for (auto &o : orbConfigs) {
+            if (o.orbid == i) {
+                orb = &o;
+                break;
+            }
+        }
+        if (orb ? (force || orb->dirty) : force) {
+            drawOrb(i);
         }
     }
 }
@@ -126,121 +170,77 @@ void MQTTWidget::changeMode() {
     draw(true);
 }
 
-// Callback function for MQTT messages
-void MQTTWidget::callback(char *topic, byte *payload, unsigned int length) {
-    // Convert payload to String
-    String message;
-    for (unsigned int i = 0; i < length; i++) {
-        message += (char) payload[i];
+// The orb's value from a message: the whole payload, or orb.jsonField from it
+bool MQTTWidget::extractValue(const OrbConfig &orb, const String &message, String &out) {
+    if (orb.jsonField.length() == 0) {
+        out = message;
+        return true;
     }
-
-    String receivedTopic = String(topic);
-    Serial.print("Message arrived [");
-    Serial.print(receivedTopic);
-    Serial.print("]: ");
-    Serial.println(message);
-
-    if (receivedTopic.equals(MQTT_SETUP_TOPIC)) {
-        handleSetupMessage(message);
-    } else {
-        // Handle data messages for orbs
-        auto it = orbDataMap.find(receivedTopic);
-        if (it != orbDataMap.end()) {
-            // Identify the orb configuration associated with this topic
-            OrbConfig *orb = nullptr;
-            for (auto &o : orbConfigs) {
-                if (o.topicSrc.equals(receivedTopic)) {
-                    orb = &o;
-                    break;
-                }
+    JsonDocument dataDoc;
+    if (deserializeJson(dataDoc, message)) {
+        return false;
+    }
+    JsonVariant fieldValue = dataDoc.as<JsonVariant>();
+    char path[100];
+    strncpy(path, orb.jsonField.c_str(), sizeof(path) - 1);
+    path[sizeof(path) - 1] = '\0'; // upstream strcpy could overrun
+    char *token = strtok(path, ".");
+    while (token != nullptr && !fieldValue.isNull()) {
+        char *arrayBracket = strchr(token, '[');
+        if (arrayBracket) {
+            *arrayBracket = '\0';
+            fieldValue = fieldValue[token];
+            int index = atoi(arrayBracket + 1);
+            if (!fieldValue.is<JsonArray>()) {
+                return false;
             }
-
-            if (orb) {
-                if (orb->jsonField.length() > 0) {
-                    // The orb expects a specific JSON field
-                    JsonDocument dataDoc;
-                    DeserializationError dataError = deserializeJson(dataDoc, message);
-                    if (dataError) {
-                        Serial.print("Failed to parse data JSON: ");
-                        Serial.println(dataError.c_str());
-                        return;
-                    }
-
-                    // Extract the specified JSON field using dynamic path traversal
-                    JsonVariant fieldValue = dataDoc.as<JsonVariant>();
-                    char path[100];
-                    strcpy(path, orb->jsonField.c_str());
-                    char *token = strtok(path, ".");
-
-                    // Traverse the path tokens to get the desired field value
-                    while (token != nullptr && !fieldValue.isNull()) {
-                        // Check if the token contains an array index (e.g., "power_delivered[0]")
-                        char *arrayBracket = strchr(token, '[');
-                        if (arrayBracket) {
-                            *arrayBracket = '\0'; // Null terminate to get the key part
-                            fieldValue = fieldValue[token]; // Access the array key
-
-                            // Extract the index part
-                            int index = atoi(arrayBracket + 1); // Get the number after '['
-                            if (fieldValue.is<JsonArray>()) {
-                                fieldValue = fieldValue[index]; // Access the array element by index
-                            } else {
-                                Serial.println("Error: Expected an array for " + String(token));
-                                return;
-                            }
-                        } else {
-                            // Regular object traversal
-                            fieldValue = fieldValue[token];
-                        }
-                        token = strtok(nullptr, ".");
-                    }
-
-                    // If we successfully extracted the value
-                    if (!fieldValue.isNull()) {
-                        String extractedValue;
-                        if (fieldValue.is<float>()) {
-                            extractedValue = String(fieldValue.as<float>(), 3); // 3 decimal places
-                        } else if (fieldValue.is<int>()) {
-                            extractedValue = String(fieldValue.as<int>());
-                        } else if (fieldValue.is<const char *>()) {
-                            extractedValue = String(fieldValue.as<const char *>());
-                        } else {
-                            extractedValue = String(fieldValue.as<String>());
-                        }
-
-                        // Compare with the stored value to decide if we need to update
-                        if (orb->lastValuesMap[orb->jsonField] != extractedValue) {
-                            // Store the new value
-                            orb->lastValuesMap[orb->jsonField] = extractedValue;
-
-                            // Update the display only if the value has actually changed
-                            it->second = extractedValue;
-                            Serial.println("Parsed " + orb->jsonField + ": " + extractedValue);
-
-                            // Redraw the orb with updated data
-                            drawOrb(orb->orbid);
-                        } else {
-                            Serial.println("No change detected for field: " + orb->jsonField);
-                        }
-                    } else {
-                        Serial.println("JSON field '" + orb->jsonField + "' not found in payload.");
-                        return;
-                    }
-                } else {
-                    // The orb does not expect a JSON field; use the entire payload
-                    if (it->second != message) {
-                        it->second = message;
-                        Serial.println("Updated data for " + receivedTopic + ": " + message);
-                        drawOrb(orb->orbid);
-                    } else {
-                        Serial.println("No change detected for topic: " + receivedTopic);
-                    }
-                }
-            } else {
-                Serial.println("No orb configuration found for topic: " + receivedTopic);
-            }
+            fieldValue = fieldValue[index];
         } else {
-            Serial.println("Received message for unknown topic: " + receivedTopic);
+            fieldValue = fieldValue[token];
+        }
+        token = strtok(nullptr, ".");
+    }
+    if (fieldValue.isNull()) {
+        return false;
+    }
+    if (fieldValue.is<float>()) {
+        out = String(fieldValue.as<float>(), 3);
+    } else if (fieldValue.is<int>()) {
+        out = String(fieldValue.as<int>());
+    } else if (fieldValue.is<const char *>()) {
+        out = String(fieldValue.as<const char *>());
+    } else {
+        out = fieldValue.as<String>();
+    }
+    return true;
+}
+
+// Marks orbs dirty; never draws (loop() runs this while other pages may be on screen)
+void MQTTWidget::callback(char *topic, byte *payload, unsigned int length) {
+    String message;
+    message.reserve(length);
+    for (unsigned int i = 0; i < length; i++) {
+        message += (char)payload[i];
+    }
+    String receivedTopic(topic);
+    if (m_setupTopic.length() && receivedTopic.equals(m_setupTopic)) {
+        handleSetupMessage(message);
+        return;
+    }
+    // Every orb on this topic (two rows may show the same value)
+    for (auto &orb : orbConfigs) {
+        if (!orb.topicSrc.equals(receivedTopic)) {
+            continue;
+        }
+        String v;
+        if (!extractValue(orb, message, v)) {
+            Serial.println("MQTT: no value for orb " + String(orb.orbid) + " in " + receivedTopic);
+            continue;
+        }
+        s_status.lastValueAt = millis();
+        if (orb.value != v) {
+            orb.value = v;
+            orb.dirty = true; // drawn by draw(), only while this page is on screen
         }
     }
 }
@@ -261,7 +261,6 @@ void MQTTWidget::handleSetupMessage(const String &message) {
 
     // Clear existing configurations and data
     orbConfigs.clear();
-    orbDataMap.clear();
 
     // Parse "orbs" array
     JsonArray orbs = doc["orbs"].as<JsonArray>();
@@ -292,16 +291,16 @@ void MQTTWidget::handleSetupMessage(const String &message) {
 
         orbConfigs.push_back(config);
         Serial.println("Configured Orb: " + String(config.orbid) + " -> " + config.orbdesc);
-
-        // Initialize data map with empty strings
-        orbDataMap[config.topicSrc] = "";
     }
 
     // Subscribe to all configured topics
     subscribeToOrbs();
 
-    // Trigger a redraw to display the configured orbs
-    draw(true);
+    // Replaces the settings rows until restart, as upstream. Drawn when the
+    // page is next on screen, not from here.
+    for (auto &o : orbConfigs) {
+        o.dirty = true;
+    }
 }
 
 // Subscribe to all orb topics
@@ -318,58 +317,8 @@ void MQTTWidget::subscribeToOrbs() {
     }
 }
 
-// Handle MQTT reconnection
-void MQTTWidget::reconnect() {
-    //    Serial.println("Inside reconnect method");
-
-    // Loop until reconnected
-    while (!mqttClient.connected()) {
-        Serial.println("Attempting MQTT connection...");
-
-        // Generate a random client ID
-        String clientId = "MQTTWidgetClient-";
-        clientId += String(random(0xffff), HEX);
-
-        bool connected;
-
-        // Check if username and password are provided
-        if (strlen(MQTT_WIDGET_USER) > 0 && strlen(MQTT_WIDGET_PASS) > 0) {
-            // Attempt to connect with username and password
-            connected = mqttClient.connect(clientId.c_str(), MQTT_WIDGET_USER, MQTT_WIDGET_PASS);
-            Serial.println("Attempting MQTT connection with authentication...");
-        } else {
-            // Attempt to connect without authentication
-            connected = mqttClient.connect(clientId.c_str());
-            Serial.println("Attempting MQTT connection without authentication...");
-        }
-
-        // Check the result of the connection attempt
-        if (connected) {
-            Serial.println("MQTT connected");
-            // Once connected, subscribe to the setup topic
-            if (mqttClient.subscribe(MQTT_SETUP_TOPIC)) {
-                Serial.println("Subscribed to setup topic2: " + String(MQTT_SETUP_TOPIC));
-            } else {
-                Serial.println("Failed to subscribe to setup topic: " + String(MQTT_SETUP_TOPIC));
-            }
-        } else {
-            Serial.print("failed, rc=");
-            Serial.print(mqttClient.state());
-            Serial.println(" try again in 5 seconds");
-            // Wait 5 seconds before retrying again
-            delay(5000);
-        }
-    }
-}
-
-// New method to draw a single orb based on orbid
 void MQTTWidget::drawOrb(int orbid) {
-    //    Serial.println("Inside drawOrb method");
-
-    // Select the screen corresponding to the orbid
     m_manager.selectScreen(orbid);
-
-    // Find the orb configuration
     OrbConfig *orb = nullptr;
     for (auto &o : orbConfigs) {
         if (o.orbid == orbid) {
@@ -377,48 +326,36 @@ void MQTTWidget::drawOrb(int orbid) {
             break;
         }
     }
-
     if (orb == nullptr) {
-        Serial.println("Orb not found for orbid: " + String(orbid));
+        m_manager.fillScreen(TFT_BLACK); // a row with no topic stays blank
         return;
     }
-
+    orb->dirty = false;
     m_manager.fillScreen(orb->orbBgColor);
-
-    // Define the position and size of the orb (adjust as needed)
-    int x = 0; // Starting X position
-    int y = 0; // Starting Y position
-    int width = 240; // Width of the orb
-    int height = 240; // Height of the orb
-    int center = 120;
-    int screenWidth = SCREEN_SIZE;
-    // int screenHeight = display.height();
-
-    // Clear the display area with the background color
-    // display.fillRect(x, y, screenWidth, screenHeight, orb->orbBgColor);
-
-    // Set text properties
     m_manager.setFontColor(orb->orbTextColor, orb->orbBgColor);
-    // m_manager.setTextSize(orb->orbsize);
-
-    // Display orb description/title
-    // display.drawString(orb->orbdesc, center, orb->xpostxt, orb->ypostxt);
+    if (orb->autoLayout) {
+        // Label on top, the value as large as fits in the middle, unit below.
+        // An en dash until the first value arrives.
+        if (orb->orbdesc.length()) {
+            m_manager.drawString(orb->orbdesc, ScreenCenterX, 62, 22, Align::MiddleCenter);
+        }
+        String v = orb->value.length() ? orb->value : String("\xE2\x80\x93");
+        m_manager.drawFittedString(v, ScreenCenterX, ScreenCenterY, 190, 80, Align::MiddleCenter);
+        if (orb->orbvalunit.length()) {
+            m_manager.drawString(orb->orbvalunit, ScreenCenterX, 180, 22, Align::MiddleCenter);
+        }
+        return;
+    }
+    // Layout-topic orbs: upstream positions and size
     m_manager.drawString(orb->orbdesc, orb->xpostxt, orb->ypostxt, orb->orbsize, Align::MiddleCenter);
-    // m_manager.drawString(orb->orbdesc, center, orb->ypostxt, orb->orbsize, Align::MiddleCenter);
-
-    // Display orb data
-    String data = orbDataMap[orb->topicSrc];
-    // display.drawString(data + orb->orbvalunit, center, orb->xposval, orb->yposval);
-    m_manager.drawString(data + orb->orbvalunit, orb->xposval, orb->yposval, orb->orbsize, Align::MiddleCenter);
+    m_manager.drawString(orb->value + orb->orbvalunit, orb->xposval, orb->yposval, orb->orbsize, Align::MiddleCenter);
 }
 
 String MQTTWidget::getName() {
-    return "MQTTWidget";
+    return m_name;
 }
 
 void MQTTWidget::buttonPressed(uint8_t buttonId, ButtonState state) {
     if (buttonId == BUTTON_OK && state == BTN_SHORT)
         changeMode();
 }
-
-#endif
