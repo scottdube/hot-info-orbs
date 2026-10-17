@@ -86,11 +86,7 @@ This is `docs/custom-pages/sample.json`:
 }
 ```
 
-Its address, once this branch is merged to `main` and served from GitHub
-Pages: `https://scottdube.github.io/hot-info-orbs/custom-pages/sample.json`.
-
-Before that merge, use the file on the branch:
-`https://raw.githubusercontent.com/scottdube/hot-info-orbs/custom-pages/docs/custom-pages/sample.json`.
+Its address: `https://scottdube.github.io/hot-info-orbs/custom-pages/sample.json`.
 
 ## MQTT
 
