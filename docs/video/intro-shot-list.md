@@ -35,7 +35,7 @@ card made in the edit.
 | S19 | 5 | LAPTOP | KiCad: the v1.1 board, 2D then 3D view | 5 s | `hardware/hot-info-orbs/` on main. |
 | S20 | 5 | CAM | USB cable plugs in; the orbs light on the boot screen | 6 s | Boot picture set to the HOT hand first (S28). |
 | S21 | 5 | LAPTOP | GitHub repo page, scrolling the README | 4 s | `github.com/scottdube/hot-info-orbs` |
-| S22 | 6 | LAPTOP + CAM | The first USB flash: upload progress on the laptop, the orb beside it | 6 s | **Film the real reflash** (see Before the shoot). |
+| S22 | 6 | LAPTOP + CAM | The first USB flash: upload progress on the laptop, the orb beside it | 6 s | Staged: re-run the same USB flash on camera. |
 | S23 | 6 | PHONE + CAM | Split screen: settings page on the phone, the orb beside it; change the town or the tickers, Save, the orb restarts | 12 s | Scroll **past** the Tempest station fields. |
 | S24 | 6 | PHONE + CAM | Update page on the phone; the orb shows "Updating nn%" | 8 s | Send the same build over Wi-Fi again just for this shot. |
 | S25 | 6 | CAM | The orbs dimming | 4 s | Set the dim hours to start a minute ahead, then roll. |
@@ -65,8 +65,9 @@ footage of the orbs running for the end card. Lock exposure on the screens.
 **D. Phone beside the orb**: S23, S24, S28. Screen-record the phone while the
 camera films the orb; sync on the Save tap.
 
-**E. Laptop captures**: S15, S19, S21, S22. S22 happens during the USB
-reflash, so do setup E's S22 **first, before anything else**.
+**E. Laptop captures**: S15, S19, S21, S22. S22 is a staged USB flash of the
+same build. Settings live in NVS and survive it, but the orb restarts, so do
+S22 before setups A and B or after them, not in between.
 
 **F. Gather and make**: S02, S05, S06, S29, S30, S31, S32, S33.
 
@@ -74,9 +75,9 @@ reflash, so do setup E's S22 **first, before anything else**.
 
 ## Before the shoot
 
-1. **USB reflash the orb**, filming it as S22:
+1. The orb firmware went back on over USB on 2026-10-17, off camera. For S22,
+   re-run the same flash on camera:
    `cd ~/code/hot-info-orbs-main && pio run -e esp32-s3-devkitc-1 -t upload`.
-   OTA can't do this one, because the display-test firmware has no Wi-Fi.
 2. On `/settings`: re-tick every page; set the boot picture to the HOT hand.
 3. Check a Tempest fetch shows ✔ for station 1 before filming S11.
 4. Weekday, market hours for S13.
