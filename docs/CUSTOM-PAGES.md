@@ -17,8 +17,8 @@ name, so renaming a page shows it again if it was unticked.
 No rebuild is needed. `WEB_DATA_WIDGET_URL` (in `secrets.h`) and the `MQTT_*`
 defines (in `config.h` and `secrets.h`) are only defaults for an orb that has
 never saved settings. `WEB_DATA_STOCK_WIDGET_URL` is not: it still adds a
-separate, always-on "WebData" page at build time, which the settings page
-cannot change (untick it under Rotation → Show to hide it).
+separate "WebData" page at build time, which is not set up on the settings
+page (untick it under Rotation → Show to hide it).
 
 ## Web Data format
 
@@ -58,8 +58,16 @@ connect and 5 seconds per read, and https addresses are not certificate-checked.
 
 **When a fetch fails** the orbs keep the last good data on screen. Before any
 good data has arrived, the center orb shows the page name and the reason (for
-example `timeout`, `HTTP 404`, `too big`, `bad JSON`). The settings page shows
-the same reason next to a failure mark.
+example `timeout`, `can't connect`, `HTTP 404`, `too big`, `bad JSON`).
+`timeout` means nothing answered within 5 seconds (a host that is off, or a
+reply that stalled); `can't connect` means the host refused at once or the
+name did not resolve. The settings page shows the same reason next to a
+failure mark. After a failure the orb waits at least a minute before trying
+again, so a silent host does not slow the buttons.
+
+**Keys in the address.** Only the part after `?` is hidden on the settings
+page, so put API keys there. A key in the path, or `user:pass@` in front of
+the host, shows in full.
 
 ### Sample
 
@@ -153,7 +161,7 @@ On-orb tests, run by hand. Each result records what was done and what was seen.
 | # | Test | Result | Date |
 |---|---|---|---|
 | 1 | The sample page from GitHub Pages over https draws on all five orbs | ✔ on `/settings`: fetched over https from the raw GitHub copy, ✔ in 0.5–0.7 s. Drawing on the orbs: not yet checked by eye | 2026-10-17 |
-| 2 | An unreachable address shows the failure on the page and on `/settings`; buttons and the settings page still respond | ✔ `http://10.255.255.1/x.json`: ✖ after 5.0 s on `/settings`. The reason reads `connection refused` although the try ran the full 5 s, so the wording is wrong for a host that never answers. `/settings` answered in 0.08–0.39 s throughout a 75 s sample. Center orb and buttons: not yet checked by eye | 2026-10-17 |
+| 2 | An unreachable address shows the failure on the page and on `/settings`; buttons and the settings page still respond | ✔ `http://10.255.255.1/x.json`: ✖ after 5.0 s on `/settings`. The reason read `connection refused` although the try ran the full 5 s; the wording was fixed after this run (a silent host now reads `timeout`, a quick refusal `can't connect`) and has not been re-run on the orb. `/settings` answered in 0.08–0.39 s throughout a 75 s sample. Center orb and buttons: not yet checked by eye | 2026-10-17 |
 | 3 | A large web page as the address is refused as `too big`, with no restart | ✔ A 344 KB Wikipedia page: ✖ `too big` after 1.0 s, refetched while on screen, uptime kept counting (no restart) | 2026-10-17 |
 | 4 | MQTT against a home broker shows live Home Assistant values | not yet tested (needs an orb user on the broker) |  |
 | 5 | A wrong broker host shows the failure; buttons and the settings page still respond | ✔ Broker `10.255.255.1`: ✖ `can't reach broker`, each try took 3.0 s. Sampling `/settings` every second for 60 s: replies in 0.08–0.67 s except one 2.1–2.5 s stall at each retry, about 30 s apart | 2026-10-17 |
