@@ -4056,7 +4056,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "C_Polarized_Small_US"
+		(property "Value" "100uF 16V"
 			(at 205.74 96.0881 0)
 			(show_name no)
 			(do_not_autoplace no)

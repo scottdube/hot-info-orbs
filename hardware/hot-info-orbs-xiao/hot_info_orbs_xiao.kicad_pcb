@@ -1456,7 +1456,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "C_Polarized_Small_US"
+		(property "Value" "100uF 16V"
 			(at 5.22 4.39 90)
 			(layer "B.Fab")
 			(uuid "813fc20a-2456-4582-9f28-ea29a14ee432")
