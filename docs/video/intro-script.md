@@ -116,14 +116,14 @@ it.
 
 It runs off a USB cable and draws under two watts.
 
-**[Thermal image: the ESP32 module, 42.7 °C on its hottest point.]**
+**[Thermal image, color: the ESP32 module, 43.6 °C on its hottest point.]**
 
 The displays run on five volts, each with its own regulator. On the original
 kit they all ran off the little computer's regulator, and builders found it
 too hot to touch. On this board it runs at about forty-three degrees Celsius,
 measured.
 
-**[Thermal image: the back of a display, 36.3 °C.]**
+**[Thermal image, color: the backs of three displays, 37.9 °C hottest.]**
 
 The displays carry their own share now, and stay warm, not hot.
 
@@ -202,8 +202,9 @@ members who built the first kit.
 - **"Under two watts"** is the measured 1.71 W at 5 V (features.html).
 - **"Too hot to touch"** is a HackerBox 0129 builder's report: 82 °C (180 °F)
   on the module running only a graphics demo (`docs/VARIANT-ESP32-S3-SUPERMINI.md`).
-- **"About forty-three degrees"** is the thermal-camera reading of 42.7 °C at
-  the module's hottest point, room 75 °F, after hours of running
+- **"About forty-three degrees"** is the thermal-camera readings of 41.8–43.6 °C
+  at the module's hottest point, room 75 °F, after hours of running and again
+  ~20 minutes after a power cycle
   (`docs/POWER-MEASURED.md`, 2026-10-17). Surface reading, not junction.
 - **"Inch and a quarter"** = the 1.28" GC9A01 panel.
 - Weather is three days ahead: `threeDayWeather(4)` in WeatherWidget.cpp.

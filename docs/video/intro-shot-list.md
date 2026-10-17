@@ -35,8 +35,8 @@ card made in the edit.
 | S18 | 5 | CAM | Bare v1.1 carrier board | 4 s | One of the 10 from JLCPCB, if one is unbuilt. Otherwise skip to S19. |
 | S19 | 5 | LAPTOP | KiCad: the v1.1 board, 2D then 3D view | 5 s | `hardware/hot-info-orbs/` on main. |
 | S20 | 5 | CAM | USB cable plugs in; the orbs light on the boot screen | 6 s | Boot picture set to the HOT hand first (S28). |
-| S20a | 5 | STILL | Thermal image: the ESP32 module, 42.7 °C hottest point | 4 s | `docs/assets/thermal/module-2026-10-17.jpg`. Black is hot in this palette: add a caption ("black = hottest") or reshoot in a color palette. |
-| S20b | 5 | STILL | Thermal image: the back of a display, 36.3 °C | 3 s | `docs/assets/thermal/display-back-2026-10-17.jpg`. Same palette note. |
+| S20a | 5 | STILL | Thermal image, color: the ESP32 module, 43.6 °C hottest point | 4 s | `docs/assets/thermal/module-2026-10-17.jpg`. Alternative: `board-2026-10-17.jpg`, module and displays in one frame. |
+| S20b | 5 | STILL | Thermal image, color: the backs of three displays, 37.9 °C hottest | 3 s | `docs/assets/thermal/display-back-2026-10-17.jpg`. |
 | S21 | 5 | LAPTOP | GitHub repo page, scrolling the README | 4 s | `github.com/scottdube/hot-info-orbs` |
 | S22 | 6 | LAPTOP + CAM | The first USB flash: upload progress on the laptop, the orb beside it | 6 s | Staged: re-run the same USB flash on camera. |
 | S23 | 6 | PHONE + CAM | Split screen: settings page on the phone, the orb beside it; change the town or the tickers, Save, the orb restarts | 12 s | Scroll **past** the Tempest station fields. |
@@ -98,9 +98,8 @@ S22 before setups A and B or after them, not in between.
 - **Render to make:** XIAO board 3D view (S29). Only the STEP exists
   (`hardware/hot-info-orbs-xiao/3d-assembly/`); render from KiCad.
 - On hand: thermal images for S20a/S20b, taken 2026-10-17 at 75 °F room
-  (`docs/assets/thermal/`, main and this branch). Grayscale, black = hot. A
-  color-palette reshoot reads faster for viewers; take it after the orb has
-  run 20+ minutes.
+  (`docs/assets/thermal/`, main and this branch), in color: white and red
+  hottest, blue coolest. Three: module, display backs, both in one frame.
 - On hand: HOT logos (`docs/assets/hot-smcomp-logo.png`,
   `images/hot-logo.jpg`); enclosure concept (main,
   `docs/assets/enclosure-concept-3-winged-speedster.png`).
