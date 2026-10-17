@@ -7,6 +7,14 @@ Shot on the **prototype**: the v1.1 carrier board (ESP32-S3 SuperMini, five
 GC9A01 displays, three buttons). The XIAO board and the enclosure appear only
 as renders, labeled as designed and not yet built.
 
+**Audience: club members.** It goes on the club site (password-protected,
+lightly). Viewers know the club, so explain HackerBox in a line, not a
+segment. Because the protection is light, treat the video as public anyway:
+no station IDs, tokens or home-network detail on screen.
+
+**Delivery: narration, voice-over or a mix, decided during the shoot.** Write
+every line so it works as voice-over. On-camera pieces are optional inserts.
+
 ---
 
 ## 1. Cold open — what it is (0:00–0:15)
@@ -22,8 +30,10 @@ as renders, labeled as designed and not yet built.
 - Brett Turner's open-source **Info Orbs** (ESP32, five displays). Credit him
   by name.
 - **HackerBox 0129 "Orbital"** (2026) shipped a kit version on the ESP32-S3.
-- Club members built the HackerBox kit → the club looked at it and decided to
-  redesign it as a club build: easy to get right, cheap to get into.
+- Club members (Donald and others) built the HackerBox kit. Don't name them
+  in the video; say "a couple of club members". → The club looked at it and
+  decided to redesign it as a club build: easy to get right, cheap to get
+  into.
 - Beat to land: "a derivative, not a copy" — what follows is what the club
   changed.
 
@@ -70,7 +80,7 @@ cut from the bottom if long.
 - Where to get it: GitHub `scottdube/hot-info-orbs` and the feature sheet
   (scottdube.github.io/hot-info-orbs/features.html).
 - Credits: Brett Turner (original), HackerBoxes (0129 Orbital), Yang (board),
-  the club members who built the kit.
+  and "the club members who built the kit", left unnamed.
 - End card: Hands-On Tech logo, orbs running.
 
 ---
@@ -83,11 +93,16 @@ cut from the bottom if long.
 - Re-tick all pages on `/settings` (the orb was left Clock-only for testing).
 - Set the boot picture to the HOT hand for the title beat.
 - Phone screen recording for segment 4; the orb on camera at the same time.
+- In the settings recording, scroll past the Tempest station fields. The
+  station IDs are private.
+
+## Decided (2026-10-17)
+
+- HackerBox builders: Donald and others, not named in the video.
+- Audience: club members, on the lightly password-protected club site.
+- Delivery: narration, voice-over or a mix, decided during the shoot.
 
 ## Open questions
 
-- Which club members built the HackerBox kit, and should they be named?
-- Audience: club members (assume they know the kit) or the public (explain
-  HackerBox in a line)?
-- Narrator on camera, or voice-over only?
-- Show the Stocks page? It needs a ticker that's moving on shoot day.
+- Stocks page: show it only in the cold-open rotation, or give it its own
+  beat in segment 4? Recommended: cold open only.
