@@ -8,7 +8,7 @@ Schematic parts (refs, values, footprints) are from
 `kicad-cli sch export bom`; everything else (sockets, headers, lenses, screws,
 the board) is not in the schematic and is listed by hand. Every line has
 Link 1 filled. Buy links go to Amazon (Link 1) and AliExpress
-(Link 2), Scott's preference 2026-10-17; the XIAO keeps Seeed as Link 1,
+(Link 2), Scott's preference 2026-10-17; the XIAO keeps Seeed as Link 1 (plain S3 primary, Plus in Notes),
 the board keeps the fab houses. "Mfr part no." still names the reference
 part the footprint was drawn for, so a marketplace part can be checked
 against it; where fit is not shown, Notes says so.
@@ -29,13 +29,15 @@ COLS = ["Item", "Refs", "Qty / board", "Part", "Spec", "Footprint", "Mfr part no
 AMZ = "https://www.amazon.com/dp/"
 ALI = "https://www.aliexpress.us/item/"
 ROWS = [
-    ["U2", 1, "Seeed Studio XIAO ESP32-S3 Plus", "ESP32-S3R8, 16 MB flash, 8 MB PSRAM; SKU 102010671",
-     "XIAO-ESP32-S3-SOCKET", "102010671",
-     "https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32S3-Plus-p-6361.html",
-     AMZ + "B0H6XJGN3Z",
-     "Plus boards ship WITHOUT pin headers: see the header and socket lines below. "
-     "Mounted on the back, on sockets. The plain XIAO ESP32-S3 (" + AMZ + "B0BYSB66S5) "
-     "is interchangeable and runs the same 8 MB binary. AliExpress: " + ALI + "3256808599305867.html"],
+    ["U2", 1, "Seeed Studio XIAO ESP32-S3", "ESP32-S3R8, 8 MB flash, 8 MB PSRAM; SKU 113991114",
+     "XIAO-ESP32-S3-SOCKET", "113991114",
+     "https://www.seeedstudio.com/XIAO-ESP32S3-p-5627.html",
+     AMZ + "B0BYSB66S5",
+     "Primary. Seeed sells it with pin headers Un-Soldered or Pre-Soldered; Pre-Soldered makes the "
+     "male header line below unnecessary. ALTERNATE if more memory is wanted: XIAO ESP32-S3 Plus "
+     "(16 MB flash, SKU 102010671) " + "https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32S3-Plus-p-6361.html"
+     " / " + AMZ + "B0H6XJGN3Z / " + ALI + "3256808599305867.html - ships WITHOUT headers. "
+     "Same footprint and the same 8 MB firmware binary on both. Mounted on the back, on sockets."],
     ["DS1-DS5", 5, "1.28in round TFT, GC9A01, 240x240, 7-pin SPI",
      "7-pin 2.54 mm header, order VCC GND SCL SDA DC CS RST",
      "_Displays:GC9A01_SOCKET", "generic",
@@ -60,7 +62,7 @@ ROWS = [
     ["P (XIAO)", 2, "Male header 1x07, 2.54 mm", "cut from a 1x40 breakaway strip (1 strip = 5 sets)",
      "in XIAO-ESP32-S3-SOCKET", "Sullins PRPC040SAAN-RC (reference)",
      AMZ + "B0FRZW75VS", ALI + "3256806779943089.html",
-     "Soldered to the XIAO, plugs into the XIAO sockets."],
+     "Soldered to the XIAO, plugs into the XIAO sockets. Skip if the XIAO was bought Pre-Soldered."],
     ["SW1-SW3", 3, "Tactile switch, right angle, 6x6 mm", "SPST-NO, through hole, side actuated",
      "SW_Tactile_SPST_Angled_PTS645Vx39-2LFS", "C&K PTS645VL39-2 LFS (footprint part)",
      AMZ + "B008DS13P2", ALI + "3256810140983087.html",
