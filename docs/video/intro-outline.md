@@ -139,7 +139,4 @@ Show the phone screen next to the orb reacting.
 - Audience: club members, on the lightly password-protected club site.
 - Delivery: narration, voice-over or a mix, decided during the shoot.
 
-## Open questions
-
-- Show a parts cost? A price for the prototype build has not been worked out.
-  The XIAO BOM's per-board figure is for the next board, not this one.
+- No parts cost in the video for now.
