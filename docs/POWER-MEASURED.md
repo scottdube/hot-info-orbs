@@ -32,7 +32,7 @@ builder measured 82 °C **with the radio off, running only a graphics demo**.
 
 As built, each display regulates its own 5 V and the module's LDO carries only
 the ESP32: roughly 80 mA average, ~136 mW, ~52 °C estimated. The part that was
-cooking is no longer in the path. Measured on 2026-10-17: **42.7 °C** at the
+cooking is no longer in the path. Measured on 2026-10-17: **about 43 °C** at the
 module's hottest point (next section).
 
 ## Boot inrush: 1.15 A, measured
@@ -59,22 +59,27 @@ supply sized for the 342 mA average will sag at power-on. The failure that
 produces is an orb which starts on one charger and not another, with nothing
 wrong with the orb — and it will be blamed on the firmware.
 
-## Module temperature: 42.7 °C, measured 2026-10-17
+## Module temperature: about 43 °C, measured 2026-10-17
 
 **Instrument:** a thermal camera, spot readings, default settings. **Board:** the
-v1.1 carrier, ESP32-S3 SuperMini, five displays, running for hours with Wi-Fi
-on and Clock, Stocks and two weather pages cycling. **Room:** 75 °F (23.9 °C).
+v1.1 carrier, ESP32-S3 SuperMini, five displays, Wi-Fi on and Clock, Stocks
+and two weather pages cycling. **Room:** 75 °F (23.9 °C). Two sets of shots:
+grayscale after hours of running, then color about 15–20 minutes after a power
+cycle. The two sets agree within 1 °C, so the module reaches its working
+temperature within about 20 minutes.
 
 | Spot | Reading |
 |---|---|
-| Hottest point on the ESP32-S3 module (four shots) | **41.8–42.7 °C** |
+| Hottest point on the ESP32-S3 module, grayscale (four shots, after hours) | **41.8–42.7 °C** |
+| Hottest point on the ESP32-S3 module, color (two shots, ~20 min) | **42.8–43.6 °C** |
 | Background in the same frames | 23.5–25.1 °C |
-| Back of one display, hottest spot | **36.3 °C** (background 24.6 °C) |
+| Back of a display, hottest spot | **36.3–37.9 °C** (background 24.6–24.7 °C) |
 
-![Module, 42.7 °C hottest point](assets/thermal/module-2026-10-17.jpg)
-![Back of a display, 36.3 °C](assets/thermal/display-back-2026-10-17.jpg)
+![Module, 43.6 °C hottest point](assets/thermal/module-2026-10-17.jpg)
+![Backs of three displays, 37.9 °C hottest](assets/thermal/display-back-2026-10-17.jpg)
+![Module and displays together, 42.8 °C hottest](assets/thermal/board-2026-10-17.jpg)
 
-In these images black is hottest. The module runs about **19 °C over the room**.
+In these images white and red are hottest, blue coolest. The module runs about **19 °C over the room**.
 The HackerBox 0129 builder's report was **82 °C on the same module with the
 radio off**. The 52 °C computed above was an estimate; the measurement is
 about 10 °C lower.
@@ -88,8 +93,9 @@ What this does and does not show:
   from the images.
 - Emissivity was left at the camera's default, so the absolute numbers carry
   that error. The comparison between spots in the same frame does not.
-- The display backs are warm (36 °C) because each one now carries its own
-  regulator's share of the load.
+- The display backs reach 36–38 °C, each with a small hot spot. That fits
+  each display carrying its own regulator's share of the load; which part on
+  the display makes the spot was not identified.
 
 ## For pricing and supply choice
 
