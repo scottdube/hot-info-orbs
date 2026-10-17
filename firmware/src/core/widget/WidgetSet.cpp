@@ -47,6 +47,15 @@ bool WidgetSet::shown(int8_t i) {
     return isShown(i);
 }
 
+int8_t WidgetSet::indexOf(Widget *w) {
+    for (int8_t i = 0; i < m_widgetCount; i++) {
+        if (m_widgets[i] == w) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void WidgetSet::drawCurrent(bool force) {
     if (m_clearScreensOnDrawCurrent) {
         m_screenManager->clearAllScreens();
