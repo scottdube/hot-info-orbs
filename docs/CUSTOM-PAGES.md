@@ -152,9 +152,9 @@ On-orb tests, run by hand. Each result records what was done and what was seen.
 
 | # | Test | Result | Date |
 |---|---|---|---|
-| 1 | The sample page from GitHub Pages over https draws on all five orbs | not yet tested | pending |
-| 2 | An unreachable address shows the failure on the page and on `/settings`; buttons and the settings page still respond | not yet tested | pending |
-| 3 | A large web page as the address is refused as `too big`, with no restart | not yet tested | pending |
-| 4 | MQTT against a home broker shows live Home Assistant values | not yet tested | pending |
-| 5 | A wrong broker host shows the failure; buttons and the settings page still respond | not yet tested | pending |
-| 6 | Flash use of the final build, as a share of the OTA slot (stop line 92%) | not yet tested | pending |
+| 1 | The sample page from GitHub Pages over https draws on all five orbs | ✔ on `/settings`: fetched over https from the raw GitHub copy, ✔ in 0.5–0.7 s. Drawing on the orbs: not yet checked by eye | 2026-10-17 |
+| 2 | An unreachable address shows the failure on the page and on `/settings`; buttons and the settings page still respond | ✔ `http://10.255.255.1/x.json`: ✖ after 5.0 s on `/settings`. The reason reads `connection refused` although the try ran the full 5 s, so the wording is wrong for a host that never answers. `/settings` answered in 0.08–0.39 s throughout a 75 s sample. Center orb and buttons: not yet checked by eye | 2026-10-17 |
+| 3 | A large web page as the address is refused as `too big`, with no restart | ✔ A 344 KB Wikipedia page: ✖ `too big` after 1.0 s, refetched while on screen, uptime kept counting (no restart) | 2026-10-17 |
+| 4 | MQTT against a home broker shows live Home Assistant values | not yet tested (needs an orb user on the broker) |  |
+| 5 | A wrong broker host shows the failure; buttons and the settings page still respond | ✔ Broker `10.255.255.1`: ✖ `can't reach broker`, each try took 3.0 s. Sampling `/settings` every second for 60 s: replies in 0.08–0.67 s except one 2.1–2.5 s stall at each retry, about 30 s apart | 2026-10-17 |
+| 6 | Flash use of the final build, as a share of the OTA slot (stop line 92%) | ✔ 87.9% (1,728,477 of 1,966,080 bytes) | 2026-10-17 |
