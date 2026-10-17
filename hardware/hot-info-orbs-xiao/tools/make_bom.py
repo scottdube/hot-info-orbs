@@ -50,11 +50,16 @@ ROWS = [
      "Check the listing's pin order before buying; the footprint is pad 1 = VCC (+5V) .. pad 7 = RST. "
      "The module's own male header plugs into the female socket below. Lit area ~32.5 mm dia "
      "(docs/DISPLAY-EDGE-TEST.md)."],
-    ["LENS1-LENS5", 5, "Display lens: mineral watch crystal, double dome", "35.5 mm dia, 2.0 mm thick",
+    ["LENS1-LENS5 (glass)", 5, "Display lens: mineral watch crystal, double dome", "35.5 mm dia, 2.0 mm thick",
      "enclosure part, no footprint", "generic",
      ALI + "3256806569387664.html", "",
-     "Choose the Diameter 35.5mm option on the listing (Scott, 2026-10-17); clears the ~32.5 mm "
-     "lit area. No Amazon source found yet."],
+     "OPTIONAL, not in the build total (priced as an add-on below it). Choose the Diameter 35.5mm "
+     "option on the listing (Scott, 2026-10-17); clears the ~32.5 mm lit area. No Amazon source found yet."],
+    ["LENS1-LENS5 (acrylic)", 5, "Display lens: laser-cut clear acrylic disc", "35.5 mm dia, thickness TBD",
+     "enclosure part, no footprint", "cut in-house",
+     "in-house (laser)", "",
+     "OPTIONAL alternative to the glass lens, price TBD (Scott, 2026-10-17). Flat, so no dome. Same "
+     "35.5 mm diameter as the glass; the bezel has to allow for whichever thickness is chosen."],
     ["J (displays)", 5, "Female socket 1x07, 2.54 mm, straight", "8.5 mm body, through hole",
      "PinSocket_1x07_P2.54mm_Vertical (in GC9A01_SOCKET)", "Sullins PPTC071LFBN-RC (reference)",
      AMZ + "B0GM7T6XWP", ALI + "3256812879331298.html",
@@ -100,41 +105,65 @@ ROWS = [
 assert all(len(r) == len(COLS) - 1 for r in ROWS)
 assert all(r[6] for r in ROWS), "every line needs Link 1"
 
+# Lines a builder can leave out: kept off the two build totals, priced as add-ons under them.
+OPTIONAL = {"LENS1-LENS5 (glass)", "LENS1-LENS5 (acrylic)"}
+TBD = "TBD"
 # Refs -> (Link 1 price USD, pack qty in BOM units, build-cost override)
 PRICES = {
     "U2": (7.49, 1, None),             # Seeed, headers un-soldered
     "DS1-DS5": (17.99, 3, None),       # MTDELE 3-pack
-    "LENS1-LENS5": (3.08, 1, None),    # AliExpress list price, not the new-shopper price
+    "LENS1-LENS5 (glass)": (3.08, 1, None),  # AliExpress list price, not the new-shopper price
+    "LENS1-LENS5 (acrylic)": (TBD, 1, None),
     "J (displays)": (6.99, 60, None),  # MTCELL 60 pcs
     "J (XIAO)": (6.99, 60, 0),         # out of the line above's 60-pack
     "P (XIAO)": (6.29, 100, None),     # 20 strips x 40 pins = 100 1x7 pieces
     "SW1-SW3": (7.39, 20, None),
-    "C1": (6.60, 10, None),          # iProtool 6.3x11; the 50-pack gave no size
+    "C1": (6.60, 10, None),            # iProtool 6.3x11; the 50-pack gave no size
     "C2": (6.99, 120, None),
     "R1": (4.99, 100, None),
     "H1-H7": (7.49, 120, None),
 }
+PLUS_PRICE = 7.90                      # XIAO ESP32-S3 Plus on Seeed, seen 2026-10-17
 COLS = COLS[:9] + ["Price (Link 1)", "Pack qty", "Build cost"] + COLS[9:]
 OUT_ROWS = []
 for r in ROWS:
     price, pack, override = PRICES.get(r[0], ("", "", None))
     OUT_ROWS.append(r[:8] + [price, pack, override] + r[8:])
-NOTE = ("Link 1 prices seen 2026-10-17, before shipping and tax. "
-        "PCB not included: get a JLCPCB quote.")
+NOTE = ("Required lines only; the optional lenses are below. Link 1 prices seen 2026-10-17, "
+        "before shipping and tax. PCB not included: get a JLCPCB quote.")
+
+
+def priced(r):
+    return isinstance(r[8], (int, float))
+
+
+def counted(r):
+    return priced(r) and r[0] not in OPTIONAL
 
 
 def build_cost(qty, price, pack, override):
-    if price == "":
-        return ""
+    if not isinstance(price, (int, float)):
+        return price
     if override is not None:
         return override
     return -(-qty // pack) * price
 
 
 def share(r):
-    qty, price, pack = r[1], r[8], r[9]
-    return qty / pack * price if price != "" else 0
+    return r[1] / r[9] * r[8]
 
+
+GLASS = next(i for i, r in enumerate(OUT_ROWS) if r[0] == "LENS1-LENS5 (glass)")
+U2 = next(i for i, r in enumerate(OUT_ROWS) if r[0] == "U2")
+# (label, csv value, xlsx formula, note); the formulas are filled in once rows are placed
+ADDONS = [
+    ("Option: glass lenses, per board", build_cost(*[OUT_ROWS[GLASS][k] for k in (1, 8, 9, 10)]),
+     "=L{glass}", "Five watch crystals, one per display."),
+    ("Option: acrylic lenses, per board", TBD, TBD, "Laser-cut in-house; price not set yet."),
+    ("Option: S3 Plus instead of S3, per board", round(PLUS_PRICE - OUT_ROWS[U2][8], 2),
+     f"={PLUS_PRICE}-J{{u2}}", f"The Plus (${PLUS_PRICE:.2f} on Seeed, seen 2026-10-17) REPLACES U2; "
+     "only one XIAO goes on a board."),
+]
 
 with open(OUT / "hot_info_orbs_xiao_bom.csv", "w", newline="") as f:
     w = csv.writer(f)
@@ -142,9 +171,12 @@ with open(OUT / "hot_info_orbs_xiao_bom.csv", "w", newline="") as f:
     for i, r in enumerate(OUT_ROWS, 1):
         w.writerow([i] + r[:10] + [build_cost(r[1], r[8], r[9], r[10])] + r[11:])
     w.writerow([])
-    w.writerow([""] * 10 + ["Total, one build", round(sum(build_cost(r[1], r[8], r[9], r[10]) or 0 for r in OUT_ROWS), 2), NOTE])
-    w.writerow([""] * 10 + ["Per-board share", round(sum(share(r) for r in OUT_ROWS), 2),
+    w.writerow([""] * 10 + ["Total, one build",
+                            round(sum(build_cost(r[1], r[8], r[9], r[10]) for r in OUT_ROWS if counted(r)), 2), NOTE])
+    w.writerow([""] * 10 + ["Per-board share", round(sum(share(r) for r in OUT_ROWS if counted(r)), 2),
                             "Each pack pro-rated over the boards it covers."])
+    for label, val, _, note in ADDONS:
+        w.writerow([""] * 10 + [label, val, note])
 
 wb = Workbook()
 ws = wb.active
@@ -153,8 +185,8 @@ ws.append(COLS)
 n = len(OUT_ROWS)
 for i, r in enumerate(OUT_ROWS, 1):
     x = i + 1
-    if r[8] == "":
-        bc = ""
+    if not priced(r):
+        bc = r[8]
     elif r[10] is not None:
         bc = r[10]
     else:
@@ -163,12 +195,16 @@ for i, r in enumerate(OUT_ROWS, 1):
 ws.append([])
 tot = n + 3
 ws.cell(tot, 11, "Total, one build")
-ws.cell(tot, 12, f"=SUM(L2:L{n + 1})")
+ws.cell(tot, 12, "=" + "+".join(f"L{i + 2}" for i, r in enumerate(OUT_ROWS) if counted(r)))
 ws.cell(tot, 13, NOTE)
-terms = "+".join(f"C{i + 2}/K{i + 2}*J{i + 2}" for i, r in enumerate(OUT_ROWS) if r[8] != "")
+terms = "+".join(f"C{i + 2}/K{i + 2}*J{i + 2}" for i, r in enumerate(OUT_ROWS) if counted(r))
 ws.cell(tot + 1, 11, "Per-board share")
 ws.cell(tot + 1, 12, "=" + terms)
 ws.cell(tot + 1, 13, "Each pack pro-rated over the boards it covers.")
+for k, (label, _, formula, note) in enumerate(ADDONS):
+    ws.cell(tot + 2 + k, 11, label)
+    ws.cell(tot + 2 + k, 12, formula.format(glass=GLASS + 2, u2=U2 + 2))
+    ws.cell(tot + 2 + k, 13, note)
 # Navy header, banded body, flagged lines yellow, totals block shaded. The flag also stays
 # in words (NOT VERIFIED ...) so it never rests on color alone.
 NAVY, BAND, FLAG, TOTAL, RULE = "1F3A5F", "F2F5F9", "FFF2CC", "DCE6F1", "D0D7DE"
@@ -180,6 +216,8 @@ VENDORS = {"amazon": "Amazon", "aliexpress": "AliExpress", "seeedstudio": "Seeed
 
 
 def vendor(url):
+    if not url.startswith("http"):
+        return url
     host = url.split("/")[2]
     return next((v for k, v in VENDORS.items() if k in host), host)
 
@@ -205,19 +243,21 @@ for row in ws.iter_rows(min_row=2, max_row=n + 1):
             c.fill = PatternFill("solid", fgColor=fill)
     row[1].font = Font(bold=True)          # Refs
     for c in (row[7], row[8]):            # Link 1, Link 2: vendor name, linked
-        if c.value:
+        if str(c.value).startswith("http"):
             c.hyperlink, c.value = c.value, vendor(c.value)
             c.font = Font(color="0563C1", underline="single")
     for c in (row[9], row[11]):
         c.number_format = '"$"#,##0.00'
-for x in (tot, tot + 1):
+        c.alignment = Alignment(wrap_text=True, vertical="top", horizontal="right")  # TBD lines up too
+for x in range(tot, tot + 2 + len(ADDONS)):
     for j in (11, 12, 13):
         c = ws.cell(x, j)
         c.fill = PatternFill("solid", fgColor=TOTAL)
         c.border = box
         c.alignment = Alignment(wrap_text=True, vertical="top")
-    ws.cell(x, 11).font = Font(bold=True)
-    ws.cell(x, 12).font = Font(bold=True, size=12)
+    main = x < tot + 2                    # the two totals; add-ons below stay plain
+    ws.cell(x, 11).font = Font(bold=main, italic=not main)
+    ws.cell(x, 12).font = Font(bold=main, size=12 if main else 11)
     ws.cell(x, 12).number_format = '"$"#,##0.00'
 ws.sheet_properties.tabColor = NAVY
 ws.freeze_panes = "C2"
