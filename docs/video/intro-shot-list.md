@@ -80,6 +80,9 @@ S22 before setups A and B or after them, not in between.
    re-run the same flash on camera:
    `cd ~/code/hot-info-orbs-main && pio run -e esp32-s3-devkitc-1 -t upload`.
 2. On `/settings`: check every page is ticked (they cycle since the 2026-10-17 reflash); set the boot picture to the HOT hand.
+   **Tick Web Data and MQTT**: they are off on purpose until the shoot.
+   Web Data shows ✔ for the sample; MQTT reads ✔ Connected with a value fed
+   from Home Assistant (otherwise every orb shows a dash).
 3. Check a Tempest fetch shows ✔ for station 1 before filming S11.
 4. Weekday, market hours for S13.
 5. Phone: Do Not Disturb on, full battery, screen recording on.
