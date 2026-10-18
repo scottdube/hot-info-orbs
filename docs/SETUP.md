@@ -1,5 +1,10 @@
 # Setting Up Info Orbs From Scratch
 
+> **Building the club board (XIAO ESP32-S3 or XIAO ESP32-S3 Plus)? Use
+> [the guide on the `xiao-esp32s3-plus` branch](https://github.com/scottdube/hot-info-orbs/blob/xiao-esp32s3-plus/docs/SETUP.md).** This copy
+> is for the v1.1 prototype and its earlier module, which the project no longer
+> uses; its build target will not run on a XIAO.
+
 Written for someone who has never used PlatformIO. If you have, skip to
 [step 3](#3-create-your-two-config-files) — the only thing that has changed from
 upstream is that there are now **two** files to copy, not one.

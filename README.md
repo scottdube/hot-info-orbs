@@ -1,7 +1,7 @@
 # HoT Info Orbs
 
-Five round 240×240 displays on one SPI bus, driven by an ESP32-S3 SuperMini, on
-a custom carrier board. Clock, weather, stocks — and whatever else gets written.
+Five round 240×240 displays on one SPI bus, driven by a Seeed **XIAO ESP32-S3
+or XIAO ESP32-S3 Plus** (builder's choice), on a custom carrier board. Clock, weather, stocks — and whatever else gets written.
 
 ## Start here
 
@@ -13,15 +13,20 @@ the project's files; everything you need is one of these links:
   an ordinary web page.
 - **Getting one:** it's a Hands-On Tech Club build,
   [handsontech.org](https://handsontech.org).
+- **The microcontroller:** a Seeed **XIAO ESP32-S3 or XIAO ESP32-S3 Plus**,
+  whichever you prefer. Same board, same pins, same firmware; the Plus has more
+  flash.
 - **You have a built one and want it running:** the
-  [setup guide](docs/SETUP.md), written for someone who has never done this.
-- **You want the files:** the green **Code** button above, then
-  **Download ZIP**, gets everything. The board is in `hardware/`, the software
-  in `firmware/`.
-- **The XIAO board from the video** is on the
-  [`xiao-esp32s3-plus` branch](https://github.com/scottdube/hot-info-orbs/tree/xiao-esp32s3-plus)
-  while it's in manufacturing. The boards in hand today use the SuperMini
-  described below.
+  [setup guide](https://github.com/scottdube/hot-info-orbs/blob/xiao-esp32s3-plus/docs/SETUP.md), written for someone who has never
+  done this.
+- **You want the files:**
+  [download them as a ZIP](https://github.com/scottdube/hot-info-orbs/archive/refs/heads/xiao-esp32s3-plus.zip). The board is in
+  `hardware/hot-info-orbs-xiao/`, the software in `firmware/`.
+
+The XIAO board and its firmware are on the
+[`xiao-esp32s3-plus` branch](https://github.com/scottdube/hot-info-orbs/tree/xiao-esp32s3-plus) until they move here, which is why the links
+above point there. The files on `main` today are the earlier v1.1
+prototype, kept for the record; it is not part of the club build.
 
 Built as a club project, which shapes the whole thing: it is assembled by people
 at a wide range of skill levels, so the build has to be hard to get wrong and
@@ -48,10 +53,10 @@ this repository is public.
 
 | | Upstream | This |
 |---|---|---|
-| Microcontroller | ESP32 dev kit (30/38-pin) | **ESP32-S3 SuperMini** |
+| Microcontroller | ESP32 dev kit (30/38-pin) | **Seeed XIAO ESP32-S3 or XIAO ESP32-S3 Plus** |
 | Display supply | 3.3 V, off the module's regulator | **5 V, each module regulates its own** |
 | API keys | compiled into `config.h`, shipped with live keys in the template | **`secrets.h`, gitignored, build fails without it** |
-| Board | upstream's 2-layer design | **new carrier board, v1.1** |
+| Board | upstream's 2-layer design | **new carrier board** for the XIAO |
 | Firmware updates | USB cable every time | **over WiFi** — browser page or `pio run -e ota` |
 | Boot splash | "Info Orbs by brett.tech", Brett's logo | **"HOT Info Orbs by HOT-Team"**, Yang's avatar for now; the Hands-On Tech hand (`images/hot-logo.jpg`) replaces it once Yang has this version |
 | Settings | edit `config.h`, rebuild, reflash | **a page in the browser**: `http://<orb's IP>/settings` |
@@ -109,7 +114,12 @@ to them. See [docs/SETUP.md](docs/SETUP.md#9-change-settings-from-a-browser).
 
 ## Hardware
 
-The KiCad 10 project is in **[hardware/hot-info-orbs/](hardware/hot-info-orbs/)**.
+**The club board is the XIAO carrier**, for a XIAO ESP32-S3 or XIAO ESP32-S3
+Plus: [`hardware/hot-info-orbs-xiao/` on the `xiao-esp32s3-plus` branch](https://github.com/scottdube/hot-info-orbs/tree/xiao-esp32s3-plus/hardware/hot-info-orbs-xiao).
+
+What follows describes the **v1.1 prototype** on this branch, built for an
+earlier module that the project no longer uses. Its KiCad 10 project is in
+**[hardware/hot-info-orbs/](hardware/hot-info-orbs/)**.
 Symbol and footprint libraries are project-local, so cloning and opening is all
 that is required — nothing to install or copy into a global library.
 
@@ -127,7 +137,7 @@ for the order parameters and the drill-tool cross-check.
 | [docs/SETUP.md](docs/SETUP.md) | empty machine to running orb |
 | [docs/TRAPS.md](docs/TRAPS.md) | things that cost time once, so they cost it once |
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | web control panel and OTA, with the traps that will bite whoever builds them |
-| [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | why the S3 SuperMini, including the arguments that reversed |
+| [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | the prototype's module choice, since replaced by the XIAO ESP32-S3 / S3 Plus; kept for the arguments that reversed |
 | [docs/ESPHOME-EVALUATION.md](docs/ESPHOME-EVALUATION.md) | why this is not an ESPHome project |
 
 The variant and ESPHome documents keep the reasoning that changed rather than

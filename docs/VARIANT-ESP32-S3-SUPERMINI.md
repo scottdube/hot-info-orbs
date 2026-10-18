@@ -1,5 +1,9 @@
 # Variant: ESP32-S3 SuperMini
 
+> **Superseded 2026-10-18: the project uses a Seeed XIAO ESP32-S3 or XIAO
+> ESP32-S3 Plus, the builder's choice; this module is not part of it.** Kept for
+> the reasoning, which is why it was not deleted.
+
 Status: **REOPENED 2026-08-27.** Declined earlier the same day on cost and
 complexity, then reopened at Yang's request. The power objection that drove the
 original decline now looks resolvable — see [Reopened](#reopened) at the end.

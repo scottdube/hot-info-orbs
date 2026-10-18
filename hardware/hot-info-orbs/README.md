@@ -1,5 +1,9 @@
 # HoT Info Orbs — KiCad project
 
+> **Prototype, not the club board.** The club board takes a XIAO ESP32-S3 or
+> XIAO ESP32-S3 Plus and is in
+> [`hardware/hot-info-orbs-xiao/` on the `xiao-esp32s3-plus` branch](https://github.com/scottdube/hot-info-orbs/tree/xiao-esp32s3-plus/hardware/hot-info-orbs-xiao).
+
 ESP32-S3 SuperMini carrier for five GC9A01 displays. Original board by Yangmin
 Shen, KiCad 10, received 2026-08-28.
 
