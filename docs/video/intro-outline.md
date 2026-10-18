@@ -48,7 +48,8 @@ Credit, briefly. Assume the viewer knows neither source.
   point.
 - **HackerBoxes:** a monthly electronics kit. Their kit #0129 "Orbital" was a
   version of the orbs on a newer chip.
-- A couple of club members built that kit (unnamed). The club liked it and
+- A couple of club members built that kit. Show Donald Champion's photos of
+  his build, credited to him. The club liked it and
   decided to make its own version: a new board, new features, and a build
   anyone in the club could follow.
 
@@ -130,7 +131,8 @@ Show the phone screen next to the orb reacting.
 - Where to get it: GitHub `scottdube/hot-info-orbs` and the feature sheet
   (scottdube.github.io/hot-info-orbs/features.html).
 - Credits on screen: Brett Turner (Info Orbs), HackerBoxes (#0129 Orbital),
-  Yang and Scott (board design), the club members who built the first kit.
+  Yang and Scott (board design), the club members who built the first kit,
+  Donald Champion (HackerBox build photos).
 - End card: Hands-On Tech logo, orbs running.
 
 ---
@@ -166,7 +168,9 @@ Show the phone screen next to the orb reacting.
 - Introduces the whole project to newcomers; Brett Turner and HackerBoxes are
   credited as inspiration and explained, not assumed known.
 - Stocks is part of the page tour.
-- HackerBox builders (Donald and others) are not named in the video.
+- HackerBox builders are not named in the narration. **Changed 2026-10-18:**
+  Donald Champion's build photos are on screen in S07 with his photo credit,
+  and he is on the credits card. He agreed to the credit.
 - Audience: club members, on the lightly password-protected club site.
 - Delivery: narration, voice-over or a mix, decided during the shoot.
 

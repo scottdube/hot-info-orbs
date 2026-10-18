@@ -30,7 +30,8 @@ change its settings, so they go after the shots that need it undisturbed.
       (outside the repo: third-party screenshots). See [Assets](#assets).
 - [ ] Watch the MQTT and Web Data pages on the orb for a day; adjust labels,
       units or colors (see Before the shoot, item 2).
-- [ ] Ask a member to lend a built HackerBox kit (S07).
+- [x] HackerBox kit for S07: Donald Champion sent four photos of his build
+      (2026-10-18), credited to him on screen.
 - [ ] Check for an unbuilt v1.1 board (S18) and whether the XIAO boards have
       arrived (S29).
 
@@ -233,8 +234,11 @@ notifications.
   - *Setup:* product-page screenshot, credit on screen.
   - *Why:* many viewers met the orbs through this kit, so it connects their
     version to ours.
-- **S07, A member's built HackerBox kit** (8 s, CAM).
-  - *Setup:* borrow one and film it beside ours. Otherwise reuse S03.
+- **S07, Donald Champion's built HackerBox kit** (8 s, stills).
+  - *Setup:* his four photos (clock, stocks, weather, nixie clock), a slow
+    push-in or a quick cut through them, credit "Photo: Donald Champion" on
+    screen. The weather photo shows his town on one orb: crop, blur or drop
+    it. Files and notes: the asset folder's `MANIFEST.md`.
   - *Why:* the "members built that kit" line lands harder with the real
     object on screen.
 - **S20a, Thermal image of the module, 43.6 °C** (4 s).
@@ -266,7 +270,8 @@ Use high-contrast text, and never use color alone to carry meaning.
 - **S31, GitHub URL + feature-sheet URL** (4 s).
   - *Why:* the action to take. It's held long enough to read.
 - **S32, Credits** (5 s): Brett Turner — Info Orbs · HackerBoxes — #0129
-  Orbital · Yang & Scott — board design · the members who built the first kit.
+  Orbital · Yang & Scott — board design · the members who built the first kit ·
+  HackerBox build photos — Donald Champion.
   - *Why:* names everyone whose work the video stands on.
 - **S33, End card: logo over the S01-position footage** (3 s).
   - *Why:* a clean ending the club can reuse.
@@ -283,7 +288,7 @@ Use high-contrast text, and never use color alone to carry meaning.
 | S04 | 2 | CAM C | Board overhead | 8 s |
 | S05 | 3 | STILL | Brett Turner page | 6 s |
 | S06 | 3 | STILL | HackerBoxes #0129 | 5 s |
-| S07 | 3 | CAM | Member's HackerBox kit | 8 s |
+| S07 | 3 | Stills | Donald Champion's HackerBox kit (photos) | 8 s |
 | S08 | 4 | CAM A | Clock | 5 s |
 | S09 | 4 | CAM B | Nixie face | 5 s |
 | S10 | 4 | CAM A | Weather | 5 s |
@@ -367,7 +372,7 @@ third-party screenshots, and the repo is public.
 | S02, S31, S32, S33 | Draft cards, transparent and dark, with sources to re-render | to draft |
 
 **Needs Scott:** all camera footage, the phone and laptop screen recordings,
-the borrowed HackerBox kit (S07), a bare v1.1 board (S18), and a bare XIAO
+a bare v1.1 board (S18), and a bare XIAO
 board if one arrives (S29).
 
 ## Camera notes

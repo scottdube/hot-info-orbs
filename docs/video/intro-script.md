@@ -43,8 +43,8 @@ the plans and software for free.
 Later, HackerBoxes, a monthly electronics kit, sent out a version of it
 called Orbital.
 
-**[A member's built HackerBox kit, if one can be borrowed; otherwise the
-prototype.]**
+**[Donald Champion's photos of his built HackerBox kit, credited on
+screen.]**
 
 A couple of our members built that kit. We liked it enough to make our own:
 a new board, new features, and a build anyone in the club can follow.
@@ -181,7 +181,8 @@ printed. That one is still a design.
 Everything's on GitHub, at the link on screen.
 
 **[Credits card: Brett Turner — Info Orbs · HackerBoxes — #0129 Orbital ·
-Yang & Scott — board design · the members who built the first kit.]**
+Yang & Scott — board design · the members who built the first kit ·
+HackerBox build photos — Donald Champion.]**
 
 Thanks to Brett Turner, to HackerBoxes, to Yang for co-designing the board, and to the
 members who built the first kit.
