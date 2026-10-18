@@ -131,7 +131,7 @@ Show the phone screen next to the orb reacting.
 - Where to get it: GitHub `scottdube/hot-info-orbs` and the feature sheet
   (scottdube.github.io/hot-info-orbs/features.html).
 - Credits on screen: Brett Turner (Info Orbs), HackerBoxes (#0129 Orbital),
-  Yang and Scott (board design), the club members who built the first kit,
+  the club members who built the first kit,
   Donald Champion (HackerBox build photos).
 - End card: Hands-On Tech logo, orbs running.
 
@@ -171,6 +171,9 @@ Show the phone screen next to the orb reacting.
 - HackerBox builders are not named in the narration. **Changed 2026-10-18:**
   Donald Champion's build photos are on screen in S07 with his photo credit,
   and he is on the credits card. He agreed to the credit.
+- **Changed 2026-10-18:** Yang and Scott are dropped from the thanks (spoken line
+  and credits card). The board design is still credited in segment 5 ("Yang and
+  I designed the board").
 - Audience: club members, on the lightly password-protected club site.
 - Delivery: narration, voice-over or a mix, decided during the shoot.
 

@@ -276,7 +276,7 @@ Use high-contrast text, and never use color alone to carry meaning.
 - **S31, GitHub URL + feature-sheet URL** (4 s).
   - *Why:* the action to take. It's held long enough to read.
 - **S32, Credits** (5 s): Brett Turner — Info Orbs · HackerBoxes — #0129
-  Orbital · Yang & Scott — board design · the members who built the first kit ·
+  Orbital · the members who built the first kit ·
   HackerBox build photos — Donald Champion.
   - *Why:* names everyone whose work the video stands on.
 - **S33, End card: logo over the S01-position footage** (3 s).

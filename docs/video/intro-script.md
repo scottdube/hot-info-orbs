@@ -183,11 +183,10 @@ printed. That one is still a design.
 Everything's on GitHub, at the link on screen.
 
 **[Credits card: Brett Turner — Info Orbs · HackerBoxes — #0129 Orbital ·
-Yang & Scott — board design · the members who built the first kit ·
+the members who built the first kit ·
 HackerBox build photos — Donald Champion.]**
 
-Thanks to Brett Turner, to HackerBoxes, to Yang for co-designing the board, and to the
-members who built the first kit.
+Thanks to Brett Turner, to HackerBoxes, and to the members who built the first kit.
 
 **[End card: Hands-On Tech logo over the orbs running. Hold 3 s.]**
 

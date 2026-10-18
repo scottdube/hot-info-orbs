@@ -21,8 +21,7 @@ each storyboard line to its **last** take, and measuring first word to last word
 - **S15:** heard "for the *tickers*", script says "tinkerers". Whisper may have misheard; worth
   a listen.
 - **S18:** said "JLPCB"; the maker is **JLCPCB** (J-L-C-P-C-B).
-- **S32:** said "Yang, and others who helped co-design the board"; the script thanks Yang alone
-  for co-designing it (board credit is Yang & Scott).
+- **S32:** moot. The Yang thanks was cut from the line and the card later the same day.
 - The rest are small rewordings (see the table), fine for a voice-over.
 
 ## Line by line
