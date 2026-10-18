@@ -169,7 +169,7 @@ shadows.
 - **S18, Bare v1.1 board** (4 s).
   - *Setup:* an unbuilt board from the batch of 10, on its own. If none is
     left unbuilt, skip it and lean on S19.
-  - *Why:* credits Yang's design. Experienced builders want to see the bare
+  - *Why:* credits Yang and Scott's design. Experienced builders want to see the bare
     copper.
 - **S20, USB cable in → orbs light on the boot screen** (6 s).
   - *Setup:* the cable enters from frame edge; hold until the boot picture
@@ -266,7 +266,7 @@ Use high-contrast text, and never use color alone to carry meaning.
 - **S31, GitHub URL + feature-sheet URL** (4 s).
   - *Why:* the action to take. It's held long enough to read.
 - **S32, Credits** (5 s): Brett Turner — Info Orbs · HackerBoxes — #0129
-  Orbital · Yang — board design · the members who built the first kit.
+  Orbital · Yang & Scott — board design · the members who built the first kit.
   - *Why:* names everyone whose work the video stands on.
 - **S33, End card: logo over the S01-position footage** (3 s).
   - *Why:* a clean ending the club can reuse.

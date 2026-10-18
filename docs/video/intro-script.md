@@ -109,7 +109,7 @@ connection to it. Three buttons do the rest.
 
 **[Bare carrier board, then KiCad view of it.]**
 
-Club member Yang designed the board that ties it together, and JLCPCB makes
+Club member Yang and I designed the board that ties it together, and JLCPCB makes
 it.
 
 **[USB cable plugging in; the orbs light up on the boot screen.]**
@@ -181,9 +181,9 @@ printed. That one is still a design.
 Everything's on GitHub, at the link on screen.
 
 **[Credits card: Brett Turner — Info Orbs · HackerBoxes — #0129 Orbital ·
-Yang — board design · the members who built the first kit.]**
+Yang & Scott — board design · the members who built the first kit.]**
 
-Thanks to Brett Turner, to HackerBoxes, to Yang for the board, and to the
+Thanks to Brett Turner, to HackerBoxes, to Yang for co-designing the board, and to the
 members who built the first kit.
 
 **[End card: Hands-On Tech logo over the orbs running. Hold 3 s.]**

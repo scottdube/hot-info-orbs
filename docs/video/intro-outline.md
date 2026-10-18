@@ -81,7 +81,7 @@ then the buttons stepping between them.
   Wi-Fi built in.
 - **Five 1.28" round color displays** sharing one connection to the module.
 - **Three buttons** along the board.
-- **The carrier board**, designed by club member Yang (KiCad), made by
+- **The carrier board**, designed by club members Yang and Scott (KiCad), made by
   JLCPCB. The display modules and the ESP32 plug in, so it's a socket and
   solder-the-headers build.
 - **Power:** a USB cable. The whole orb draws about 1.7 W (measured).
@@ -130,7 +130,7 @@ Show the phone screen next to the orb reacting.
 - Where to get it: GitHub `scottdube/hot-info-orbs` and the feature sheet
   (scottdube.github.io/hot-info-orbs/features.html).
 - Credits on screen: Brett Turner (Info Orbs), HackerBoxes (#0129 Orbital),
-  Yang (board design), the club members who built the first kit.
+  Yang and Scott (board design), the club members who built the first kit.
 - End card: Hands-On Tech logo, orbs running.
 
 ---
