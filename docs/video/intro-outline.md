@@ -37,7 +37,7 @@ labeled with where each stands.
 - It shows the time, the weather and the markets, and updates itself over
   Wi-Fi.
 - It's a club build, designed so any member can put one together and set it
-  up from a phone.
+  up from a phone or computer.
 
 ## 3. Where it came from (0:35–0:55)
 
@@ -72,7 +72,7 @@ then the buttons stepping between them.
 7. **For the tinkerers, two pages you build yourself**, each shown full-frame
    on the orbs: **MQTT** (live values from Home Assistant or any MQTT source,
    one per orb) and **Web Data** (a small JSON file from any web address).
-   Both set up from the phone, no new firmware.
+   Both set up from a phone or computer, no new firmware.
 
 ## 5. How it's built (1:50–2:30)
 
@@ -101,7 +101,7 @@ then the buttons stepping between them.
 Show the phone screen next to the orb reacting.
 
 - **First setup:** load the firmware once over USB. After that, no cable.
-- **Settings from a phone browser:** town, tickers, time zone, colors,
+- **Settings from a phone or computer browser:** town, tickers, time zone, colors,
   rotation speed, upside-down mounting. Save, and the orb restarts with the
   new settings.
 - **Pick your pages:** untick any page you don't want (Yang's example: he
@@ -110,7 +110,7 @@ Show the phone screen next to the orb reacting.
 - **Updates over Wi-Fi:** new firmware uploads from the browser. If an
   update fails, the orb goes back to the version that worked.
 - **Night mode:** dim hours and screens-off hours. Any button wakes it.
-- **Your own boot picture:** upload one from your phone.
+- **Your own boot picture:** upload one from your phone or computer.
 - One line over B-roll: it moves to the strongest Wi-Fi access point on its
   own, and your API keys stay out of the shared code.
 

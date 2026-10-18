@@ -28,7 +28,7 @@ a postage stamp. They show the time, the weather and the markets, and they
 keep themselves up to date.
 
 It's a Hands-On Tech club build, so anyone in the club can make one and set
-it up from a phone.
+it up from a phone or computer.
 
 ## 3. Where it came from (0:35–0:55)
 
@@ -93,7 +93,7 @@ values from Home Assistant, or anything else that speaks MQTT.
 **[Right button → Web Data page: the sample, five colored orbs.]**
 
 This one draws a small JSON file from any web address. You set both up from
-your phone, with no new firmware.
+your phone or computer, with no new firmware.
 
 ## 5. How it's built (1:50–2:30)
 
@@ -140,7 +140,7 @@ You load the software once, over USB. After that, there's no cable.
 **[Split screen: phone on the settings page | the orb. Scroll past the
 Tempest station fields.]**
 
-Settings live on a web page you open from your phone: your town, your
+Settings live on a web page you open from your phone or computer: your town, your
 tickers, time zone, colors. Save, and the orb restarts with them.
 
 **[Phone: untick Stocks, Save; the orb's rotation skips it.]**
