@@ -121,9 +121,8 @@ It runs off a USB cable and draws under two watts.
 **[Thermal image, color: the ESP32 module, 43.6 °C on its hottest point.]**
 
 The displays run on five volts, each with its own regulator. On the original
-kit they all ran off the little computer's regulator, and builders found it
-too hot to touch. On this board it runs at about forty-three degrees Celsius,
-measured.
+kit they all ran off the ESP's regulator, and builders found it too hot to
+touch.
 
 **[Thermal image, color: the backs of three displays, 37.9 °C hottest.]**
 
