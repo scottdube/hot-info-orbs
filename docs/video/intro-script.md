@@ -1,9 +1,11 @@
 # HOT Info Orbs — intro video script
 
 Follows [intro-outline.md](intro-outline.md). Every line works as voice-over;
-any line can be said on camera instead. About **540 words**, which is about
-3:30 at a relaxed 150 words a minute. Add the silent cold open and pauses on
-the page tour and it lands around 3:45.
+any line can be said on camera instead. About **620 words** (it was about 500
+when first written and grew with the custom pages, the 5 V point and the
+credits). The practice read on 2026-10-18 ran **174 words a minute: 3:38 of
+speech**, and **4:29** once each shot holds until its line ends. Line-by-line
+times: [vo-practice-2026-10-18.md](vo-practice-2026-10-18.md).
 
 **[brackets]** = picture. Plain text = narration.
 
