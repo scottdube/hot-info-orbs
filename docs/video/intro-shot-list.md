@@ -243,8 +243,8 @@ notifications.
 - **S07, Donald Champion's built HackerBox kit** (8 s, stills).
   - *Setup:* his four photos (clock, stocks, weather, nixie clock), a slow
     push-in or a quick cut through them, credit "Photo: Donald Champion" on
-    screen. The weather photo shows his town on one orb: crop, blur or drop
-    it. Files and notes: the asset folder's `MANIFEST.md`.
+    screen. The weather photo shows his town on one orb; that's fine to
+    show (Scott, 2026-10-18: the board itself names the town). Files and notes: the asset folder's `MANIFEST.md`.
   - *Why:* the "members built that kit" line lands harder with the real
     object on screen.
 - **S20a, Thermal image of the module, 43.6 °C** (4 s).
