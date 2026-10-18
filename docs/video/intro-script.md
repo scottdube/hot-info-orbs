@@ -69,8 +69,8 @@ days.
 
 **[Tempest page.]**
 
-If you own a Tempest weather station, it gets a page of its own, with live
-wind, humidity and feels-like temperature. You can add two.
+If you own a Tempest weather station, use it to drive the display. You can add
+up to two stations.
 
 **[Close-up on the weather icon orb.]**
 
