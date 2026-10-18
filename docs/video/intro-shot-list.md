@@ -38,7 +38,8 @@ change its settings, so they go after the shots that need it undisturbed.
 **Shoot day, before the camera comes out**
 - [ ] Work through [Before the shoot](#before-the-shoot), items 1–6.
 
-**Block 1 — Laptop (setup E):** S22, then S19 and S21.
+**Block 1 — Laptop (setup E):** S22, then S19. (S21 is done: a full-page
+pan, no filming.)
 S22 restarts the orb, so do it first, before the orb is framed.
 
 **Block 2 — Desk wide (setup A):** S01, S03, S08, S10, S11, S15, S15a, S13, plus
@@ -217,9 +218,14 @@ notifications.
     Rendered stills are the fallback (see Assets).
   - *Why:* for the advanced crowd. The design files are real and open, and
     they could change them.
-- **S21, GitHub README scrolling** (4 s).
+- **S21, GitHub README scrolling** (11 s).
   - *Setup:* `github.com/scottdube/hot-info-orbs`, signed out or in a private
-    window so no account details show.
+    window so no account details show. **Made 2026-10-18 as an even pan, not
+    a screen recording:** a full-page capture of the signed-out page, panned
+    at 10 px per frame, 60 fps, with a 1 s hold at the top and bottom
+    (`S21-github-readme-smooth-10px.mp4` in the asset folder). A sped-up
+    screen recording was tried first and juddered (the capture drops
+    frames), and a speed ramp that held on each heading looked jerky.
   - *Why:* where everyone goes next. Show it before the closing card gives
     the URL.
 
@@ -305,7 +311,7 @@ Use high-contrast text, and never use color alone to carry meaning.
 | S20 | 5 | CAM C | USB in → boot | 6 s |
 | S20a | 5 | STILL | Thermal, module | 4 s |
 | S20b | 5 | STILL | Thermal, display backs | 3 s |
-| S21 | 5 | LAPTOP | GitHub README | 4 s |
+| S21 | 5 | PAN | GitHub README (full-page pan) | 11 s |
 | S22 | 6 | LAPTOP + CAM | USB flash | 6 s |
 | S23 | 6 | PHONE + CAM | Settings → restart | 12 s |
 | S23a | 6 | PHONE + CAM | Untick Stocks | 10 s |
@@ -320,7 +326,8 @@ Use high-contrast text, and never use color alone to carry meaning.
 | S32 | 8 | CARD | Credits | 5 s |
 | S33 | 8 | CAM + CARD | End card | 3 s |
 
-The listed lengths add up to 3:18, and the narration runs about 3:30. Every
+The listed lengths add up to 3:35 (re-added 2026-10-18; the earlier 3:18 was
+a miscount, and S21 went from 4 to 11 s), and the narration runs about 3:30. Every
 shot is cut to the narration, so roll at least twice the listed length.
 
 ---
