@@ -94,8 +94,7 @@ from Home Assistant, or anything else using MQTT.
 
 **[Right button → Web Data page: the sample, five colored orbs.]**
 
-This one draws a small JSON file from any web address. You set both up from
-your phone or computer, with no new firmware.
+This one pulls a small JSON file from any web address.
 
 ## 5. How it's built (1:50–2:30)
 
