@@ -1,12 +1,17 @@
 # Name,   Type, SubType, Offset,  Size, Flags
 # Two app slots for OTA (docs/REQUIREMENTS.md R2). An update writes the idle
 # slot and switches only once the image is complete, so an interrupted upload
-# keeps the old firmware. The app was 1.60 MB when this was laid out
-# (2026-09-23), ~83% of a slot. The filesystem shrank from 1.9 MB to 128 KB: only
-# WebDataWidget's image cache uses it, and nothing calls LittleFS.begin().
+# keeps the old firmware.
+# Laid out for 8 MB (2026-10-18): the XIAO ESP32-S3 has 8 MB and the S3 Plus
+# 16 MB, so one 8 MB table runs on both. Two 3.75 MB app slots; the build of
+# 18 Oct 2026 (1.61 MB) fills ~43% of one. The v1.1 prototype's 4 MB table had
+# 1.875 MB slots, where the same build filled 85.9%. A 16 MB table was rejected:
+# it would not boot on the plain S3. The filesystem (384 KB) holds the uploaded
+# boot picture and WebDataWidget's image cache.
+# A changed table is written only by a USB flash, never by an OTA update.
 nvs,      data, nvs,     0x9000,  0x5000,
 otadata,  data, ota,     0xe000,  0x2000,
-app0,     app,  ota_0,   0x10000, 0x1E0000,
-app1,     app,  ota_1,   0x1F0000,0x1E0000,
-spiffs,   data, spiffs,  0x3D0000,0x20000,
-coredump, data, coredump,0x3F0000,0x10000,
+app0,     app,  ota_0,   0x10000, 0x3C0000,
+app1,     app,  ota_1,   0x3D0000,0x3C0000,
+spiffs,   data, spiffs,  0x790000,0x60000,
+coredump, data, coredump,0x7F0000,0x10000,
