@@ -89,8 +89,8 @@ own.
 
 **[Right button → MQTT page: five live Home Assistant values, one per orb.]**
 
-And for the tinkerers, two pages you build yourself. This one shows live
-values from Home Assistant, or anything else that speaks MQTT.
+And for coders, two pages you build yourself. This one shows live values
+from Home Assistant, or anything else using MQTT.
 
 **[Right button → Web Data page: the sample, five colored orbs.]**
 
