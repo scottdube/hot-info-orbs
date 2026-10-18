@@ -142,17 +142,14 @@ Show the phone screen next to the orb reacting.
   the same command: `cd ~/code/hot-info-orbs-main && pio run -e
   esp32-s3-devkitc-1 -t upload`.
 - Check every page is ticked on `/settings` (the orb cycles pages again since
-  the 2026-10-17 reflash). **Web Data and MQTT are unticked on purpose** until
-  the shoot, because they have no live data: tick them both before filming.
+  the 2026-10-17 reflash). **Web Data and MQTT were ticked on 2026-10-17**
+  so they can be previewed and tuned before the shoot.
 - **Web Data:** confirm `/settings` shows ✔ for the sample
   (`https://scottdube.github.io/hot-info-orbs/custom-pages/sample.json`).
-- **MQTT:** fill all five rows (topic, label, unit) with generic labels, no
-  room or place names. The page shows a dash (-) on every orb until a value arrives.
-  Before filming, either publish a value from Home Assistant to the orb's
-  topic, or set up a sensor that publishes on its own (an automation with
-  `retain: true`, see `docs/CUSTOM-PAGES.md` on main). Check `/settings`
-  reads ✔ Connected with a recent value. Keep the broker address and topic
-  names off screen.
+- **MQTT:** all five rows are filled with generic labels (Outside, Humidity,
+  Pool, Power, Today), fed every 30 s by a Home Assistant automation with
+  `retain: true`. Check `/settings` reads ✔ Connected with a recent value.
+  Keep the broker address off screen.
 - Set the boot picture to the HOT hand for the title beat.
 - Shoot the Stocks page on a weekday during market hours, or the stock
   tickers show the last close and don't move. BTC/USD moves around the clock.
