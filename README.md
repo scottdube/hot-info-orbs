@@ -3,6 +3,26 @@
 Five round 240×240 displays on one SPI bus, driven by an ESP32-S3 SuperMini, on
 a custom carrier board. Clock, weather, stocks — and whatever else gets written.
 
+## Start here
+
+**Never used GitHub?** You don't need an account. The list of folders above is
+the project's files; everything you need is one of these links:
+
+- **What it is and what it does:** the
+  [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html),
+  an ordinary web page.
+- **Getting one:** it's a Hands-On Tech Club build,
+  [handsontech.org](https://handsontech.org).
+- **You have a built one and want it running:** the
+  [setup guide](docs/SETUP.md), written for someone who has never done this.
+- **You want the files:** the green **Code** button above, then
+  **Download ZIP**, gets everything. The board is in `hardware/`, the software
+  in `firmware/`.
+- **The XIAO board from the video** is on the
+  [`xiao-esp32s3-plus` branch](https://github.com/scottdube/hot-info-orbs/tree/xiao-esp32s3-plus)
+  while it's in manufacturing. The boards in hand today use the SuperMini
+  described below.
+
 Built as a club project, which shapes the whole thing: it is assembled by people
 at a wide range of skill levels, so the build has to be hard to get wrong and
 cheap to get into.
