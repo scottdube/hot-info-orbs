@@ -25,7 +25,7 @@ behind it.]**
 
 **[Slow push-in on the orbs; cut to the board from above.]**
 
-Five little round screens on one board, run by a Wi-Fi chip about the size of
+Five round screens on one board, run by a Wi-Fi dev board about the size of
 a postage stamp. They show the time, the weather and the markets, and they
 keep themselves up to date.
 
