@@ -100,7 +100,7 @@ To have the orbs rotate Clock → Stocks → Weather on their own, set
 `WIDGET_CYCLE_DELAY` in `config.h` to the number of seconds per page (15 works
 well; 0 turns it off). Pressing a button restarts the countdown.
 
-**After the first flash, most of `config.h` can be changed from a phone.** Open
+**After the first flash, most of `config.h` can be changed from a phone or computer.** Open
 `http://<orb's IP>/settings` to change the rotation time, tickers, weather
 location and units, timezone, clock face and colors, night-dim hours,
 upside-down mounting, and the start-up picture. The orbs restart to apply the

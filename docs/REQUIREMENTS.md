@@ -25,7 +25,7 @@ hardware but does not write code, that is a wall.
   ticker list, clock face, and the scheduled dim hours (see the note below —
   this is not brightness control)
 - Persist to NVS so settings survive a reboot and a firmware update
-- Be reachable without special software — a browser on a phone is enough
+- Be reachable without special software — a browser on a phone or computer is enough
 
 **Should:**
 - Show the device's current state: WiFi signal, uptime, last successful API call

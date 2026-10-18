@@ -139,7 +139,7 @@ no new port appears, try the other button: R only restarts the board.)
 
 ## 7. Connect it to WiFi
 
-The orbs create their own WiFi network on first boot. On a phone or laptop, join
+The orbs create their own WiFi network on first boot. On a phone or computer, join
 the network the orbs advertise, and a configuration page opens automatically.
 Pick your home network from the list and enter its password.
 
