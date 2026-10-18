@@ -85,35 +85,35 @@
 
 #define TFT_SDA_READ
 
-// ===== HoT Info Orbs board, Rev 1.1 - ESP32-S3 SuperMini =====
-// These are read off hot_info_orbs.kicad_pcb, not copied from another project.
-// Do NOT substitute HackerBoxes' published map: theirs uses GPIO10 for TFT_CS
-// and GPIO3 for a button. On this board GPIO10 is SW3, and GPIO3 is left free
-// deliberately because it is an ESP32-S3 strapping pin.
-#define TFT_MOSI 11
+// ===== HoT Info Orbs board, XIAO carrier (hardware/hot-info-orbs-xiao) =====
+// Seeed XIAO ESP32-S3 or ESP32-S3 Plus on its 14 edge pins - the two have the
+// same D0-D10 map, so this block is for both. Read off hot_info_orbs_xiao.kicad_pcb
+// (U2 pad -> net); D-numbers are the XIAO silk. The v1.1 prototype (tag
+// v1.1-prototype-firmware) has a different map; do not copy from it.
+#define TFT_MOSI 9   // D10
 #define TFT_MISO -1
-#define TFT_SCLK 12
-#define TFT_CS 14 // not connected to anything; TFT_eSPI needs a pin, each display has its own CS below
-#define TFT_DC 9
-#define TFT_RST 13
+#define TFT_SCLK 7   // D8
+#define TFT_CS 10    // not connected to anything; TFT_eSPI needs a pin, each display has its own CS below
+#define TFT_DC 8     // D9
+#define TFT_RST -1   // no GPIO left: the panels' RST is an RC power-on reset (R1 10k / C2 1u)
+                     // and TFT_eSPI sends the software reset (TFT_SWRST) when TFT_RST < 0
 #define USE_HSPI_PORT
 
-#define SCREEN_1_CS 4
-#define SCREEN_2_CS 5
-#define SCREEN_3_CS 6
-#define SCREEN_4_CS 7
-#define SCREEN_5_CS 8
+#define SCREEN_1_CS 3   // D2  (strapping pin: a CS idles high, which is its default level)
+#define SCREEN_2_CS 4   // D3
+#define SCREEN_3_CS 5   // D4
+#define SCREEN_4_CS 43  // D6 / U0TXD - fine as an output, so the UART pins went to CS, not buttons
+#define SCREEN_5_CS 44  // D7 / U0RXD
 
-// SW1 / SW2 / SW3 left to right on the board; OK is the middle one, matching
-// upstream's "short press of the middle button" behavior.
+// SW1 / SW2 / SW3 left to right on the board; OK is the middle one.
 #if INVERTED_ORBS
-    #define BUTTON_OK 2
-    #define BUTTON_LEFT 10
-    #define BUTTON_RIGHT 1
+    #define BUTTON_OK 2     // D1
+    #define BUTTON_LEFT 6   // D5
+    #define BUTTON_RIGHT 1  // D0
 #else
-    #define BUTTON_OK 2
-    #define BUTTON_LEFT 1
-    #define BUTTON_RIGHT 10
+    #define BUTTON_OK 2     // D1
+    #define BUTTON_LEFT 1   // D0
+    #define BUTTON_RIGHT 6  // D5
 #endif
 
 #define BUTTON_DEBOUNCE_TIME 35        // Debounce buttons for X ms
@@ -121,7 +121,9 @@
 #define BUTTON_LONG_PRESS_TIME 2000     // Long press is registered after X ms
 
 #define BUTTON_MODE INPUT_PULLDOWN
-#define BUSY_PIN 15 // was 2 on the dev kit; GPIO2 is SW2 on this board
+#define BUSY_PIN 21  // the XIAO's own user LED (same GPIO on the S3 and S3 Plus); no edge pin was left for it
+#define BUSY_ON LOW  // that LED is wired to 3V3 through a resistor: LOW lights it
+#define BUSY_OFF HIGH
 
 
 #define NTP_SERVER "pool.ntp.org"

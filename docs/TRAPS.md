@@ -138,6 +138,13 @@ the USB port, so nothing services a CDC endpoint and macOS keeps losing it.
 -D ARDUINO_USB_CDC_ON_BOOT=1
 ```
 
+> **XIAO (2026-10-14):** this trap is the v1.1 prototype's (ESP32-S3 SuperMini). The
+> `seeed_xiao_esp32s3` board definition sets exactly these two flags itself,
+> and on the XIAO they are right: its USB-C is wired to the ESP32-S3's native
+> USB with no bridge chip, so the application *must* own the CDC endpoint for
+> there to be a console at all. Do not remove them here. Untested on hardware
+> until a XIAO board exists.
+
 With those set, the *application* takes ownership of the USB peripheral instead
 of leaving it to the ROM. It then fails to enumerate, and the board disappears
 from the host completely — no `/dev/cu.usbmodem*`, nothing in
@@ -225,16 +232,16 @@ The web-settings merge added `[env:native]` for host unit tests. CI runs a bare
 `pio run`, which builds **every** env, so it tried to compile `firmware/src`
 for the host: `'Arduino.h' file not found`. It failed on all three OSes from
 983c037 until the fix. Locally everything was green, because every local command
-named its env (`-e esp32-s3-devkitc-1`, `-e ota`, `pio test -e native`).
+named its env (`-e esp32-s3-devkitc-1` — now `xiao-esp32s3` on this branch —, `-e ota`, `pio test -e native`).
 
-Fix: `default_envs = esp32-s3-devkitc-1, ota` under `[platformio]`, plus an
+Fix: `default_envs = <firmware env>, ota` under `[platformio]`, plus an
 explicit `pio test -e native` step in CI. This is the "change the build
 contract, change CI in the same commit" trap above, a second time. **Before a
 merge, run the exact CI command (`pio run`, no `-e`) locally.**
 
 ## One display lit but blank — cleared by a reset, cause unknown (2026-10-17)
 
-Scott's SuperMini orb (MAC e0:72:a1:ea:ab:84) showed display 1 with its
+Scott's v1.1 prototype orb (ESP32-S3 SuperMini, MAC e0:72:a1:ea:ab:84) showed display 1 with its
 backlight on and no content; displays 2–5 were not checked before the fix. Three
 USB resets happened while probing — opening the USB-JTAG port resets the S3, and
 so does `esptool flash_id` — and afterwards all five displays showed data.
@@ -247,3 +254,50 @@ DS1 (CS GPIO4) missed initialization at power-up, but that is a hypothesis. If i
 comes back: note which displays are blank, and **before resetting anything**,
 swap DS1 with DS2. If the blank moves with the module, the module is at fault; if
 it stays in position 1, the cause is the board, the GPIO4 path or that socket.
+
+## A 3D model fitted by eye can sit a castellation column off the holes (2026-10-16)
+
+Branch `xiao-esp32s3-plus`, carrier board. On 2026-10-14 the Seeed XIAO
+STEP was fitted by rendering against the DIP footprint's copper. It looked
+right. When the module went onto headers, Scott saw that its holes missed
+the pins. Fusion `find_geometry` on the hole faces measured the error at
+1.49 mm across the rows and 0.127 mm along them.
+
+Fit a model by measuring its holes against the pad positions. A render
+can't show this: the module is 11 mm up, so parallax hides it.
+
+The fix had a sign trap. On a back-side (flipped) footprint, the model
+offset's local y went to -x on the board while the pads' local y went to
++x. Make one move, re-measure, and only then trust the direction.
+
+
+## KiCad draws 180-degree silk upright; the STEP export does not (2026-10-17)
+
+The XIAO board's display footprints sit at 180 degrees, and their DS1-DS5
+reference text rode along at 180. In KiCad's editor and its 3D viewer the
+labels read upright, so the board looked right. The STEP export
+(`kicad-cli pcb export step --include-silkscreen`) does not apply that
+correction: in Fusion every DS label read flipped, and Scott caught it, not
+a check. Fix: set the text to 0 degrees absolute
+(`Reference().SetTextAngleDegrees(0)` in `physical_rework.py`), which is
+upright in both places. **Review silk in the STEP, not in KiCad, whenever
+a footprint is rotated 180.**
+
+## Freerouting's empty SES is an exit race, not unrouted nets (2026-10-17)
+
+Branch `xiao-esp32s3-plus`, `tools/route_xiao.py`. The script asserted that
+a 0-byte SES meant "nets left unrouted" and stopped there. That reading was
+wrong. A run whose log said `0 unrouted and 0 violations` wrote 0 bytes, and
+an identical rerun wrote the file. Runs with 1 unrouted connection wrote
+21 KB. Freerouting 2.4.1 logs `Saving ...` and sometimes exits before the
+write lands.
+
+Fix: take the unrouted count from the log's `final score` line, and rerun on
+an empty file. The script does both now.
+
+Same session, two more: the DSN exports the mounting-hole Edge.Cuts circles
+as keepouts at the bare hole radius. Freerouting keeps only its 0.2 mm track
+clearance from them, so KiCad flagged `copper_edge_clearance` (0.5 mm). The
+script now grows them by 0.4 mm. And reordering the nets in the DSN changes
+nothing: 12 shuffles gave a byte-identical result, because Freerouting
+orders them itself.

@@ -19,9 +19,10 @@ struct TempestStatus {
     String error; // when !ok
 };
 
-// WeatherFlow Tempest better_forecast for one station. The reply is ~96 KB and
-// the SuperMini has no PSRAM, so it is streamed through a filter rather than
-// read into a String. docs/TEMPEST-API.md
+// WeatherFlow Tempest better_forecast for one station. The reply is ~96 KB, so
+// it is streamed through a filter rather than read into a String (written for
+// a module without PSRAM; still right on the XIAO - a 96 KB String fragments
+// the heap for nothing). docs/TEMPEST-API.md
 class TempestSource : public WeatherSource {
   public:
     static const int SLOTS = 2;

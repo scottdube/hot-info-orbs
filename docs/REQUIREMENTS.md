@@ -207,7 +207,7 @@ doesn't expose).
 
 **Firmware updates must not require a USB cable.**
 
-**Status 2026-09-23: implemented and tested on the SuperMini.** USB flash of the
+**Status 2026-09-23: implemented and tested on the v1.1 prototype (ESP32-S3 SuperMini).** Not yet run on a XIAO ESP32-S3 or S3 Plus. USB flash of the
 new layout, then a browser-style multipart upload to `/update` by IP: 11 s
 upload, back on the network 14 s later. otadata read back over USB afterwards:
 highest sequence 2 → running `app1`, state `VALID`, i.e. the new image reached

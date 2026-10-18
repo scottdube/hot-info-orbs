@@ -10,7 +10,7 @@
 constexpr uint32_t WEBDATA_MIN_INTERVAL_MS = 10000;
 constexpr uint32_t WEBDATA_DEFAULT_INTERVAL_MS = 60000;
 constexpr uint32_t WEBDATA_TIMEOUT_MS = 5000; // connect, and each read
-constexpr size_t WEBDATA_MAX_BYTES = 16 * 1024; // the SuperMini has no PSRAM
+constexpr size_t WEBDATA_MAX_BYTES = 16 * 1024; // sized to fit without PSRAM; the XIAO's 8 MB is not relied on yet
 
 // Refresh period from the reply's "interval" (ms, as upstream)
 inline uint32_t webDataInterval(bool present, long ms) {

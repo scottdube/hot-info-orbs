@@ -1,7 +1,8 @@
 # HoT Info Orbs
 
 Five round 240×240 displays on one SPI bus, driven by a Seeed **XIAO ESP32-S3
-or XIAO ESP32-S3 Plus** (builder's choice), on a custom carrier board. Clock, weather, stocks — and whatever else gets written.
+or XIAO ESP32-S3 Plus** (builder's choice), on a custom carrier board.
+Clock, weather, stocks — and whatever else gets written.
 
 ## Start here
 
@@ -17,16 +18,10 @@ the project's files; everything you need is one of these links:
   whichever you prefer. Same board, same pins, same firmware; the Plus has more
   flash.
 - **You have a built one and want it running:** the
-  [setup guide](https://github.com/scottdube/hot-info-orbs/blob/xiao-esp32s3-plus/docs/SETUP.md), written for someone who has never
-  done this.
-- **You want the files:**
-  [download them as a ZIP](https://github.com/scottdube/hot-info-orbs/archive/refs/heads/xiao-esp32s3-plus.zip). The board is in
+  [setup guide](docs/SETUP.md), written for someone who has never done this.
+- **You want the files:** the green **Code** button above, then
+  **Download ZIP**, gets everything. The board is in
   `hardware/hot-info-orbs-xiao/`, the software in `firmware/`.
-
-The XIAO board and its firmware are on the
-[`xiao-esp32s3-plus` branch](https://github.com/scottdube/hot-info-orbs/tree/xiao-esp32s3-plus) until they move here, which is why the links
-above point there. The files on `main` today are the earlier v1.1
-prototype, kept for the record; it is not part of the club build.
 
 Built as a club project, which shapes the whole thing: it is assembled by people
 at a wide range of skill levels, so the build has to be hard to get wrong and
@@ -66,7 +61,7 @@ this repository is public.
 **Upgrading a board flashed before 2026-09-23? Flash it once more over USB.**
 The WiFi updates need a new flash layout (two firmware slots instead of one), and
 only a USB flash writes that layout. Every update after that can go over WiFi:
-open `http://<orb's IP>/update`, choose `.pio/build/esp32-s3-devkitc-1/firmware.bin`
+open `http://<orb's IP>/update`, choose `.pio/build/xiao-esp32s3/firmware.bin`
 and upload. The page also shows which commit is running. Set `OTA_PASSWORD` in
 `secrets.h`, or anyone on your network can flash your orbs. Details in
 [docs/SETUP.md](docs/SETUP.md#8-later-updates-no-cable-needed).
@@ -114,21 +109,18 @@ to them. See [docs/SETUP.md](docs/SETUP.md#9-change-settings-from-a-browser).
 
 ## Hardware
 
-**The club board is the XIAO carrier**, for a XIAO ESP32-S3 or XIAO ESP32-S3
-Plus: [`hardware/hot-info-orbs-xiao/` on the `xiao-esp32s3-plus` branch](https://github.com/scottdube/hot-info-orbs/tree/xiao-esp32s3-plus/hardware/hot-info-orbs-xiao).
+The KiCad 10 project is in
+**[hardware/hot-info-orbs-xiao/](hardware/hot-info-orbs-xiao/)**, for a Seeed
+XIAO ESP32-S3 or XIAO ESP32-S3 Plus. Symbol and footprint libraries are
+project-local, so cloning and opening is all that is required — nothing to
+install or copy into a global library. Its README has the board's state and the
+BOM.
 
-What follows describes the **v1.1 prototype** on this branch, built for an
-earlier module that the project no longer uses. Its KiCad 10 project is in
-**[hardware/hot-info-orbs/](hardware/hot-info-orbs/)**.
-Symbol and footprint libraries are project-local, so cloning and opening is all
-that is required — nothing to install or copy into a global library.
-
-**Board v1.1 — 10 boards ordered 2026-08-29**, tagged
-[`v1.1-run1`](../../releases/tag/v1.1-run1). The exact gerbers sent to the fab
-are committed at `hardware/hot-info-orbs/fab/`, and that file is never
-regenerated: if a board comes back wrong, there has to be no question what was
-sent. See [hardware/hot-info-orbs/fab/README.md](hardware/hot-info-orbs/fab/README.md)
-for the order parameters and the drill-tool cross-check.
+The **v1.1 prototype** that came before it (10 boards ordered 2026-08-29, for
+an earlier module the project no longer uses) is kept at tag
+[`v1.1-run1`](../../releases/tag/v1.1-run1), with the exact gerbers sent to the
+fab in `hardware/hot-info-orbs/fab/` at that tag. Its last firmware, for the
+prototype boards already built, is at tag `v1.1-prototype-firmware`.
 
 ## Documentation
 
@@ -138,6 +130,7 @@ for the order parameters and the drill-tool cross-check.
 | [docs/TRAPS.md](docs/TRAPS.md) | things that cost time once, so they cost it once |
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | web control panel and OTA, with the traps that will bite whoever builds them |
 | [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | the prototype's module choice, since replaced by the XIAO ESP32-S3 / S3 Plus; kept for the arguments that reversed |
+| [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | the board: XIAO ESP32-S3 / S3 Plus on edge pins only, where the twelfth pin went, what the autorouter rejected |
 | [docs/ESPHOME-EVALUATION.md](docs/ESPHOME-EVALUATION.md) | why this is not an ESPHome project |
 
 The variant and ESPHome documents keep the reasoning that changed rather than

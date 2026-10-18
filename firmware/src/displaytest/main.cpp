@@ -19,7 +19,10 @@
 //              on the diagonals. Seeing them means pixels exist under the
 //              dark band.
 //
-// Pin map is the v1.1 SuperMini board, set in platformio.ini [env:displaytest].
+// Pin map is the XIAO carrier (hardware/hot-info-orbs-xiao), the same map as the
+// board block in config.h.template; bus pins are set in platformio.ini
+// [env:displaytest]. The 2026-10-17 results in docs/DISPLAY-EDGE-TEST.md were
+// taken on the v1.1 prototype, whose map is at tag v1.1-prototype-firmware.
 #ifdef DISPLAY_TEST
 
 #include <Arduino.h>
@@ -27,8 +30,8 @@
 #include <TFT_eSPI.h>
 #include <math.h>
 
-static const uint8_t SCREEN_CS[5] = {4, 5, 6, 7, 8};
-static const uint8_t BUTTONS[3] = {1, 2, 10}; // active high, INPUT_PULLDOWN
+static const uint8_t SCREEN_CS[5] = {3, 4, 5, 43, 44}; // D2 D3 D4 D6 D7
+static const uint8_t BUTTONS[3] = {1, 2, 6}; // D0 D1 D5, active high, INPUT_PULLDOWN
 static const int N = 240;
 static const float C = 119.5f; // pixel centers run 0..239, so the center falls between pixels
 

@@ -9,7 +9,7 @@
 #include "WebDataModel.h"
 #include "WebDataPolicy.h"
 
-// The last fetch, for the settings page's status line (no serial on the SuperMini)
+// The last fetch, for the settings page's status line (the orb's own status readout)
 struct WebDataStatus {
     bool attempted = false;
     bool ok = false;

@@ -1,8 +1,9 @@
 # Power: measured, 2026-09-10
 
 Every power figure in this project was an estimate until this. Measured on the
-first assembled board — five GC9A01 displays, ESP32-S3 SuperMini, running the
-ported firmware on WiFi.
+first assembled board — the v1.1 prototype: five GC9A01 displays on an ESP32-S3
+SuperMini, running the ported firmware on WiFi. The project now uses a XIAO
+ESP32-S3 or XIAO ESP32-S3 Plus, which has not been measured yet.
 
 **Instrument:** Nordic PPK II, source meter mode, 5.000 V, 10 kSa/s, 10 s window.
 

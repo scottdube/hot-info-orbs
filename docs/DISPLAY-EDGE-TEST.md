@@ -9,7 +9,7 @@ the lit area and the glass edge.
 
 | Date | Orb | Pattern | Seen | By |
 |---|---|---|---|---|
-| 2026-10-17 | SuperMini v1.1, MAC …ea:ab:84 | 2 RINGS | **5 of 5 white bands visible**: the outermost (r 118–120 px) shows, so the panel renders out to r=120, the full 240 px | Scott, by eye |
+| 2026-10-17 | v1.1 prototype (ESP32-S3 SuperMini), MAC …ea:ab:84 | 2 RINGS | **5 of 5 white bands visible**: the outermost (r 118–120 px) shows, so the panel renders out to r=120, the full 240 px | Scott, by eye |
 | 2026-10-17 | same | 1 FULL | **a dark band sits outside the white**: the glass extends past the active area | Scott, by eye |
 | 2026-10-17 | same | 1 FULL, calipers | **lit circle ≈32.5 mm; dark band ≈1.5 mm wide, even all the way round**, so the glass is ≈35.5 mm | Scott, "roughly" |
 | 2026-10-17 | same | 4 BEYOND | **3 of 5 rings visible**: the two drawn past r=120 (r 122–124, 126–128, which can only appear as diagonal arcs) do not show | Scott, by eye |

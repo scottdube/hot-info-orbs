@@ -1,10 +1,5 @@
 # Setting Up Info Orbs From Scratch
 
-> **Building the club board (XIAO ESP32-S3 or XIAO ESP32-S3 Plus)? Use
-> [the guide on the `xiao-esp32s3-plus` branch](https://github.com/scottdube/hot-info-orbs/blob/xiao-esp32s3-plus/docs/SETUP.md).** This copy
-> is for the v1.1 prototype and its earlier module, which the project no longer
-> uses; its build target will not run on a XIAO.
-
 Written for someone who has never used PlatformIO. If you have, skip to
 [step 3](#3-create-your-two-config-files) — the only thing that has changed from
 upstream is that there are now **two** files to copy, not one.
@@ -15,7 +10,7 @@ Budget about 45 minutes the first time. Most of that is downloads.
 
 ## What you need before you start
 
-- The assembled orbs hardware (ESP32-S3 SuperMini + five round displays + three buttons)
+- The assembled orbs hardware (Seeed XIAO ESP32-S3 or XIAO ESP32-S3 Plus + five round displays + three buttons)
 - A **USB data cable**. Many cheap USB cables carry power only. If the board
   never shows up as a port, suspect the cable before anything else.
 - A 2.4 GHz WiFi network. The ESP32 cannot see 5 GHz networks at all.
@@ -129,7 +124,7 @@ Other things you can turn on here: dim hours and screens-off hours (separate sch
 
 1. Plug the orbs into USB.
 2. Click the **PlatformIO icon** (the alien head) in the left bar.
-3. Under **Project Tasks → esp32-s3-devkitc-1 → General**, click **Upload**.
+3. Under **Project Tasks → xiao-esp32s3 → General**, click **Upload**.
 
 The first build downloads the ESP32 platform and compiler — several hundred MB,
 several minutes, once. Later builds take about 15 seconds.
@@ -138,9 +133,9 @@ When it starts, one orb shows **Welcome** and how full the firmware slot is,
 e.g. `Flash 87%`. The project keeps that under 92% so updates always fit.
 
 If upload cannot find the board, put it in download mode by hand: unplug the
-USB cable, hold the **BOOT** button on the SuperMini, plug the cable back in,
-release, then click Upload. (The BOOT and RST labels can be hard to read. If
-no new port appears, try the other button: RST only restarts the board.)
+USB cable, hold the **B** (boot) button on the XIAO, plug the cable back in,
+release, then click Upload. (The XIAO's two buttons are marked B and R. If
+no new port appears, try the other button: R only restarts the board.)
 
 ## 7. Connect it to WiFi
 
@@ -158,7 +153,7 @@ flash has to be over USB (step 6), because it also writes the partition layout
 that makes network updates possible.
 
 - **From a browser:** build as usual, then open `http://info-orbs.local/update`,
-  choose `.pio/build/esp32-s3-devkitc-1/firmware.bin` and press Upload. If
+  choose `.pio/build/xiao-esp32s3/firmware.bin` and press Upload. If
   `.local` names do not resolve on your computer, use the IP address shown on
   the orbs when they connect.
 - **From PlatformIO:** `pio run -e ota -t upload`. This needs the orb to connect
@@ -221,8 +216,8 @@ the Tempest code is not compiled in at all.
 | `Copy firmware/config/secrets.h.template…`        | You missed step 3. Copy both templates.                                                                                                                                                      |
 | `WEATHER_API_KEY is empty…`                       | `secrets.h` exists but a key is still `""`. See step 4.                                                                                                                                      |
 | `ModuleNotFoundError: No module named 'intelhex'` | PlatformIO bootstrapped a fresh Python environment (often after a VS Code update) and missed a dependency of its flashing tool. Fix: `~/.platformio/penv/bin/python -m pip install intelhex` |
-| No serial port listed                             | Suspect the USB cable first — many are charge-only. The SuperMini uses the ESP32-S3's own USB, so no CP2102/CH340 driver is needed. If the orbs still answer on WiFi, they are fine: enter download mode (step 6) and reflash. |
-| Upload starts then fails                          | Enter download mode by hand: hold **BOOT** while plugging the cable in, then Upload (step 6).                                                                                                |
+| No serial port listed                             | Suspect the USB cable first — many are charge-only. The XIAO uses the ESP32-S3's own USB, so no CP2102/CH340 driver is needed. If the orbs still answer on WiFi, they are fine: enter download mode (step 6) and reflash. |
+| Upload starts then fails                          | Enter download mode by hand: hold **B** while plugging the cable in, then Upload (step 6).                                                                                                |
 | Clock right, weather orb blank                    | The weather key is wrong or its quota is spent. A bad key fails silently at runtime — it cannot be caught at build time.                                                                     |
 | Never finds your WiFi                             | The network is 5 GHz. The ESP32 only sees 2.4 GHz.                                                                                                                                           |
 | Builds broke on a machine that worked before      | A VS Code update replaced PlatformIO's Python environment. Reopen the project folder in VS Code and let the bootstrap finish, then see the `intelhex` row above.                             |
