@@ -166,7 +166,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="fig"><b>5 × 240²</b><span>round GC9A01 displays on one SPI bus</span></div>
     <div class="fig"><b>1.71 W</b><span>typical draw at 5 V, measured</span></div>
     <div class="fig"><b>0 cables</b><span>to update the firmware or change a setting after the first flash</span></div>
-    <div class="fig"><b>87%</b><span>of a firmware slot used; the stop line is 92%</span></div>
+    <div class="fig"><b>43%</b><span>of a firmware slot used; the stop line is 92%</span></div>
   </div>
 </section>
 
@@ -290,8 +290,8 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <div class="top"><h3>Basic</h3><span class="st prop">◔ Designed, not built</span></div>
       <dl>
         <dt>Module</dt><dd>Seeed XIAO ESP32-S3 (plain), on headers or soldered flat on its castellations</dd>
-        <dt>Flash</dt><dd><span class="num">8 MB</span>; the build uses the first 4 MB as two 1.875 MB firmware slots so updates are safe</dd>
-        <dt>Headroom</dt><dd>Firmware fills <span class="num">85.9%</span> of a slot (build of 18 Oct 2026, custom pages included). The stop line is <span class="num">92%</span>.</dd>
+        <dt>Flash</dt><dd><span class="num">8 MB</span>; laid out as two 3.75 MB firmware slots so updates are safe</dd>
+        <dt>Headroom</dt><dd>Firmware fills <span class="num">43.0%</span> of a slot (build of 18 Oct 2026, custom pages included). The stop line is <span class="num">92%</span>.</dd>
         <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal; the board definition enables it, not yet measured on hardware</dd>
         <dt>Carrier</dt><dd><span class="num">hardware/hot-info-orbs-xiao</span>: the v1.1 board with the module footprint swapped</dd>
         <dt>Pins</dt><dd>11 GPIO used: 8 for the displays (5 chip selects plus data, clock and DC; reset is an RC circuit) and 3 for the buttons; the busy light is the XIAO's own LED</dd>
@@ -303,7 +303,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <div class="top"><h3>Advanced</h3><span class="st prop">◔ Designed, not built</span></div>
       <dl>
         <dt>Module</dt><dd>Seeed XIAO ESP32-S3 Plus — drop-in for the plain S3: identical D0–D10 pins, LED and size (Seeed wiki, checked 14 Oct 2026)</dd>
-        <dt>Flash</dt><dd><span class="num">16 MB</span>. The shared binary uses 4 MB; a 16 MB build would open the rest for widgets, fonts and pictures but would no longer run on the plain S3</dd>
+        <dt>Flash</dt><dd><span class="num">16 MB</span>. The shared binary uses 8 MB; a 16 MB build would open the rest for widgets, fonts and pictures but would no longer run on the plain S3</dd>
         <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal</dd>
         <dt>Carrier</dt><dd>The same board as Basic</dd>
         <dt>Pins</dt><dd>The same 11 edge pins as Basic. The Plus's nine extra GPIO (D11–D19) are on its back and are not reachable from this board.</dd>
@@ -352,7 +352,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <dt>Chip</dt><dd>ESP32-S3, dual-core, 240 MHz</dd>
         <dt>Radio</dt><dd>2.4 GHz WiFi</dd>
         <dt>Module</dt><dd>Seeed XIAO ESP32-S3 or XIAO ESP32-S3 Plus</dd>
-        <dt>Flash</dt><dd><span class="num">8 MB</span> (S3) or <span class="num">16 MB</span> (S3 Plus); the firmware uses 4 MB on either</dd>
+        <dt>Flash</dt><dd><span class="num">8 MB</span> (S3) or <span class="num">16 MB</span> (S3 Plus); the firmware uses 8 MB on either</dd>
         <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal on both</dd>
         <dt>Free memory</dt><dd>About <span class="num">210 KB</span> of heap after a weather fetch <span class="m">MEASURED</span></dd>
       </dl>

@@ -130,7 +130,7 @@ The first build downloads the ESP32 platform and compiler — several hundred MB
 several minutes, once. Later builds take about 15 seconds.
 
 When it starts, one orb shows **Welcome** and how full the firmware slot is,
-e.g. `Flash 87%`. The project keeps that under 92% so updates always fit.
+e.g. `Flash 43%`. The project keeps that under 92% so updates always fit.
 
 If upload cannot find the board, put it in download mode by hand: unplug the
 USB cable, hold the **B** (boot) button on the XIAO, plug the cable back in,

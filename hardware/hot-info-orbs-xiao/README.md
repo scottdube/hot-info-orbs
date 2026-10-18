@@ -10,7 +10,7 @@ share the edge pins. This is the project's only board. It was copied on
 **S3 and S3 Plus are interchangeable here** (Seeed wiki, checked 2026-10-14):
 identical D0–D10 → GPIO map, user LED GPIO21 on both, 21 × 17.8 mm both,
 U.FL antenna both, 8 MB PSRAM both. Flash 8 MB vs 16 MB; the firmware builds
-for 8 MB and uses 4 MB, so one binary runs on either. The Plus's extra
+for 8 MB and uses all 8 MB, so one binary runs on either. The Plus's extra
 D11–D19 are on its back and are not used by this board.
 
 **Antenna:** the XIAO has a U.FL pigtail and a stick-on FPC antenna (Seeed

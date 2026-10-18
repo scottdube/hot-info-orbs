@@ -14,7 +14,7 @@
 
 static const char *BOOT_PATH = "/boot.jpg";
 static const char *BOOT_TMP = "/boot.tmp";
-static const size_t BOOT_MAX = 64 * 1024; // the filesystem is 128 KB
+static const size_t BOOT_MAX = 64 * 1024; // boot.tmp + boot.jpg both fit the 384 KB filesystem
 static const size_t HEADER_CHECK = 4096; // SOF sits in the first ~600 bytes of a canvas JPEG
 
 bool SettingsPage::s_fsMounted = false;

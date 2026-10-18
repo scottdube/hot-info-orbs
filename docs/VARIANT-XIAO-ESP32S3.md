@@ -51,7 +51,7 @@ Scott wants either module to drop in. Checked against the Seeed wiki
 | GPIO | 11 | 18 (D11–D19 on the back, not reachable from this board) |
 
 So the same board and the same binary serve both, provided the binary is
-built for 8 MB flash — which it is (`board_upload.flash_size = 8MB`, 4 MB
+built for 8 MB flash — which it is (`board_upload.flash_size = 8MB`, 8 MB
 partition layout). A 16 MB build would gain the Plus's extra flash and stop
 running on the plain S3; rejected until there is something to put in it.
 Not verified on hardware: no XIAO of either kind has run this firmware.
@@ -104,11 +104,15 @@ prototype's block is at tag `v1.1-prototype-firmware`. The XIAO board definition
 XIAO's console *is* the native USB (no bridge chip), so the TRAPS.md warning
 against those flags — written for the prototype's module — does not apply.
 
-Flash: the generic XIAO board json declares 8 MB; the Plus has 16 MB. The
-build keeps v1.1's `partitions.csv` (two 1.875 MB app slots, laid out for
-4 MB) so both boards run one OTA layout. Using the rest means
-`board_upload.flash_size = 16MB` and a new partition table — not done, not
-needed yet. Measured 2026-10-14: the XIAO build fills 84.0 % of an app slot.
+Flash: the generic XIAO board json declares 8 MB; the Plus has 16 MB. Until
+2026-10-18 the build kept v1.1's `partitions.csv` (two 1.875 MB app slots,
+laid out for 4 MB), where it filled 84.0 % of a slot (2026-10-14) and 85.9 %
+(2026-10-18). `partitions.csv` is now laid out for 8 MB — two 3.75 MB app
+slots, 384 KB filesystem — so both boards still run one OTA layout and the same
+build fills 43.0 %. Using the Plus's other 8 MB means
+`board_upload.flash_size = 16MB` and a 16 MB table, which would not boot on the
+plain S3 — not done, not needed. A changed table is only written by a USB
+flash; an OTA update keeps whatever table the module already has.
 
 Trap: `config.h` reaches the compiler via `-include config_helper.h`, which
 SCons does not track as a dependency. After editing `config.h` an incremental
