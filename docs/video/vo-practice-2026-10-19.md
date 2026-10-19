@@ -75,3 +75,21 @@ Whisper can mishear, so listen before changing anything:
 \* 14.0 s measured, less the 6.2 s pause after "yourself."
 "✓" allows 0.5 s over, the same as the storyboard's ⚠ rule.
 Hyphen and number spellings ("wifi", "handson", "24") are whisper's, not the reader's.
+
+## Pickup: S25–S32, re-read the same day
+
+Scott heard a couple of stumbles in S25–S32 and re-read them: `vo/vo-read2-pickup-S25-S32.wav`
+(67 s, same Lark M2, **0 clicks**, peak −9.5 dBFS). Last take of each line:
+
+| Shot | Shot length | Spoken | Over by | Read 2 | Notes |
+|---|---|---|---|---|---|
+| S25 | 4 s | 3.4 s | ✓ | 4.4 s | clean |
+| S26 | 5 s | 1.3 s | ✓ | 1.0 s | clean |
+| S27 | 4 s | 2.1 s | ✓ | 2.5 s | clean |
+| S29 | 8 s | ~6 s* | ✓ | 7.9 s | now says "**for** an even smaller chip", as scripted; "the buttons" → "buttons" |
+| S30 | 6 s | 6.9 s | ⚠ +0.9 s | 8.2 s | same rewording as read 2: "In the case… in finned end caps. It's all 3D printed. That one is still in design." |
+| S31 | 4 s | ~2.6 s* | ✓ | 2.2 s | — |
+| S32 | 5 s | 4.2 s | ✓ | 3.9 s | third take is word-perfect; the first two said "who first built it" |
+
+\* Raw measure includes a pause the edit will cut: S29 11.1 s with ~5 s after "chip.",
+S31 5.1 s with ~2.5 s after "at". Use the pickup for S25–S32 unless Scott's ear says otherwise.
