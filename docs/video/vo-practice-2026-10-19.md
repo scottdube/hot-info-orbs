@@ -110,11 +110,32 @@ recordings are untouched; the projects are in `vo/edit/`.
     (Scott, 2026-10-19), so the script and storyboard now say "club leader" too.
   - **S23**: a "Settings live—" false start (1.9 s).
   - **Pickup S29**: a first full read (4.8 s). The "~5 s pause" in the timing above was this.
+  - **S31**: "Everything's on GitHub at the—" before the kept take (2.55 s). Scott heard it
+    after the file was called clean. Whisper had merged it into one 2.8 s word "link", so
+    neither the transcript nor the phrase-repeat check could see it. Cut in the final file
+    directly (20 ms crossfade, silence to silence).
 - **Joined:** read 2 through S24, then the pickup from S25 to 1 s after S32 (the trailing "Hmm"
   dropped), cut in the S24/S25 pause with a 30 ms crossfade.
-  **`vo/vo-read2-final-2026-10-19.wav`, 4:01, 24-bit.**
-- **Checked on the final file:** all 33 of 33 lines found; no 4-word phrase repeats within
+  **`vo/vo-read2-final-2026-10-19.wav`, 3:58, 24-bit** (4:01 before the S31 cut).
+- **Checked on the final file:** all 33 of 33 lines found; re-transcribed in 12 s chunks
+  (`vo-timing/chunktx.py`, which keeps the words a whole-file pass merges) and diffed against
+  the script: only the wording changes listed above; no 4-word phrase repeats within
   45 s (except "anyone in the club", which is in both S04 and S07 of the script); one burst of
   sound without words, a 0.4 s breath before S21; **0 clicks**.
 - Line timings in the final file (pauses inside lines included): S15 9.2 s, S29 6.6 s,
   S31 5.0 s. Over their shots: S03, S05, S09, S13, S15, S16, S17, S20a, S20b, S30, S31.
+
+## Into the rough cut
+
+Read 2 replaced read 1 in `hot-info-orbs-intro.fcproj` ("Intro rough cut"), built the same way:
+one clip per line on A1 ("VO Sxx (read 2)"), each shot held for 0.2 s of picture before its
+line and 0.2 s after. Fixed-length shots keep their length (S02 4, S18 9.5, S21 10.8, S31 4,
+S32 5). Silent shots keep theirs (S01, S28, S33). Read 1 stays in the VO bin as reference.
+
+- **Picture 4:18.1** (read 1 gave 4:38.5; storyboard 3:37). Last line ends at 4:14.9.
+- **Shots held longer than the storyboard:** S03 +3.8, S05 +1.8, S06 +1.1, S07 +1.1, S09 +3.8,
+  S10 +0.6, S11 +1.1, S12 +0.2, S13 +3.3, S15 +5.6, S15a +1.1, S16 +3.4, S17 +1.9, S20a +6.8,
+  S20b +1.9, S23a +1.0, S25 +0.6, S30 +1.6 s. Trim these later, one section at a time.
+- Checked: 36 markers, 33 VO clips with no overlaps, the 6 scaled stills kept their scale. The
+  sequence audio, re-transcribed, matches the script line for line.
+- Backup before the change: `hot-info-orbs-intro-before-read2-2026-10-19.fcproj`.
