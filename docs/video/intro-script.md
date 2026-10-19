@@ -110,7 +110,7 @@ connection to it. Three buttons do the rest.
 
 **[Bare carrier board, then KiCad view of it.]**
 
-Club member Yang and I designed the board that ties it together, and JLCPCB makes
+Club leader Yang and I designed the board that ties it together, and JLCPCB makes
 it.
 
 **[USB cable plugging in; the orbs light up on the boot screen.]**

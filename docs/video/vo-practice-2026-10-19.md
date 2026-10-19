@@ -106,8 +106,8 @@ recordings are untouched; the projects are in `vo/edit/`.
   in it (`vo-timing/gaps.py`), re-transcribing each hit alone, and cut by hand:
   - **S15**: the first "And for coders… This one," (4.9 s).
   - **S18**: read **five** times; four false starts cut (22.9 s). The kept take says
-    "**Club leader** Yang and I design the board that ties it together", where the script
-    says "Club member… designed". Scott's call whether the script follows.
+    "**Club leader** Yang and I design the board that ties it together". Yang is club leader
+    (Scott, 2026-10-19), so the script and storyboard now say "club leader" too.
   - **S23**: a "Settings live—" false start (1.9 s).
   - **Pickup S29**: a first full read (4.8 s). The "~5 s pause" in the timing above was this.
 - **Joined:** read 2 through S24, then the pickup from S25 to 1 s after S32 (the trailing "Hmm"
