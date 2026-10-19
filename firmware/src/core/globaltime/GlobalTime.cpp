@@ -131,6 +131,14 @@ bool GlobalTime::isPM() {
 }
 
 void GlobalTime::getTimeZoneOffsetFromAPI() {
+#ifdef DEMO_MQTT_HOST
+    // Demo build: fixed EDT. Over the phone hotspot this lookup blocked the
+    // loop for 3 minutes, then retried every second.
+    m_timeZoneOffset = -4 * 3600;
+    m_nextTimeZoneUpdate = 0;
+    m_timeClient->setTimeOffset(m_timeZoneOffset);
+    return;
+#endif
     HTTPClient http;
     http.begin(String(TIMEZONE_API_URL) + "?key=" + TIMEZONE_API_KEY + "&format=json&fields=gmtOffset,zoneEnd&by=zone&zone=" + String(sv::urlEncode(Settings::get().tz).c_str()));
     int httpCode = http.GET();
