@@ -93,3 +93,18 @@ Scott heard a couple of stumbles in S25–S32 and re-read them: `vo/vo-read2-pic
 
 \* Raw measure includes a pause the edit will cut: S29 11.1 s with ~5 s after "chip.",
 S31 5.1 s with ~2.5 s after "at". Use the pickup for S25–S32 unless Scott's ear says otherwise.
+
+## Retakes cut, one file for the edit
+
+Every abandoned attempt is cut with `fc-retakes`, which keeps the last complete reading and cuts at
+measured speech onsets. The original recordings are untouched; the projects are in `vo/edit/`.
+
+- **Read 2:** four retakes cut (S03 opening, S10, S16, S22), 312.1 → 283.5 s.
+- **Pickup:** two false starts of S32 cut, 67.0 → 57.0 s.
+- **Joined:** read 2 through S24, then the pickup from S25, cut in the middle of the 0.9 s
+  pause between them with a 30 ms crossfade. Result: **`vo/vo-read2-final-2026-10-19.wav`,
+  4:42**. Checked by transcript: 33 of 33 lines found, each line once, **0 clicks**.
+  (Whisper wrote "Any button wakes it" twice; the audio has one ~1 s phrase between two
+  pauses there, and the second "button" has zero length. That's whisper's error, not the audio's.)
+- Not cut: the pauses inside S15 (~6 s), S29 (~5 s) and S31 (~2.5 s). Those are a job for
+  `fc-cut-silences` or the edit.
