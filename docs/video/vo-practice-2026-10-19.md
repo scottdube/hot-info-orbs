@@ -96,15 +96,25 @@ S31 5.1 s with ~2.5 s after "at". Use the pickup for S25–S32 unless Scott's ea
 
 ## Retakes cut, one file for the edit
 
-Every abandoned attempt is cut with `fc-retakes`, which keeps the last complete reading and cuts at
-measured speech onsets. The original recordings are untouched; the projects are in `vo/edit/`.
+Every abandoned attempt is cut; the last complete reading of each line is kept. The original
+recordings are untouched; the projects are in `vo/edit/`.
 
-- **Read 2:** four retakes cut (S03 opening, S10, S16, S22), 312.1 → 283.5 s.
-- **Pickup:** two false starts of S32 cut, 67.0 → 57.0 s.
-- **Joined:** read 2 through S24, then the pickup from S25, cut in the middle of the 0.9 s
-  pause between them with a 30 ms crossfade. Result: **`vo/vo-read2-final-2026-10-19.wav`,
-  4:42**. Checked by transcript: 33 of 33 lines found, each line once, **0 clicks**.
-  (Whisper wrote "Any button wakes it" twice; the audio has one ~1 s phrase between two
-  pauses there, and the second "button" has zero length. That's whisper's error, not the audio's.)
-- Not cut: the pauses inside S15 (~6 s), S29 (~5 s) and S31 (~2.5 s). Those are a job for
-  `fc-cut-silences` or the edit.
+- **Pass 1, `fc-retakes`:** read 2 lost 4 (S03 opening, S10, S16, S22); the pickup lost two
+  false starts of S32.
+- **Scott still heard retakes** ("and for coders…"). **Whisper had dropped them from the
+  transcript entirely**, so fc-retakes never saw them. Found by looking for sound with no words
+  in it (`vo-timing/gaps.py`), re-transcribing each hit alone, and cut by hand:
+  - **S15**: the first "And for coders… This one," (4.9 s).
+  - **S18**: read **five** times; four false starts cut (22.9 s). The kept take says
+    "**Club leader** Yang and I design the board that ties it together", where the script
+    says "Club member… designed". Scott's call whether the script follows.
+  - **S23**: a "Settings live—" false start (1.9 s).
+  - **Pickup S29**: a first full read (4.8 s). The "~5 s pause" in the timing above was this.
+- **Joined:** read 2 through S24, then the pickup from S25 to 1 s after S32 (the trailing "Hmm"
+  dropped), cut in the S24/S25 pause with a 30 ms crossfade.
+  **`vo/vo-read2-final-2026-10-19.wav`, 4:01, 24-bit.**
+- **Checked on the final file:** all 33 of 33 lines found; no 4-word phrase repeats within
+  45 s (except "anyone in the club", which is in both S04 and S07 of the script); one burst of
+  sound without words, a 0.4 s breath before S21; **0 clicks**.
+- Line timings in the final file (pauses inside lines included): S15 9.2 s, S29 6.6 s,
+  S31 5.0 s. Over their shots: S03, S05, S09, S13, S15, S16, S17, S20a, S20b, S30, S31.
