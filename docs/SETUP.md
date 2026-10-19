@@ -144,7 +144,9 @@ the network the orbs advertise, and a configuration page opens automatically.
 Pick your home network from the list and enter its password.
 
 This is stored on the device, not in your files. You do not reflash to change
-WiFi later — hold the buttons per the on-screen prompts to reopen the portal.
+WiFi later: hold the **right** button while plugging in power. The orbs show
+`Wifi Settings reset`, forget the network, and open the setup network again.
+The orbs remember only one network at a time.
 
 ## 8. Later updates: no cable needed
 
@@ -206,6 +208,34 @@ instead of Visual Crossing's, with one weather page per station (up to two).
 
 The token never appears on the settings page. Leave `TEMPEST_TOKEN` out and
 the Tempest code is not compiled in at all.
+
+## 11. Optional: run it from a phone hotspot
+
+For a demo away from home. The orbs remember only **one** WiFi network, so
+joining the hotspot replaces your home network. Try it at home before the day.
+
+1. **Turn on the hotspot, on 2.4 GHz.** The ESP32 cannot see 5 GHz.
+   - iPhone: Settings > Personal Hotspot, turn on **Maximize Compatibility**.
+     Without it, recent iPhones use 5 GHz and the orbs never find the hotspot.
+     Stay on that screen until the orbs join: an iPhone stops advertising its
+     hotspot when nothing has connected for a while.
+   - Android: in the hotspot settings, set the band to 2.4 GHz.
+2. **Hold the right button while plugging in power.** The orbs show
+   `Wifi Settings reset`, then `Connect phone or PC to WiFi network:`, a name
+   like `Info-Orbs_84`, and `192.168.4.1`.
+3. **From a second device** (a laptop or another phone), join that
+   `Info-Orbs_..` network. A second device keeps the hotspot phone a hotspot
+   the whole time. The setup page opens by itself; if it does not, browse to
+   `http://192.168.4.1`. Choose **Configure WiFi**, pick the hotspot, enter its
+   password, **Save**.
+4. The orbs show `Success`, then their IP address, and start fetching over the
+   phone's mobile data. The settings page is `http://<that IP>/settings` from a
+   device joined to the hotspot.
+5. **Back home**, repeat steps 2 and 3 with your home network.
+
+Custom pages that read from a server or MQTT broker on your home network show
+no data while the orbs are on the hotspot. Untick them on the settings page
+for the demo, or point them at something reachable from the internet.
 
 ---
 
