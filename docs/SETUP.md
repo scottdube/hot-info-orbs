@@ -139,9 +139,18 @@ no new port appears, try the other button: R only restarts the board.)
 
 ## 7. Connect it to WiFi
 
-The orbs create their own WiFi network on first boot. On a phone or computer, join
-the network the orbs advertise, and a configuration page opens automatically.
-Pick your home network from the list and enter its password.
+The orbs create their own WiFi network on first boot, and the screens show its
+name: `Info-Orbs_` followed by two characters, for example `Info-Orbs_84`.
+On a phone or computer, join that network, and a configuration page opens
+automatically (if it does not, browse to `http://192.168.4.1`). Pick your home
+network from the list and enter its password.
+
+**The two characters are different on every orb.** They are the last two
+characters of that orb's WiFi MAC address, so yours will not match the `84` in
+these docs or in the video. Read the name off your own screens. This keeps
+two orbs being set up in the same room from advertising the same network;
+with only 256 possible endings two orbs can still match, so set them up one
+at a time.
 
 This is stored on the device, not in your files. You do not reflash to change
 WiFi later: hold the **right** button while plugging in power. The orbs show
@@ -222,7 +231,8 @@ joining the hotspot replaces your home network. Try it at home before the day.
    - Android: in the hotspot settings, set the band to 2.4 GHz.
 2. **Hold the right button while plugging in power.** The orbs show
    `Wifi Settings reset`, then `Connect phone or PC to WiFi network:`, a name
-   like `Info-Orbs_84`, and `192.168.4.1`.
+   like `Info-Orbs_84` (your two characters differ; see step 7), and
+   `192.168.4.1`.
 3. **From a second device** (a laptop or another phone), join that
    `Info-Orbs_..` network. A second device keeps the hotspot phone a hotspot
    the whole time. The setup page opens by itself; if it does not, browse to
