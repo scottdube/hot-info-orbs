@@ -231,9 +231,10 @@ notifications.
 
 ### Stills and artwork (gathered, see Assets)
 
-- **S05, Brett Turner's Info Orbs page** (6 s).
-  - *Setup:* screenshot, with a slow push in the edit and the credit on
-    screen.
+- **S05, Brett Turner's Info Orbs** (6 s).
+  - *Setup:* Brett's own photo of his orbs (brett.tech product page), with a
+    slow push in the edit and a credit label. The repo screenshot it replaced
+    (2026-10-19) read as dull.
   - *Why:* honest credit. The idea is his, and saying so up front earns trust
     with people who know the original.
 - **S06, HackerBoxes #0129 Orbital** (5 s).
@@ -369,7 +370,7 @@ third-party screenshots, and the repo is public.
 
 | Shot | Asset | Status |
 |---|---|---|
-| S05 | Brett Turner's repo page and product page, screenshots | to collect |
+| S05 | Brett Turner's photo of his orbs, from his product page | gathered 2026-10-19 |
 | S06 | HackerBoxes #0129 product page and Instructables page, screenshots | to collect |
 | S19 | v1.1 board renders, 2D and 3D (fallback for the live capture) | to render, `kicad-cli pcb render` |
 | S29 | XIAO board 3D render; only the STEP and PCB exist (`hardware/hot-info-orbs-xiao/`) | to render |

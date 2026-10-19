@@ -34,7 +34,7 @@ it up from a phone or computer.
 
 ## 3. Where it came from (0:35–0:55)
 
-**[Still or screenshot of Brett Turner's Info Orbs project page, credited on
+**[Brett Turner's own photo of his Info Orbs, slow push in, credited on
 screen.]**
 
 The idea isn't ours. Brett Turner designed the original Info Orbs and shared
