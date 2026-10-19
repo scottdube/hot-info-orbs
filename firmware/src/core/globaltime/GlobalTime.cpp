@@ -131,10 +131,11 @@ bool GlobalTime::isPM() {
 }
 
 void GlobalTime::getTimeZoneOffsetFromAPI() {
-#ifdef DEMO_MQTT_HOST
-    // Demo build: fixed EDT. Over the phone hotspot this lookup blocked the
-    // loop for 3 minutes, then retried every second.
-    m_timeZoneOffset = -4 * 3600;
+#ifdef DEMO_FIXED_TZ
+    // Demo build: fixed UTC offset in hours (-4 EDT, -5 EST). Over the phone
+    // hotspot this lookup blocked the loop for 3 minutes, then retried every
+    // second, which also kept /settings from answering.
+    m_timeZoneOffset = (DEMO_FIXED_TZ) * 3600;
     m_nextTimeZoneUpdate = 0;
     m_timeClient->setTimeOffset(m_timeZoneOffset);
     return;

@@ -182,11 +182,6 @@ void Settings::load() {
         }
         p.end();
     }
-#ifdef DEMO_MQTT_HOST
-    // Demo build: broker on the laptop
-    v.mqhost = DEMO_MQTT_HOST;
-    v.mqport = 1883;
-#endif
     s_values = v;
     Serial.printf("Settings: %s\n", s_stored ? "loaded from NVS" : "config.h defaults");
 }
