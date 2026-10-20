@@ -22,11 +22,11 @@ struct SettingsValues {
     uint16_t clkcol; // RGB565
     uint16_t shdcol; // RGB565
     bool dim;
-    int dimstart; // hour 0..23
-    int dimend; // hour 0..23, may be < dimstart (wraps midnight)
-    bool off; // panels off (display-off + sleep) during offstart..offend
-    int offstart; // hour 0..23
-    int offend; // hour 0..23; where it overlaps the dim hours, off wins
+    int dimstartm; // minute of the day 0..1439
+    int dimendm; // minute of the day, may be < dimstartm (wraps midnight)
+    bool off; // panels off (display-off + sleep) during offstartm..offendm
+    int offstartm; // minute of the day 0..1439
+    int offendm; // minute of the day; where it overlaps the dim times, off wins
     bool invert;
     uint32_t tstn1; // Tempest station ID, 0 = unused
     std::string tlbl1; // its label on the page, "" when unused

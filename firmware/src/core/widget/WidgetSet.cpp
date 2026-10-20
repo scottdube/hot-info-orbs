@@ -153,10 +153,10 @@ void WidgetSet::initializeAllWidgetsData() {
     m_initialized = true;
 }
 
-void WidgetSet::updateBrightnessByTime(uint8_t hour24) {
+void WidgetSet::updateBrightnessByTime(int minuteOfDay) {
     const SettingsValues &s = Settings::get();
-    bool isDim = s.dim && sv::inHourRange(hour24, s.dimstart, s.dimend);
-    bool isOff = s.off && sv::inHourRange(hour24, s.offstart, s.offend);
+    bool isDim = s.dim && sv::inTimeRange(minuteOfDay, s.dimstartm, s.dimendm);
+    bool isOff = s.off && sv::inTimeRange(minuteOfDay, s.offstartm, s.offendm);
 
     if (m_woken && millis() - m_wokenAt >= 60000UL) {
         m_woken = false;
