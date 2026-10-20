@@ -301,3 +301,48 @@ clearance from them, so KiCad flagged `copper_edge_clearance` (0.5 mm). The
 script now grows them by 0.4 mm. And reordering the nets in the DSN changes
 nothing: 12 shuffles gave a byte-identical result, because Freerouting
 orders them itself.
+
+## fusion-essentials: the active document flips between calls (2026-10-19)
+
+With five documents open (two of them named `main_body_front`), the active
+document switched back to `overall assembly` *between* tool calls, and more
+than once switched the other way. Reads (`find_geometry`, `design_get`,
+`sketch_get`, `view_screenshot` without `expect_document`) have no guard and
+silently answer about whichever document is up: a `find_geometry` for the
+new posts returned a capacitor on the board, a "main_body_front" screenshot
+captured the assembly. Writes with `expect_document` are refused instead
+(`active_document_changed`), which is the only reason this was noticed.
+
+Rules that held: pass `expect_document` as the lineage **URN** (a bare name
+is refused as `ambiguous_document_name` when two open docs share it); put
+`doc_open(file_id=<URN>, force_api_open=true)` or `doc_activate(<URN>)` in
+the **same message** as the calls that need it; and read `active_document`
+at the bottom of every read result before believing it. `design_get` with
+`tree` on the assembly is ~81k characters; narrow with `name_filter` /
+`max_depth`.
+
+## Fusion assembly: the board is pinned by the displays, so grow the edge (2026-10-19)
+
+The X0.2 board's top mounting holes sat under the enclosure's top lip, so
+the ends hung from hangers. Shifting the board up is not an option: the
+five displays are located by the bezel holes, and sliding the board slides
+them. Growing the board's top edge 5 mm moves the holes without moving the
+displays. The sockets fix the bottom edge the same way.
+
+Smaller ones from the same build: grounding an occurrence resets a free
+`assembly_move`, so capture the position and leave it free. Interference
+checks want **leaf** occurrence paths (`...+hot_info_orbs_xiao_46mm_PCB:1`),
+not the imported assembly's top node, and the GC9A01 vendor STEP reports a
+0.0001 cm³ overlap with itself. A sketch on the plate's inner face
+auto-projects 39 face edges, and a projected edge splits each bottom-row
+post circle into two profiles, so read profile indices from `sketch_get`
+by centroid and extrude both halves.
+
+## KiCad text: set it through pcbnew, not sed (2026-10-19)
+
+`gr_text` in a `.kicad_pcb` carries a `render_cache` of the outline-font
+polygons. Editing the string with sed leaves the old glyphs in the cache,
+and the gerber/STEP exports plot the cache. `PCB_TEXT.SetText()` +
+`SaveBoard()` regenerates it (the cache line changed to `rev 2.1`). Also:
+`kicad-cli pcb export drill` takes `--excellon-units mm`; `--units` prints
+the help and exits 0, so the zip step then fails on a missing `.drl`.

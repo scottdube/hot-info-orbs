@@ -18,9 +18,9 @@ right-angle switches on the top edge, so the board needs no change for this.
 
 **2026-10-19: the board going to the fab is `hardware/hot-info-orbs-xiao-46mm/`**
 (branch `board-46mm-pitch`): the same carrier with the five displays at
-46.0 mm center to center to match `main_body_front`, 224.0 x 47.78 mm, rev
-X0.2. The front mock-up in `hardware/enclosure/front-mockup-v1/` was built on
-the narrow 38.98 mm board.
+46.0 mm center to center to match `main_body_front`, 224.0 x 52.78 mm (grown
+5 mm at the top the same day, see below), **rev 2.1**. The front mock-up in
+`hardware/enclosure/front-mockup-v1/` was built on the narrow 38.98 mm board.
 
 ## Inputs already measured
 
@@ -38,3 +38,49 @@ A printable front that drops over the real board: a face plate plus five
 separate bezel rings (37 mm OD, 32.5 mm window). Its top and bottom margins are
 equal, 29.135 mm. The interference check against the board STEP is clean. See
 [hardware/enclosure/front-mockup-v1/](../hardware/enclosure/front-mockup-v1/README.md).
+
+## The board in the enclosure (2026-10-19)
+
+![overall assembly, board rev 2.1 from the back](images/overall_assembly_board_2.1_back.png)
+
+`overall assembly` **v4** holds the rev 2.1 board STEP
+(`hardware/hot-info-orbs-xiao-46mm/3d-assembly/`) on `main_body_front` **v4**.
+Both are Fusion cloud versions; the STEP is the source of the board.
+
+**Transform.** Import the STEP into the assembly, rotate +90° about world X,
+then translate (−25.99, 17.6, 118.415) mm. World x = board x − 25.99, world
+z = 118.415 − board y; the board's back face is at world y 17.6 and its
+front at 16.0. The occurrence is left free (not grounded): grounding resets
+a free move. The pose is captured as a Position marker.
+
+**Where things land.** Enclosure front at y 0, plate inner face at y 2; the
+display glass tops out at y ≈ 2.29, so it sits 0.29 mm behind the plate,
+touching nothing. Bezel holes r 17.75 at x 32.75 + n·46, z 37.75; display N
+→ world x: 1→78.75, 2→124.75, 3→216.75, 4→170.75, 5→32.75 (the KiCad DS
+order is not left-to-right). Module rims r 19.05. Top lip inner z 75.5,
+outer 77.5.
+
+**Standoffs.** Ø6 posts from the plate inner face to the board front (y
+1.5→16, 14.5 long) and Ø2.9 pins through the board (y 3.5→18.2) on **all
+seven** mounting holes, world (x, z): top row z 56.415 at x 16.05 / 103.55 /
+142.55 / 230.05, bottom row z 13.635 at x 16.05 / 142.55 / 230.05. Post
+clearance to the outer display rims 25.0 mm (left) / 22.9 mm (right). The
+v3 enclosure had corner hangers at the top instead of end posts, because
+the X0.2 board's top holes sat under the lip; growing the board 5 mm put
+them where a post fits, and the hangers (and the Ø2.9 pins that had been
+floating inside them as Body2/Body3) are gone. One body.
+
+**Buttons.** Three Ø8 holes 3 mm deep in the top lip over the switch
+actuators (x 85.721 / 123.055 / 160.388, actuator y 21.185). The actuator
+tops are at z 62.575, 12.9 mm below the lip: a plunger or cap bridges that.
+
+**Checks.** Interference `main_body_front:1` vs the PCB body and vs display
+5 (the one nearest the left post): clean. The only reported overlap is
+0.0001 cm³ *inside* the display module's own STEP (a self-pair), which is
+the vendor model, not the fit. Four displays were not run individually
+(same footprint, assumed to clear the same way).
+
+**Still open.** The plate shows the display glass through the bezel hole but
+nothing holds the module against the plate yet (0.29 mm air); bezel rings
+and a back cover are not modelled; the switch plunger gap is designed, not
+printed.

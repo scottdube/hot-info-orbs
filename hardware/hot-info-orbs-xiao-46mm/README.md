@@ -19,15 +19,44 @@ What `tools/pitch_46.py` changed (run once, then `tools/route_xiao.py`):
 - SW1–SW3 at thirds of the new width (centres 111.71 / 149.04 / 186.37), the
   `button` labels with them.
 - Back silk: title block keeps its offset from the low-x edge, logo and club
-  text keep theirs from the high-x edge; rev text now `rev X0.2 · 46 mm pitch`.
+  text keep theirs from the high-x edge; rev text `rev X0.2 · 46 mm pitch`
+  (now 2.1, below).
 - U2, C1, R1, C2 and the XIAO notes did not move. Schematic unchanged.
 - Re-routed from bare copper with Freerouting 2.4.1 (46 nets, 0 unrouted,
   0 violations, 20 passes), GND pour refilled. **DRC 0 errors / 0 warnings /
   0 unconnected / 0 parity** (2026-10-19).
 
-Outputs: `fab/hot_info_orbs_xiao_46mm_X0.2_run1_gerbers.zip` (see
-`fab/README.md`) and `3d-assembly/hot_info_orbs_xiao_46mm_assembly.step`
-(same export recipe as below; all six models resolve).
+Outputs of that pass: `fab/hot_info_orbs_xiao_46mm_X0.2_run1_gerbers.zip`
+(superseded the same day, see `fab/README.md`).
+
+## Grown 5 mm at the top (2026-10-19, `tools/grow_top.py`, rev 2.1)
+
+Placed in the Fusion `overall assembly`, the X0.2 board's top mounting holes
+sat 5 mm too low for a standoff post at either end of the top row: the
+enclosure's top lip was in the way, so the ends hung from corner hangers
+instead. The board cannot shift on the enclosure (the five displays are
+pinned by the bezel holes) and the sockets fix the bottom edge, so the TOP
+edge was grown 5 mm instead. Run once after `pitch_46.py`, then
+`tools/route_xiao.py 20` again:
+
+- Board **224.0 × 52.78 mm**, y 57.0 … 109.78 (was 62.0 … 109.78).
+- Top-row holes up 5 mm to y 62.0 (x 42.04 / 129.54 / 168.54 / 256.04);
+  bottom row unchanged. All seven still 5 mm from an edge.
+- SW1–SW3 up 5 mm (y 59.59), so the actuators clear the enclosure's top lip
+  by less: 12.9 mm plunger gap, was 17.9. The `button` labels went with them.
+- GND pour rebuilt to the new edge. Displays, XIAO, passives, logo and title
+  block did not move.
+- Rev silk **`rev 2.1 · 46 mm pitch`** (Scott set the number 2026-10-19; it
+  read X0.3 for a few minutes, never fabbed).
+- Re-routed from bare copper: 46 nets, 0 unrouted, 0 violations, 300
+  tracks+vias (6 vias). **DRC 0 errors / 0 warnings / 0 unconnected /
+  0 parity.**
+
+Outputs: `fab/hot_info_orbs_xiao_46mm_2.1_run1_gerbers.zip` (see
+`fab/README.md`), `fab/46mm_top.png` / `fab/46mm_bottom.png`, and
+`3d-assembly/hot_info_orbs_xiao_46mm_assembly.step` (same export recipe as
+below; all six models resolve). The STEP is what `main_body_front` v4 and
+`overall assembly` v4 were built against (`docs/ENCLOSURE.md`).
 
 The rest of this README is inherited from the parent project. Its y
 coordinates and the pin map still hold; its x coordinates and board width
