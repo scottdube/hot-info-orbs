@@ -264,7 +264,7 @@ notes(s, "You load the software once, over USB. After that there's no cable. "
 # ---------- 9 What's next ----------
 s = slides[8]
 title(s, 'What’s next')
-pic(s, D + 'b24-top2-crop.png', 0.6, 1.5, w=7.4, frame=False)
+pic(s, D + 'b24-back-crop.png', 0.6, 1.5, w=7.4, frame=False)
 tb(s, 8.3, 1.6, 4.55, 2.2, [
     ('✔  Board rev 2.4: design locked', 20, True, GOLD),
     ('XIAO ESP32-S3 or S3 Plus, 46 mm display pitch to match the enclosure, buttons on top. This is the board the club builds.', 15, False, WHITE),
@@ -313,12 +313,10 @@ tb(s, 8.3, 1.55, 4.55, 5.0, [
     [('Brett Turner', 15, True, WHITE), ('  Info Orbs, the original', 15, False, WHITE)],
     [('HackerBoxes', 15, True, WHITE), ('  #0129 Orbital', 15, False, WHITE)],
     [('Donald Champion', 15, True, WHITE), ('  HackerBox build photos', 15, False, WHITE)],
-    [('Yang and Scott', 15, True, WHITE), ('  board design', 15, False, WHITE)],
     [('Yang', 15, True, WHITE), ('  enclosure', 15, False, WHITE)],
-    [('The members who built the first kit', 15, True, WHITE)],
 ])
 notes(s, "Everything's on GitHub, at the link on screen: board files, firmware and the build guide. The feature sheet lists every page and setting. "
-      "Thanks to Brett Turner, to HackerBoxes, to Donald Champion for the build photos, and to the members who built the first kit.")
+      "Thanks to Brett Turner, to HackerBoxes, and to Donald Champion for the build photos.")
 
 # ---------- 12 End ----------
 s = slides[11]

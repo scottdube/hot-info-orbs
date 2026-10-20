@@ -21,7 +21,8 @@ touch the logos by hand. The logo top right comes from the layout.
   the file was still uncommitted in the `hot-info-orbs-enclosure` worktree on
   2026-10-20). To re-render:
   `kicad-cli pcb render --side top --rotate "-28,0,0" --zoom 1.9` (front) and
-  `--side top --zoom 1.9` (plan), background transparent, then crop to the
+  `--side top --zoom 1.9` (plan) and `--side bottom --zoom 1.9` (back, the
+  What's next slide: the XIAO, buttons and silkscreen are on that side), background transparent, then crop to the
   alpha bbox.
 - **No embedded video.** The orb itself is on the table for the live demo.
 - Public deck: no station IDs, MQTT broker, Wi-Fi details or tokens. The

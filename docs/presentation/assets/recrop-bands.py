@@ -8,7 +8,7 @@ boxes={
  'hero-4k-band':('hero-4k-clock-b',(280,470,3560,1300)),
  'c-clock-standard':('clock-standard',(0,130,1920,680)),
  'c-clock-nixie':('clock-nixie',(0,10,1920,560)),
- 'c-stocks-open':('stocks-open',(60,190,1460,640)),
+ 'c-stocks-open':('stocks-open',(np.int64(334), 185, np.int64(1557), 614)),
  'c-wide-mqtt':('wide-mqtt',(300,150,1470,560)),
  'c-wide-webdata':('wide-webdata',(300,150,1470,560)),
  'boot-close-hand':('boot-close-hand',(0,0,1920,1080)),
