@@ -114,8 +114,8 @@ for ph in s.placeholders:
         for p in ph.text_frame.paragraphs:
             p.alignment = PP_ALIGN.LEFT
             for r in p.runs: r.font.size = Pt(24)
-pic(s, D + 'c-dim-before.jpg', 0.6, 2.75, w=12.1)
-tb(s, 0.6, 5.65, 12.1, 0.9, [
+pic(s, D + 'c-dim-before.jpg', 0.6, 2.7, w=12.1)
+tb(s, 0.6, 6.3, 12.1, 0.9, [
     [('Hands-On Tech, Small Computers group', 18, True, GOLD), ('   ·   October 27, 2026   ·   Scott Dube', 18, False, WHITE)],
     ('A club build: a board designed by Yang and Scott, firmware and docs on GitHub', 16, False, GREY),
 ])
@@ -167,11 +167,11 @@ rows = [
 ]
 y = 1.55
 for path, cap in rows:
-    _, (x, yy, w, h) = pic(s, path, 0.6, y, w=6.6)
-    tb(s, 0.6, y + h + 0.02, 6.6, 0.35, [(cap, 14, True, GOLD)])
-    y += h + 0.42
-pic(s, D + 'sunmoon-close.jpg', 7.5, 1.55, w=5.35)
-tb(s, 7.5, 4.6, 5.35, 2.3, [
+    _, (x, yy, w, h) = pic(s, path, 0.6, y, w=5.1)
+    tb(s, 0.6, y + h + 0.02, 5.1, 0.33, [(cap, 14, True, GOLD)])
+    y += h + 0.41
+_, (x, yy, w, h) = pic(s, D + 'sunmoon-close.jpg', 6.1, 1.55, w=6.75)
+tb(s, 6.1, yy + h + 0.15, 6.75, 1.7, [
     ('Sunrise, sunset and tonight’s moon', 14, True, GOLD),
     ('The clock spreads across all five orbs: 12- or 24-hour, in any colors you like.', 15, False, WHITE),
     ('Weather for any town, or straight from your own Tempest station. Up to two stations.', 15, False, WHITE),
@@ -192,8 +192,8 @@ rows = [
 ]
 y = 1.55
 for path, h, b in rows:
-    _, (x, yy, w, hh) = pic(s, path, 0.6, y, w=5.7)
-    tb(s, 6.6, y, 6.25, hh, [(h, 18, True, GOLD), (b, 15, False, WHITE)], anchor=MSO_ANCHOR.MIDDLE)
+    _, (x, yy, w, hh) = pic(s, path, 0.6, y, w=4.6)
+    tb(s, 5.5, y, 7.35, hh, [(h, 18, True, GOLD), (b, 15, False, WHITE)], anchor=MSO_ANCHOR.MIDDLE)
     y += hh + 0.18
 tb(s, 0.6, y - 0.05, 12.25, 0.5, [('Left and right buttons step through the pages. Leave it alone and it rotates on its own. The last two pages are ones you build yourself.', 14, False, GREY)])
 notes(s, "Five tickers, one per orb, with the price, the change and the day's range: stocks, funds or crypto. "
@@ -289,8 +289,8 @@ steps = [
 for i, (h, b) in enumerate(steps):
     tb(s, 0.6, 1.6 + i * 1.15, 6.9, 1.1, [(h, 20, True, GOLD), (b, 15, False, WHITE)])
 tb(s, 0.6, 6.25, 6.9, 0.5, [('Starting in January. Say tonight if you want in.', 18, True, WHITE)])
-pic(s, D + 'boot-close-hand.jpg', 7.85, 1.6, w=5.0)
-tb(s, 7.85, 4.45, 5.0, 1.6, [('Boots with the club logo', 14, True, GOLD), ('or any picture you upload. The module lifts out of its socket, so nothing is soldered that can’t be swapped.', 14, False, WHITE)])
+_, (x, yy, w, h) = pic(s, D + 'boot-close-hand.jpg', 7.85, 1.6, w=5.0)
+tb(s, 7.85, yy + h + 0.15, 5.0, 1.6, [('Boots with the club logo', 14, True, GOLD), ('or any picture you upload. The module lifts out of its socket, so nothing is soldered that can’t be swapped.', 14, False, WHITE)])
 notes(s, "Here is how the club build runs. You get the parts: the board, a XIAO ESP32-S3 or S3 Plus, five displays, sockets, buttons and a cable. "
       "Build night is sockets and headers only, through-hole soldering, one evening. "
       "Then the firmware loads once over USB; from then on updates come from your phone. Set it up on the settings page, no code. "
@@ -331,8 +331,8 @@ for ph in s.placeholders:
         ph.left, ph.top, ph.width, ph.height = Inches(0.6), Inches(2.3), Inches(11.2), Inches(0.8)
         for p in ph.text_frame.paragraphs:
             for r in p.runs: r.font.size = Pt(24)
-pic(s, D + 'c-clock-nixie.jpg', 0.6, 3.5, w=12.1)
-tb(s, 0.6, 6.25, 12.1, 0.5, [('github.com/scottdube/hot-info-orbs', 16, False, GREY)], align=PP_ALIGN.CENTER)
+pic(s, D + 'c-clock-nixie.jpg', 1.17, 3.3, w=11.0)
+tb(s, 0.6, 6.55, 12.1, 0.5, [('github.com/scottdube/hot-info-orbs', 16, False, GREY)], align=PP_ALIGN.CENTER)
 notes(s, "Hold here for questions. The orb stays on the table running; come and press the buttons.")
 
 prs.save(out)

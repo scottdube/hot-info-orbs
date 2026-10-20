@@ -39,8 +39,10 @@ needs python-pptx and Pillow. `assets/base-smcomp-dark-12-empty.pptx` is
 Yang's template with the seven original slides removed and twelve empty slides
 added (Title Slide, 10 × Title Only, Title Slide). `assets/` holds every
 image the script places: frame grabs from the 2026-10-19/20 camera takes
-(`~/Movies/hot-info-orbs-intro/camera`, cropped to the orb band; ffmpeg
-grabs carry no GPS metadata), the thermal images from `../assets/thermal`,
+(`~/Movies/hot-info-orbs-intro/camera`, cropped to the orb band with the
+bezel tops whole, about 15% of an orb of wall above them; a crop that starts
+at the display edge reads as cut off on the slide; ffmpeg grabs carry no GPS
+metadata), the thermal images from `../assets/thermal`,
 the KiCad renders, the settings-page panels (headless Chrome at 640 px, 2×),
 the provenance photos (credited on the slide) and a QR code for the GitHub
 repo.
