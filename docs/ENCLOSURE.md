@@ -25,3 +25,10 @@ right-angle switches on the top edge, so the board needs no change for this.
 | Module pocket | the GC9A01 STEP model, caliper-checked by Scott | `hardware/hot-info-orbs/lib/3d/_Displays/` |
 
 A bezel opening wider than ~32.5 mm shows the black band inside the brass ring.
+
+## Front mock-up v1 (2026-10-19)
+
+A printable front that drops over the real board: a face plate plus five
+separate bezel rings (37 mm OD, 32.5 mm window). Its top and bottom margins are
+equal, 29.135 mm. The interference check against the board STEP is clean. See
+[hardware/enclosure/front-mockup-v1/](../hardware/enclosure/front-mockup-v1/README.md).
