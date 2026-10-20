@@ -346,3 +346,22 @@ and the gerber/STEP exports plot the cache. `PCB_TEXT.SetText()` +
 `SaveBoard()` regenerates it (the cache line changed to `rev 2.1`). Also:
 `kicad-cli pcb export drill` takes `--excellon-units mm`; `--units` prints
 the help and exits 0, so the zip step then fails on a missing `.drl`.
+
+## fusion-essentials decals: a vendor STEP's glass face cannot be named (2026-10-19)
+
+`design_edit_reference_image` refused the display glass with "2 of them sit
+at the recorded position … co-located candidates": the GC9A01 module STEP has
+two coincident faces at the glass top, and the locator will not pick one. The
+tool also wants root-local faces. Work around both with a thin disc in the
+root component at the glass plane and decal that (ENCLOSURE.md, "Populated
+display faces"). Other things learned on the same job:
+
+- `find_geometry nearest_to` walks the whole design (5127 planar faces here)
+  and times out at 30 s about two calls in five; a timed-out call that "may
+  still commit" is a read, so just re-ask.
+- The action to change an existing decal is `place` (create/place/style/
+  delete; there is no `edit`), and `kind` is required on every action.
+- A 240 px square image lands at 16 × 16 mm; `scale` is a multiplier on that,
+  so [2, 2] = 32 mm. `size` in the read-back is the placed size.
+- `view_screenshot` views are front/back/top/bottom/left/right and
+  iso-top-right etc., not `iso`.

@@ -84,3 +84,37 @@ the vendor model, not the fit. Four displays were not run individually
 nothing holds the module against the plate yet (0.29 mm air); bezel rings
 and a back cover are not modelled; the switch plunger gap is designed, not
 printed.
+
+## Populated display faces (2026-10-19)
+
+![overall assembly, faces populated](images/overall_assembly_faces_front.png)
+
+`overall assembly` **v5** shows the five orbs lit. The pictures are decals,
+not a render of the firmware: Fusion's own glass faces could not be used
+(below), so the root component carries a sketch `display faces` on the
+construction plane `display glass plane` (XZ offset +2.29 mm, the glass top),
+five Ø32 circles at the display centers extruded **0.1 mm toward −y** as
+`Body1`…`Body5`, and one decal on each disc's front face (y 2.19, normal −y).
+Decal placement: origin at the disc center, `x_direction` world +x, scale
+[2, 2] (the tool places a 240 px image at 16 mm per side by default; ×2 gives
+the 32 mm lit circle that just fills the 32.5 mm bezel window). 0.29 mm of
+air stays between plate and glass; the discs sit inside it, touching nothing.
+
+**Sources.** `hardware/enclosure/decals/ds{N}_*.png`, 240 × 240 crops of
+`references/weather.png`, a photo of the **upstream (brett.tech) orbs**, not
+Scott's unit. Left to right: DS5 date/time, DS1 location, DS2 weather icon,
+DS4 temperature, DS3 forecast. To replace one, `design_edit_reference_image`
+action `place` on `decal:<i>:<name>` with a new `image`, or swap the file
+and recreate. A framebuffer dump from the firmware (240 × 240 RGB565 → PNG)
+would drop straight in with the same recipe.
+
+**Why discs and not the glass.** Each display STEP has two coincident faces
+at the glass top (y 2.2921, area 808.4): the decal tool's face locator
+refuses a position two entities share ("co-located candidates"), so the
+glass cannot be named. Discs in the root also avoid the second limit, that
+the tool wants root-local faces. Rejected the alternative of splitting the
+vendor STEP: it would have to be redone on every re-import of the board.
+
+**What it does not show.** Decals render only in Fusion's shaded view; they
+are not in any exported STEP/3MF, and the discs will be if the assembly is
+exported (hide or suppress `Extrude1` first).
