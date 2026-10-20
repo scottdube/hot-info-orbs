@@ -5,6 +5,9 @@
 to be regenerated:** if the board changes, the next run gets its own zip, and
 this one stays byte-identical to what was ordered, so a returned board can be
 matched to what was sent. The back silk reads `rev 2.4 · 46 mm pitch`.
+**Uploaded to JLCPCB by Scott on 2026-10-20 (evening) for a quote**; whether
+an order was placed is not recorded here. It went up through the JLCONE
+desktop app, which he drove himself.
 
 `hot_info_orbs_xiao_46mm_2.3_run3_gerbers.zip` (2026-10-20 17:44) is the same
 copper, mask, outline and drill (diffed: only the timestamp and rev-attribute
