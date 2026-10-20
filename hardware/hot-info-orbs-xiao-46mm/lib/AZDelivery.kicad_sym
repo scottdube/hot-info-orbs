@@ -896,7 +896,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "_Displays:GC9A01_PINS"
+		(property "Footprint" "_Displays:GC9A01_SOCKET"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)

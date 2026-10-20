@@ -107,7 +107,11 @@ sits in each island (68.70,101.46 and 143.10,68.13). Vias alone did nothing:
 with no front copper the island plus via was still floating and KiCad still
 removed it. DS5's GND pin gets 45° thermal spokes on the front (the +5V front
 track along the bottom blocks its downward spoke; the rule wants two). DRC
-0 / 3 / 0 / 0 as before; 16 vias.
+0 / 3 / 0 / 0 as before; 16 vias. **ERC 0 / 0**: the six
+`lib_symbol_mismatch` warnings were the project libraries still naming the
+PINS/DIP footprints as the symbols' default while the schematic's embedded
+copies (what the board was built from) name the SOCKET ones; the library
+files now say SOCKET, the schematic is untouched.
 
 Outputs: `fab/hot_info_orbs_xiao_46mm_2.3_run2_gerbers.zip` (run 1 is the
 back-pour-only layout, superseded, see `fab/README.md`),
