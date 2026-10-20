@@ -44,6 +44,7 @@ again, insert a fresh `kicad-cli pcb export step` of the board.
 
 - Face: 203.6 × 58.27 mm. Overall height is 18.08 mm to the face and 20.58 mm to the ring tops.
 - Display center to center: 38.98 / 39.04 / 38.93 / 38.98 mm (mean 38.98).
+  Superseded 2026-10-19: 46.0 mm on the fab board (`hardware/hot-info-orbs-xiao-46mm/`).
   The outer two are 155.93 mm apart.
 - Face margin, from display center to face edge: **29.135 mm at both top and
   bottom**. The top can't shrink: the display header tab and the board's top

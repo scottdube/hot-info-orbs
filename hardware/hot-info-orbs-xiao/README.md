@@ -1,5 +1,9 @@
 # HoT Info Orbs — XIAO ESP32-S3 variant (KiCad project)
 
+> **2026-10-19:** the board going to the fab is the 46 mm display-pitch copy in
+> `hardware/hot-info-orbs-xiao-46mm/` (enclosure match). This folder is the
+> narrow original, kept as it was.
+
 Carrier for five GC9A01 displays and three buttons, taking a **Seeed Studio
 XIAO ESP32-S3 or XIAO ESP32-S3 Plus** (SKU 102010671), the builder's choice; the two
 share the edge pins. This is the project's only board. It was copied on

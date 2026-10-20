@@ -16,6 +16,12 @@ shows them on the front, under the displays. The XIAO carrier board
 (`hardware/hot-info-orbs-xiao/`, branch `xiao-esp32s3-plus`) already puts its
 right-angle switches on the top edge, so the board needs no change for this.
 
+**2026-10-19: the board going to the fab is `hardware/hot-info-orbs-xiao-46mm/`**
+(branch `board-46mm-pitch`): the same carrier with the five displays at
+46.0 mm center to center to match `main_body_front`, 224.0 x 47.78 mm, rev
+X0.2. The front mock-up in `hardware/enclosure/front-mockup-v1/` was built on
+the narrow 38.98 mm board.
+
 ## Inputs already measured
 
 | What | Value | Source |
