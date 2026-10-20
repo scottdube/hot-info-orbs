@@ -117,7 +117,7 @@ for ph in s.placeholders:
 pic(s, D + 'c-dim-before.jpg', 0.6, 2.7, w=12.1)
 tb(s, 0.6, 6.3, 12.1, 0.9, [
     [('Hands-On Tech, Small Computers group', 18, True, GOLD), ('   ·   October 27, 2026   ·   Scott Dube', 18, False, WHITE)],
-    ('A club build: a board designed by Yang and Scott, firmware and docs on GitHub', 16, False, GREY),
+    ('A club build: board files, firmware and docs on GitHub', 16, False, GREY),
 ])
 notes(s, "Open on the orb itself, running on the table. "
       "This is the HOT Info Orbs: five round screens on one board, run by a Wi-Fi dev board about the size of a postage stamp. "
