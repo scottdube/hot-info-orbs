@@ -141,8 +141,12 @@ Same light and color settings as A, so the two cut together.
     picture is set to the HOT hand beforehand.
   - *Why:* club branding, and it sets up "any picture you like".
 - **S25, Dimming** (4 s).
-  - *Setup:* set the dim hours to start a minute ahead, Save (the orb
-    restarts), then roll through the change.
+  - *Setup:* dim hours are whole hours only, and the orb checks the hour every
+    loop, so the change lands exactly on the hour. A few minutes before the
+    hour, note the current From/Until, set From to the coming hour, and Save
+    (the orb restarts). Roll from :59:30 through :00:10. Setting From to the
+    current hour doesn't work: the orb restarts and comes up already dim, so
+    there's no change on camera.
   - *Why:* answers "will it light up my bedroom?", which matters for a gadget
     that runs all day.
 - **S26, Screens off → a button wakes them** (5 s).
