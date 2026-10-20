@@ -6,7 +6,7 @@
 	(paper "USLetter")
 	(title_block
 		(title "HoT Info Orbs - XIAO ESP32-S3 variant")
-		(rev "X0.1")
+		(rev "2.3")
 	)
 	(lib_symbols
 		(symbol "_Seeed XIAO:XIAO-ESP32-S3-edge"

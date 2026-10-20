@@ -22,6 +22,15 @@ right-angle switches on the top edge, so the board needs no change for this.
 5 mm at the top the same day, see below), **rev 2.1**. The front mock-up in
 `hardware/enclosure/front-mockup-v1/` was built on the narrow 38.98 mm board.
 
+**2026-10-20: rev 2.3** (`tools/lower_xiao.py`) moves the XIAO **4 mm toward the
+bottom edge** so the USB-C face sits 0.6 mm past the board edge, and pulls
+C1/C2/R1 in beside its socket. Same outline, same seven holes, same display
+and switch positions, so the bezels and posts are untouched, but **the USB
+cutout in `main_body_front` v4 is now 4 mm off**: `overall assembly` v4 holds
+the rev 2.1 STEP and needs the rev 2.3 one
+(`hardware/hot-info-orbs-xiao-46mm/3d-assembly/`, overwritten in place)
+re-imported before the cutout is placed.
+
 ## Inputs already measured
 
 | What | Value | Source |

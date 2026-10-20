@@ -55,8 +55,52 @@ edge was grown 5 mm instead. Run once after `pitch_46.py`, then
 Outputs: `fab/hot_info_orbs_xiao_46mm_2.1_run1_gerbers.zip` (see
 `fab/README.md`), `fab/46mm_top.png` / `fab/46mm_bottom.png`, and
 `3d-assembly/hot_info_orbs_xiao_46mm_assembly.step` (same export recipe as
-below; all six models resolve). The STEP is what `main_body_front` v4 and
-`overall assembly` v4 were built against (`docs/ENCLOSURE.md`).
+below; all six models resolve). That STEP is what `main_body_front` v4 and
+`overall assembly` v4 were built against (`docs/ENCLOSURE.md`); rev 2.3
+below overwrote it.
+
+## Rev 2.3: XIAO 4 mm toward the bottom edge (2026-10-20, `tools/lower_xiao.py`)
+
+Scott wants the USB-C jack as close to the enclosure wall as the board allows
+without growing the board or crowding the socket pins against the edge; he
+eyeballed 2-4 mm and the numbers allow the top of that range. Run once after
+`grow_top.py`, then `tools/route_xiao.py 20` again:
+
+- **U2 down 4.0 mm** to y 99.0. Lowest socket pads at y 106.62: pad copper
+  2.31 mm from the edge (the display socket pads are 2.95 mm from it; the
+  rule is 0.5). Socket housings end 1.89 mm inside the edge, the module body
+  0.92 mm inside it, and the USB-C face (1.5 mm proud of the body) lands
+  0.6 mm **past** the edge, at the wall. The F.Silk "XIAO goes on other
+  side" rectangle moved with it and is clipped 0.5 mm inside the edge; the
+  footprint's own USB-C silk crosses the edge and is left alone (3 DRC
+  `silk_edge_clearance` warnings; the fab trims silk outside the outline).
+- **C1 could not follow it down**: DS3's back-side pin labels sit at y 101.9
+  and C1's courtyard was already 0.4 mm above them on 2.1 (a 2.4 mm drop put
+  the 5V pad on the "DC" label, 3 silk warnings). So C1 keeps y 99.02 and
+  moves **3.2 mm sideways to x 143.99**, courtyard 0.5 mm from the XIAO
+  socket's, giving up the 3 mm "castellation pad" margin of 2026-10-17.
+  Pad to pad the 5V run is 9.25 mm, the same as 2.1: the XIAO moved away
+  from C1 by as much as C1 moved toward it. Anything shorter needs DS3's
+  back-silk labels moved or C1 under the module (cap height unverified).
+- **C2 and R1 swapped**, one column at x 143.99: C2 (1 µF reset cap) straight
+  above C1 with its GND pad lowest (y 92.73, beside C1's GND at 96.52), R1
+  above C2 with its RST pad lowest (85.04, adjacent to C2's RST at 87.73),
+  3V3 pad at 74.88. The long run is the 3V3 feed, not the reset node.
+  Courtyard gaps 0.5 mm; reference labels in a column 4.6 mm to the right.
+- Rev silk **`rev 2.3 · 46 mm pitch`**; title-block rev 2.3 in both the
+  schematic and the board (they read X0.1 / 1.1 before). **There is no 2.2**;
+  Scott named this 2.3.
+- Re-routed from bare copper: 46 nets, 0 unrouted, 0 violations, 284
+  tracks+vias (14 vias). **DRC 0 errors / 3 warnings (the USB-C silk over
+  the edge, above) / 0 unconnected / 0 parity.** `route_xiao.py` now reruns
+  Freerouting when a pass ends "stage interrupted" with a non-empty SES
+  (seen once: 44 unrouted after 0.14 s, the same DSN routed clean by hand).
+
+Outputs: `fab/hot_info_orbs_xiao_46mm_2.3_run1_gerbers.zip` (see
+`fab/README.md`), `fab/46mm_top.png` / `fab/46mm_bottom.png`, and
+`3d-assembly/hot_info_orbs_xiao_46mm_assembly.step`. **The enclosure's USB
+cutout is now 4 mm off:** `main_body_front` v4 / `overall assembly` v4 were
+built on the 2.1 STEP (`docs/ENCLOSURE.md`); re-import this one.
 
 The rest of this README is inherited from the parent project. Its y
 coordinates and the pin map still hold; its x coordinates and board width

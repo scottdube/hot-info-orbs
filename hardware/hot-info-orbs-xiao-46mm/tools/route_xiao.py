@@ -83,10 +83,15 @@ for attempt in range(5):
                        capture_output=True, text=True, timeout=1800)
     log = (r.stdout + r.stderr).splitlines()
     print("\n".join(l[:200] for l in log if "final score" in l and "Auto-routing stage" in l or l.startswith("  Net '")))
-    if SES.exists() and SES.stat().st_size > 0:
+    # 2026-10-20: a run can also end "Auto-routing stage interrupted ... (44
+    # unrouted and 0 violations)" after 0.14 s and still write a small SES;
+    # the identical DSN routed to 0 unrouted by hand. Treat that like the
+    # empty file: rerun.
+    done = any("Auto-routing stage completed" in l and "(0 unrouted" in l for l in log)
+    if SES.exists() and SES.stat().st_size > 0 and done:
         break
-    print(f"empty SES (attempt {attempt + 1}), rerunning")
-assert SES.stat().st_size > 0, "Freerouting wrote an empty SES five times running"
+    print(f"{'empty SES' if not SES.exists() or SES.stat().st_size == 0 else 'stage interrupted'} (attempt {attempt + 1}), rerunning")
+assert SES.exists() and SES.stat().st_size > 0 and done, "Freerouting failed five times running"
 
 subprocess.run([sys.executable, __file__, "--import"], check=True, capture_output=True)
 txt = PCB.read_text()

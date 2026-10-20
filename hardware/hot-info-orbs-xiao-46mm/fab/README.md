@@ -1,10 +1,15 @@
-# Fab package — XIAO carrier, 46 mm display pitch, rev 2.1
+# Fab package — XIAO carrier, 46 mm display pitch, rev 2.3
 
-**`hot_info_orbs_xiao_46mm_2.1_run1_gerbers.zip` is the package for the first
-run of this board (generated 2026-10-19, KiCad 10.0.3). It is named for the run
+**`hot_info_orbs_xiao_46mm_2.3_run1_gerbers.zip` is the package for the first
+run of this board (generated 2026-10-20, KiCad 10.0.3). It is named for the run
 and is not to be regenerated:** if the board changes, the next run gets its own
 zip, and this one stays byte-identical to what was ordered, so a returned board
-can be matched to what was sent. The back silk reads `rev 2.1 · 46 mm pitch`.
+can be matched to what was sent. The back silk reads `rev 2.3 · 46 mm pitch`.
+
+`hot_info_orbs_xiao_46mm_2.1_run1_gerbers.zip` is rev 2.1 (2026-10-19, XIAO
+4 mm further from the bottom edge, C1/C2/R1 in their old spots), superseded
+by `tools/lower_xiao.py` before anything was ordered. It stays as the record
+of what 2.1 was; do not send it. There was never a 2.2.
 
 `hot_info_orbs_xiao_46mm_X0.2_run1_gerbers.zip` is the 47.78 mm-tall board
 from earlier the same day, superseded by the 5 mm top-edge grow
@@ -19,7 +24,7 @@ Drill tools cross-checked against the footprints:
 
 | Tool | Drill | Hits | What |
 |---|---|---|---|
-| T1 | 0.30 | 6 | vias |
+| T1 | 0.30 | 14 | vias |
 | T2 | 0.80 | 6 | C1, C2, R1 leads |
 | T3 | 0.99 | 6 | switch tab pads (2 per PTS645) |
 | T4 | 1.00 | 49 | 5 × 7 display socket pins + 14 XIAO socket pins |
