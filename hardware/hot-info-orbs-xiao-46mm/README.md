@@ -96,8 +96,22 @@ eyeballed 2-4 mm and the numbers allow the top of that range. Run once after
   Freerouting when a pass ends "stage interrupted" with a non-empty SES
   (seen once: 44 unrouted after 0.14 s, the same DSN routed clean by hand).
 
-Outputs: `fab/hot_info_orbs_xiao_46mm_2.3_run1_gerbers.zip` (see
-`fab/README.md`), `fab/46mm_top.png` / `fab/46mm_bottom.png`, and
+**Run 2, same day (`tools/stitch_islands.py`):** Scott spotted two wide bare
+bands in the back pour, SW2 down past R1 to the XIAO and DS1 to DS2 along
+the bottom edge. Measured (fill redone in memory with island removal off):
+removed islands of 283 and 211 mm², copper boxed in by the SW2/SW3 pair and
+the 3V3 feed, and by the DS1 CS1/SCLK/MOSI bundle and the shared RST track.
+Removing them is right (floating copper beside SPI lines), so the fix is a
+connection: **the GND zone now pours F.Cu as well**, and a 0.8/0.3 GND via
+sits in each island (68.70,101.46 and 143.10,68.13). Vias alone did nothing:
+with no front copper the island plus via was still floating and KiCad still
+removed it. DS5's GND pin gets 45° thermal spokes on the front (the +5V front
+track along the bottom blocks its downward spoke; the rule wants two). DRC
+0 / 3 / 0 / 0 as before; 16 vias.
+
+Outputs: `fab/hot_info_orbs_xiao_46mm_2.3_run2_gerbers.zip` (run 1 is the
+back-pour-only layout, superseded, see `fab/README.md`),
+`fab/46mm_top.png` / `fab/46mm_bottom.png`, and
 `3d-assembly/hot_info_orbs_xiao_46mm_assembly.step`. **The enclosure's USB
 cutout is now 4 mm off:** `main_body_front` v4 / `overall assembly` v4 were
 built on the 2.1 STEP (`docs/ENCLOSURE.md`); re-import this one.
