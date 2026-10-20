@@ -125,12 +125,27 @@ differ from run 2 only by their timestamp lines. DRC unchanged (0 / 3 / 0 / 0).
 Yang got this STEP (link and file) by email the same evening; his previous
 copy was rev 2.1.
 
-Outputs: `fab/hot_info_orbs_xiao_46mm_2.3_run3_gerbers.zip` (runs 1 and 2
+**Rev 2.4 (`tools/display_marks.py`, 2026-10-20 19:05): a front-silk circle
+with the word Display at each module position.** Ø29.5 mm, line 0.2, text
+2.0 mm, centered on each display's 3D-model origin (x 58.74 + n·46, y 81.0).
+A bare board had shown five socket rows and a "XIAO GOES ON OTHER SIDE"
+box, nothing saying which face the displays plug into. The circle is
+smaller than the lit area (Ø32.5) because at DS3 a lit-area circle crosses
+the front annular rings of C1 and XIAO pad 8 (two DRC "clipped by solder
+mask" warnings, two fab-cut gaps in the ring); 14.75 mm is the largest
+radius that clears them. The DS3 circle crosses the XIAO box's corner,
+which is the truth of the layout. Scott had the rev bumped for it (silk and
+title block, schematic rev too). Copper, mask, outline and drill are run 3's
+(diffed: timestamp and rev-attribute lines only). DRC 0 / 3 / 0 / 0.
+
+Outputs: `fab/hot_info_orbs_xiao_46mm_2.4_run1_gerbers.zip` (the 2.3 runs
 are superseded, see `fab/README.md`),
 `fab/46mm_top.png` / `fab/46mm_bottom.png`, and
-`3d-assembly/hot_info_orbs_xiao_46mm_assembly.step` (run 3 silk). `overall
-assembly` v7 (2026-10-20) holds the run 2 STEP: the label move changed
-silk bodies only, so it was not re-imported. `main_body_front` v4 has **no USB cutout yet** (an
+`3d-assembly/hot_info_orbs_xiao_46mm_assembly.step` (rev 2.4 silk).
+`overall assembly` **v8** (2026-10-20 evening) holds this STEP, same
+transform as before, pose captured as Position6; it also carries the
+bezel and watch-crystal occurrences that were sitting unsaved in the
+session. `main_body_front` v4 has **no USB cutout yet** (an
 earlier line here said one was "4 mm off"; it never existed); the jack's
 place in the enclosure is measured in `docs/ENCLOSURE.md`.
 

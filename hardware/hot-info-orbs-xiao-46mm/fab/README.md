@@ -1,10 +1,18 @@
-# Fab package — XIAO carrier, 46 mm display pitch, rev 2.3
+# Fab package — XIAO carrier, 46 mm display pitch, rev 2.4
 
-**`hot_info_orbs_xiao_46mm_2.3_run3_gerbers.zip` is the package to send
-(generated 2026-10-20 17:44, KiCad 10.0.3). It is named for the run and is not
+**`hot_info_orbs_xiao_46mm_2.4_run1_gerbers.zip` is the package to send
+(generated 2026-10-20 19:05, KiCad 10.0.3). It is named for the run and is not
 to be regenerated:** if the board changes, the next run gets its own zip, and
 this one stays byte-identical to what was ordered, so a returned board can be
-matched to what was sent. The back silk reads `rev 2.3 · 46 mm pitch`.
+matched to what was sent. The back silk reads `rev 2.4 · 46 mm pitch`.
+
+`hot_info_orbs_xiao_46mm_2.3_run3_gerbers.zip` (2026-10-20 17:44) is the same
+copper, mask, outline and drill (diffed: only the timestamp and rev-attribute
+lines differ). It has no display marker on the front: `tools/display_marks.py`
+added a Ø29.5 silk circle with the word Display at each module position so a
+bare board shows which face the displays plug into, and Scott bumped the rev
+to 2.4 for it. Superseded before anything was ordered; it stays as the
+record, do not send it. Its STEP went to Yang by email that evening.
 
 `hot_info_orbs_xiao_46mm_2.3_run2_gerbers.zip` (2026-10-20 15:04) is the same
 copper, mask, outline and drill (diffed: only the timestamp lines differ);
