@@ -204,7 +204,10 @@ notes(s, "Five tickers, one per orb, with the price, the change and the day's ra
 # ---------- 6 How it's built ----------
 s = slides[5]
 title(s, 'How it’s built')
-pic(s, D + 'b24-front-crop.png', 1.15, 1.45, w=11.0, frame=False)
+tb(s, 0.6, 1.3, 6.6, 0.3, [('Front: the five displays', 14, True, GOLD)])
+_, (x, yy, w, h) = pic(s, D + 'b24-top2-crop.png', 0.6, 1.6, w=6.6, frame=False)
+tb(s, 0.6, yy + h + 0.08, 6.6, 0.3, [('Back: the module, the buttons, USB-C', 14, True, GOLD)])
+pic(s, D + 'b24-back-crop.png', 0.76, yy + h + 0.38, w=6.28, frame=False)  # same board width as the front crop, which carries the display overhang
 calls = [
     ('XIAO ESP32-S3 or S3 Plus', 'the brain, Wi-Fi built in, in a socket'),
     ('Five 1.28 in displays', 'GC9A01 round color TFTs, socketed'),
@@ -213,8 +216,8 @@ calls = [
     ('Under 2 W', '1.7 W measured at 5 V'),
 ]
 for i, (h, b) in enumerate(calls):
-    caption(s, 0.6 + i * 2.45, 4.75, 2.35, h, b, size=16, h=1.5)
-tb(s, 0.6, 6.3, 12.1, 0.5, [[('Board by Yang and Scott', 16, True, GOLD), ('   ·   made by JLCPCB   ·   every file on GitHub', 16, False, WHITE)]])
+    caption(s, 7.6, 1.45 + i * 0.95, 5.25, h, b, size=16, h=0.9)
+tb(s, 7.6, 6.3, 5.25, 0.8, [('Board by Yang and Scott', 14, True, GOLD), ('made by JLCPCB   ·   every file on GitHub', 14, False, WHITE)])
 notes(s, "Here's what's inside. The brain is a XIAO ESP32-S3 or S3 Plus, with Wi-Fi built in. It sits in a socket, so it lifts out. "
       "Five round color displays, an inch and a quarter across, share one board; three buttons along the edge. "
       "Yang and I designed the board that ties it together, and JLCPCB makes it. "
@@ -271,11 +274,11 @@ tb(s, 8.3, 1.6, 4.55, 2.2, [
 ])
 pic(s, D + 'enclosure-concept.png', 0.6, 4.1, w=7.4)
 tb(s, 8.3, 4.2, 4.55, 2.5, [
-    ('○  Enclosure: concept, by Yang', 20, True, GOLD),
+    ('○  Enclosure: a concept', 20, True, GOLD),
     ('“Winged Speedster”: brass rings around each screen, finned end caps, all 3D printed. Still a design.', 15, False, WHITE),
 ])
 notes(s, "Two things. The board has just moved to revision 2.4, and the design is locked: a XIAO ESP32-S3 or S3 Plus, the five displays at 46 millimeters to match the enclosure, buttons on top. "
-      "And a case: Yang's Winged Speedster concept, brass rings around each screen and finned end caps, all 3D printed. That one is still a design.")
+      "And a case: the Winged Speedster concept, brass rings around each screen and finned end caps, all 3D printed. That one is still a design.")
 
 # ---------- 10 The club build ----------
 s = slides[9]
@@ -313,7 +316,6 @@ tb(s, 8.3, 1.55, 4.55, 5.0, [
     [('Brett Turner', 15, True, WHITE), ('  Info Orbs, the original', 15, False, WHITE)],
     [('HackerBoxes', 15, True, WHITE), ('  #0129 Orbital', 15, False, WHITE)],
     [('Donald Champion', 15, True, WHITE), ('  HackerBox build photos', 15, False, WHITE)],
-    [('Yang', 15, True, WHITE), ('  enclosure', 15, False, WHITE)],
 ])
 notes(s, "Everything's on GitHub, at the link on screen: board files, firmware and the build guide. The feature sheet lists every page and setting. "
       "Thanks to Brett Turner, to HackerBoxes, and to Donald Champion for the build photos.")
