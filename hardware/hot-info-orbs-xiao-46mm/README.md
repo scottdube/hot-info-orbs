@@ -122,6 +122,8 @@ the display module covers that strip once plugged in, so a built board
 had no readable socket name. Scott's ask: visible for troubleshooting with
 beginners. Nothing else moved: run 3's copper, mask, outline and drill
 differ from run 2 only by their timestamp lines. DRC unchanged (0 / 3 / 0 / 0).
+Yang got this STEP (link and file) by email the same evening; his previous
+copy was rev 2.1.
 
 Outputs: `fab/hot_info_orbs_xiao_46mm_2.3_run3_gerbers.zip` (runs 1 and 2
 are superseded, see `fab/README.md`),
