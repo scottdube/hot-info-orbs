@@ -1,10 +1,17 @@
 # Fab package — XIAO carrier, 46 mm display pitch, rev 2.3
 
-**`hot_info_orbs_xiao_46mm_2.3_run2_gerbers.zip` is the package to send
-(generated 2026-10-20, KiCad 10.0.3). It is named for the run and is not to be
-regenerated:** if the board changes, the next run gets its own zip, and this
-one stays byte-identical to what was ordered, so a returned board can be
+**`hot_info_orbs_xiao_46mm_2.3_run3_gerbers.zip` is the package to send
+(generated 2026-10-20 17:44, KiCad 10.0.3). It is named for the run and is not
+to be regenerated:** if the board changes, the next run gets its own zip, and
+this one stays byte-identical to what was ordered, so a returned board can be
 matched to what was sent. The back silk reads `rev 2.3 · 46 mm pitch`.
+
+`hot_info_orbs_xiao_46mm_2.3_run2_gerbers.zip` (2026-10-20 15:04) is the same
+copper, mask, outline and drill (diffed: only the timestamp lines differ);
+it has the DS1–DS5 designators on the FRONT silk at the bottom edge, where
+the fab would trim them and the display module would then cover them.
+`tools/ds_refs.py` moved them to the back silk behind each socket. Superseded
+before anything was ordered; it stays as the record, do not send it.
 
 `hot_info_orbs_xiao_46mm_2.3_run1_gerbers.zip` is rev 2.3 as first laid out
 the same day: back pour only, two big pour islands removed (the bare bands

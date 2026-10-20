@@ -143,15 +143,16 @@
 		(uuid "57acdfd7-8859-4aa6-80a1-888171fc8c75")
 		(at 103.04 102.5 180)
 		(property "Reference" "DS2"
-			(at -1.58 -6.53 0)
+			(at -1.77 -0.8 0)
 			(unlocked yes)
-			(layer "F.SilkS")
+			(layer "B.SilkS")
 			(uuid "85fff945-9fb1-404c-af37-e587bd73ebaa")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.1)
+					(size 1.5 1.5)
+					(thickness 0.25)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Value" "GC9A01_TFT"
@@ -403,15 +404,16 @@
 		(uuid "933f7cd5-8dff-40e5-b9f4-280a893f2717")
 		(at 149.04 102.5 180)
 		(property "Reference" "DS3"
-			(at -1.58 -6.53 0)
+			(at -1.77 -0.8 0)
 			(unlocked yes)
-			(layer "F.SilkS")
+			(layer "B.SilkS")
 			(uuid "9376a757-836a-472b-94bc-15101a2dadd2")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.1)
+					(size 1.5 1.5)
+					(thickness 0.25)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Value" "GC9A01_TFT"
@@ -663,15 +665,16 @@
 		(uuid "a0717d68-ab8f-446c-823b-3711c9f06c4a")
 		(at 241.04 102.5 180)
 		(property "Reference" "DS5"
-			(at -1.58 -6.53 0)
+			(at -1.77 -0.8 0)
 			(unlocked yes)
-			(layer "F.SilkS")
+			(layer "B.SilkS")
 			(uuid "01961399-cd74-4fa4-b1e1-76c05f71d612")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.1)
+					(size 1.5 1.5)
+					(thickness 0.25)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Value" "GC9A01_TFT"
@@ -924,15 +927,16 @@
 		(uuid "b94aca11-5b28-49eb-b4a0-abb318e4c909")
 		(at 195.04 102.5 180)
 		(property "Reference" "DS4"
-			(at -1.58 -6.53 0)
+			(at -1.77 -0.8 0)
 			(unlocked yes)
-			(layer "F.SilkS")
+			(layer "B.SilkS")
 			(uuid "7bc4c333-ab74-4c95-ae85-8d3fe4d9b439")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.1)
+					(size 1.5 1.5)
+					(thickness 0.25)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Value" "GC9A01_TFT"
@@ -1184,15 +1188,16 @@
 		(uuid "e9135b55-ac4d-4b03-8757-f5a4b2c885dc")
 		(at 57.04 102.5 180)
 		(property "Reference" "DS1"
-			(at -1.58 -6.53 0)
+			(at -1.77 -0.8 0)
 			(unlocked yes)
-			(layer "F.SilkS")
+			(layer "B.SilkS")
 			(uuid "b9e2772d-55e7-4321-b965-57f8058f60bb")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.1)
+					(size 1.5 1.5)
+					(thickness 0.25)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Value" "GC9A01_TFT"

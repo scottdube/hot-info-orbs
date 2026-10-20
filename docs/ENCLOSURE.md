@@ -28,7 +28,8 @@ C1/C2/R1 in beside its socket. Same outline, same seven holes, same display
 and switch positions, so the bezels and posts are untouched. `overall
 assembly` **v7** holds the rev 2.3 STEP (same transform as below, the 2.1
 occurrence deleted, pose captured as Position5; the decals and discs were
-not touched). **`main_body_front` v4 has no USB cutout.** Its timeline is
+not touched). It is the run 2 STEP; run 3 (DS labels to the back silk)
+changed silk only and was not re-imported. **`main_body_front` v4 has no USB cutout.** Its timeline is
 plate, walls, fillet, three button holes, posts and pins, and the second
 `main_body_front` file in the project root is plate, walls and fillet only.
 Earlier wording here, in the board README and in `lower_xiao.py` said the

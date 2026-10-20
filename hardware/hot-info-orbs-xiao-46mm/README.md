@@ -113,11 +113,22 @@ PINS/DIP footprints as the symbols' default while the schematic's embedded
 copies (what the board was built from) name the SOCKET ones; the library
 files now say SOCKET, the schematic is untouched.
 
-Outputs: `fab/hot_info_orbs_xiao_46mm_2.3_run2_gerbers.zip` (run 1 is the
-back-pour-only layout, superseded, see `fab/README.md`),
+**Run 3 (`tools/ds_refs.py`, 2026-10-20 17:44): the DS1–DS5 designators are
+on the back silk**, 1.5 mm text mirrored behind each display socket (y 103.3,
+glyphs 0.8 mm above the pad copper, 0.58 mm below the footprint's back
+outline). They had been on the front silk at y 109.03 with their bottom
+0.015 mm from the board edge: the fab trims silk outside the outline and
+the display module covers that strip once plugged in, so a built board
+had no readable socket name. Scott's ask: visible for troubleshooting with
+beginners. Nothing else moved: run 3's copper, mask, outline and drill
+differ from run 2 only by their timestamp lines. DRC unchanged (0 / 3 / 0 / 0).
+
+Outputs: `fab/hot_info_orbs_xiao_46mm_2.3_run3_gerbers.zip` (runs 1 and 2
+are superseded, see `fab/README.md`),
 `fab/46mm_top.png` / `fab/46mm_bottom.png`, and
-`3d-assembly/hot_info_orbs_xiao_46mm_assembly.step`, in `overall assembly`
-v7 since 2026-10-20. `main_body_front` v4 has **no USB cutout yet** (an
+`3d-assembly/hot_info_orbs_xiao_46mm_assembly.step` (run 3 silk). `overall
+assembly` v7 (2026-10-20) holds the run 2 STEP: the label move changed
+silk bodies only, so it was not re-imported. `main_body_front` v4 has **no USB cutout yet** (an
 earlier line here said one was "4 mm off"; it never existed); the jack's
 place in the enclosure is measured in `docs/ENCLOSURE.md`.
 
