@@ -33,8 +33,9 @@ two-column R1/C2 pair put the cap 15 mm up.
 
 Tracks are removed here (route_xiao.py starts from bare copper anyway).
 Rev text 2.1 -> 2.3 on the back silk and in the title block; 2.2 was never
-made. The enclosure's USB cutout (main_body_front v4, built on the 2.1
-STEP) is now 4 mm off and needs the 2.3 STEP re-imported.
+made. The 2.3 STEP went into overall assembly v7 on 2026-10-20.
+main_body_front v4 has no USB cutout yet: this docstring once said one was
+"4 mm off", written before anyone looked at the enclosure timeline.
 """
 from pathlib import Path
 import pcbnew

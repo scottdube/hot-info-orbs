@@ -23,13 +23,17 @@ right-angle switches on the top edge, so the board needs no change for this.
 `hardware/enclosure/front-mockup-v1/` was built on the narrow 38.98 mm board.
 
 **2026-10-20: rev 2.3** (`tools/lower_xiao.py`) moves the XIAO **4 mm toward the
-bottom edge** so the USB-C face sits 0.6 mm past the board edge, and pulls
+bottom edge** so the USB-C jack reaches past the board edge, and pulls
 C1/C2/R1 in beside its socket. Same outline, same seven holes, same display
-and switch positions, so the bezels and posts are untouched, but **the USB
-cutout in `main_body_front` v4 is now 4 mm off**: `overall assembly` v4 holds
-the rev 2.1 STEP and needs the rev 2.3 one
-(`hardware/hot-info-orbs-xiao-46mm/3d-assembly/`, overwritten in place)
-re-imported before the cutout is placed.
+and switch positions, so the bezels and posts are untouched. `overall
+assembly` **v7** holds the rev 2.3 STEP (same transform as below, the 2.1
+occurrence deleted, pose captured as Position5; the decals and discs were
+not touched). **`main_body_front` v4 has no USB cutout.** Its timeline is
+plate, walls, fillet, three button holes, posts and pins, and the second
+`main_body_front` file in the project root is plate, walls and fillet only.
+Earlier wording here, in the board README and in `lower_xiao.py` said the
+cutout was "4 mm off": that assumed one existed; nobody had looked. Where
+the jack now sits is under *The board in the enclosure*.
 
 ## Inputs already measured
 
@@ -50,11 +54,12 @@ equal, 29.135 mm. The interference check against the board STEP is clean. See
 
 ## The board in the enclosure (2026-10-19)
 
-![overall assembly, board rev 2.1 from the back](images/overall_assembly_board_2.1_back.png)
+![overall assembly v7, board rev 2.3 from the back](images/overall_assembly_board_2.3_back.png)
 
-`overall assembly` **v4** holds the rev 2.1 board STEP
-(`hardware/hot-info-orbs-xiao-46mm/3d-assembly/`) on `main_body_front` **v4**.
-Both are Fusion cloud versions; the STEP is the source of the board.
+`overall assembly` **v7** holds the rev 2.3 board STEP
+(`hardware/hot-info-orbs-xiao-46mm/3d-assembly/`) on `main_body_front` **v4**
+(v4 to v6 carried rev 2.1). Both are Fusion cloud versions; the STEP is the
+source of the board.
 
 **Transform.** Import the STEP into the assembly, rotate +90° about world X,
 then translate (−25.99, 17.6, 118.415) mm. World x = board x − 25.99, world
@@ -78,6 +83,13 @@ v3 enclosure had corner hangers at the top instead of end posts, because
 the X0.2 board's top holes sat under the lip; growing the board 5 mm put
 them where a post fits, and the hangers (and the Ø2.9 pins that had been
 floating inside them as Body2/Body3) are gone. One body.
+
+**USB-C jack (rev 2.3, measured in the assembly).** Port mouth centered at
+world x 105.12, y 31.29; its face at z 7.26, 1.38 mm past the board edge
+(8.635). The bottom wall's inner face is z 0 and its outer face z −2, flat
+from y 14 to 40 (the r12 front fillet ends at y 14), so the jack is 7.3 mm
+inside the wall. No cutout exists yet; one would go in that flat at
+x 105.1 / y 31.3 and has to pass a plug overmold 7.3 mm deep to the jack.
 
 **Buttons.** Three Ø8 holes 3 mm deep in the top lip over the switch
 actuators (x 85.721 / 123.055 / 160.388, actuator y 21.185). The actuator

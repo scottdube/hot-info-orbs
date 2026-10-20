@@ -116,9 +116,10 @@ files now say SOCKET, the schematic is untouched.
 Outputs: `fab/hot_info_orbs_xiao_46mm_2.3_run2_gerbers.zip` (run 1 is the
 back-pour-only layout, superseded, see `fab/README.md`),
 `fab/46mm_top.png` / `fab/46mm_bottom.png`, and
-`3d-assembly/hot_info_orbs_xiao_46mm_assembly.step`. **The enclosure's USB
-cutout is now 4 mm off:** `main_body_front` v4 / `overall assembly` v4 were
-built on the 2.1 STEP (`docs/ENCLOSURE.md`); re-import this one.
+`3d-assembly/hot_info_orbs_xiao_46mm_assembly.step`, in `overall assembly`
+v7 since 2026-10-20. `main_body_front` v4 has **no USB cutout yet** (an
+earlier line here said one was "4 mm off"; it never existed); the jack's
+place in the enclosure is measured in `docs/ENCLOSURE.md`.
 
 The rest of this README is inherited from the parent project. Its y
 coordinates and the pin map still hold; its x coordinates and board width

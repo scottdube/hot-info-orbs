@@ -365,3 +365,19 @@ display faces"). Other things learned on the same job:
   so [2, 2] = 32 mm. `size` in the read-back is the placed size.
 - `view_screenshot` views are front/back/top/bottom/left/right and
   iso-top-right etc., not `iso`.
+
+## The USB cutout that was "4 mm off" never existed (2026-10-20)
+
+Rev 2.3 of the 46 mm board moved the XIAO 4 mm down, and three places
+(ENCLOSURE.md, the board README, the `lower_xiao.py` docstring) recorded
+that "the enclosure's USB cutout is now 4 mm off". Scott then asked to
+"replace the board and move the cutout". `main_body_front` v4's timeline is
+plate, walls, fillet, button holes, posts, pins: no cutout, and the other
+`main_body_front` file in the project has even less. The sentence had been
+written from the board change, not from the enclosure model, and once it was
+in three files it read as a fact. Before writing "X in the model is now
+wrong", read the model's timeline (`design_get include=['timeline']`) and
+name the feature. Same job: a 12.7 MB STEP `doc_insert_import` times out on
+the MCP side but still completes in Fusion (Group3 of 125 features appeared
+about a minute later); the next calls time out until it finishes, then the
+active document has flipped, so `doc_activate` before reading.
