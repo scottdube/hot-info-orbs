@@ -16,9 +16,10 @@ touch the logos by hand. The logo top right comes from the layout.
 
 - **No cost figures anywhere**, slides or notes.
 - **Board is rev 2.4 and the slide says "design locked"**, not "in
-  manufacturing" or "ordering next". The renders are from the 46 mm board in
-  git (`hardware/hot-info-orbs-xiao-46mm`, rev 2.3 run 3 geometry on
-  `board-46mm-pitch`); re-render from the 2.4 file when it lands:
+  manufacturing" or "ordering next". The renders are from the rev 2.4
+  `hot_info_orbs_xiao_46mm.kicad_pcb` (display-mark silk circles visible;
+  the file was still uncommitted in the `hot-info-orbs-enclosure` worktree on
+  2026-10-20). To re-render:
   `kicad-cli pcb render --side top --rotate "-28,0,0" --zoom 1.9` (front) and
   `--side top --zoom 1.9` (plan), background transparent, then crop to the
   alpha bbox.
