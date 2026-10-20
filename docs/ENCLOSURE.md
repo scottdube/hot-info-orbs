@@ -107,6 +107,11 @@ nothing holds the module against the plate yet (0.29 mm air); bezel rings
 and a back cover are not modelled; the switch plunger gap is designed, not
 printed.
 
+**The enclosure is Yang's right now (Scott, 2026-10-20).** The USB cutout,
+the module retention, the bezel rings and the back cover are his to model;
+we send him the board STEP and the jack position, and do not cut into
+`main_body_front` ourselves.
+
 ## Populated display faces (2026-10-19)
 
 ![overall assembly, faces populated](images/overall_assembly_faces_front.png)
