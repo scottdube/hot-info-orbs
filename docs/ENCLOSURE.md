@@ -28,8 +28,11 @@ C1/C2/R1 in beside its socket. Same outline, same seven holes, same display
 and switch positions, so the bezels and posts are untouched. `overall
 assembly` **v7** holds the rev 2.3 STEP (same transform as below, the 2.1
 occurrence deleted, pose captured as Position5; the decals and discs were
-not touched). It is the run 2 STEP; run 3 (DS labels to the back silk)
-changed silk only and was not re-imported. **`main_body_front` v4 has no USB cutout.** Its timeline is
+not touched). It was the run 2 STEP; **v8** (same evening) holds the
+**rev 2.4** STEP (`tools/display_marks.py`: a Ø29.5 front-silk circle with
+the word Display at each module position, rev bumped for it), same
+transform, Position6, and keeps the bezel and watch-crystal occurrences
+that were in the session unsaved. **`main_body_front` v4 has no USB cutout.** Its timeline is
 plate, walls, fillet, three button holes, posts and pins, and the second
 `main_body_front` file in the project root is plate, walls and fillet only.
 Earlier wording here, in the board README and in `lower_xiao.py` said the
@@ -57,9 +60,9 @@ equal, 29.135 mm. The interference check against the board STEP is clean. See
 
 ![overall assembly v7, board rev 2.3 from the back](images/overall_assembly_board_2.3_back.png)
 
-`overall assembly` **v7** holds the rev 2.3 board STEP
+`overall assembly` **v8** holds the rev 2.4 board STEP
 (`hardware/hot-info-orbs-xiao-46mm/3d-assembly/`) on `main_body_front` **v4**
-(v4 to v6 carried rev 2.1). Both are Fusion cloud versions; the STEP is the
+(v4 to v6 carried rev 2.1, v7 rev 2.3). Both are Fusion cloud versions; the STEP is the
 source of the board.
 
 **Transform.** Import the STEP into the assembly, rotate +90° about world X,
