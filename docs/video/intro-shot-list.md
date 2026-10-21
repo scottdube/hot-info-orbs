@@ -78,8 +78,9 @@ Tripod, plus a slider if you have one. Lock exposure on the screens.
 - **S01, Wide, five orbs cycling** (8 s).
   - *Setup:* locked off, room tone only. Roll a full rotation (about 45 s) and
     pick the best 8 s.
-  - *Why:* the cold open. It shows what the thing is before anyone says a
-    word; the motion of pages changing is the hook.
+  - *Why:* running-orbs footage for the title plate and B-roll. **No longer
+    a silent cold open** (cut 2026-10-21): an 8 s hold with no narration read
+    as a yawn, so the video opens on the title card with the VO from frame 1.
 - **S03, Slow push-in** (8 s).
   - *Setup:* slider or slow zoom toward the center orb.
   - *Why:* gives the "what it is" narration something alive to sit on, and

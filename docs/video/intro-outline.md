@@ -26,9 +26,9 @@ labeled with where each stands.
 
 ## 1. Cold open (0:00–0:15)
 
-- Five orbs on a desk cycling through their pages. No talking for the first
-  few seconds.
-- Title card: **HOT Info Orbs**, Hands-On Tech logo.
+- Title card: **HOT Info Orbs**, Hands-On Tech logo, over the orbs running.
+- Narration from the first frame. (Cut 2026-10-21: a silent 8 s hold on the
+  orbs read as a yawn, not a hook. The voice is the grabber.)
 
 ## 2. What it is (0:15–0:35)
 

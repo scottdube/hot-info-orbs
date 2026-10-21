@@ -13,13 +13,10 @@ times: [vo-practice-2026-10-18.md](vo-practice-2026-10-18.md).
 
 ## 1. Cold open (0:00–0:15)
 
-**[Five orbs on a desk, cycling Clock → Weather → Stocks. Hold 5–6 s with no
-narration, room tone only.]**
+**[Title card: HOT Info Orbs, Hands-On Tech logo, over the five orbs
+running. The narration starts on the first frame; no silent hold.]**
 
 This is the HOT Info Orbs.
-
-**[Title card: HOT Info Orbs, Hands-On Tech logo. The orbs keep running
-behind it.]**
 
 ## 2. What it is (0:15–0:35)
 

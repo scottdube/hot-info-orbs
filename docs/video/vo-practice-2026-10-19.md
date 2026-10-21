@@ -139,3 +139,17 @@ S32 5). Silent shots keep theirs (S01, S28, S33). Read 1 stays in the VO bin as 
 - Checked: 36 markers, 33 VO clips with no overlaps, the 6 scaled stills kept their scale. The
   sequence audio, re-transcribed, matches the script line for line.
 - Backup before the change: `hot-info-orbs-intro-before-read2-2026-10-19.fcproj`.
+
+## Clipped line heads (fixed 2026-10-21)
+
+Scott heard S18 start chopped ("Club leader…"). Measured on the read-2 WAV in 25 ms RMS
+steps: the "k" of "Club" starts at 139.68 s and is fully voiced by 139.78 s, but the clip
+started at 139.83 s. A scan of all 33 VO clips found one more like it: S30's "In" runs
+222.05–222.22 s and the clip started at 222.27 s, so the cut opened on "the case…". Both
+heads were moved earlier (S18 by 0.33 s to 139.50, S30 by 0.30 s to 221.97) without
+overlapping their neighbors. Every other line starts below −64 dB.
+
+The "re-transcribed, matches line for line" check above did not catch either one: whisper
+fills in a clipped first syllable from context. The check that does is the level at each
+clip's in point (`vo_edges.py`-style: RMS of the first 50 ms; anything above about −60 dB
+starts mid-word).
