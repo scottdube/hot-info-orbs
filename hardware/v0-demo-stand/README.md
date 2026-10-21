@@ -31,7 +31,9 @@ face is flush with the board end and the tab runs to the board's top edge,
 so the stand reads as part of the board rather than a clamp on it. v3/v4
 were 6 mm wide so one symmetric part fit both ends; Scott doubled the
 width 2026-10-21 with the holes left where they were, so the part is now
-handed: **print one as-is and one mirrored** in the slicer. The 12 mm tab
+handed, so there are two files: `-left` is the Fusion export, `-right`
+is its mirror (made by flipping the mesh, same volume). Two copies of one
+file put the right foot's holes on the wrong side of center. The 12 mm tab
 ends where the nearest display socket tails start; the assembly
 interference check shows the feet touching only the PCB.
 
@@ -43,15 +45,16 @@ interference check shows the feet touching only the PCB.
 | Holes | two Ø2.6 mm through the tab, 3 and 25.5 mm above the step measured along the face, 3 mm in from the outer (flush) face — M3 x 8 self-taps |
 | Board end | flush with the foot's outer face; the foot runs 12 mm inboard |
 
-**Print:** 1 + 1 mirrored (the slicer's mirror on the second copy), flat
-on the base, any PLA/PETG, no supports (the 10° tab is well under the
+**Print:** one `-left` and one `-right` (left/right as seen from the
+front, displays toward you), flat on the base, any PLA/PETG, no supports (the 10° tab is well under the
 overhang limit). ~9 g each.
 
 **Fit:** board bottom edge on the step, back face against the tab, two
 M3 x 8 through each tab into the corner holes from behind. Plug the
 90° USB-C in pointing down; the cable exits under the board.
 
-Files: `v0-demo-stand-foot.stl` / `.3mf` (mm), `foot-iso.png`.
+Files: `v0-demo-stand-foot-left.stl` / `.3mf` and `-right.stl` / `.3mf`
+(mm), `foot-iso.png` (left foot).
 Fusion source: **HOT Projects / info-orbs-v0-demo-stand** (v9; v7 was a
 rebuild that dropped a profile corner and came out with a wedge base,
 never printed; parameters BaseT, TabT, TabH, SeatH, StepD, Toe, Heel, FootW,
@@ -60,7 +63,9 @@ hole diameter; the side profile and hole points are drawn to numbers, not
 to those parameters — it is a throwaway). Assembly with the board model:
 **HOT Projects / info-orbs-v0-demo-stand-assy** (v11; all four foot holes
 verified on the board's corner holes; foot 2 is shown unmirrored, so it
-overhangs the board end by 6 mm there; the board model shows the displays
+overhangs the board end by 6 mm there — Fusion's mirror refuses a body
+that lives in an xref component, so the right foot exists only as the
+mirrored mesh file; the board model shows the displays
 unsocketed, 8.5 mm lower than the real board, which does not affect the
 feet).
 
