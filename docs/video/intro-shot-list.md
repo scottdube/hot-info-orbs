@@ -38,6 +38,13 @@ change its settings, so they go after the shots that need it undisturbed.
 **Shoot day, before the camera comes out**
 - [ ] Work through [Before the shoot](#before-the-shoot), items 1–6.
 
+**Optional, only after every outstanding shot is done:** reshoot S15 (MQTT)
+and S15a (Web Data). Both currently come from the session-2 desk-wide take,
+which has bench-top clutter in frame (Scott, 2026-10-21). Clear the bench,
+frame like S14 (orb row about 68% of the width, so it cuts with S13/S14), and
+roll at least 20 s on each page. A new S15 also fills the last 2.17 s of its
+slot, which is still placeholder.
+
 **Block 1 — Laptop (setup E):** S22, then S19. (S21 is done: a full-page
 pan, no filming.)
 S22 restarts the orb, so do it first, before the orb is framed.
