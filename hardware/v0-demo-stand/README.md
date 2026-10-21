@@ -17,13 +17,14 @@ of the ~8 mm it sits forward; a screwless slot stand would need ~30° of
 recline plus a front lip, and the displays come within 1.5 mm of the
 board's bottom edge, so there is no room for a lip under them anyway.
 
-**Why the board sits 16 mm up:** the SuperMini's USB-C is on the back of
+**Why the board sits 20 mm up:** the SuperMini's USB-C is on the back of
 the board at mid-length and points at the bottom edge. With a 90° plug in,
 the bottom of the connector is 13 mm below the board edge (measured
-2026-10-21). The riser under the tab holds the edge 16 mm off the table,
-3 mm clear, and the cable runs out under the board toward the heel. The
+2026-10-21). The riser under the tab holds the edge 20 mm off the table,
+7 mm clear, and the cable runs out under the board toward the heel. The
 riser is 2 mm thicker than the tab, so the board edge rests on that step
-and the screws only clamp, they do not carry the board.
+and the screws only clamp, they do not carry the board. (`SeatH` lowers
+it; 16 mm still clears the plug by 3 mm.)
 
 **Why 6 mm wide and flush (v3):** the foot's outer face is flush with the
 board end and the tab runs to the board's top edge, so the stand reads as
@@ -34,9 +35,9 @@ throwaway. The nearest display socket tails start 6 mm inboard of the foot.
 
 | | |
 |---|---|
-| Foot | 60 x 6 x 44 mm: base 4 mm, riser 6 thick x 12 high, tab 4 thick to the board's top edge, all leaning back 10° |
+| Foot | 60 x 6 x 48 mm: flat base 4 mm, riser 6 thick x 16 high, tab 4 thick to the board's top edge, riser and tab leaning back 10° |
 | Toe / heel | 40 mm ahead of the board face, 20 mm behind |
-| Seat | board bottom edge rests on the riser step, 16 mm above the table |
+| Seat | board bottom edge rests on the riser step, 20 mm above the table |
 | Holes | two Ø2.6 mm through the tab, 3 and 25.5 mm above the step measured along the face, centered on the width — M3 x 8 self-taps |
 | Board end | flush with the foot's outer face |
 
@@ -48,12 +49,13 @@ M3 x 8 through each tab into the corner holes from behind. Plug the
 90° USB-C in pointing down; the cable exits under the board.
 
 Files: `v0-demo-stand-foot.stl` / `.3mf` (mm), `foot-iso.png`.
-Fusion source: **HOT Projects / info-orbs-v0-demo-stand** (v7, a clean
-rebuild; parameters BaseT, TabT, TabH, SeatH, StepD, Toe, Heel, FootW,
+Fusion source: **HOT Projects / info-orbs-v0-demo-stand** (v8; v7 was a
+rebuild that dropped a profile corner and came out with a wedge base,
+never printed; parameters BaseT, TabT, TabH, SeatH, StepD, Toe, Heel, FootW,
 Lean, HoleD, HoleUp document the numbers and drive the extrude width and
 hole diameter; the side profile and hole points are drawn to numbers, not
 to those parameters — it is a throwaway). Assembly with the board model:
-**HOT Projects / info-orbs-v0-demo-stand-assy** (v9; all four foot holes
+**HOT Projects / info-orbs-v0-demo-stand-assy** (v10; all four foot holes
 verified on the board's corner holes; the board model shows the displays
 unsocketed, 8.5 mm lower than the real board, which does not affect the
 feet).
