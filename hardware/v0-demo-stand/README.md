@@ -26,37 +26,41 @@ riser is 2 mm thicker than the tab, so the board edge rests on that step
 and the screws only clamp, they do not carry the board. (`SeatH` lowers
 it; 16 mm still clears the plug by 3 mm.)
 
-**Why 6 mm wide and flush (v3):** the foot's outer face is flush with the
-board end and the tab runs to the board's top edge, so the stand reads as
-part of the board rather than a clamp on it. The corner holes are 3 mm in
-from the end, so a single symmetric part that is flush must be 6 mm wide.
-A wider foot would need a mirrored left/right pair; rejected for a
-throwaway. The nearest display socket tails start 6 mm inboard of the foot.
+**Why 12 mm wide, holes 3 mm from the outer face (v5):** the foot's outer
+face is flush with the board end and the tab runs to the board's top edge,
+so the stand reads as part of the board rather than a clamp on it. v3/v4
+were 6 mm wide so one symmetric part fit both ends; Scott doubled the
+width 2026-10-21 with the holes left where they were, so the part is now
+handed: **print one as-is and one mirrored** in the slicer. The 12 mm tab
+ends where the nearest display socket tails start; the assembly
+interference check shows the feet touching only the PCB.
 
 | | |
 |---|---|
-| Foot | 60 x 6 x 48 mm: flat base 4 mm, riser 6 thick x 16 high, tab 4 thick to the board's top edge, riser and tab leaning back 10° |
+| Foot | 60 x 12 x 48 mm: flat base 4 mm, riser 6 thick x 16 high, tab 4 thick to the board's top edge, riser and tab leaning back 10° |
 | Toe / heel | 40 mm ahead of the board face, 20 mm behind |
 | Seat | board bottom edge rests on the riser step, 20 mm above the table |
-| Holes | two Ø2.6 mm through the tab, 3 and 25.5 mm above the step measured along the face, centered on the width — M3 x 8 self-taps |
-| Board end | flush with the foot's outer face |
+| Holes | two Ø2.6 mm through the tab, 3 and 25.5 mm above the step measured along the face, 3 mm in from the outer (flush) face — M3 x 8 self-taps |
+| Board end | flush with the foot's outer face; the foot runs 12 mm inboard |
 
-**Print:** 2 off, flat on the base, any PLA/PETG, no supports (the 10°
-tab is well under the overhang limit). ~5 g each.
+**Print:** 1 + 1 mirrored (the slicer's mirror on the second copy), flat
+on the base, any PLA/PETG, no supports (the 10° tab is well under the
+overhang limit). ~9 g each.
 
 **Fit:** board bottom edge on the step, back face against the tab, two
 M3 x 8 through each tab into the corner holes from behind. Plug the
 90° USB-C in pointing down; the cable exits under the board.
 
 Files: `v0-demo-stand-foot.stl` / `.3mf` (mm), `foot-iso.png`.
-Fusion source: **HOT Projects / info-orbs-v0-demo-stand** (v8; v7 was a
+Fusion source: **HOT Projects / info-orbs-v0-demo-stand** (v9; v7 was a
 rebuild that dropped a profile corner and came out with a wedge base,
 never printed; parameters BaseT, TabT, TabH, SeatH, StepD, Toe, Heel, FootW,
 Lean, HoleD, HoleUp document the numbers and drive the extrude width and
 hole diameter; the side profile and hole points are drawn to numbers, not
 to those parameters — it is a throwaway). Assembly with the board model:
-**HOT Projects / info-orbs-v0-demo-stand-assy** (v10; all four foot holes
-verified on the board's corner holes; the board model shows the displays
+**HOT Projects / info-orbs-v0-demo-stand-assy** (v11; all four foot holes
+verified on the board's corner holes; foot 2 is shown unmirrored, so it
+overhangs the board end by 6 mm there; the board model shows the displays
 unsocketed, 8.5 mm lower than the real board, which does not affect the
 feet).
 
