@@ -302,3 +302,9 @@ never the environment or the pin map, so a successful flash proves nothing
 about the variant. Scott's own orb is the prototype; the XIAO env is for
 the carrier boards. Making the update page print its PlatformIO env would
 close this; not done yet.
+
+## Settings page: a failed field re-renders the saved value, not what you typed (2026-10-22)
+
+Seen on the phone during the video shoot: a red "Not saved — 1 field needs fixing" banner with `Enter 0 (off) or 5 to 3600 seconds` under a Seconds-per-page field reading **5**, which the rule accepts. In `SettingsPage.cpp` the cycle branch only writes `v.cycle` when `parseCycle` succeeds, so the page shows the stored value (5) beside an error that was about the submitted one (empty, or under 5). The checkboxes behave differently: an unticked box is read straight from the POST, so they show what was submitted. Confusing on a phone where the keyboard hides the field you just cleared. A fix would echo the raw submitted string in the field when its parse fails.
+
+**Also seen, cause not established:** after one OTA reboot (17:03 EDT) the clock orb showed "February 7 02:29 Sunday" for at least 51 s and was correct after the next reboot two minutes later. One occurrence, on the demo-typed prototype build.
