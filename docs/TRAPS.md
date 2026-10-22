@@ -285,3 +285,20 @@ clearance from them, so KiCad flagged `copper_edge_clearance` (0.5 mm). The
 script now grows them by 0.4 mm. And reordering the nets in the DSN changes
 nothing: 12 shuffles gave a byte-identical result, because Freerouting
 orders them itself.
+
+## An OTA of the XIAO build onto the v1.1 prototype boots and answers — it does not boot-loop (2026-10-22)
+
+Over USB, main's `xiao-esp32s3` image boot-loops the 4 MB prototype on the
+flash-size header. Over the web updater it does **not**: the image installed,
+the orb rejoined Wi-Fi and `/settings` reported the new commit, so every
+check in the OTA runbook passed, with the XIAO pin map driving SuperMini
+wiring (screens 1-3 on the wrong CS pins, 2026-10-20 trap above). It was
+caught only by reading the project memory afterwards, and put right by
+OTA-ing the `demo-typed-times` build from the prototype worktree 2 min later.
+
+**Before any OTA, decide which board is at the address from a record, not
+from the page.** `/update` and `/settings` show the commit and build time,
+never the environment or the pin map, so a successful flash proves nothing
+about the variant. Scott's own orb is the prototype; the XIAO env is for
+the carrier boards. Making the update page print its PlatformIO env would
+close this; not done yet.
