@@ -47,7 +47,8 @@ this repository is public.
 The WiFi updates need a new flash layout (two firmware slots instead of one), and
 only a USB flash writes that layout. Every update after that can go over WiFi:
 open `http://<orb's IP>/update`, choose `.pio/build/xiao-esp32s3/firmware.bin`
-and upload. The page also shows which commit is running. Set `OTA_PASSWORD` in
+and upload. The page also shows which commit is running and which board
+environment it was built for: check that against the orb before uploading. Set `OTA_PASSWORD` in
 `secrets.h`, or anyone on your network can flash your orbs. Details in
 [docs/SETUP.md](docs/SETUP.md#8-later-updates-no-cable-needed).
 

@@ -181,7 +181,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     String h;
     h.reserve(9000);
     h += PAGE_HEAD;
-    h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
+    h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME " for " BUILD_ENV "<br>Up " + uptime() + ". ";
     {
         // Glyph as well as the number. Rule-of-thumb bands, not measured on the orb
         const int rssi = WiFi.RSSI();
