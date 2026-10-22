@@ -65,10 +65,11 @@ These change settings.
 - After S23, change the town or tickers back.
 - After S23a, re-tick Stocks.
 
-**Block 5 — Board on the table (setup C):** S04, S16, S17, S18, S20.
+**Block 5 — Board on the table (setup C):** S04, S17, S18, S20.
 This is last because it means moving the orb off the desk set.
 
-**Edit:** S02, S31, S32, S33 cards; S05, S06, S20a, S20b, S29, S30 stills.
+**Edit:** S02, S31, S32, S33 cards; S05, S06, S20a, S20b, S29, S30 stills;
+S16, S18, S29 Fusion animations.
 
 ---
 
@@ -171,11 +172,17 @@ shadows.
   - *Setup:* overhead, square to the board.
   - *Why:* the first look at the hardware. The layout reads clearly from
     above.
-- **S16, Macro: the ESP32-S3 SuperMini in its socket** (5 s).
-  - *Setup:* macro, shallow focus on the module. Try it off and on; keep
-    whichever reads better.
-  - *Why:* "the brain" needs a face, and the socket shot supports "it lifts
-    out", which is reassuring for beginners worried about soldering it wrong.
+- **S16, Animation: the XIAO ESP32-S3 lifts out of its sockets and plugs
+  back in** (10 s, ANIM; was a 5 s macro camera shot of the module until
+  2026-10-22).
+  - *Setup:* `S16-xiao-plug-dark.mp4` / `-transparent.mov` in the asset
+    folder, rendered from Fusion by `sources/fusion_plug.py`. Seated 1.5 s,
+    out over 2 s, hold, back in over 2 s, hold; loops. Oblique back view so
+    the pins visibly leave the sockets.
+  - *Why:* "the brain" needs a face, and "it sits in a socket, so it lifts
+    out" is literally shown, which reassures beginners worried about
+    soldering it wrong. An animation shows the lift cleanly; on camera the
+    pull would need a hand in a macro frame.
 - **S17, Pan across the five displays, then the buttons** (6 s).
   - *Setup:* slow lateral move at board height.
   - *Why:* pictures "five displays share one connection" and puts the three
@@ -317,7 +324,7 @@ Use high-contrast text, and never use color alone to carry meaning.
 | S14 | 4 | CAM B | Hand stepping pages | 6 s |
 | S15 | 4 | CAM A | MQTT | 5 s |
 | S15a | 4 | CAM A | Web Data | 4 s |
-| S16 | 5 | CAM C | SuperMini macro | 5 s |
+| S16 | 5 | ANIM | XIAO lifts out, plugs back in | 10 s |
 | S17 | 5 | CAM C | Displays + buttons pan | 6 s |
 | S18 | 5 | CAM C | Bare v1.1 board | 4 s |
 | S19 | 5 | LAPTOP | KiCad v1.1 | 5 s |
@@ -339,8 +346,9 @@ Use high-contrast text, and never use color alone to carry meaning.
 | S32 | 8 | CARD | Credits | 5 s |
 | S33 | 8 | CAM + CARD | End card | 3 s |
 
-The listed lengths add up to 3:35 (re-added 2026-10-18; the earlier 3:18 was
-a miscount, and S21 went from 4 to 11 s), and the narration runs about 3:30. Every
+The listed lengths add up to 3:40 (re-added 2026-10-18; the earlier 3:18 was
+a miscount, and S21 went from 4 to 11 s; S16 went from 5 to 10 s on
+2026-10-22 to cover its 9 s line), and the narration runs about 3:30. Every
 shot is cut to the narration, so roll at least twice the listed length.
 
 ---
@@ -384,6 +392,7 @@ third-party screenshots, and the repo is public.
 |---|---|---|
 | S05 | Brett Turner's photo of his orbs, from his product page | gathered 2026-10-19 |
 | S06 | HackerBoxes #0129 product page and Instructables page, screenshots | to collect |
+| S16 | XIAO plug in/out, Fusion: `S16-xiao-plug-dark.mp4` + `-transparent.mov`, `sources/fusion_plug.py` | rendered 2026-10-22 |
 | S19 | v1.1 board renders, 2D and 3D (fallback for the live capture) | to render, `kicad-cli pcb render` |
 | S29 | XIAO board 3D render; only the STEP and PCB exist (`hardware/hot-info-orbs-xiao/`) | to render |
 | S20a, S20b | Thermal images, in color, 2026-10-17 at 75 °F room: white and red hottest, blue coolest | on hand, `docs/assets/thermal/` |
