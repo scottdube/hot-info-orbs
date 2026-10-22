@@ -29,7 +29,13 @@ ini = configparser.ConfigParser(interpolation=None)
 ini.read(root / "platformio.ini")
 board_env = env["PIOENV"]  # noqa: F821
 seen = set()
-while board_env not in seen and ini.has_option(f"env:{board_env}", "extends"):
+# Stop at the first env that names a `board` itself: supermini-proto extends
+# xiao-esp32s3 but sets its own board, so it is the board env.
+while (
+    board_env not in seen
+    and not ini.has_option(f"env:{board_env}", "board")
+    and ini.has_option(f"env:{board_env}", "extends")
+):
     seen.add(board_env)
     board_env = ini.get(f"env:{board_env}", "extends").strip().removeprefix("env:")
 
