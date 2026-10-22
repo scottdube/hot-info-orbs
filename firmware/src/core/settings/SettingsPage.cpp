@@ -268,6 +268,17 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += "</fieldset>";
 #endif
 
+    // Unticked checkboxes send nothing, so the wxform marker tells the parser
+    // the section was on the page at all (same pattern as shwform)
+    h += "<fieldset><legend>Weather pages</legend><input type='hidden' name='wxform' value='1'>";
+    h += "<label class='chk'><input type='checkbox' name='wxon' value='1'" + String(v.wxon ? " checked" : "") + "> Weather (the location below)</label>";
+#ifdef TEMPEST_TOKEN
+    h += "<label class='chk'><input type='checkbox' name='ton1' value='1'" + String(v.ton1 ? " checked" : "") + "> Tempest 1</label>";
+    h += "<label class='chk'><input type='checkbox' name='ton2' value='1'" + String(v.ton2 ? " checked" : "") + "> Tempest 2</label>";
+#endif
+    h += hint("Each ticked page is built at start-up and listed under Show above. Untick them all for no weather page.");
+    h += "</fieldset>";
+
     h += "<fieldset><legend>Weather</legend>";
     h += textField("wxloc", "Location", v.wxloc, d.wxloc, ". Not checked until the orb fetches the weather.", errors);
     h += boolSelect("wxmetric", "Units", v.wxmetric, d.wxmetric, "&deg;F, mph", "&deg;C, km/h", errors);
@@ -276,7 +287,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
 
 #ifdef TEMPEST_TOKEN
     h += "<fieldset><legend>Tempest stations</legend>";
-    h += hint("Token set in secrets.h. Each station gets its own weather page, and the location above is then not used. Units follow the setting above.");
+    h += hint("Token set in secrets.h. Each station gets its own weather page when ticked under Weather pages. Units follow the setting above.");
     h += stationRow(0, "tstn1", "tlbl1", v.tstn1, v.tlbl1, d.tstn1, d.tlbl1, errors);
     h += stationRow(1, "tstn2", "tlbl2", v.tstn2, v.tlbl2, d.tstn2, d.tlbl2, errors);
     h += "</fieldset>";
@@ -460,12 +471,25 @@ void SettingsPage::handlePost() {
     if (v.off && v.offstartm == v.offendm && !errors.count("offstartm") && !errors.count("offendm")) {
         errors["offendm"] = "Start and end are the same time";
     }
+    if (has("wxform")) {
+        v.wxon = has("wxon");
+#ifdef TEMPEST_TOKEN
+        v.ton1 = has("ton1");
+        v.ton2 = has("ton2");
+#endif
+    }
 #ifdef TEMPEST_TOKEN
     // IDs first: whether a label is required depends on its station
     if (has("tstn1") && !sv::parseStationId(argStr(s, "tstn1"), v.tstn1, err)) {
         errors["tstn1"] = err;
     }
     if (has("tstn2") && !sv::parseStationId(argStr(s, "tstn2"), v.tstn2, err)) {
+        errors["tstn2"] = err;
+    }
+    if (!errors.count("tstn1") && !sv::checkStationEnabled(v.ton1, v.tstn1, err)) {
+        errors["tstn1"] = err;
+    }
+    if (!errors.count("tstn2") && !sv::checkStationEnabled(v.ton2, v.tstn2, err)) {
         errors["tstn2"] = err;
     }
     if (has("tlbl1") && !sv::parseStationLabel(argStr(s, "tlbl1"), v.tstn1, v.tlbl1, err)) {

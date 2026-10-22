@@ -85,6 +85,16 @@ SettingsValues Settings::defaults() {
 #else
     d.tlbl2 = "";
 #endif
+    // Which weather pages to build. The defaults reproduce the pre-2026-10-22
+    // rule (a station in config.h replaces the city page), so an orb that
+    // never ticked the boxes shows the same pages after the upgrade.
+    d.ton1 = d.tstn1 != 0;
+    d.ton2 = d.tstn2 != 0;
+#ifdef TEMPEST_TOKEN
+    d.wxon = !(d.ton1 || d.ton2);
+#else
+    d.wxon = true;
+#endif
     d.hidden = "";
     // Custom pages: the old build-time defines are now defaults, so a build
     // that sets them keeps working with nothing saved
@@ -158,11 +168,14 @@ void Settings::load() {
             // Added after schema 1 without a bump: an absent key falls back
             // to the config.h default like every other key. Compiled out
             // without a token, so that build matches main.
+            v.ton1 = p.getBool("ton1", v.ton1);
+            v.ton2 = p.getBool("ton2", v.ton2);
             v.tstn1 = p.getUInt("tstn1", v.tstn1);
             v.tlbl1 = p.getString("tlbl1", v.tlbl1.c_str()).c_str();
             v.tstn2 = p.getUInt("tstn2", v.tstn2);
             v.tlbl2 = p.getString("tlbl2", v.tlbl2.c_str()).c_str();
 #endif
+            v.wxon = p.getBool("wxon", v.wxon);
             v.hidden = p.getString("hidden", v.hidden.c_str()).c_str();
             // Custom pages: added after schema 1 without a bump, like tstn1
             v.wdname = p.getString("wdname", v.wdname.c_str()).c_str();
@@ -223,11 +236,14 @@ bool Settings::save(const SettingsValues &v) {
               p.putInt("offend", sv::legacyHour(v.offendm)) &&
               p.putBool("invert", v.invert) &&
 #ifdef TEMPEST_TOKEN
+              p.putBool("ton1", v.ton1) &&
+              p.putBool("ton2", v.ton2) &&
               p.putUInt("tstn1", v.tstn1) &&
               p.putString("tlbl1", v.tlbl1.c_str()) == v.tlbl1.size() &&
               p.putUInt("tstn2", v.tstn2) &&
               p.putString("tlbl2", v.tlbl2.c_str()) == v.tlbl2.size() &&
 #endif
+              p.putBool("wxon", v.wxon) &&
               p.putString("hidden", v.hidden.c_str()) == v.hidden.size();
     // put* returns bytes written; strings compare against their own length
     auto putStr = [&p](const char *k, const std::string &s) { return p.putString(k, s.c_str()) == s.size(); };
