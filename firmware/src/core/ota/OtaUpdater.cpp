@@ -35,7 +35,7 @@ static const char *uploadPage =
     "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width'>"
     "<title>Info Orbs update</title></head><body style='font-family:sans-serif'>"
     "<h2>Info Orbs firmware update</h2>"
-    "<p>Running: " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "</p>"
+    "<p>Running: " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME " for " BUILD_ENV "</p>"
     NO_PASSWORD_WARNING
     "<form method='POST' action='/update' enctype='multipart/form-data'>"
     "<input type='file' name='firmware' accept='.bin'> "
