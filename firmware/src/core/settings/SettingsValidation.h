@@ -185,6 +185,16 @@ inline bool parseStationId(const std::string &in, uint32_t &out, std::string &er
     return true;
 }
 
+// A Tempest page ticked on the settings page needs a station behind it. An
+// ID left in place with the page unticked is fine: the page is off, the ID kept.
+inline bool checkStationEnabled(bool enabled, uint32_t stationId, std::string &err) {
+    if (enabled && stationId == 0) {
+        err = "Enter a station ID or untick the page";
+        return false;
+    }
+    return true;
+}
+
 // Label shown on the orb in place of the town name: 1..16 characters (orb 1
 // shrinks the text to fit, "Salt Lake City" is 14), and
 // only required when the station is in use

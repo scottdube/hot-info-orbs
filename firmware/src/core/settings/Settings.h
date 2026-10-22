@@ -13,6 +13,7 @@ struct SettingsValues {
     int cycle; // seconds per widget, 0 = no auto-rotate
     std::string tickers; // "SPY,QQQ" - normalized, 1..5
     std::string wxloc; // weather location as typed, NOT url-encoded
+    bool wxon; // build the Visual Crossing (city) weather page
     bool wxmetric;
     bool wxdark;
     std::string tz; // IANA zone, NOT url-encoded
@@ -28,8 +29,10 @@ struct SettingsValues {
     int offstart; // hour 0..23
     int offend; // hour 0..23; where it overlaps the dim hours, off wins
     bool invert;
+    bool ton1; // build the page for Tempest station 1
     uint32_t tstn1; // Tempest station ID, 0 = unused
     std::string tlbl1; // its label on the page, "" when unused
+    bool ton2;
     uint32_t tstn2;
     std::string tlbl2;
     std::string hidden; // widget names left out of the rotation, '\n'-separated; "" = show all

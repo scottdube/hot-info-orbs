@@ -166,20 +166,18 @@ void setup() {
         widgetSet->add(new StockWidget(*sm));
     }
 #endif
-    bool tempestPages = false;
-#ifdef TEMPEST_TOKEN
-    // One weather page per Tempest station; Visual Crossing only when none is set
+    // Weather pages: each one the settings page has ticked (Weather pages
+    // fieldset). Any mix of city and stations, or none.
     const SettingsValues &wx = Settings::get();
-    if (wx.tstn1) {
+#ifdef TEMPEST_TOKEN
+    if (wx.ton1 && wx.tstn1) {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(0, wx.tstn1, wx.tlbl1)));
-        tempestPages = true;
     }
-    if (wx.tstn2) {
+    if (wx.ton2 && wx.tstn2) {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(1, wx.tstn2, wx.tlbl2)));
-        tempestPages = true;
     }
 #endif
-    if (!tempestPages) {
+    if (wx.wxon) {
         widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
     }
 #ifdef WEB_DATA_WIDGET_URL

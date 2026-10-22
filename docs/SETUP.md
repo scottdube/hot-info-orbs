@@ -191,8 +191,9 @@ you mistype one, the clock or weather orb shows the error.
 
 ## 10. Optional: weather from your own Tempest stations
 
-If you own a WeatherFlow Tempest station, the orbs can show its weather
-instead of Visual Crossing's, with one weather page per station (up to two).
+If you own a WeatherFlow Tempest station, the orbs can show its weather as
+well as, or instead of, Visual Crossing's, with one weather page per station
+(up to two).
 
 1. Get a token: tempestwx.com > Settings > Data Authorizations > Create Token.
    Add it to `secrets.h`: `#define TEMPEST_TOKEN "..."`.
@@ -203,6 +204,10 @@ instead of Visual Crossing's, with one weather page per station (up to two).
 3. Build and upload. The settings page gets a **Tempest stations** section
    where each station shows ✔ or ✖ for its last fetch, how long ago it was, and
    the error if it failed.
+4. Pick the pages under **Weather pages**: a checkbox each for the Visual
+   Crossing town and for Tempest 1 and 2, in any combination. A station set in
+   `config.h` starts ticked and the town unticked, so nothing changes until you
+   tick it. A Tempest box ticked with a blank station ID will not save.
 
 The token never appears on the settings page. Leave `TEMPEST_TOKEN` out and
 the Tempest code is not compiled in at all.

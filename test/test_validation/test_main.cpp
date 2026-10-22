@@ -185,6 +185,15 @@ void test_station_id() {
     TEST_ASSERT_FALSE(parseStationId("-5", id, err));
 }
 
+void test_station_enabled() {
+    std::string err;
+    TEST_ASSERT_TRUE(checkStationEnabled(false, 0, err)); // unticked, blank: silent
+    TEST_ASSERT_TRUE(checkStationEnabled(false, 123456, err)); // ID kept but page off
+    TEST_ASSERT_TRUE(checkStationEnabled(true, 123456, err));
+    TEST_ASSERT_FALSE(checkStationEnabled(true, 0, err)); // ticked with no station
+    TEST_ASSERT_EQUAL_STRING("Enter a station ID or untick the page", err.c_str());
+}
+
 void test_station_label() {
     std::string out, err;
     TEST_ASSERT_TRUE(parseStationLabel("", 0, out, err)); // unused station, no label needed
@@ -212,6 +221,7 @@ int main() {
     RUN_TEST(test_jpeg_garbage_rejected);
     RUN_TEST(test_jpeg_wrong_size_rejected);
     RUN_TEST(test_station_id);
+    RUN_TEST(test_station_enabled);
     RUN_TEST(test_station_label);
     return UNITY_END();
 }
