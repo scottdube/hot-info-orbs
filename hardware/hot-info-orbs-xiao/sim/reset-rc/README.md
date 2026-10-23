@@ -92,6 +92,24 @@ init sequence. How soon after power-on `tft.init()` runs on the XIAO has not
 been measured. Before adopting this, measure that time or add a guard
 (`while (millis() < 250) {}` before the display init).
 
+## Bench rig: one XIAO, one display, R1/C2 on a breadboard
+
+This is valid for some questions and not others, because the board shares 5 V
+and RST across five displays:
+
+| Question | Valid with 1 display? | Why |
+|---|---|---|
+| Does the panel start with RESX held high (internal POR or 0x01)? | **Yes** | It's a property of the chip. |
+| Skew between the XIAO's 3V3 and a display regulator | **Mostly** | Same parts, but the 5 V edge they both follow is shaped by the load. |
+| 5 V and rail rise times | **No, optimistic** | Five modules' input caps plus C1 slow the 5 V edge; one display charges faster. Fit C1 100 µF; use all five displays if any are free. |
+| Replug off-time | **No** | Rails collapse faster under five displays' load. |
+| RST loading | **Only after an ohmmeter check** | If each module carries its own RST pull-up, five in parallel fight R1 five times harder than one does. Measure RST→VCC and RST→GND on an unpowered bare module first. |
+
+Use the orb's real USB supply and cable, and the BOM C2 (KEMET C330C105K5R5, 50 V,
+so DC-bias loss at 3.3 V is small). Scope channels: 5 V (trigger, rising,
+single), XIAO 3V3, the display module's regulator output, RST; ~20 ms/div.
+Repeat the plug-in ~10 times: USB contact bounce is part of the real case.
+
 ## The measurement that settles it
 
 Scope at plug-in, with the 5 V supply the orb really uses: XIAO 3V3, one display
