@@ -105,7 +105,11 @@ pads under the module are not used.
 11 GPIOs are available on the edge; the SuperMini board used 12, so the
 display RST line moves off the MCU onto an RC power-on reset (R1 10 kΩ to
 3V3, C2 1 µF to GND) and the firmware uses TFT_eSPI's software reset
-(`TFT_RST -1`). The BUSY indicator goes to the XIAO's on-board user LED
+(`TFT_RST -1`). **Simulated 2026-10-23 (`sim/reset-rc/`): this RC resets the
+panels only when rails rise in under ~17 ms, the display regulators trail the
+XIAO's 3V3 by ≤ ~1 ms, and a replug stays off ≥ ~15 ms. None of these has been
+measured. The GC9A01A datasheet lists no 01h software reset.** 10 µF plus a
+diode across R1 passes every simulated case. Read that README before ordering. The BUSY indicator goes to the XIAO's on-board user LED
 (GPIO21, active LOW), which is not an edge pin.
 
 | XIAO pin | GPIO | Signal | Note |
