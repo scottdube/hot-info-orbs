@@ -101,7 +101,7 @@ and RST across five displays:
 |---|---|---|
 | Does the panel start with RESX held high (internal POR or 0x01)? | **Yes** | It's a property of the chip. |
 | Skew between the XIAO's 3V3 and a display regulator | **Mostly** | Same parts, but the 5 V edge they both follow is shaped by the load. |
-| 5 V and rail rise times | **No, optimistic** | Five modules' input caps plus C1 slow the 5 V edge; one display charges faster. Fit C1 100 µF; use all five displays if any are free. |
+| 5 V and rail rise times | **No, optimistic** | Five modules' input caps plus C1 slow the 5 V edge; one display charges faster. Fit C1 100 µF. The other four need **only VCC and GND** (plus RST if the ohmmeter check finds a module pull-up), with no SPI lines: reset timing doesn't depend on them. |
 | Replug off-time | **No** | Rails collapse faster under five displays' load. |
 | RST loading | **Only after an ohmmeter check** | If each module carries its own RST pull-up, five in parallel fight R1 five times harder than one does. Measure RST→VCC and RST→GND on an unpowered bare module first. |
 
