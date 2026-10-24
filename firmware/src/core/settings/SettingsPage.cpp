@@ -272,7 +272,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     const SettingsValues d = Settings::defaults();
     const SettingsValues &stored = Settings::get(); // differs from `v` only on a rejected save
     String h;
-    h.reserve(21000); // measured page: 15.6-16.2 KB before MQTT page 2 (~3 KB more, not yet measured); below that every append reallocs a big block on a heap with no PSRAM
+    h.reserve(21000); // measured page: 16.6 KB before MQTT page 2, 20.0 KB with it (2026-10-24); below that every append reallocs a big block on a heap with no PSRAM
     h += PAGE_HEAD;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
     {
