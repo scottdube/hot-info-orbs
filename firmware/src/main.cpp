@@ -9,6 +9,7 @@
 #include "clockwidget/ClockWidget.h"
 #include "config_helper.h"
 #include "icons.h"
+#include "mqttwidget/MQTTWidget.h"
 #include "weatherwidget/TempestSource.h"
 #include "weatherwidget/VisualCrossingSource.h"
 #include "weatherwidget/WeatherWidget.h"
@@ -22,9 +23,6 @@
 #endif
 #ifdef PARQET_PORTFOLIO_ID
     #include "parqetwidget/ParqetWidget.h"
-#endif
-#ifdef MQTT_WIDGET_HOST
-    #include "mqttwidget/MQTTWidget.h"
 #endif
 
 TFT_eSPI tft = TFT_eSPI();
@@ -50,6 +48,8 @@ bool isConnected{true};
 
 ScreenManager *sm;
 WidgetSet *widgetSet;
+MQTTWidget *mqttWidget{nullptr};
+bool mqttInRotation{false}; // stays connected only while its page can come up
 
 // This function should probably be moved somewhere else
 bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap) {
@@ -180,16 +180,25 @@ void setup() {
     if (wx.wxon) {
         widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
     }
-#ifdef WEB_DATA_WIDGET_URL
-    widgetSet->add(new WebDataWidget(*sm, WEB_DATA_WIDGET_URL));
-#endif
+    // Custom pages: set up on /settings, registered only when configured.
+    // Saving restarts the orb, so this runs again with the new values.
+    const SettingsValues &cp = Settings::get();
+    if (!cp.wdurl.empty()) {
+        widgetSet->add(new WebDataWidget(*sm, cp.wdurl.c_str(), cp.wdname.c_str()));
+    }
 #ifdef WEB_DATA_STOCK_WIDGET_URL
-    widgetSet->add(new WebDataWidget(*sm, WEB_DATA_STOCK_WIDGET_URL));
+    widgetSet->add(new WebDataWidget(*sm, WEB_DATA_STOCK_WIDGET_URL, "WebData"));
 #endif
-#ifdef MQTT_WIDGET_HOST
-    widgetSet->add(new MQTTWidget(*sm, MQTT_WIDGET_HOST, MQTT_WIDGET_PORT));
-#endif
+    if (!cp.mqhost.empty()) {
+        mqttWidget = new MQTTWidget(*sm, cp);
+        widgetSet->add(mqttWidget);
+    }
     settingsPage->setWidgets(widgetSet);
+    if (mqttWidget) {
+        // After every add(): shown() depends on how many pages are shown
+        int8_t i = widgetSet->indexOf(mqttWidget);
+        mqttInRotation = i >= 0 && widgetSet->shown(i);
+    }
 
     m_widgetCycleDelayPrev = millis();
 }
@@ -269,6 +278,9 @@ void loop() {
         checkButtons();
 
         widgetSet->updateCurrent();
+        if (mqttInRotation) {
+            mqttWidget->service(); // values current when the page comes up
+        }
         widgetSet->updateBrightnessByTime(globalTime->getHour24());
         if (!widgetSet->panelsAsleep()) {
             widgetSet->drawCurrent();

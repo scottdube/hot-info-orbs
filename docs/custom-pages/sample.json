@@ -1,0 +1,10 @@
+{
+  "interval": 300000,
+  "displays": [
+    { "label": "HOT", "data": "Info Orbs", "color": "white", "background": "navy" },
+    { "label": "This is", "data": "a custom", "color": "yellow" },
+    { "label": "page from", "data": "a JSON", "color": "cyan" },
+    { "label": "file you", "data": "host", "color": "green" },
+    { "label": "Edit me", "data": "anywhere", "color": "orange" }
+  ]
+}

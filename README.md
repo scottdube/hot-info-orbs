@@ -1,12 +1,27 @@
 # HoT Info Orbs
 
-Five round 240×240 displays on one SPI bus, driven by a Seeed XIAO ESP32-S3 or
-ESP32-S3 Plus (interchangeable — same edge pins), on a custom carrier board.
+Five round 240×240 displays on one SPI bus, driven by a Seeed **XIAO ESP32-S3
+or XIAO ESP32-S3 Plus** (builder's choice), on a custom carrier board.
 Clock, weather, stocks — and whatever else gets written.
 
-**This branch (`xiao-esp32s3`) is the XIAO build only** — board in
-`hardware/hot-info-orbs-xiao/`, designed and not yet fabricated. The ESP32-S3
-SuperMini board (v1.1, the boards in hand) and its firmware are on `main`.
+## Start here
+
+**Never used GitHub?** You don't need an account. The list of folders above is
+the project's files; everything you need is one of these links:
+
+- **What it is and what it does:** the
+  [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html),
+  an ordinary web page.
+- **Getting one:** it's a Hands-On Tech Club build,
+  [handsontech.org](https://handsontech.org).
+- **The microcontroller:** a Seeed **XIAO ESP32-S3 or XIAO ESP32-S3 Plus**,
+  whichever you prefer. Same board, same pins, same firmware; the Plus has more
+  flash.
+- **You have a built one and want it running:** the
+  [setup guide](docs/SETUP.md), written for someone who has never done this.
+- **You want the files:** the green **Code** button above, then
+  **Download ZIP**, gets everything. The board is in
+  `hardware/hot-info-orbs-xiao/`, the software in `firmware/`.
 
 Built as a club project, which shapes the whole thing: it is assembled by people
 at a wide range of skill levels, so the build has to be hard to get wrong and
@@ -33,10 +48,10 @@ this repository is public.
 
 | | Upstream | This |
 |---|---|---|
-| Microcontroller | ESP32 dev kit (30/38-pin) | **Seeed XIAO ESP32-S3 / S3 Plus** (`main`: ESP32-S3 SuperMini) |
+| Microcontroller | ESP32 dev kit (30/38-pin) | **Seeed XIAO ESP32-S3 or XIAO ESP32-S3 Plus** |
 | Display supply | 3.3 V, off the module's regulator | **5 V, each module regulates its own** |
 | API keys | compiled into `config.h`, shipped with live keys in the template | **`secrets.h`, gitignored, build fails without it** |
-| Board | upstream's 2-layer design | **new carrier board** (XIAO carrier here; v1.1 SuperMini carrier on `main`) |
+| Board | upstream's 2-layer design | **new carrier board** for the XIAO |
 | Firmware updates | USB cable every time | **over WiFi** — browser page or `pio run -e ota` |
 | Boot splash | "Info Orbs by brett.tech", Brett's logo | **"HOT Info Orbs by HOT-Team"**, Yang's avatar for now; the Hands-On Tech hand (`images/hot-logo.jpg`) replaces it once Yang has this version |
 | Settings | edit `config.h`, rebuild, reflash | **a page in the browser**: `http://<orb's IP>/settings` |
@@ -86,7 +101,7 @@ To have the orbs rotate Clock → Stocks → Weather on their own, set
 `WIDGET_CYCLE_DELAY` in `config.h` to the number of seconds per page (15 works
 well; 0 turns it off). Pressing a button restarts the countdown.
 
-**After the first flash, most of `config.h` can be changed from a phone.** Open
+**After the first flash, most of `config.h` can be changed from a phone or computer.** Open
 `http://<orb's IP>/settings` to change the rotation time, tickers, weather
 location and units, timezone, clock face and colors, night-dim hours,
 upside-down mounting, and the start-up picture. The orbs restart to apply the
@@ -95,16 +110,18 @@ to them. See [docs/SETUP.md](docs/SETUP.md#9-change-settings-from-a-browser).
 
 ## Hardware
 
-The KiCad 10 project is in **[hardware/hot-info-orbs/](hardware/hot-info-orbs/)**.
-Symbol and footprint libraries are project-local, so cloning and opening is all
-that is required — nothing to install or copy into a global library.
+The KiCad 10 project is in
+**[hardware/hot-info-orbs-xiao/](hardware/hot-info-orbs-xiao/)**, for a Seeed
+XIAO ESP32-S3 or XIAO ESP32-S3 Plus. Symbol and footprint libraries are
+project-local, so cloning and opening is all that is required — nothing to
+install or copy into a global library. Its README has the board's state and the
+BOM.
 
-**Board v1.1 — 10 boards ordered 2026-08-29**, tagged
-[`v1.1-run1`](../../releases/tag/v1.1-run1). The exact gerbers sent to the fab
-are committed at `hardware/hot-info-orbs/fab/`, and that file is never
-regenerated: if a board comes back wrong, there has to be no question what was
-sent. See [hardware/hot-info-orbs/fab/README.md](hardware/hot-info-orbs/fab/README.md)
-for the order parameters and the drill-tool cross-check.
+The **v1.1 prototype** that came before it (10 boards ordered 2026-08-29, for
+an earlier module the project no longer uses) is kept at tag
+[`v1.1-run1`](../../releases/tag/v1.1-run1), with the exact gerbers sent to the
+fab in `hardware/hot-info-orbs/fab/` at that tag. Its last firmware, for the
+prototype boards already built, is at tag `v1.1-prototype-firmware`.
 
 ## Documentation
 
@@ -113,8 +130,8 @@ for the order parameters and the drill-tool cross-check.
 | [docs/SETUP.md](docs/SETUP.md) | empty machine to running orb |
 | [docs/TRAPS.md](docs/TRAPS.md) | things that cost time once, so they cost it once |
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | web control panel and OTA, with the traps that will bite whoever builds them |
-| [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | why `main` uses the S3 SuperMini, including the arguments that reversed; its measurements are of that board |
-| [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | this branch's board: XIAO ESP32-S3 / S3 Plus on edge pins only, where the twelfth pin went, what the autorouter rejected |
+| [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | the prototype's module choice, since replaced by the XIAO ESP32-S3 / S3 Plus; kept for the arguments that reversed |
+| [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | the board: XIAO ESP32-S3 / S3 Plus on edge pins only, where the twelfth pin went, what the autorouter rejected |
 | [docs/ESPHOME-EVALUATION.md](docs/ESPHOME-EVALUATION.md) | why this is not an ESPHome project |
 
 The variant and ESPHome documents keep the reasoning that changed rather than

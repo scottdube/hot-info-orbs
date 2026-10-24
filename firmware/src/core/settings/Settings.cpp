@@ -95,6 +95,43 @@ SettingsValues Settings::defaults() {
     d.wxon = true;
 #endif
     d.hidden = "";
+    // Custom pages: the old build-time defines are now defaults, so a build
+    // that sets them keeps working with nothing saved
+    d.wdname = "Web Data";
+#ifdef WEB_DATA_WIDGET_URL
+    d.wdurl = WEB_DATA_WIDGET_URL;
+#else
+    d.wdurl = "";
+#endif
+    d.mqname = "MQTT";
+#ifdef MQTT_WIDGET_HOST
+    d.mqhost = MQTT_WIDGET_HOST;
+#else
+    d.mqhost = "";
+#endif
+#ifdef MQTT_WIDGET_PORT
+    d.mqport = MQTT_WIDGET_PORT;
+#else
+    d.mqport = 1883;
+#endif
+#ifdef MQTT_WIDGET_USER
+    d.mquser = MQTT_WIDGET_USER;
+#else
+    d.mquser = "";
+#endif
+#ifdef MQTT_WIDGET_PASS
+    d.mqpass = MQTT_WIDGET_PASS;
+#else
+    d.mqpass = "";
+#endif
+#ifdef MQTT_SETUP_TOPIC
+    d.mqsetup = MQTT_SETUP_TOPIC;
+#else
+    d.mqsetup = "";
+#endif
+    for (int i = 0; i < 5; i++) {
+        d.mqt[i] = d.mql[i] = d.mqu[i] = "";
+    }
     return d;
 }
 
@@ -137,6 +174,24 @@ void Settings::load() {
 #endif
             v.wxon = p.getBool("wxon", v.wxon);
             v.hidden = p.getString("hidden", v.hidden.c_str()).c_str();
+            // Custom pages: added after schema 1 without a bump, like tstn1
+            v.wdname = p.getString("wdname", v.wdname.c_str()).c_str();
+            v.wdurl = p.getString("wdurl", v.wdurl.c_str()).c_str();
+            v.mqname = p.getString("mqname", v.mqname.c_str()).c_str();
+            v.mqhost = p.getString("mqhost", v.mqhost.c_str()).c_str();
+            v.mqport = p.getInt("mqport", v.mqport);
+            v.mquser = p.getString("mquser", v.mquser.c_str()).c_str();
+            v.mqpass = p.getString("mqpass", v.mqpass.c_str()).c_str();
+            v.mqsetup = p.getString("mqsetup", v.mqsetup.c_str()).c_str();
+            for (int i = 0; i < 5; i++) {
+                char k[8];
+                snprintf(k, sizeof(k), "mqt%d", i + 1);
+                v.mqt[i] = p.getString(k, v.mqt[i].c_str()).c_str();
+                snprintf(k, sizeof(k), "mql%d", i + 1);
+                v.mql[i] = p.getString(k, v.mql[i].c_str()).c_str();
+                snprintf(k, sizeof(k), "mqu%d", i + 1);
+                v.mqu[i] = p.getString(k, v.mqu[i].c_str()).c_str();
+            }
         }
         p.end();
     }
@@ -182,10 +237,24 @@ bool Settings::save(const SettingsValues &v) {
               p.putString("tlbl2", v.tlbl2.c_str()) == v.tlbl2.size() &&
 #endif
               p.putBool("wxon", v.wxon) &&
-              p.putString("hidden", v.hidden.c_str()) == v.hidden.size() &&
-              // schema last: a save that dies part-way leaves no schema key
-              // on a fresh orb, so load() keeps using config.h
-              p.putInt("schema", SCHEMA);
+              p.putString("hidden", v.hidden.c_str()) == v.hidden.size();
+    // put* returns bytes written; strings compare against their own length
+    auto putStr = [&p](const char *k, const std::string &s) { return p.putString(k, s.c_str()) == s.size(); };
+    ok = ok && putStr("wdname", v.wdname) && putStr("wdurl", v.wdurl) && putStr("mqname", v.mqname) &&
+         putStr("mqhost", v.mqhost) && p.putInt("mqport", v.mqport) && putStr("mquser", v.mquser) &&
+         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup);
+    for (int i = 0; ok && i < 5; i++) {
+        char k[8];
+        snprintf(k, sizeof(k), "mqt%d", i + 1);
+        ok = putStr(k, v.mqt[i]);
+        snprintf(k, sizeof(k), "mql%d", i + 1);
+        ok = ok && putStr(k, v.mql[i]);
+        snprintf(k, sizeof(k), "mqu%d", i + 1);
+        ok = ok && putStr(k, v.mqu[i]);
+    }
+    // schema last: a save that dies part-way leaves no schema key on a fresh
+    // orb, so load() keeps using config.h
+    ok = ok && p.putInt("schema", SCHEMA);
     p.end();
     return ok;
 }

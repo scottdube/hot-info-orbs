@@ -5,7 +5,9 @@
 #include "Utils.h"
 #include "Widget.h"
 
-#define MAX_WIDGETS 5
+// Clock, Parqet, Stocks, two weather pages, Web Data, the second Web Data
+// define, MQTT. At 5 an orb with two Tempest pages dropped the custom pages.
+#define MAX_WIDGETS 8
 
 class WidgetSet {
 public:
@@ -31,6 +33,7 @@ public:
     int8_t count();
     String key(int8_t i);
     bool shown(int8_t i);
+    int8_t indexOf(Widget *w); // -1 if add() refused it
 
 private:
     void showCenteredLine(int screen, const String &text);

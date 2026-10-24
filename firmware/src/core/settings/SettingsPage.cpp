@@ -2,6 +2,8 @@
 
 #include "SettingsValidation.h"
 #include "weatherwidget/TempestSource.h"
+#include "mqttwidget/MQTTWidget.h"
+#include "webdatawidget/WebDataWidget.h"
 #include "Utils.h"
 #include "build_id.h"
 #include "clockwidget/ClockWidget.h"
@@ -112,6 +114,40 @@ static String stationRow(int slot, const char *idKey, const char *lblKey, uint32
 }
 #endif
 
+static String ago(uint32_t at) {
+    uint32_t mins = (millis() - at) / 60000;
+    return mins == 0 ? String("under a minute ago") : mins < 120 ? String(mins) + " min ago" : String(mins / 60) + " h ago";
+}
+
+static String webDataStatusLine() {
+    const WebDataStatus &st = WebDataWidget::status();
+    if (!st.attempted) {
+        return hint("&#9888; Not fetched since start-up (it fetches only while the page is ticked).");
+    }
+    String line = String(st.ok ? "&#10004; " : "&#10006; ") + "Last fetch " + ago(st.at) + ", took " + String(st.ms / 1000.0, 1) + " s";
+    if (!st.ok) {
+        line += " &mdash; " + esc(st.error.c_str());
+    }
+    return "<div class='" + String(st.ok ? "hint" : "err") + "'>" + line + "</div>";
+}
+
+static String mqttStatusLine() {
+    const MqttStatus &st = MQTTWidget::status();
+    if (!st.attempted) {
+        return hint("&#9888; Not connected since start-up (it connects only while the page is ticked).");
+    }
+    String line = String(st.connected ? "&#10004; Connected" : "&#10006; ") + (st.connected ? "" : esc(st.reason.c_str()));
+    line += st.lastValueAt ? ". Newest value " + ago(st.lastValueAt) : String(". No value received yet");
+    if (!st.connected) {
+        line += ". Last try " + ago(st.at) + ", took " + String(st.attemptMs / 1000.0, 1) + " s; retries every 30 s";
+    }
+    return "<div class='" + String(st.connected ? "hint" : "err") + "'>" + line + ".</div>";
+}
+
+static String plainInput(const char *key, const std::string &value, const char *placeholder) {
+    return "<input type='text' id='" + String(key) + "' name='" + key + "' value='" + esc(value) + "' placeholder='" + placeholder + "'>";
+}
+
 static String option(const String &value, const String &text, bool selected) {
     return "<option value='" + value + "'" + (selected ? " selected" : "") + ">" + text + "</option>";
 }
@@ -178,8 +214,9 @@ void SettingsPage::begin() {
 
 String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, const String &banner) {
     const SettingsValues d = Settings::defaults();
+    const SettingsValues &stored = Settings::get(); // differs from `v` only on a rejected save
     String h;
-    h.reserve(9000);
+    h.reserve(18000); // measured page: 15.6-16.2 KB; below that every append reallocs a big block on a heap with no PSRAM
     h += PAGE_HEAD;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME " for " BUILD_ENV "<br>Up " + uptime() + ". ";
     {
@@ -260,6 +297,69 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += stationRow(1, "tstn2", "tlbl2", v.tstn2, v.tlbl2, d.tstn2, d.tlbl2, errors);
     h += "</fieldset>";
 #endif
+
+    h += "<fieldset><legend>Custom pages</legend>";
+    h += hint("Pages of your own. A page appears once its address or broker is set; saving restarts the orb. Format and Home Assistant recipe: "
+              "<a href='https://github.com/scottdube/hot-info-orbs/blob/main/docs/CUSTOM-PAGES.md'>CUSTOM-PAGES.md</a>.");
+
+    h += "<h4>Web Data</h4>";
+    h += textField("wdname", "Page name (16 characters)", v.wdname, d.wdname,
+                   ". Its tick box above uses this name, so renaming it shows it again if it was unticked.", errors);
+    // A new address from a rejected save is not echoed (its key would show, and the
+    // masked form would resubmit as the OLD address): show the stored one and say so
+    const bool wdurlLost = v.wdurl != stored.wdurl;
+    h += "<label for='wdurl'>JSON address</label><input type='text' id='wdurl' name='wdurl' inputmode='url' value='" +
+         esc(sv::maskUrl(wdurlLost ? stored.wdurl : v.wdurl)) + "'>";
+    h += hint("Blank = no page. http:// or https://. Only the part after ? is hidden here, so put keys there: leave it as shown to keep it. "
+              "A key in the path or as user:pass@ shows in full. "
+              "Default: " + (d.wdurl.empty() ? String("none") : esc(sv::maskUrl(d.wdurl)))) +
+         errorLine(errors, "wdurl");
+    if (wdurlLost && !errors.count("wdurl")) {
+        h += "<div class='err'>&#9888; Not saved: type the address again.</div>";
+    }
+    if (!v.wdurl.empty()) {
+        h += webDataStatusLine();
+    }
+
+    h += "<h4>MQTT</h4>";
+    h += textField("mqname", "Page name (16 characters)", v.mqname, d.mqname,
+                   ". Its tick box above uses this name, so renaming it shows it again if it was unticked.", errors);
+    h += textField("mqhost", "Broker host name or IP address", v.mqhost, d.mqhost.empty() ? std::string("none") : d.mqhost,
+                   ". Blank = no page.", errors);
+    h += "<label for='mqport'>Port</label><input type='number' id='mqport' name='mqport' min='1' max='65535' value='" + String(v.mqport) + "'>";
+    h += hint("Default: " + String(d.mqport)) + errorLine(errors, "mqport");
+    h += textField("mquser", "Username", v.mquser, d.mquser.empty() ? std::string("none") : d.mquser, ". Blank = no login.", errors);
+    h += "<label for='mqpass'>Password</label><input type='password' id='mqpass' name='mqpass' value='' autocomplete='new-password'>";
+    h += hint(sv::passwordHint(v.mqpass, stored.mqpass)) +
+         errorLine(errors, "mqpass");
+    h += "<label class='chk'><input type='checkbox' name='mqpassclr' value='1'> Clear the stored password</label>";
+    h += "<label>One value per orb: topic, label, unit</label>"
+         "<div style='display:grid;grid-template-columns:5fr 3fr 2fr;gap:.3em'>";
+    for (int i = 0; i < 5; i++) {
+        char kt[8], kl[8], ku[8], ph[24];
+        snprintf(kt, sizeof(kt), "mqt%d", i + 1);
+        snprintf(kl, sizeof(kl), "mql%d", i + 1);
+        snprintf(ku, sizeof(ku), "mqu%d", i + 1);
+        snprintf(ph, sizeof(ph), "Orb %d topic", i + 1);
+        h += plainInput(kt, v.mqt[i], ph) + plainInput(kl, v.mql[i], "Label") + plainInput(ku, v.mqu[i], "Unit");
+    }
+    h += "</div>";
+    h += hint("Orbs left to right. A blank topic leaves that orb blank. No # or + wildcards. Label up to 16 characters, unit up to 8.");
+    for (int i = 0; i < 5; i++) {
+        char k[8];
+        snprintf(k, sizeof(k), "mqt%d", i + 1);
+        h += errorLine(errors, k);
+        snprintf(k, sizeof(k), "mql%d", i + 1);
+        h += errorLine(errors, k);
+        snprintf(k, sizeof(k), "mqu%d", i + 1);
+        h += errorLine(errors, k);
+    }
+    h += textField("mqsetup", "Layout topic (advanced)", v.mqsetup, d.mqsetup.empty() ? std::string("none") : d.mqsetup,
+                   ". A JSON layout published here replaces the rows above until the next restart (mqttwidget/README.md).", errors);
+    if (!v.mqhost.empty()) {
+        h += mqttStatusLine();
+    }
+    h += "</fieldset>";
 
     h += "<fieldset><legend>Dim hours</legend>";
     h += boolSelect("dim", "Dim", v.dim, d.dim, "Off", "On", errors);
@@ -410,6 +510,53 @@ void SettingsPage::handlePost() {
         errors["tlbl2"] = err;
     }
 #endif
+    // Custom pages
+    if (has("wdname") && !sv::normalizeText(argStr(s, "wdname"), 16, v.wdname, err)) {
+        errors["wdname"] = err;
+    }
+    if (has("wdurl")) {
+        const std::string stored = v.wdurl; // the masked field resolves against this
+        if (!sv::parseWebUrl(argStr(s, "wdurl"), stored, v.wdurl, err)) {
+            errors["wdurl"] = err;
+        }
+    }
+    if (has("mqname") && !sv::normalizeText(argStr(s, "mqname"), 16, v.mqname, err)) {
+        errors["mqname"] = err;
+    }
+    if (has("mqhost") && !sv::parseHost(argStr(s, "mqhost"), v.mqhost, err)) {
+        errors["mqhost"] = err;
+    }
+    if (has("mqport") && !sv::parsePort(argStr(s, "mqport"), v.mqport, err)) {
+        errors["mqport"] = err;
+    }
+    if (has("mquser") && !sv::parseOptionalText(argStr(s, "mquser"), 64, v.mquser, err)) {
+        errors["mquser"] = err;
+    }
+    if (has("mqpass") || has("mqpassclr")) {
+        const std::string stored = v.mqpass;
+        if (!sv::parsePassword(argStr(s, "mqpass"), has("mqpassclr"), stored, v.mqpass, err)) {
+            errors["mqpass"] = err;
+        }
+    }
+    for (int i = 0; i < 5; i++) {
+        char k[8];
+        String orb = "Orb " + String(i + 1) + " ";
+        snprintf(k, sizeof(k), "mqt%d", i + 1);
+        if (has(k) && !sv::parseTopic(argStr(s, k), v.mqt[i], err)) {
+            errors[k] = (orb + "topic: ").c_str() + err;
+        }
+        snprintf(k, sizeof(k), "mql%d", i + 1);
+        if (has(k) && !sv::parseOptionalText(argStr(s, k), 16, v.mql[i], err)) {
+            errors[k] = (orb + "label: ").c_str() + err;
+        }
+        snprintf(k, sizeof(k), "mqu%d", i + 1);
+        if (has(k) && !sv::parseOptionalText(argStr(s, k), 8, v.mqu[i], err)) {
+            errors[k] = (orb + "unit: ").c_str() + err;
+        }
+    }
+    if (has("mqsetup") && !sv::parseTopic(argStr(s, "mqsetup"), v.mqsetup, err)) {
+        errors["mqsetup"] = err;
+    }
     // Equal hours would mean "dim around the clock" (WidgetSet's wrap branch)
     if (v.dim && v.dimstart == v.dimend && !errors.count("dimstart") && !errors.count("dimend")) {
         errors["dimend"] = "Start and end are the same hour";

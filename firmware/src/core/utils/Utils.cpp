@@ -121,7 +121,7 @@ int32_t Utils::stringToColor(String color) {
         return TFT_SILVER;
     } else if (color == "skyblue") {
         return TFT_SKYBLUE;
-    } else if (color == "vilolet") {
+    } else if (color == "violet" || color == "vilolet") { // vilolet kept: it was the only spelling accepted, so existing JSON may use it
         return TFT_VIOLET;
     } else {
         Serial.print("Invalid color: ");

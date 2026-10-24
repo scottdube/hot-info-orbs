@@ -1,19 +1,21 @@
 # Variant: Seeed XIAO ESP32-S3 / ESP32-S3 Plus
 
-Status: **DESIGNED, NOT BUILT.** Branch `xiao-esp32s3`, 2026-10-14.
-Schematic and board are done and DRC-clean, the firmware compiles, and no
-board has been ordered or flashed. **The branch is XIAO-only** (Scott,
-2026-10-14): the SuperMini env, pin block and hardware folder are gone from
-it; the v1.1 SuperMini board and its firmware live on `main`.
+Status: **DESIGNED, NOT BUILT.** Started on branch `xiao-esp32s3`
+2026-10-14, **merged into `main` 2026-10-18.** Schematic and board are done and
+DRC-clean, the firmware compiles, and no board has been ordered. A standard
+XIAO ESP32-S3 module (8 MB / 8 MB PSRAM) first ran the firmware 2026-10-23,
+USB-flashed with the 8 MB table; displays and buttons not yet checked on it.
 
-**This branch becomes `main` soon** (Scott, 2026-10-17), which reverses the
-earlier plan to keep it apart. Work done on `main` since the branch split has
-to come across when that happens:
+**The project uses this module only: a Seeed XIAO ESP32-S3 or XIAO ESP32-S3
+Plus, the builder's choice** (Scott, 2026-10-18). The earlier ESP32-S3
+SuperMini prototype is not part of it; its env, pin block and hardware folder
+were removed, and survive at tags `v1.1-run1` (board) and
+`v1.1-prototype-firmware` (last firmware for the prototype boards).
 
-- the `displaytest` env and `firmware/src/displaytest/` (built with SuperMini
-  pins, so it needs the XIAO pin set)
-- `docs/ENCLOSURE.md` with its concept image, and `docs/DISPLAY-EDGE-TEST.md`
-- the 2026-10-17 entry in `docs/TRAPS.md`
+The merge brought across what `main` gained after the split: the `displaytest`
+env and `firmware/src/displaytest/` (moved to the XIAO pins, not yet run on a
+XIAO), `docs/ENCLOSURE.md` with its concept image, `docs/DISPLAY-EDGE-TEST.md`,
+the custom web-data and MQTT pages, and the 2026-10-17 entry in `docs/TRAPS.md`.
 
 Date: 2026-10-14
 
@@ -81,8 +83,8 @@ the MCU is out of reset, and a 10 ms RC against the ESP32-S3's boot time is.
 The BUSY indicator, which on the SuperMini board is an external LED on
 GPIO15, becomes the XIAO's own user LED on GPIO21. That LED is wired to 3V3,
 so it is active-low; `BUSY_ON`/`BUSY_OFF` macros in `config.h` carry the
-polarity and `Widget::setBusy` uses them, defaulting to the old HIGH/LOW so
-the SuperMini build is unchanged.
+polarity and `Widget::setBusy` uses them, defaulting to HIGH/LOW for a board
+with an external LED.
 
 ## Pin assignment and why
 
@@ -100,9 +102,9 @@ Full map with notes: `hardware/hot-info-orbs-xiao/README.md`.
 
 `pio run` (default envs `xiao-esp32s3`, board `seeed_xiao_esp32s3`, and
 `ota` for espota). `config.h.template` carries only the XIAO pin block; the
-SuperMini block is on `main`. The XIAO board definition turns on USB CDC on boot itself: the
+prototype's block is at tag `v1.1-prototype-firmware`. The XIAO board definition turns on USB CDC on boot itself: the
 XIAO's console *is* the native USB (no bridge chip), so the TRAPS.md warning
-against those flags — written for the SuperMini — does not apply.
+against those flags — written for the prototype's module — does not apply.
 
 Flash: the generic XIAO board json declares 8 MB; the Plus has 16 MB. Until
 2026-10-18 the build kept v1.1's `partitions.csv` (two 1.875 MB app slots,

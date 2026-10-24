@@ -10,7 +10,7 @@ Budget about 45 minutes the first time. Most of that is downloads.
 
 ## What you need before you start
 
-- The assembled orbs hardware (Seeed XIAO ESP32-S3 or ESP32-S3 Plus + five round displays + three buttons)
+- The assembled orbs hardware (Seeed XIAO ESP32-S3 or XIAO ESP32-S3 Plus + five round displays + three buttons)
 - A **USB data cable**. Many cheap USB cables carry power only. If the board
   never shows up as a port, suspect the cable before anything else.
 - A 2.4 GHz WiFi network. The ESP32 cannot see 5 GHz networks at all.
@@ -139,12 +139,23 @@ no new port appears, try the other button: R only restarts the board.)
 
 ## 7. Connect it to WiFi
 
-The orbs create their own WiFi network on first boot. On a phone or laptop, join
-the network the orbs advertise, and a configuration page opens automatically.
-Pick your home network from the list and enter its password.
+The orbs create their own WiFi network on first boot, and the screens show its
+name: `Info-Orbs_` followed by two characters, for example `Info-Orbs_84`.
+On a phone or computer, join that network, and a configuration page opens
+automatically (if it does not, browse to `http://192.168.4.1`). Pick your home
+network from the list and enter its password.
+
+**The two characters are different on every orb.** They are the last two
+characters of that orb's WiFi MAC address, so yours will not match the `84` in
+these docs or in the video. Read the name off your own screens. This keeps
+two orbs being set up in the same room from advertising the same network;
+with only 256 possible endings two orbs can still match, so set them up one
+at a time.
 
 This is stored on the device, not in your files. You do not reflash to change
-WiFi later — hold the buttons per the on-screen prompts to reopen the portal.
+WiFi later: hold the **right** button while plugging in power. The orbs show
+`Wifi Settings reset`, forget the network, and open the setup network again.
+The orbs remember only one network at a time.
 
 ## 8. Later updates: no cable needed
 
@@ -211,6 +222,35 @@ well as, or instead of, Visual Crossing's, with one weather page per station
 
 The token never appears on the settings page. Leave `TEMPEST_TOKEN` out and
 the Tempest code is not compiled in at all.
+
+## 11. Optional: run it from a phone hotspot
+
+For a demo away from home. The orbs remember only **one** WiFi network, so
+joining the hotspot replaces your home network. Try it at home before the day.
+
+1. **Turn on the hotspot, on 2.4 GHz.** The ESP32 cannot see 5 GHz.
+   - iPhone: Settings > Personal Hotspot, turn on **Maximize Compatibility**.
+     Without it, recent iPhones use 5 GHz and the orbs never find the hotspot.
+     Stay on that screen until the orbs join: an iPhone stops advertising its
+     hotspot when nothing has connected for a while.
+   - Android: in the hotspot settings, set the band to 2.4 GHz.
+2. **Hold the right button while plugging in power.** The orbs show
+   `Wifi Settings reset`, then `Connect phone or PC to WiFi network:`, a name
+   like `Info-Orbs_84` (your two characters differ; see step 7), and
+   `192.168.4.1`.
+3. **From a second device** (a laptop or another phone), join that
+   `Info-Orbs_..` network. A second device keeps the hotspot phone a hotspot
+   the whole time. The setup page opens by itself; if it does not, browse to
+   `http://192.168.4.1`. Choose **Configure WiFi**, pick the hotspot, enter its
+   password, **Save**.
+4. The orbs show `Success`, then their IP address, and start fetching over the
+   phone's mobile data. The settings page is `http://<that IP>/settings` from a
+   device joined to the hotspot.
+5. **Back home**, repeat steps 2 and 3 with your home network.
+
+Custom pages that read from a server or MQTT broker on your home network show
+no data while the orbs are on the hotspot. Untick them on the settings page
+for the demo, or point them at something reachable from the internet.
 
 ---
 

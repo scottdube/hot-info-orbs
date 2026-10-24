@@ -319,4 +319,169 @@ inline bool checkJpegHeader(const uint8_t *buf, size_t len, std::string &err) {
     return false;
 }
 
+// --- custom pages (docs/superpowers/specs/2026-10-17-custom-pages-design.md) --
+
+// What the settings page shows in place of a URL's query string, which often
+// carries an API key. UTF-8 for "?•••"; the page is served as utf-8.
+constexpr const char *URL_MASK = "?\xE2\x80\xA2\xE2\x80\xA2\xE2\x80\xA2";
+
+inline std::string maskUrl(const std::string &url) {
+    size_t q = url.find('?');
+    return q == std::string::npos ? url : url.substr(0, q) + URL_MASK;
+}
+
+// Web Data URL. Blank = no page. The masked form of the stored URL, sent back
+// unchanged, keeps the stored URL; anything else replaces it.
+inline bool parseWebUrl(const std::string &in, const std::string &stored, std::string &out, std::string &err) {
+    std::string s = trim(in);
+    if (s.empty()) {
+        out = "";
+        return true;
+    }
+    if (!stored.empty() && s == maskUrl(stored)) {
+        out = stored;
+        return true;
+    }
+    if (s.find(URL_MASK) != std::string::npos) {
+        err = "The part after ? is hidden, so it cannot be kept with a changed address - type the whole address";
+        return false;
+    }
+    if (s.size() > 256) {
+        err = "At most 256 characters";
+        return false;
+    }
+    std::string lower;
+    for (char c : s.substr(0, 8)) {
+        lower += (char)tolower((unsigned char)c);
+    }
+    size_t hostStart;
+    if (lower.compare(0, 7, "http://") == 0) {
+        hostStart = 7;
+    } else if (lower.compare(0, 8, "https://") == 0) {
+        hostStart = 8;
+    } else {
+        err = "Must start with http:// or https://";
+        return false;
+    }
+    for (char c : s) {
+        if ((unsigned char)c <= 0x20 || c == 0x7F) {
+            err = "No spaces or control characters";
+            return false;
+        }
+    }
+    size_t hostEnd = s.find_first_of("/?:#", hostStart);
+    if ((hostEnd == std::string::npos ? s.size() : hostEnd) == hostStart) {
+        err = "No host name after " + s.substr(0, hostStart);
+        return false;
+    }
+    out = s;
+    return true;
+}
+
+// MQTT broker: blank = no page, otherwise a host name or IPv4 address
+inline bool parseHost(const std::string &in, std::string &out, std::string &err) {
+    std::string s = trim(in);
+    if (s.empty()) {
+        out = "";
+        return true;
+    }
+    if (s.size() > 64) {
+        err = "At most 64 characters";
+        return false;
+    }
+    for (char c : s) {
+        if (!(isalnum((unsigned char)c) || c == '.' || c == '-')) {
+            err = "Host name or IP address only - letters, digits, dots and dashes (no mqtt:// and no :port)";
+            return false;
+        }
+    }
+    if (s.front() == '.' || s.front() == '-' || s.back() == '.' || s.back() == '-') {
+        err = "Cannot start or end with a dot or dash";
+        return false;
+    }
+    out = s;
+    return true;
+}
+
+inline bool parsePort(const std::string &in, int &out, std::string &err) {
+    int v;
+    if (!parseInt(in, v) || v < 1 || v > 65535) {
+        err = "Enter a port from 1 to 65535 (MQTT is usually 1883)";
+        return false;
+    }
+    out = v;
+    return true;
+}
+
+// Blank allowed; otherwise normalizeText's rules
+inline bool parseOptionalText(const std::string &in, size_t maxLen, std::string &out, std::string &err) {
+    if (trim(in).empty()) {
+        out = "";
+        return true;
+    }
+    return normalizeText(in, maxLen, out, err);
+}
+
+// One MQTT topic to subscribe to. Blank leaves that orb empty. Wildcards are
+// refused: one orb shows one value.
+inline bool parseTopic(const std::string &in, std::string &out, std::string &err) {
+    std::string s = trim(in);
+    if (s.size() > 128) {
+        err = "At most 128 characters";
+        return false;
+    }
+    for (char c : s) {
+        if ((unsigned char)c < 0x20 || c == 0x7F) {
+            err = "Contains a control character (tab or line break)";
+            return false;
+        }
+        if (c == '#' || c == '+') {
+            err = "No # or + wildcards - one topic per orb";
+            return false;
+        }
+    }
+    out = s;
+    return true;
+}
+
+// Write-only: the page never shows the stored password. Blank keeps it,
+// `clear` (the checkbox) removes it. Not trimmed - a space may be part of it.
+inline bool parsePassword(const std::string &in, bool clear, const std::string &stored, std::string &out, std::string &err) {
+    if (clear) {
+        out = "";
+        return true;
+    }
+    if (in.empty()) {
+        out = stored;
+        return true;
+    }
+    if (in.size() > 64) {
+        err = "At most 64 characters";
+        return false;
+    }
+    for (char c : in) {
+        if ((unsigned char)c < 0x20 || c == 0x7F) {
+            err = "Contains a control character (tab or line break)";
+            return false;
+        }
+    }
+    out = in;
+    return true;
+}
+
+// Hint under the password field. `v` is what the form holds after parsing,
+// `stored` what is saved. They differ only on a rejected save (some other
+// field failed), where the field comes back empty: say so, or the member
+// resubmits blank and silently keeps the OLD password. Never echoes either.
+inline const char *passwordHint(const std::string &v, const std::string &stored) {
+    if (v == stored) {
+        return stored.empty() ? "No password stored." : "&#10004; A password is stored. It is never shown; leave this blank to keep it.";
+    }
+    if (v.empty()) {
+        return "&#9888; Not saved: tick the box below again to clear the stored password. A password is still stored.";
+    }
+    return stored.empty() ? "&#9888; Not saved: type the password again. No password is stored."
+                          : "&#9888; Not saved: type the password again. The stored one is unchanged.";
+}
+
 } // namespace sv

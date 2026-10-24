@@ -1,10 +1,11 @@
 # HoT Info Orbs — XIAO ESP32-S3 variant (KiCad project)
 
 Carrier for five GC9A01 displays and three buttons, taking a **Seeed Studio
-XIAO ESP32-S3 or XIAO ESP32-S3 Plus** (SKU 102010671) in place of the ESP32-S3
-SuperMini. Copied on 2026-10-14 from the v1.1 SuperMini board (`main` branch,
-`hardware/hot-info-orbs/`, tag `v1.1-run1`, the boards ordered 2026-08-29);
-this branch is XIAO-only and no longer carries that project.
+XIAO ESP32-S3 or XIAO ESP32-S3 Plus** (SKU 102010671), the builder's choice; the two
+share the edge pins. This is the project's only board. It was copied on
+2026-10-14 from the v1.1 prototype board, built for an ESP32-S3 SuperMini
+(`hardware/hot-info-orbs/` at tag `v1.1-run1`, the boards ordered
+2026-08-29); that module is not part of the project.
 
 **S3 and S3 Plus are interchangeable here** (Seeed wiki, checked 2026-10-14):
 identical D0–D10 → GPIO map, user LED GPIO21 on both, 21 × 17.8 mm both,

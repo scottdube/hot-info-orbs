@@ -25,7 +25,7 @@ hardware but does not write code, that is a wall.
   ticker list, clock face, and the scheduled dim hours (see the note below —
   this is not brightness control)
 - Persist to NVS so settings survive a reboot and a firmware update
-- Be reachable without special software — a browser on a phone is enough
+- Be reachable without special software — a browser on a phone or computer is enough
 
 **Should:**
 - Show the device's current state: WiFi signal, uptime, last successful API call
@@ -207,7 +207,7 @@ doesn't expose).
 
 **Firmware updates must not require a USB cable.**
 
-**Status 2026-09-23: implemented and tested on the SuperMini.** USB flash of the
+**Status 2026-09-23: implemented and tested on the v1.1 prototype (ESP32-S3 SuperMini).** Not yet run on a XIAO ESP32-S3 or S3 Plus. USB flash of the
 new layout, then a browser-style multipart upload to `/update` by IP: 11 s
 upload, back on the network 14 s later. otadata read back over USB afterwards:
 highest sequence 2 → running `app1`, state `VALID`, i.e. the new image reached
@@ -241,6 +241,37 @@ survives until the new one is verified. Two 2 MB partitions do not fit in 4 MB
 alongside NVS and SPIFFS. **The partition table in `partitions.csv` will need
 reworking, and that is a bigger change than it sounds** — it is worth confirming
 the layout before building against the current one.
+
+## R3 — Custom pages
+
+**A member must be able to add a page of their own without rebuilding the
+firmware.**
+
+Upstream's Web Data and MQTT pages are switched on by `#define`s in `config.h`
+and `secrets.h`, so using one means the same edit-build-USB cycle R1 exists to
+remove. The reason people want them is the point of the club: a board that
+shows the member's own number, a schedule, or a Home Assistant sensor.
+
+**Must:**
+- Set up on `/settings`: a Web Data address (JSON file from an http/https
+  URL), and an MQTT broker with, per orb, a topic, label and unit
+- Off until configured: a page appears in the rotation only once its address or
+  broker is set; the build-time defines are only defaults for an orb that has
+  never saved settings
+- Neither page may stop the buttons or the settings page responding: Web Data
+  has a fetch timeout and a size limit, MQTT makes one short attempt and then
+  retries at most every 30 s (upstream looped forever on a mistyped broker)
+- Secrets never go back to the browser: the part of the Web Data address after
+  `?` and the MQTT password are not shown on the page; leaving them as shown
+  keeps the stored value
+- Show each page's last result (✔/✖, age, reason) on the settings page
+
+**Should:**
+- Keep the last good data on screen when a fetch fails
+
+Format, limits, a sample page and a Home Assistant recipe: `docs/CUSTOM-PAGES.md`.
+Design and reasons: `docs/superpowers/specs/2026-10-17-custom-pages-design.md`.
+On-orb results are recorded in `docs/CUSTOM-PAGES.md`.
 
 ## Prior art
 
