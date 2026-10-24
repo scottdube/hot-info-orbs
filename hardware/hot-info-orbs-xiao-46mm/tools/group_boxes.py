@@ -12,6 +12,11 @@ corner, as on DISPLAYS. Re-running replaces the boxes this script drew
 (matched by title prefix), so it can follow a later layout change.
 
 Graphics only: no symbol, wire or label is touched.
+
+Superseded as a layout tool, 2026-10-24: it fits boxes around parts where
+they sit, so the result was scattered. Scott rearranged the sheet by hand
+into rows with aligned tops in signal order (README, "Schematic layout").
+Re-running this would resize his boxes. Kept as the record of ade894a.
 """
 
 import math

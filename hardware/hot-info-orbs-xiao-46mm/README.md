@@ -149,6 +149,33 @@ session. `main_body_front` v4 has **no USB cutout yet** (an
 earlier line here said one was "4 mm off"; it never existed); the jack's
 place in the enclosure is measured in `docs/ENCLOSURE.md`.
 
+## Schematic layout (2026-10-24, Scott's arrangement)
+
+The displays became a labeled block (`tools/display_block.py`, 101a0ba)
+and every circuit group got a dashed, titled box (`tools/group_boxes.py`,
+ade894a). Those boxes were fitted around wherever the parts happened to
+sit, so the page came out scattered: boxes at five different heights, the
+MCU down against the title block. Scott found it "not pleasing to the
+eye" and rearranged it himself. **His arrangement is the layout rule for
+this sheet:**
+
+- **Rows, not scatter.** Row 1 is the DISPLAYS block, full width. Row 2
+  holds every functional block, **tops aligned on one line** (y 87.63) with
+  ragged bottoms. Each box is only as tall as its contents.
+- **Signal order, left to right:** BUTTONS (inputs), then MCU, then
+  DISPLAY RESET, then 5V BULK. That reads as inputs → processor → what
+  feeds the displays.
+- **Shared left margin.** BUTTONS starts at the DISPLAYS box's left edge
+  (x 16.51).
+- **Housekeeping out of the circuit rows.** POWER FLAGS (ERC only) sits
+  alone at the bottom left, clear of the title block.
+- Boxes hug their contents; the title goes inside the bottom-left corner.
+
+Netlist identical to ade894a (names, pins, components), ERC 0.
+`group_boxes.py` sizes boxes from content but does not arrange them.
+**Re-running it over this layout would resize Scott's boxes and lose the
+aligned tops**, so move parts and boxes by hand in eeschema instead.
+
 The rest of this README is inherited from the parent project. Its y
 coordinates and the pin map still hold; its x coordinates and board width
 describe the narrow board.
