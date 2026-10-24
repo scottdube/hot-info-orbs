@@ -1,6 +1,6 @@
 # Variant: Seeed XIAO ESP32-S3 / ESP32-S3 Plus
 
-Status: **DESIGNED, NOT BUILT.** Branch `xiao-esp32s3-plus`, 2026-10-14.
+Status: **DESIGNED, NOT BUILT.** Branch `xiao-esp32s3`, 2026-10-14.
 Schematic and board are done and DRC-clean, the firmware compiles, and no
 board has been ordered or flashed. **The branch is XIAO-only** (Scott,
 2026-10-14): the SuperMini env, pin block and hardware folder are gone from

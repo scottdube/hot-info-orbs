@@ -241,7 +241,7 @@ merge, run the exact CI command (`pio run`, no `-e`) locally.**
 
 ## A 3D model fitted by eye can sit a castellation column off the holes (2026-10-16)
 
-Branch `xiao-esp32s3-plus`, carrier board. On 2026-10-14 the Seeed XIAO
+Branch `xiao-esp32s3`, carrier board. On 2026-10-14 the Seeed XIAO
 STEP was fitted by rendering against the DIP footprint's copper. It looked
 right. When the module went onto headers, Scott saw that its holes missed
 the pins. Fusion `find_geometry` on the hole faces measured the error at
@@ -269,7 +269,7 @@ a footprint is rotated 180.**
 
 ## Freerouting's empty SES is an exit race, not unrouted nets (2026-10-17)
 
-Branch `xiao-esp32s3-plus`, `tools/route_xiao.py`. The script asserted that
+Branch `xiao-esp32s3`, `tools/route_xiao.py`. The script asserted that
 a 0-byte SES meant "nets left unrouted" and stopped there. That reading was
 wrong. A run whose log said `0 unrouted and 0 violations` wrote 0 bytes, and
 an identical rerun wrote the file. Runs with 1 unrouted connection wrote

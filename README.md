@@ -4,7 +4,7 @@ Five round 240×240 displays on one SPI bus, driven by a Seeed XIAO ESP32-S3 or
 ESP32-S3 Plus (interchangeable — same edge pins), on a custom carrier board.
 Clock, weather, stocks — and whatever else gets written.
 
-**This branch (`xiao-esp32s3-plus`) is the XIAO build only** — board in
+**This branch (`xiao-esp32s3`) is the XIAO build only** — board in
 `hardware/hot-info-orbs-xiao/`, designed and not yet fabricated. The ESP32-S3
 SuperMini board (v1.1, the boards in hand) and its firmware are on `main`.
 
