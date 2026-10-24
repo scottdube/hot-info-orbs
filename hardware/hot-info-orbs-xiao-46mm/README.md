@@ -157,8 +157,14 @@ ade894a). Those boxes were fitted around wherever the parts happened to
 sit, so the page came out scattered: boxes at five different heights, the
 MCU down against the title block. Scott found it "not pleasing to the
 eye" and rearranged it himself. **His arrangement is the layout rule for
-this sheet:**
+this sheet, and in his words symmetry is the key difference:**
 
+- **Symmetry.** Each group sits centered in its box with even margins.
+  Measured from the render: about 3–4 mm left, right, top and bottom on
+  BUTTONS, MCU, 5V BULK and POWER FLAGS, against the lopsided margins the
+  fitted boxes had. The exceptions are forced by text. DISPLAY RESET is as
+  wide as its title, so its content sits left. DISPLAYS has its socket
+  field text on the left.
 - **Rows, not scatter.** Row 1 is the DISPLAYS block, full width. Row 2
   holds every functional block, **tops aligned on one line** (y 87.63) with
   ragged bottoms. Each box is only as tall as its contents.
