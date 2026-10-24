@@ -4431,6 +4431,121 @@
 		)
 		(uuid "b1a5d1f1-1187-4077-85b7-a837bf8a6679")
 	)
+	(rectangle
+		(start 76.2 147.32)
+		(end 146.05 201.93)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "a0290233-dae3-4f02-bd82-beae4bc1976a")
+	)
+	(text "MCU  U2: XIAO ESP32-S3 or S3 Plus"
+		(exclude_from_sim no)
+		(at 77.47 200.66 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3fe0606b-24f7-482c-ba2c-dd355560a048")
+	)
+	(rectangle
+		(start 17.78 114.3)
+		(end 71.12 162.56)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "26630c5d-2da3-4c5c-8466-819882fcca49")
+	)
+	(text "BUTTONS  SW1-SW3: tact switches to 3V3"
+		(exclude_from_sim no)
+		(at 19.05 161.29 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e145b496-a229-4c57-a726-2dd74773dc06")
+	)
+	(rectangle
+		(start 157.48 121.92)
+		(end 196.85 171.45)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "ccf263a4-a9cf-4dfe-8562-7fd9ecc186d8")
+	)
+	(text "DISPLAY RESET  R1/C2: RC power-on"
+		(exclude_from_sim no)
+		(at 158.75 170.18 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e5d46dfc-f1fe-4853-abbc-0356ac5ac186")
+	)
+	(rectangle
+		(start 165.1 63.5)
+		(end 191.77 92.71)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "0cacfc4a-ae6c-4ecf-9d9e-b8b243bd4ab1")
+	)
+	(text "5V BULK  C1"
+		(exclude_from_sim no)
+		(at 166.37 91.44 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "54e2ddb9-513c-4837-9d68-bf4397182c3b")
+	)
+	(rectangle
+		(start 229.87 140.97)
+		(end 257.81 161.29)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "072a315f-6d69-4372-b765-c84ef2fbf304")
+	)
+	(text "POWER FLAGS  ERC only"
+		(exclude_from_sim no)
+		(at 231.14 160.02 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "af78e7c8-10c1-454f-8358-4371d0c3dd53")
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")
