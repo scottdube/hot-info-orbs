@@ -1,6 +1,6 @@
 # Variant: Seeed XIAO ESP32-S3 / ESP32-S3 Plus
 
-Status: **DESIGNED, NOT BUILT.** Started on branch `xiao-esp32s3-plus`
+Status: **DESIGNED, NOT BUILT.** Started on branch `xiao-esp32s3`
 2026-10-14, **merged into `main` 2026-10-18.** Schematic and board are done and
 DRC-clean, the firmware compiles, and no board has been ordered or flashed.
 
