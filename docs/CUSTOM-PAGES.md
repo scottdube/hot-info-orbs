@@ -2,15 +2,16 @@
 
 ## What it is
 
-Two pages of your own that you set up on the orb's settings page
+Pages of your own that you set up on the orb's settings page
 (`http://<orb>/settings`, the **Custom pages** section):
 
 - **Web Data** draws a JSON file from any `http://` or `https://` address.
 - **MQTT** shows one live value per orb from an MQTT broker, for example
-  Home Assistant.
+  Home Assistant. There are two MQTT pages, five orbs each, so one orb can
+  show, say, the weather outside on one page and the pool and power on the next.
 
-A page appears in the rotation once its address (Web Data) or broker (MQTT) is
-set, and not before. Saving restarts the orb. You can untick a custom page
+Web Data appears in the rotation once its address is set; an MQTT page once
+its broker and at least one topic are set. Not before. Saving restarts the orb. You can untick a custom page
 under **Rotation → Show** like any other page. The tick box uses the page's
 name, so renaming a page shows it again if it was unticked.
 
@@ -90,25 +91,45 @@ Its address: `https://scottdube.github.io/hot-info-orbs/custom-pages/sample.json
 
 ## MQTT
 
-Fields on the settings page:
+There are two MQTT pages. Page 1 has the broker; page 2 either uses the same
+broker, over the same connection, or a broker of its own.
 
-- **Page name** (16 characters).
-- **Broker host name or IP address.** Blank means no MQTT page.
+**Page 1's broker:**
+
+- **Broker host name or IP address.** Blank means no page on it.
 - **Port** (default 1883).
 - **Username**, blank for no login.
 - **Password.** Write-only: the page never shows it back. Leave the field blank
   to keep the stored one, or tick **Clear the stored password**.
+
+**MQTT page 1:**
+
+- **Page name** (16 characters, default `MQTT`).
 - **One value per orb: topic, label, unit.** Five rows, orbs left to right.
-  A blank topic leaves that orb blank. No `#` or `+` wildcards. The label is up
-  to 16 characters and the unit up to 8.
+  A blank topic leaves that orb blank; with no topic at all the page does not
+  appear. No `#` or `+` wildcards. The label is up to 16 characters and the
+  unit up to 8.
 - **Layout topic (advanced).** A JSON layout published on this topic replaces
   the rows until the next restart (see `firmware/src/widgets/mqttwidget/README.md`).
+  An orb set up by layout topic alone keeps page 1 with no rows filled in.
+
+**MQTT page 2:**
+
+- **Page name** (16 characters, default `MQTT 2`).
+- **Broker.** *Same as page 1* (the default) shares page 1's broker and its
+  one connection. *Its own broker* shows broker fields like page 1's (host,
+  port, username, password) and makes a second connection. A blank host there
+  means no page 2.
+- **One value per orb: topic, label, unit**, as on page 1.
+
+Settings saved before page 2 existed load unchanged as page 1; page 2 starts
+empty. Each connection has its own status line under its broker.
 
 A value is the topic's payload as text. Each orb shows the label on top, the
 value in the middle at the largest size that fits and the unit
 below. It shows a dash (-) until the first value arrives.
 
-**It never blocks the orb.** The orb makes one connection attempt that gives
+**It never blocks the orb.** Each connection makes one attempt that gives
 up after a few seconds, then at most one more every 30 seconds, while the buttons and
 the settings page keep working. The settings page says why it is not connected:
 `can't reach broker`, `login refused`, `broker refused the connection`,
@@ -162,3 +183,6 @@ On-orb tests, run by hand. Each result records what was done and what was seen.
 | 4 | MQTT against a home broker shows live Home Assistant values | ✔ Mosquitto add-on on a Home Assistant host, orb with its own broker user. A temperature sensor's current state sent with HA's `mqtt.publish` service to the orb's topic: `/settings` read `✔ Connected. Newest value under a minute ago`, and the value showed on orb 1, checked by eye. Before the login was set: `✖ login refused`, at once. Statestream not tested | 2026-10-17 |
 | 5 | A wrong broker host shows the failure; buttons and the settings page still respond | ✔ Broker `10.255.255.1`: ✖ `can't reach broker`, each try took 3.0 s. Sampling `/settings` every second for 60 s: replies in 0.08–0.67 s except one 2.1–2.5 s stall at each retry, about 30 s apart | 2026-10-17 |
 | 6 | Flash use of the final build, as a share of the OTA slot (stop line 92%) | ✔ 87.9% (1,728,477 of 1,966,080 bytes) | 2026-10-17 |
+| 7 | Two MQTT pages on one broker: both show live values, one connection | Not yet run. Builds: `xiao-esp32s3` 43.6% of its slot, `supermini-proto` 88.3% (1,735,401 of 1,966,080 bytes) | 2026-10-24 |
+| 8 | Page 2 on a broker of its own: its own status line, page 1 unaffected | Not yet run | |
+| 9 | `POST /settings` with both row sets, then a read-back of `/settings` shows what was posted | Not yet run | |
