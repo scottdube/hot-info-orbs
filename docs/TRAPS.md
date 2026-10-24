@@ -381,3 +381,22 @@ name the feature. Same job: a 12.7 MB STEP `doc_insert_import` times out on
 the MCP side but still completes in Fusion (Group3 of 125 features appeared
 about a minute later); the next calls time out until it finishes, then the
 active document has flipped, so `doc_activate` before reading.
+
+## A package built with `git archive` drops uncommitted KiCad edits (2026-10-23)
+
+The zip and schematic PDF sent to Yang on 2026-10-23 were built at 17:32 by
+`git archive 8dda9b9`, the last commit (2026-10-20). Scott's schematic tidy-up
+was saved in this worktree but never committed, so it was silently left out.
+Before 21:30 the working tree differed from 8dda9b9 in three ways:
+
+- **Schematic layout only.** Every symbol had moved, one wire and one junction
+  were added, and `sch_revision` went from 1.1 to 2.4. The XML netlists match:
+  same 12 parts, same 15 nets, same pins.
+- **Board:** one /SW3 dogleg near (123.5, 92.8) became a straight run, and
+  the pour was refilled.
+- **Checks:** ERC 0; DRC shows the 3 known USB-C silk warnings, 0 unconnected,
+  0 parity.
+
+**Before building any package:** run `git status` in the project folder. Then
+either commit first, or build from the working tree and say in the package
+that it is uncommitted.
