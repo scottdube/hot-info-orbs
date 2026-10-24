@@ -117,6 +117,19 @@ void test_page_2_on_the_shared_broker() {
     TEST_ASSERT_FALSE(p.page2OwnBroker);
 }
 
+void test_show_label_numbers_the_page() {
+    TEST_ASSERT_EQUAL_STRING("MQTT 1 (Town Squares)", mqttShowLabel(1, "Town Squares").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 2 (Home)", mqttShowLabel(2, "Home").c_str());
+}
+
+void test_show_label_default_name_adds_nothing() {
+    TEST_ASSERT_EQUAL_STRING("MQTT 1", mqttShowLabel(1, "MQTT").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 1", mqttShowLabel(1, "MQTT 1").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 2", mqttShowLabel(2, "MQTT 2").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 2", mqttShowLabel(2, "").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 2 (MQTT)", mqttShowLabel(2, "MQTT").c_str()); // page 1's default
+}
+
 void test_page_2_on_its_own_broker() {
     MqttPlan p = mqttPlan("broker", ONE, "", false, "other", ONE);
     TEST_ASSERT_TRUE(p.page1);
@@ -149,5 +162,7 @@ int main() {
     RUN_TEST(test_no_broker_no_page);
     RUN_TEST(test_page_2_on_the_shared_broker);
     RUN_TEST(test_page_2_on_its_own_broker);
+    RUN_TEST(test_show_label_numbers_the_page);
+    RUN_TEST(test_show_label_default_name_adds_nothing);
     return UNITY_END();
 }

@@ -43,6 +43,13 @@ String WidgetSet::key(int8_t i) {
     return m_keys[i];
 }
 
+String WidgetSet::label(int8_t i) {
+    // Two widgets sharing a name keep the key's " 2" so their boxes differ
+    String name = m_widgets[i]->getName();
+    String suffix = m_keys[i].substring(name.length());
+    return m_widgets[i]->showLabel() + suffix;
+}
+
 bool WidgetSet::shown(int8_t i) {
     return isShown(i);
 }

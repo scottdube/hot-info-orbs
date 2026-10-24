@@ -1,8 +1,8 @@
 #include "MQTTWidget.h"
 
-MQTTWidget::MQTTWidget(ScreenManager &manager, MqttFeed &feed, const std::string &name, const std::string (&topics)[5],
+MQTTWidget::MQTTWidget(ScreenManager &manager, MqttFeed &feed, int page, const std::string &name, const std::string (&topics)[5],
                        const std::string (&labels)[5], const std::string (&units)[5], const std::string &setupTopic)
-    : Widget(manager), m_feed(feed), m_name(name.c_str()), m_setupTopic(setupTopic.c_str()) {
+    : Widget(manager), m_feed(feed), m_page(page), m_name(name.c_str()), m_setupTopic(setupTopic.c_str()) {
     // One orb per settings row with a topic; the others stay blank
     for (int i = 0; i < 5; i++) {
         if (topics[i].empty()) {
@@ -290,6 +290,10 @@ void MQTTWidget::drawOrb(int orbid) {
 
 String MQTTWidget::getName() {
     return m_name;
+}
+
+String MQTTWidget::showLabel() {
+    return mqttShowLabel(m_page, m_name.c_str()).c_str();
 }
 
 void MQTTWidget::buttonPressed(uint8_t buttonId, ButtonState state) {

@@ -67,3 +67,14 @@ inline MqttPlan mqttPlan(const std::string &host1, const std::string (&topics1)[
     p.page2OwnBroker = p.page2 && !page2SameBroker;
     return p;
 }
+
+// The page's tick box in the settings page's Show row: "MQTT 1 (Town Squares)",
+// so it reads as an MQTT page whatever it is called. A page still on its
+// default name ("MQTT", "MQTT 2") gets the number alone.
+inline std::string mqttShowLabel(int page, const std::string &name) {
+    std::string n = "MQTT " + std::to_string(page);
+    if (name.empty() || name == n || (page == 1 && name == "MQTT")) {
+        return n;
+    }
+    return n + " (" + name + ")";
+}

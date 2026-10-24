@@ -34,6 +34,7 @@ public:
     // with " 2" etc. added when two share one (two WebData widgets)
     int8_t count();
     String key(int8_t i);
+    String label(int8_t i); // what its tick box says, e.g. "MQTT 1 (Town Squares)"
     bool shown(int8_t i);
     int8_t indexOf(Widget *w); // -1 if add() refused it
 

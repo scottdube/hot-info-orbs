@@ -12,8 +12,10 @@ Pages of your own that you set up on the orb's settings page
 
 Web Data appears in the rotation once its address is set; an MQTT page once
 its broker and at least one topic are set. Not before. Saving restarts the orb. You can untick a custom page
-under **Rotation → Show** like any other page. The tick box uses the page's
-name, so renaming a page shows it again if it was unticked.
+under **Rotation → Show** like any other page. The MQTT pages' tick boxes read
+**MQTT 1** and **MQTT 2**, with the page name in brackets once you give it one:
+*MQTT 1 (Town Squares)*. Web Data's box shows its page name. The page name is
+what Show stores, so renaming a page shows it again if it was unticked.
 
 No rebuild is needed. `WEB_DATA_WIDGET_URL` (in `secrets.h`) and the `MQTT_*`
 defines (in `config.h` and `secrets.h`) are only defaults for an orb that has
@@ -104,7 +106,8 @@ broker, over the same connection, or a broker of its own.
 
 **MQTT page 1:**
 
-- **Page name** (16 characters, default `MQTT`).
+- **Page name** (16 characters, default `MQTT`). Its Show tick box reads
+  *MQTT 1 (name)*, or just *MQTT 1* on the default name.
 - **One value per orb: topic, label, unit.** Five rows, orbs left to right.
   A blank topic leaves that orb blank; with no topic at all the page does not
   appear. No `#` or `+` wildcards. The label is up to 16 characters and the
@@ -115,7 +118,8 @@ broker, over the same connection, or a broker of its own.
 
 **MQTT page 2:**
 
-- **Page name** (16 characters, default `MQTT 2`).
+- **Page name** (16 characters, default `MQTT 2`). Its Show tick box reads
+  *MQTT 2 (name)*, or just *MQTT 2* on the default name.
 - **Broker.** *Same as page 1* (the default) shares page 1's broker and its
   one connection. *Its own broker* shows broker fields like page 1's (host,
   port, username, password) and makes a second connection. A blank host there
@@ -186,3 +190,4 @@ On-orb tests, run by hand. Each result records what was done and what was seen.
 | 7 | Two MQTT pages on one broker: both show live values, one connection | ✔ On the XIAO rig, build 0201bcd (this branch merged onto `xiao-esp32s3`). Page 1 = five `orbs/villages/*` rows, page 2 "Home" = `orbs/outside`, `orbs/humidity`, `orbs/pool`, `orbs/power`, `orbs/today`, Broker "Same as page 1". Both pages appear under Show; one status line, `✔ Connected. Newest value under a minute ago`. The Home page showed live values on all five orbs, checked by eye (Scott). Builds: `xiao-esp32s3` 43.6% of its slot, `supermini-proto` 88.3% (1,735,401 of 1,966,080 bytes) | 2026-10-24 |
 | 8 | Page 2 on a broker of its own: its own status line, page 1 unaffected | ✔ On the XIAO rig, build 0201bcd. Page 2 set to "Its own broker": the HOT club's public Meshtastic broker (`mqtt.villagesmesh.com:1883`, login from the club's Meshtastic page), rows on exact `msh/US/FL/thevillages/2/json/…/!<node>` topics. Read-back matched the POST. A second status line appeared, `✔ Connected. No value received yet` (the mesh is quiet: one JSON message in 90 s across all nodes, watched from a laptop), then `✔ Connected. Newest value under a minute ago` 15 s after the laptop saw a message on one of the rows' topics. Page 1's line stayed `✔ Connected` with fresh values throughout. Afterward page 2 went back to the Home rows on "Same as page 1", read back as posted, one status line again | 2026-10-24 |
 | 9 | Settings saved before page 2 load as page 1; `POST /settings` with both row sets, then a read-back of `/settings` shows what was posted | ✔ After the OTA, page 1's name, broker and five rows read back the same as before it; page 2 empty, "Same as page 1". POST of `mqname=Town Squares`, `mq2name=Home`, `mq2same=1` and the five Home rows: `✔ Saved`, and after the restart every field read back as posted, the other Show ticks unchanged. `/settings` is now 19,959 bytes (16,645 before), answered in 0.5 s | 2026-10-24 |
+| 10 | The Show row names the MQTT pages *MQTT 1 (name)* and *MQTT 2 (name)*; the stored Show choices are unchanged by the update | Not yet run | |

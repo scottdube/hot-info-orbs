@@ -200,11 +200,11 @@ void setup() {
     }
     MQTTWidget *mqttPages[2]{};
     if (mp.page1) {
-        mqttPages[0] = new MQTTWidget(*sm, *mqttFeeds[0], cp.mqname, cp.mqt, cp.mql, cp.mqu, cp.mqsetup);
+        mqttPages[0] = new MQTTWidget(*sm, *mqttFeeds[0], 1, cp.mqname, cp.mqt, cp.mql, cp.mqu, cp.mqsetup);
         widgetSet->add(mqttPages[0]);
     }
     if (mp.page2) {
-        mqttPages[1] = new MQTTWidget(*sm, *mqttFeeds[mp.page2OwnBroker ? 1 : 0], cp.mq2name, cp.mq2t, cp.mq2l, cp.mq2u, "");
+        mqttPages[1] = new MQTTWidget(*sm, *mqttFeeds[mp.page2OwnBroker ? 1 : 0], 2, cp.mq2name, cp.mq2t, cp.mq2l, cp.mq2u, "");
         widgetSet->add(mqttPages[1]);
     }
     settingsPage->setWidgets(widgetSet);

@@ -14,6 +14,7 @@ public:
     virtual void draw(bool force = false) = 0;
     virtual void buttonPressed(uint8_t buttonId, ButtonState state) = 0;
     virtual String getName() = 0;
+    virtual String showLabel() { return getName(); } // its Show tick box; the saved key stays getName()
     void setBusy(bool busy);
 
 protected:

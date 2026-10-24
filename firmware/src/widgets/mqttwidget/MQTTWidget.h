@@ -35,7 +35,7 @@ class MQTTWidget : public Widget {
 public:
     // topics/labels/units: the page's five settings rows. setupTopic is the
     // advanced layout topic ("" = none), page 1 only.
-    MQTTWidget(ScreenManager &manager, MqttFeed &feed, const std::string &name, const std::string (&topics)[5],
+    MQTTWidget(ScreenManager &manager, MqttFeed &feed, int page, const std::string &name, const std::string (&topics)[5],
                const std::string (&labels)[5], const std::string (&units)[5], const std::string &setupTopic);
     void setup() override;
     void update(bool force = false) override;
@@ -43,6 +43,7 @@ public:
     void changeMode();
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
     String getName() override;
+    String showLabel() override;
     MqttFeed &feed();
 
     // Called by the feed
@@ -58,6 +59,7 @@ private:
     uint16_t getColorFromString(const String &colorStr); // Convert color string to uint16_t
     void drawOrb(int orbid); // Draw a single orb based on orbid
 
+    int m_page; // 1 or 2, for its Show label
     String m_name, m_setupTopic;
     bool extractValue(const OrbConfig &orb, const String &message, String &out);
 };

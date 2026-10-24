@@ -298,7 +298,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
         for (int8_t i = 0; i < m_widgets->count(); i++) {
             std::string k = m_widgets->key(i).c_str();
             h += "<label class='chk'><input type='checkbox' name='shw" + String(i) + "' value='1'" +
-                 (sv::listContains(v.hidden, k) ? "" : " checked") + "> " + sv::htmlEscape(k).c_str() + "</label>";
+                 (sv::listContains(v.hidden, k) ? "" : " checked") + "> " + sv::htmlEscape(m_widgets->label(i).c_str()).c_str() + "</label>";
         }
         h += hint("Tick one to keep it on screen, or several to rotate through them. The buttons move between ticked pages only.") +
              errorLine(errors, "show");
@@ -377,14 +377,14 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
 
     h += "<h4>MQTT page 1</h4>";
     h += textField("mqname", "Page name (16 characters)", v.mqname, d.mqname,
-                   ". Its tick box above uses this name, so renaming it shows it again if it was unticked.", errors);
+                   ". Its tick box above reads MQTT 1 (this name); renaming it shows it again if it was unticked.", errors);
     h += mqttRows("mq", v.mqt, v.mql, v.mqu, errors);
     h += textField("mqsetup", "Layout topic (advanced)", v.mqsetup, d.mqsetup.empty() ? std::string("none") : d.mqsetup,
                    ". A JSON layout published here replaces the rows above until the next restart (mqttwidget/README.md).", errors);
 
     h += "<h4>MQTT page 2</h4>";
     h += textField("mq2name", "Page name (16 characters)", v.mq2name, d.mq2name,
-                   ". Its tick box above uses this name, so renaming it shows it again if it was unticked.", errors);
+                   ". Its tick box above reads MQTT 2 (this name); renaming it shows it again if it was unticked.", errors);
     h += boolSelect("mq2same", "Broker", v.mq2same, d.mq2same, "Its own broker", "Same as page 1", errors);
     h += "<div id='mq2own'>";
     h += mqttBrokerFields("mq2", v.mq2host, v.mq2port, v.mq2user, v.mq2pass, stored.mq2pass, d.mq2host, d.mq2port, d.mq2user,
