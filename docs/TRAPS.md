@@ -301,3 +301,34 @@ clearance from them, so KiCad flagged `copper_edge_clearance` (0.5 mm). The
 script now grows them by 0.4 mm. And reordering the nets in the DSN changes
 nothing: 12 shuffles gave a byte-identical result, because Freerouting
 orders them itself.
+
+## Swapping `config.h` does not rebuild the pins; a wrong pin map can wipe Wi-Fi (2026-10-20)
+
+**What happened.** A demo build for the v1.1 SuperMini prototype was made in
+a fresh worktree with the XIAO `config.h` copied in by mistake. After the OTA,
+screens 1-3 went black. Screens 4-5 kept their old picture, because a panel
+holds its last frame through a soft restart, so that picture proved nothing.
+Copying the prototype `config.h` over it and rebuilding still produced the
+XIAO pins. The orb's own boot log showed it: `TFT_MOSI:9`, `SCREEN_1_CS:3`.
+
+**Why.** `config.h` reaches every file only through
+`-include firmware/config/config_helper.h` in `build_flags`. PlatformIO's
+dependency scan does not follow a force-included header. Editing or replacing
+`config.h` leaves the old objects in place, and the build reports SUCCESS with
+the old pins.
+
+**Do instead.**
+- After changing `config.h`, delete the env's build dir
+  (`rm -rf .pio/build/<env>`) or run `pio run -e <env> -t clean` first.
+- Prove the pins from the boot log over USB serial. The `TFT_*:` and
+  `SCREEN_n_CS:` lines are printed at start-up.
+- Before flashing, check which board the orb is: `esptool.py flash_id` says
+  "Embedded Flash 4MB" for the prototype, 8 or 16 MB for a XIAO.
+
+**Wi-Fi wiped.** The orb came back with "No wifi saved" and opened the setup
+portal. `WifiWidget` calls `resetSettings()` when `BUTTON_RIGHT` reads pressed
+at power-up. In the XIAO map that is GPIO 6, and on the prototype GPIO 6 is
+Screen 3's CS line, so a wrong-board build can read a "held" button. This is a
+hypothesis, not measured. The likely cause fits, but the orb had joined Wi-Fi
+on the first boot of that same image. Re-join through the `Info-Orbs_XX`
+portal.

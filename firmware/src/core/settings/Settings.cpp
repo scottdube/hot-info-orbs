@@ -1,5 +1,6 @@
 #include "Settings.h"
 
+#include "SettingsValidation.h"
 #include "Utils.h"
 #include "clockwidget/ClockWidget.h"
 #include "config_helper.h"
@@ -47,21 +48,21 @@ SettingsValues Settings::defaults() {
     d.shdcol = CLOCK_SHADOW_COLOR;
 #if defined(DIM_START_HOUR) && defined(DIM_END_HOUR)
     d.dim = true;
-    d.dimstart = DIM_START_HOUR;
-    d.dimend = DIM_END_HOUR;
+    d.dimstartm = DIM_START_HOUR * 60;
+    d.dimendm = DIM_END_HOUR * 60;
 #else
     d.dim = false;
-    d.dimstart = 22; // config.h.template's commented values
-    d.dimend = 7;
+    d.dimstartm = 22 * 60; // config.h.template's commented values
+    d.dimendm = 7 * 60;
 #endif
 #if defined(OFF_START_HOUR) && defined(OFF_END_HOUR)
     d.off = true;
-    d.offstart = OFF_START_HOUR;
-    d.offend = OFF_END_HOUR;
+    d.offstartm = OFF_START_HOUR * 60;
+    d.offendm = OFF_END_HOUR * 60;
 #else
     d.off = false;
-    d.offstart = 23;
-    d.offend = 6;
+    d.offstartm = 23 * 60;
+    d.offendm = 6 * 60;
 #endif
     d.invert = INVERTED_ORBS;
 #ifdef TEMPEST_STATION_1
@@ -145,11 +146,13 @@ void Settings::load() {
             v.clkcol = p.getUShort("clkcol", v.clkcol);
             v.shdcol = p.getUShort("shdcol", v.shdcol);
             v.dim = p.getBool("dim", v.dim);
-            v.dimstart = p.getInt("dimstart", v.dimstart);
-            v.dimend = p.getInt("dimend", v.dimend);
+            // Minutes since the times took them; before that, whole hours
+            // under the old keys (sv::storedMinutes)
+            v.dimstartm = sv::storedMinutes(p.isKey("dimstartm"), p.getInt("dimstartm", -1), p.getInt("dimstart", v.dimstartm / 60));
+            v.dimendm = sv::storedMinutes(p.isKey("dimendm"), p.getInt("dimendm", -1), p.getInt("dimend", v.dimendm / 60));
             v.off = p.getBool("off", v.off);
-            v.offstart = p.getInt("offstart", v.offstart);
-            v.offend = p.getInt("offend", v.offend);
+            v.offstartm = sv::storedMinutes(p.isKey("offstartm"), p.getInt("offstartm", -1), p.getInt("offstart", v.offstartm / 60));
+            v.offendm = sv::storedMinutes(p.isKey("offendm"), p.getInt("offendm", -1), p.getInt("offend", v.offendm / 60));
             v.invert = p.getBool("invert", v.invert);
 #ifdef TEMPEST_TOKEN
             // Added after schema 1 without a bump: an absent key falls back
@@ -209,11 +212,15 @@ bool Settings::save(const SettingsValues &v) {
               p.putUShort("clkcol", v.clkcol) &&
               p.putUShort("shdcol", v.shdcol) &&
               p.putBool("dim", v.dim) &&
-              p.putInt("dimstart", v.dimstart) &&
-              p.putInt("dimend", v.dimend) &&
+              p.putInt("dimstartm", v.dimstartm) &&
+              p.putInt("dimendm", v.dimendm) &&
+              p.putInt("dimstart", sv::legacyHour(v.dimstartm)) && // for the hour-only firmware
+              p.putInt("dimend", sv::legacyHour(v.dimendm)) &&
               p.putBool("off", v.off) &&
-              p.putInt("offstart", v.offstart) &&
-              p.putInt("offend", v.offend) &&
+              p.putInt("offstartm", v.offstartm) &&
+              p.putInt("offendm", v.offendm) &&
+              p.putInt("offstart", sv::legacyHour(v.offstartm)) &&
+              p.putInt("offend", sv::legacyHour(v.offendm)) &&
               p.putBool("invert", v.invert) &&
 #ifdef TEMPEST_TOKEN
               p.putUInt("tstn1", v.tstn1) &&

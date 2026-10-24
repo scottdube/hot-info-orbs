@@ -55,12 +55,6 @@ static String uptime() {
     return buf;
 }
 
-static String hourText(int h) {
-    char buf[8];
-    snprintf(buf, sizeof(buf), "%02d:00", h);
-    return buf;
-}
-
 // --- form pieces --------------------------------------------------------------
 
 static String errorLine(const std::map<std::string, std::string> &errors, const char *key) {
@@ -159,12 +153,13 @@ static String boolSelect(const char *key, const char *label, bool value, bool de
            hint(String("Default: ") + (def ? onText : offText)) + errorLine(errors, key);
 }
 
-static String hourSelect(const char *key, const char *label, int value, int def, const std::map<std::string, std::string> &errors) {
-    String s = "<label for='" + String(key) + "'>" + label + "</label><select id='" + key + "' name='" + key + "'>";
-    for (int h = 0; h < 24; h++) {
-        s += option(String(h), hourText(h), h == value);
-    }
-    return s + "</select>" + hint("Default: " + hourText(def)) + errorLine(errors, key);
+// A typed box, not <input type=time>: on an iPhone that is a wheel with no
+// keyboard, and typing the time was the point. sv::parseTimeOfDay reads it.
+static String timeField(const char *key, const char *label, int minutes, int def, const std::map<std::string, std::string> &errors) {
+    return "<label for='" + String(key) + "'>" + label + "</label><input type='text' id='" + key + "' name='" + key +
+           "' size='8' autocomplete='off' value='" + sv::timeOfDayText(minutes).c_str() + "'>" +
+           hint("Default: " + String(sv::timeOfDayText(def).c_str()) + ". 24-hour (22:00, 7:30) or am/pm (10pm, 7:30am).") +
+           errorLine(errors, key);
 }
 
 static String colorField(const char *key, const char *label, uint16_t value, uint16_t def, const std::map<std::string, std::string> &errors) {
@@ -350,18 +345,18 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     }
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Dim hours</legend>";
+    h += "<fieldset><legend>Dim times</legend>";
     h += boolSelect("dim", "Dim", v.dim, d.dim, "Off", "On", errors);
     h += hint("Darkens the colors drawn; the backlight itself stays on.");
-    h += hourSelect("dimstart", "From", v.dimstart, d.dimstart, errors);
-    h += hourSelect("dimend", "Until", v.dimend, d.dimend, errors);
+    h += timeField("dimstartm", "From", v.dimstartm, d.dimstartm, errors);
+    h += timeField("dimendm", "Until", v.dimendm, d.dimendm, errors);
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Screens-off hours</legend>";
+    h += "<fieldset><legend>Screens-off times</legend>";
     h += boolSelect("off", "Screens off", v.off, d.off, "Off", "On", errors);
-    h += hint("Blanks the panels; any button wakes them for a minute. Where these hours overlap the dim hours, off wins.");
-    h += hourSelect("offstart", "From", v.offstart, d.offstart, errors);
-    h += hourSelect("offend", "Until", v.offend, d.offend, errors);
+    h += hint("Blanks the panels; any button wakes them for a minute. Where these times overlap the dim times, off wins.");
+    h += timeField("offstartm", "From", v.offstartm, d.offstartm, errors);
+    h += timeField("offendm", "Until", v.offendm, d.offendm, errors);
     h += "</fieldset>";
 
     h += "<fieldset><legend>Mounting</legend>";
@@ -456,20 +451,14 @@ void SettingsPage::handlePost() {
     if (has("shdcol") && !sv::parseHexColor(argStr(s, "shdcol"), v.shdcol, err)) {
         errors["shdcol"] = err;
     }
-    if (has("dimstart") && !sv::parseHour(argStr(s, "dimstart"), v.dimstart, err)) {
-        errors["dimstart"] = err;
+    for (auto f : {std::make_pair("dimstartm", &v.dimstartm), std::make_pair("dimendm", &v.dimendm),
+                   std::make_pair("offstartm", &v.offstartm), std::make_pair("offendm", &v.offendm)}) {
+        if (has(f.first) && !sv::parseTimeOfDay(argStr(s, f.first), *f.second, err)) {
+            errors[f.first] = err;
+        }
     }
-    if (has("dimend") && !sv::parseHour(argStr(s, "dimend"), v.dimend, err)) {
-        errors["dimend"] = err;
-    }
-    if (has("offstart") && !sv::parseHour(argStr(s, "offstart"), v.offstart, err)) {
-        errors["offstart"] = err;
-    }
-    if (has("offend") && !sv::parseHour(argStr(s, "offend"), v.offend, err)) {
-        errors["offend"] = err;
-    }
-    if (v.off && v.offstart == v.offend && !errors.count("offstart") && !errors.count("offend")) {
-        errors["offend"] = "Start and end are the same hour";
+    if (v.off && v.offstartm == v.offendm && !errors.count("offstartm") && !errors.count("offendm")) {
+        errors["offendm"] = "Start and end are the same time";
     }
 #ifdef TEMPEST_TOKEN
     // IDs first: whether a label is required depends on its station
@@ -533,9 +522,10 @@ void SettingsPage::handlePost() {
     if (has("mqsetup") && !sv::parseTopic(argStr(s, "mqsetup"), v.mqsetup, err)) {
         errors["mqsetup"] = err;
     }
-    // Equal hours would mean "dim around the clock" (WidgetSet's wrap branch)
-    if (v.dim && v.dimstart == v.dimend && !errors.count("dimstart") && !errors.count("dimend")) {
-        errors["dimend"] = "Start and end are the same hour";
+    // Equal times are an empty range to sv::inTimeRange, which reads as "never
+    // dims" when the box says On; refuse it rather than save a silent no-op
+    if (v.dim && v.dimstartm == v.dimendm && !errors.count("dimstartm") && !errors.count("dimendm")) {
+        errors["dimendm"] = "Start and end are the same time";
     }
 
     if (!errors.empty()) {
