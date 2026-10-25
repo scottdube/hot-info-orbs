@@ -38,12 +38,31 @@ change its settings, so they go after the shots that need it undisturbed.
 **Shoot day, before the camera comes out**
 - [ ] Work through [Before the shoot](#before-the-shoot), items 1–6.
 
-**Optional, only after every outstanding shot is done:** reshoot S15 (MQTT)
-and S15a (Web Data). Both currently come from the session-2 desk-wide take,
-which has bench-top clutter in frame (Scott, 2026-10-21). Clear the bench,
-frame like S14 (orb row about 68% of the width, so it cuts with S13/S14), and
-roll at least 20 s on each page. A new S15 also fills the last 2.17 s of its
-slot, which is still placeholder.
+**Session 6, 2026-10-26: the last shoot, then it's a wrap (Scott, 2026-10-25).**
+Reshoot the four shots still cut from the session-2 desk-wide take
+(IMG_4778, bench-top clutter in frame). Every other slot is final. **The VO
+stays as read 2** (the good mic); the slot lengths below do not change, so it
+needs no re-record or re-cut.
+
+| Shot | Page | Slot in the cut | Now |
+|---|---|---|---|
+| S10 | Weather (first weather page) | 5.6 s at 1:00.7 | IMG_4778 39.5 s |
+| S11 | Tempest / second weather page | 6.1 s at 1:06.3 | IMG_4778 49 s |
+| S15 | MQTT | 10.6 s at 1:31.9 | IMG_4778 69 s, slowed to 79.5 % to fill |
+| S15a | Web Data sample | 5.1 s at 1:42.4 | IMG_4778 59 s |
+
+- [ ] **Seconds per page to 15** on `/settings` before rolling. At 5 s a page
+      is up too briefly for the 10.6 s S15 slot. Put it back afterward.
+- [ ] MQTT reads ✔ Connected and Web Data ✔ (Before the shoot, item 2).
+- [ ] Both weather pages show a town you are happy to have in a public video
+      (the orb was left on Orlando, FL after S23).
+- [ ] Bench cleared. Frame like S14 (orb row about 68% of the width) so it
+      cuts with S13/S14. Side light, exposure locked on the screens.
+- [ ] One locked-off take, no hands, at least two full rotations, so each of
+      the four pages comes up twice.
+
+Afterward Claude overwrites the four slots (same lengths), drops the S15
+slow-down, exports a review MP4, and the cut is done.
 
 **Block 1 — Laptop (setup E):** S22, then S19. (S21 is done: a full-page
 pan, no filming.)
