@@ -164,10 +164,12 @@ and 5v".
   they can be probed from either face.
   - Silk: the rail names beside each pad and a box round the column, on
     both faces. Run 2 (`tools/test_label.py`) adds "Test" on the other
-    side of the column from the rail names, on each face, set vertically
-    and centered on GND so the one word labels all three pads. Copper is
-    unchanged, so there was no reroute. Whether a fitted DS3 covers the
-    front "Test" has not been checked.
+    side of the column from the rail names, on each face, first set
+    vertically along the column. Scott rotated both to horizontal at the
+    GND row in KiCad (run 3: front x 170, back x 177). Copper is
+    unchanged, so there was no reroute. In the 3D render the DS3 module
+    covers the front "T", just as DS4 covers the front rail names. The
+    back face is the one that stays readable with displays fitted.
   - With the modules plugged in, the pads stay clear in the gap, about
     2.5 mm from each module edge. The front labels end up under DS4's
     module, but the back labels are always readable.

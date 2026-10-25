@@ -8723,7 +8723,7 @@
 		)
 	)
 	(gr_text "Test"
-		(at 171.44 81 90)
+		(at 170 81 0)
 		(layer "F.SilkS")
 		(uuid "9afac8b6-af69-4716-8c9d-c46852485d9c")
 		(effects
@@ -8874,7 +8874,7 @@
 		)
 	)
 	(gr_text "Test"
-		(at 176.04 81 90)
+		(at 177 81 0)
 		(layer "B.SilkS")
 		(uuid "263d961f-6aad-4337-8318-81a51579a42d")
 		(effects

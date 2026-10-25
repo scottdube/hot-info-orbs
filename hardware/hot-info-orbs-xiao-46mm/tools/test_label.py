@@ -10,6 +10,10 @@ front and left of it on the back (tools/test_points.py), so "Test" goes on
 the other side on each face. It is set vertically, centered on the GND pad,
 so one word labels all three pads rather than reading as a fourth row beside
 GND only.
+
+Superseded on the board: Scott rotated both labels to horizontal at the GND
+row by hand in KiCad (run 3, front x 170, back x 177). Rerunning this
+script would refuse anyway ("already applied").
 """
 from pathlib import Path
 import pcbnew
