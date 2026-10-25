@@ -301,3 +301,129 @@ clearance from them, so KiCad flagged `copper_edge_clearance` (0.5 mm). The
 script now grows them by 0.4 mm. And reordering the nets in the DSN changes
 nothing: 12 shuffles gave a byte-identical result, because Freerouting
 orders them itself.
+
+## fusion-essentials: the active document flips between calls (2026-10-19)
+
+With five documents open (two of them named `main_body_front`), the active
+document switched back to `overall assembly` *between* tool calls, and more
+than once switched the other way. Reads (`find_geometry`, `design_get`,
+`sketch_get`, `view_screenshot` without `expect_document`) have no guard and
+silently answer about whichever document is up: a `find_geometry` for the
+new posts returned a capacitor on the board, a "main_body_front" screenshot
+captured the assembly. Writes with `expect_document` are refused instead
+(`active_document_changed`), which is the only reason this was noticed.
+
+Rules that held: pass `expect_document` as the lineage **URN** (a bare name
+is refused as `ambiguous_document_name` when two open docs share it); put
+`doc_open(file_id=<URN>, force_api_open=true)` or `doc_activate(<URN>)` in
+the **same message** as the calls that need it; and read `active_document`
+at the bottom of every read result before believing it. `design_get` with
+`tree` on the assembly is ~81k characters; narrow with `name_filter` /
+`max_depth`.
+
+## Fusion assembly: the board is pinned by the displays, so grow the edge (2026-10-19)
+
+The X0.2 board's top mounting holes sat under the enclosure's top lip, so
+the ends hung from hangers. Shifting the board up is not an option: the
+five displays are located by the bezel holes, and sliding the board slides
+them. Growing the board's top edge 5 mm moves the holes without moving the
+displays. The sockets fix the bottom edge the same way.
+
+Smaller ones from the same build: grounding an occurrence resets a free
+`assembly_move`, so capture the position and leave it free. Interference
+checks want **leaf** occurrence paths (`...+hot_info_orbs_xiao_46mm_PCB:1`),
+not the imported assembly's top node, and the GC9A01 vendor STEP reports a
+0.0001 cm³ overlap with itself. A sketch on the plate's inner face
+auto-projects 39 face edges, and a projected edge splits each bottom-row
+post circle into two profiles, so read profile indices from `sketch_get`
+by centroid and extrude both halves.
+
+## KiCad text: set it through pcbnew, not sed (2026-10-19)
+
+`gr_text` in a `.kicad_pcb` carries a `render_cache` of the outline-font
+polygons. Editing the string with sed leaves the old glyphs in the cache,
+and the gerber/STEP exports plot the cache. `PCB_TEXT.SetText()` +
+`SaveBoard()` regenerates it (the cache line changed to `rev 2.1`). Also:
+`kicad-cli pcb export drill` takes `--excellon-units mm`; `--units` prints
+the help and exits 0, so the zip step then fails on a missing `.drl`.
+
+## fusion-essentials decals: a vendor STEP's glass face cannot be named (2026-10-19)
+
+`design_edit_reference_image` refused the display glass with "2 of them sit
+at the recorded position … co-located candidates": the GC9A01 module STEP has
+two coincident faces at the glass top, and the locator will not pick one. The
+tool also wants root-local faces. Work around both with a thin disc in the
+root component at the glass plane and decal that (ENCLOSURE.md, "Populated
+display faces"). Other things learned on the same job:
+
+- `find_geometry nearest_to` walks the whole design (5127 planar faces here)
+  and times out at 30 s about two calls in five; a timed-out call that "may
+  still commit" is a read, so just re-ask.
+- The action to change an existing decal is `place` (create/place/style/
+  delete; there is no `edit`), and `kind` is required on every action.
+- A 240 px square image lands at 16 × 16 mm; `scale` is a multiplier on that,
+  so [2, 2] = 32 mm. `size` in the read-back is the placed size.
+- `view_screenshot` views are front/back/top/bottom/left/right and
+  iso-top-right etc., not `iso`.
+
+## The USB cutout that was "4 mm off" never existed (2026-10-20)
+
+Rev 2.3 of the 46 mm board moved the XIAO 4 mm down, and three places
+(ENCLOSURE.md, the board README, the `lower_xiao.py` docstring) recorded
+that "the enclosure's USB cutout is now 4 mm off". Scott then asked to
+"replace the board and move the cutout". `main_body_front` v4's timeline is
+plate, walls, fillet, button holes, posts, pins: no cutout, and the other
+`main_body_front` file in the project has even less. The sentence had been
+written from the board change, not from the enclosure model, and once it was
+in three files it read as a fact. Before writing "X in the model is now
+wrong", read the model's timeline (`design_get include=['timeline']`) and
+name the feature. Same job: a 12.7 MB STEP `doc_insert_import` times out on
+the MCP side but still completes in Fusion (Group3 of 125 features appeared
+about a minute later); the next calls time out until it finishes, then the
+active document has flipped, so `doc_activate` before reading.
+
+## A package built with `git archive` drops uncommitted KiCad edits (2026-10-23)
+
+The zip and schematic PDF sent to Yang on 2026-10-23 were built at 17:32 by
+`git archive 8dda9b9`, the last commit (2026-10-20). Scott's schematic tidy-up
+was saved in this worktree but never committed, so it was silently left out.
+Before 21:30 the working tree differed from 8dda9b9 in three ways:
+
+- **Schematic layout only.** Every symbol had moved, one wire and one junction
+  were added, and `sch_revision` went from 1.1 to 2.4. The XML netlists match:
+  same 12 parts, same 15 nets, same pins.
+- **Board:** one /SW3 dogleg near (123.5, 92.8) became a straight run, and
+  the pour was refilled.
+- **Checks:** ERC 0; DRC shows the 3 known USB-C silk warnings, 0 unconnected,
+  0 parity.
+
+**Before building any package:** run `git status` in the project folder. Then
+either commit first, or build from the working tree and say in the package
+that it is uncommitted.
+
+## `min_resolved_spokes (min 1)` is silently ignored; write `min_resolved_spokes 1` (2026-10-25)
+
+A one-pad `.kicad_dru` rule to accept one thermal spoke on C2 pad 2 (rev 2.5,
+46 mm board) did nothing with `(constraint min_resolved_spokes (min 1))`. DRC
+still said "zone min spoke count 2", and kicad-cli printed no parse error.
+Changing the condition did not help, even `A.Type == 'Pad'`. What works is
+the bare number, `(constraint min_resolved_spokes 1)`, with the condition
+`A.memberOfFootprint('C2') && A.Pad_Number == '2'`. **Test any custom rule
+in both directions:** aimed at pad 1 the same rule let the error back, which
+proves it matches the one pad and nothing wider.
+
+DRC exclusions in `.kicad_pro` were tried first and dropped. The key holds
+the marker position and the item UUIDs, and three guesses at the
+`starved_thermal` format did not match. A reroute would move the marker
+anyway. `pcbnew.WriteDRCReport` cannot be used to read the real key: from a
+script it asserts in `Pgm()`.
+
+## A reroute from bare copper drops the stitching vias (2026-10-25)
+
+`tools/route_xiao.py` removes every track **and via** before importing the
+SES. On the rev 2.5 reroute the three GND vias went: Freerouting's own one
+and the two that `tools/stitch_islands.py` had added. Nothing reports this.
+DRC is clean whether or not an island got removed. **After any reroute,
+fill with island removal off and on and compare the island lists** before
+deciding whether to rerun the stitcher. For rev 2.5 nothing ≥100 mm² was
+removed, so no via was needed.
