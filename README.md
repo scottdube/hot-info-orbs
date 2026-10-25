@@ -19,7 +19,11 @@ the project's files; everything you need is one of these links:
   flash.
 - **You have a built one and want it running:** the
   [setup guide](docs/SETUP.md), written for someone who has never done this.
-- **You want the files:** the green **Code** button above, then
+- **You want to order a board:** the
+  [board rev 2.5 release](../../releases/tag/board-rev2.5) has exactly the
+  files for that and nothing else: the gerber zip to upload to the fab, the
+  parts list, the schematic and board PDFs, and the 3D model.
+- **You want the source:** the green **Code** button above, then
   **Download ZIP**, gets everything. The board is in
   `hardware/hot-info-orbs-xiao-46mm/`, the enclosure in `hardware/enclosure/`,
   the software in `firmware/`.
@@ -126,6 +130,7 @@ Earlier boards are not in `main`, but every one is a tag away
 | [`board-46mm-rev2.5`](../../releases/tag/board-46mm-rev2.5) | this board as signed off for fab, with every earlier fab-run zip in `fab/` |
 | [`board-xiao-narrow-final`](../../releases/tag/board-xiao-narrow-final) | the first XIAO carrier, displays ~39 mm apart (`hardware/hot-info-orbs-xiao/`); never ordered |
 | [`v1.1-run1`](../../releases/tag/v1.1-run1) | the v1.1 prototype, below |
+| upstream | Brett's original ESP32 dev-kit board and stand: [`PCBFiles+Schematics/`](https://github.com/brettdottech/info-orbs/tree/main/PCBFiles%2BSchematics) in his repository; removed from this one's `main` 2026-10-25 so its gerbers can't be mistaken for ours |
 
 The **v1.1 prototype** that came before it (10 boards ordered 2026-08-29, for
 an earlier module the project no longer uses) is kept at tag

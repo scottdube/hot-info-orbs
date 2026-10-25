@@ -86,7 +86,9 @@ reversal is the useful part.
 
 ### What the original argument was
 
-Read from `PCBFiles+Schematics/Main PCB/info_orbs.kicad_pro` and `.kicad_pcb`:
+Read from upstream's `PCBFiles+Schematics/Main PCB/info_orbs.kicad_pro` and
+`.kicad_pcb` ([in his repository](https://github.com/brettdottech/info-orbs/tree/main/PCBFiles%2BSchematics); removed from this fork's `main`
+2026-10-25):
 
 - Upstream's board is **2-layer**, track width defaults `[0.0, 0.2, 0.6]` mm
 - In-house milling is **single-sided, no plated vias, 0.4 mm floor**
@@ -288,7 +290,8 @@ commitment starts.
 
 # Appendix: Is upstream's board poorly laid out?
 
-Measured 2026-08-27 from `PCBFiles+Schematics/Main PCB/info_orbs.kicad_pcb`.
+Measured 2026-08-27 from upstream's `PCBFiles+Schematics/Main PCB/info_orbs.kicad_pcb`
+([in his repository](https://github.com/brettdottech/info-orbs/tree/main/PCBFiles%2BSchematics)).
 Every number here came from parsing that file, not from inspection by eye.
 
 ## What is on the board
