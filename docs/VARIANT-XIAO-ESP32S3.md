@@ -80,6 +80,22 @@ TFT_eSPI issue the panel's software reset command (`TFT_SWRST`) in `init()`.
 The GC9A01 accepts that; the hardware line only has to be high by the time
 the MCU is out of reset, and a 10 ms RC against the ESP32-S3's boot time is.
 
+**Fuzzy screens after a power cycle (2026-10-25, fix unverified).** Scott
+saw DS1, DS2 or DS3 (alone or together) come up showing noise after some
+power cycles; DS4/DS5 never did. Those three are exactly the panels whose CS
+is on GPIO3/4/5, which nothing holds high during boot, while DS4/DS5's CS
+are the UART pins, which idle high. Hypothesis, not measured: a panel left
+selected during boot clocks in noise and loses its byte framing, and the old
+init drove CS low from an already-low line (no edge), so its software reset
+and init sequence arrived misaligned. The RC reset is ruled out as the cause
+on two counts: it is shared by all five panels, and it releases ~12 ms after
+power-up, long before the firmware's own software reset. Raising C2 would
+mask the fault only if it held RST low through the whole boot (~40 µF). Fix
+in `ScreenManager`: CS high, `init()` with every panel deselected, then
+select all and `init()` again (~0.3 s longer boot). Rejected 10 k pull-ups on
+the three CS nets because the rev 2.4 board was already at JLCPCB. Verify:
+20 power cycles with no fuzz; optionally scope DS1 and DS4 CS at power-up.
+
 The BUSY indicator, which on the SuperMini board is an external LED on
 GPIO15, becomes the XIAO's own user LED on GPIO21. That LED is wired to 3V3,
 so it is active-low; `BUSY_ON`/`BUSY_OFF` macros in `config.h` carry the

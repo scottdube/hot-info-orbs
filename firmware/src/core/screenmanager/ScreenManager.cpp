@@ -5,10 +5,20 @@
 
 ScreenManager::ScreenManager(TFT_eSPI &tft) : m_tft(tft) {
 
+    // A panel re-aligns its SPI byte framing only on a CS high-to-low edge.
+    // On the XIAO board nothing holds DS1-DS3's CS (GPIO3/4/5) high during
+    // boot, so a panel can sit selected while noise clocks in. The first
+    // init() brings the SPI pins up with every panel deselected (its commands
+    // reach nothing); selecting then gives all five a clean edge, and the
+    // second init() sends the software reset and init sequence to aligned
+    // panels. TFT_eSPI starts the bus only on the first call.
     for (int i = 0; i < NUM_SCREENS; i++) {
         pinMode(m_screen_cs[i], OUTPUT);
-        digitalWrite(m_screen_cs[i], LOW);
+        digitalWrite(m_screen_cs[i], HIGH);
     }
+    m_tft.init();
+    delay(1);
+    selectAllScreens();
 
     m_tft.init();
     m_tft.setRotation(Settings::get().invert ? 2 : 0);
