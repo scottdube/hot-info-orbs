@@ -12,7 +12,7 @@ column on both faces, set horizontal by Scott. **Yang signed it off on
 2026-10-25 ("Go for it!", reply 12:33 EDT)** to the package in `../review/`,
 whose links pointed at commit `eee08bc`, the commit that made this zip.
 **Scott uploaded it to JLCPCB through JLCONE the same afternoon** (he drove
-the app himself). Order details are not recorded here.
+the app himself) **and ordered 30 boards.**
 
 **Only run 3 is in this folder on `main`,** so the zip beside this README
 is the one to order. Every other run listed below, 2.4 run 1 included
