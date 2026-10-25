@@ -213,6 +213,10 @@ Do Not Disturb on.
 - **S23, Settings change → orb restarts** (12 s).
   - *Setup:* split screen. Change the town or the tickers, Save, the orb
     restarts with them. Scroll **past** the Tempest station fields.
+    **Shot on the laptop, not the phone** (2026-10-25, FC Record,
+    take-20261025-160952): Safari full screen and zoomed, "Boston, MA" →
+    "Orlando, FL", camera inset on the orb. The Tempest box sits under the
+    Weather box in the typing frames, so the cut is cropped to the Weather box.
   - *Why:* the biggest worry for a first-time builder is "do I have to edit
     code?". This shot answers no.
   - Change the setting back afterward.
@@ -225,7 +229,9 @@ Do Not Disturb on.
   - *Why:* "no cable after the first time" needs proof. The fallback line
     reassures anyone afraid of bricking it.
 - **S28, Uploading the boot picture** (6 s, optional).
-  - *Setup:* phone only, picking an image and saving.
+  - *Setup:* phone only, picking an image and saving. **Shot on the laptop
+    instead** (2026-10-25, take-20261025-160407): file dialog, then the
+    page column cropped full frame through Upload to "✓ Saved (16 KB)".
   - *Why:* an insert under S27's narration if the beat runs long.
 
 ### Computer screen (setup E)
@@ -343,19 +349,19 @@ Use high-contrast text, and never use color alone to carry meaning.
 | S16 | 5 | ANIM | XIAO lifts out, plugs back in | 10 s |
 | S17 | 5 | CAM C | Displays + buttons pan | 6 s |
 | S18 | 5 | CAM C | Bare v1.1 board | 4 s |
-| S19 | 5 | LAPTOP | KiCad v1.1 | 5 s |
+| S19 | 5 | LAPTOP | KiCad v1.1 (take + orbit) | 8 s |
 | S20 | 5 | ANIM | USB in → boot | 6 s |
 | S20a | 5 | STILL | Thermal, module | 4 s |
 | S20b | 5 | STILL | Thermal, display backs | 3 s |
 | S21 | 5 | PAN | GitHub README (full-page pan) | 11 s |
 | S22 | 6 | LAPTOP + CAM | USB flash | 6 s |
-| S23 | 6 | PHONE + CAM | Settings → restart | 12 s |
+| S23 | 6 | LAPTOP + CAM | Settings → restart | 12 s |
 | S23a | 6 | PHONE + CAM | Untick Stocks | 10 s |
 | S24 | 6 | PHONE + CAM | Updating nn% | 8 s |
 | S25 | 6 | CAM B | Dimming | 4 s |
 | S26 | 6 | CAM B | Screens off → wake | 5 s |
 | S27 | 6 | CAM B | Boot screen | 4 s |
-| S28 | 6 | PHONE | Boot picture upload | 6 s |
+| S28 | 6 | LAPTOP | Boot picture upload | 6 s |
 | S29 | 7 | STILL | XIAO render | 6 s |
 | S30 | 7 | STILL | Enclosure concept | 6 s |
 | S31 | 8 | CARD | URLs | 4 s |
