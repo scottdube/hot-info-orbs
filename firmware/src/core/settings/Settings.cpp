@@ -119,8 +119,15 @@ SettingsValues Settings::defaults() {
 #else
     d.mqsetup = "";
 #endif
+    d.mq2name = "MQTT 2";
+    d.mq2same = true;
+    d.mq2host = "";
+    d.mq2port = 1883;
+    d.mq2user = "";
+    d.mq2pass = "";
     for (int i = 0; i < 5; i++) {
         d.mqt[i] = d.mql[i] = d.mqu[i] = "";
+        d.mq2t[i] = d.mq2l[i] = d.mq2u[i] = "";
     }
     return d;
 }
@@ -179,6 +186,22 @@ void Settings::load() {
                 snprintf(k, sizeof(k), "mqu%d", i + 1);
                 v.mqu[i] = p.getString(k, v.mqu[i].c_str()).c_str();
             }
+            // Second MQTT page: new keys, so an orb saved before it loads page 1 unchanged
+            v.mq2name = p.getString("mq2name", v.mq2name.c_str()).c_str();
+            v.mq2same = p.getBool("mq2same", v.mq2same);
+            v.mq2host = p.getString("mq2host", v.mq2host.c_str()).c_str();
+            v.mq2port = p.getInt("mq2port", v.mq2port);
+            v.mq2user = p.getString("mq2user", v.mq2user.c_str()).c_str();
+            v.mq2pass = p.getString("mq2pass", v.mq2pass.c_str()).c_str();
+            for (int i = 0; i < 5; i++) {
+                char k[8];
+                snprintf(k, sizeof(k), "mq2t%d", i + 1);
+                v.mq2t[i] = p.getString(k, v.mq2t[i].c_str()).c_str();
+                snprintf(k, sizeof(k), "mq2l%d", i + 1);
+                v.mq2l[i] = p.getString(k, v.mq2l[i].c_str()).c_str();
+                snprintf(k, sizeof(k), "mq2u%d", i + 1);
+                v.mq2u[i] = p.getString(k, v.mq2u[i].c_str()).c_str();
+            }
         }
         p.end();
     }
@@ -235,6 +258,17 @@ bool Settings::save(const SettingsValues &v) {
         ok = ok && putStr(k, v.mql[i]);
         snprintf(k, sizeof(k), "mqu%d", i + 1);
         ok = ok && putStr(k, v.mqu[i]);
+    }
+    ok = ok && putStr("mq2name", v.mq2name) && p.putBool("mq2same", v.mq2same) && putStr("mq2host", v.mq2host) &&
+         p.putInt("mq2port", v.mq2port) && putStr("mq2user", v.mq2user) && putStr("mq2pass", v.mq2pass);
+    for (int i = 0; ok && i < 5; i++) {
+        char k[8];
+        snprintf(k, sizeof(k), "mq2t%d", i + 1);
+        ok = putStr(k, v.mq2t[i]);
+        snprintf(k, sizeof(k), "mq2l%d", i + 1);
+        ok = ok && putStr(k, v.mq2l[i]);
+        snprintf(k, sizeof(k), "mq2u%d", i + 1);
+        ok = ok && putStr(k, v.mq2u[i]);
     }
     // schema last: a save that dies part-way leaves no schema key on a fresh
     // orb, so load() keeps using config.h

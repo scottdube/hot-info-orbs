@@ -86,6 +86,63 @@ void test_retry_waits_at_least_a_minute_after_failure() {
     TEST_ASSERT_EQUAL_UINT32(300000, webDataRetryDelay(300000)); // never shortens a longer wait
 }
 
+// Page plan: which MQTT pages register, and whether page 2 needs its own connection
+static const std::string NONE[5] = {"", "", "", "", ""};
+static const std::string ONE[5] = {"", "", "orbs/pool", "", ""};
+
+void test_page_needs_a_topic() {
+    MqttPlan p = mqttPlan("broker", NONE, "", true, "", NONE);
+    TEST_ASSERT_FALSE(p.page1);
+    TEST_ASSERT_FALSE(p.page2);
+    p = mqttPlan("broker", ONE, "", true, "", NONE);
+    TEST_ASSERT_TRUE(p.page1);
+    TEST_ASSERT_FALSE(p.page2);
+}
+
+void test_layout_topic_alone_keeps_page_1() {
+    MqttPlan p = mqttPlan("broker", NONE, "orbs/layout", true, "", NONE);
+    TEST_ASSERT_TRUE(p.page1);
+}
+
+void test_no_broker_no_page() {
+    MqttPlan p = mqttPlan("", ONE, "orbs/layout", true, "other", ONE);
+    TEST_ASSERT_FALSE(p.page1);
+    TEST_ASSERT_FALSE(p.page2); // "same broker" as a blank one is no broker
+}
+
+void test_page_2_on_the_shared_broker() {
+    MqttPlan p = mqttPlan("broker", NONE, "", true, "ignored", ONE);
+    TEST_ASSERT_FALSE(p.page1); // page 2 still needs page 1's broker, not its rows
+    TEST_ASSERT_TRUE(p.page2);
+    TEST_ASSERT_FALSE(p.page2OwnBroker);
+}
+
+void test_show_label_numbers_the_page() {
+    TEST_ASSERT_EQUAL_STRING("MQTT 1 (Town Squares)", mqttShowLabel(1, "Town Squares").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 2 (Home)", mqttShowLabel(2, "Home").c_str());
+}
+
+void test_show_label_default_name_adds_nothing() {
+    TEST_ASSERT_EQUAL_STRING("MQTT 1", mqttShowLabel(1, "MQTT").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 1", mqttShowLabel(1, "MQTT 1").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 2", mqttShowLabel(2, "MQTT 2").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 2", mqttShowLabel(2, "").c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT 2 (MQTT)", mqttShowLabel(2, "MQTT").c_str()); // page 1's default
+}
+
+void test_page_2_on_its_own_broker() {
+    MqttPlan p = mqttPlan("broker", ONE, "", false, "other", ONE);
+    TEST_ASSERT_TRUE(p.page1);
+    TEST_ASSERT_TRUE(p.page2);
+    TEST_ASSERT_TRUE(p.page2OwnBroker);
+    p = mqttPlan("", NONE, "", false, "other", ONE);
+    TEST_ASSERT_FALSE(p.page1);
+    TEST_ASSERT_TRUE(p.page2);
+    p = mqttPlan("broker", ONE, "", false, "", ONE);
+    TEST_ASSERT_FALSE(p.page2); // its own broker left blank
+    TEST_ASSERT_FALSE(p.page2OwnBroker);
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_interval_missing_is_60s);
@@ -100,5 +157,12 @@ int main() {
     RUN_TEST(test_other_codes_are_left_to_the_caller);
     RUN_TEST(test_stalled_body_counts_as_timeout);
     RUN_TEST(test_retry_waits_at_least_a_minute_after_failure);
+    RUN_TEST(test_page_needs_a_topic);
+    RUN_TEST(test_layout_topic_alone_keeps_page_1);
+    RUN_TEST(test_no_broker_no_page);
+    RUN_TEST(test_page_2_on_the_shared_broker);
+    RUN_TEST(test_page_2_on_its_own_broker);
+    RUN_TEST(test_show_label_numbers_the_page);
+    RUN_TEST(test_show_label_default_name_adds_nothing);
     return UNITY_END();
 }

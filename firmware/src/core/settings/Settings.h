@@ -46,6 +46,16 @@ struct SettingsValues {
     std::string mql[5]; // per-orb label
     std::string mqu[5]; // per-orb unit
     std::string mqsetup; // advanced layout topic, "" = none
+    // Second MQTT page: its own five rows, on page 1's broker or one of its own
+    std::string mq2name; // 1..16
+    bool mq2same; // true = page 1's broker and connection; false = mq2host etc.
+    std::string mq2host; // "" = no page 2 when mq2same is false
+    int mq2port;
+    std::string mq2user;
+    std::string mq2pass; // write-only on the page
+    std::string mq2t[5];
+    std::string mq2l[5];
+    std::string mq2u[5];
 };
 
 // Night-dim level. The page sets hours only; the level stays a build choice.

@@ -1,45 +1,28 @@
 #include "MQTTWidget.h"
 
-// Initialize the static instance pointer
-MQTTWidget *MQTTWidget::instance = nullptr;
-
-// Static callback proxy to forward MQTT messages to the class instance
-void MQTTWidget::staticCallback(char *topic, byte *payload, unsigned int length) {
-    if (instance) {
-        instance->callback(topic, payload, length);
-    }
-}
-
-MqttStatus MQTTWidget::s_status;
-
-MQTTWidget::MQTTWidget(ScreenManager &manager, const SettingsValues &s)
-    : Widget(manager), mqttHost(s.mqhost.c_str()), mqttPort((uint16_t)s.mqport), mqttClient(wifiClient),
-      m_name(s.mqname.c_str()), m_user(s.mquser.c_str()), m_pass(s.mqpass.c_str()), m_setupTopic(s.mqsetup.c_str()) {
-    instance = this;
-    mqttClient.setServer(mqttHost.c_str(), mqttPort); // mqttHost is a member, so the pointer stays valid
-    mqttClient.setBufferSize(2048);
-    mqttClient.setSocketTimeout(MQTT_SOCKET_TIMEOUT_S);
-    mqttClient.setCallback(staticCallback);
-
+MQTTWidget::MQTTWidget(ScreenManager &manager, MqttFeed &feed, int page, const std::string &name, const std::string (&topics)[5],
+                       const std::string (&labels)[5], const std::string (&units)[5], const std::string &setupTopic)
+    : Widget(manager), m_feed(feed), m_page(page), m_name(name.c_str()), m_setupTopic(setupTopic.c_str()) {
     // One orb per settings row with a topic; the others stay blank
     for (int i = 0; i < 5; i++) {
-        if (s.mqt[i].empty()) {
+        if (topics[i].empty()) {
             continue;
         }
         OrbConfig c{}; // value-initialized: the layout-topic fields stay zero
         c.orbid = i;
-        c.topicSrc = s.mqt[i].c_str();
-        c.orbdesc = s.mql[i].c_str();
-        c.orbvalunit = s.mqu[i].c_str();
+        c.topicSrc = topics[i].c_str();
+        c.orbdesc = labels[i].c_str();
+        c.orbvalunit = units[i].c_str();
         c.orbBgColor = TFT_BLACK;
         c.orbTextColor = TFT_WHITE;
         c.autoLayout = true;
         orbConfigs.push_back(c);
     }
+    feed.addPage(this);
 }
 
-const MqttStatus &MQTTWidget::status() {
-    return s_status;
+MqttFeed &MQTTWidget::feed() {
+    return m_feed;
 }
 
 // Helper function to map color strings to uint16_t color values
@@ -98,53 +81,18 @@ uint16_t MQTTWidget::getColorFromString(const String &colorStr) {
     return TFT_BLACK; // Default color if unknown
 }
 
-// Connecting is service()'s job: setup() runs on every page switch and must not block
+// Connecting is the feed's job: setup() runs on every page switch and must not block
 void MQTTWidget::setup() {}
 
 void MQTTWidget::update(bool force) {
-    service();
+    m_feed.service();
 }
 
-void MQTTWidget::service() {
-    if (mqttClient.connected()) {
-        mqttClient.loop();
-        return;
-    }
-    if (m_wasConnected) { // dropped since the last pass
-        m_wasConnected = false;
-        s_status.connected = false;
-        s_status.reason = mqttStateText(mqttClient.state());
-    }
-    uint32_t now = millis();
-    if (!mqttShouldAttempt(m_attempted, now, m_lastAttempt)) {
-        return;
-    }
-    m_attempted = true;
-    m_lastAttempt = now;
-    tryConnect();
-}
-
-// One attempt. Blocks for at most the TCP connect plus MQTT_SOCKET_TIMEOUT_S;
-// test 5 in docs/CUSTOM-PAGES.md records the measured time (attemptMs).
-void MQTTWidget::tryConnect() {
-    String clientId = "info-orbs-" + String((uint32_t)ESP.getEfuseMac(), HEX); // stable, so a reconnect replaces the old session
-    uint32_t start = millis();
-    bool ok = m_user.length() ? mqttClient.connect(clientId.c_str(), m_user.c_str(), m_pass.length() ? m_pass.c_str() : nullptr)
-                              : mqttClient.connect(clientId.c_str());
-    s_status.attempted = true;
-    s_status.at = millis();
-    s_status.attemptMs = s_status.at - start;
-    s_status.connected = ok;
-    s_status.reason = mqttStateText(mqttClient.state());
-    Serial.printf("MQTT %s: %s (%u ms)\n", mqttHost.c_str(), s_status.reason.c_str(), (unsigned)s_status.attemptMs);
-    if (!ok) {
-        return;
-    }
-    m_wasConnected = true;
+void MQTTWidget::subscribeAll() {
     if (m_setupTopic.length()) {
-        mqttClient.subscribe(m_setupTopic.c_str());
+        m_feed.subscribe(m_setupTopic);
     }
-    subscribeToOrbs(); // the rows, and after a reconnect whatever the layout topic set
+    subscribeToOrbs();
 }
 
 // Draw method: only the current page's draw() is called, so this is the only place orbs are painted
@@ -216,17 +164,12 @@ bool MQTTWidget::extractValue(const OrbConfig &orb, const String &message, Strin
 }
 
 // Marks orbs dirty; never draws (loop() runs this while other pages may be on screen)
-void MQTTWidget::callback(char *topic, byte *payload, unsigned int length) {
-    String message;
-    message.reserve(length);
-    for (unsigned int i = 0; i < length; i++) {
-        message += (char)payload[i];
-    }
-    String receivedTopic(topic);
+bool MQTTWidget::onMessage(const String &receivedTopic, const String &message) {
     if (m_setupTopic.length() && receivedTopic.equals(m_setupTopic)) {
         handleSetupMessage(message);
-        return;
+        return false;
     }
+    bool value = false;
     // Every orb on this topic (two rows may show the same value)
     for (auto &orb : orbConfigs) {
         if (!orb.topicSrc.equals(receivedTopic)) {
@@ -237,12 +180,13 @@ void MQTTWidget::callback(char *topic, byte *payload, unsigned int length) {
             Serial.println("MQTT: no value for orb " + String(orb.orbid) + " in " + receivedTopic);
             continue;
         }
-        s_status.lastValueAt = millis();
+        value = true;
         if (orb.value != v) {
             orb.value = v;
             orb.dirty = true; // drawn by draw(), only while this page is on screen
         }
     }
+    return value;
 }
 
 // Handle setup message to configure orbs
@@ -305,15 +249,8 @@ void MQTTWidget::handleSetupMessage(const String &message) {
 
 // Subscribe to all orb topics
 void MQTTWidget::subscribeToOrbs() {
-    //    Serial.println("Inside subscribeToOrbs method");
-
     for (const auto &orb : orbConfigs) {
-        bool success = mqttClient.subscribe(orb.topicSrc.c_str());
-        if (success) {
-            Serial.println("Subscribed to topic: " + orb.topicSrc);
-        } else {
-            Serial.println("Failed to subscribe to topic: " + orb.topicSrc);
-        }
+        m_feed.subscribe(orb.topicSrc);
     }
 }
 
@@ -353,6 +290,10 @@ void MQTTWidget::drawOrb(int orbid) {
 
 String MQTTWidget::getName() {
     return m_name;
+}
+
+String MQTTWidget::showLabel() {
+    return mqttShowLabel(m_page, m_name.c_str()).c_str();
 }
 
 void MQTTWidget::buttonPressed(uint8_t buttonId, ButtonState state) {

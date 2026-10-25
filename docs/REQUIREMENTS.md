@@ -255,14 +255,17 @@ shows the member's own number, a schedule, or a Home Assistant sensor.
 **Must:**
 - Set up on `/settings`: a Web Data address (JSON file from an http/https
   URL), and an MQTT broker with, per orb, a topic, label and unit
-- Off until configured: a page appears in the rotation only once its address or
-  broker is set; the build-time defines are only defaults for an orb that has
+- Two MQTT pages of five orbs (added 2026-10-24, Scott: one page of town-square
+  shows, one of home values, rather than choosing). Page 2 shares page 1's
+  broker and connection, or names a broker of its own
+- Off until configured: a page appears in the rotation only once its address,
+  or for MQTT its broker and at least one topic, is set; the build-time defines are only defaults for an orb that has
   never saved settings
 - Neither page may stop the buttons or the settings page responding: Web Data
   has a fetch timeout and a size limit, MQTT makes one short attempt and then
   retries at most every 30 s (upstream looped forever on a mistyped broker)
 - Secrets never go back to the browser: the part of the Web Data address after
-  `?` and the MQTT password are not shown on the page; leaving them as shown
+  `?` and the MQTT passwords are not shown on the page; leaving them as shown
   keeps the stored value
 - Show each page's last result (✔/✖, age, reason) on the settings page
 

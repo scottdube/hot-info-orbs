@@ -1,6 +1,7 @@
 > **HOT Info Orbs:** set the broker and one topic per orb on the settings page
-> (Custom pages); see `docs/CUSTOM-PAGES.md`. The setup-topic JSON below still
-> works as the "Layout topic (advanced)" field and replaces the rows until restart.
+> (Custom pages); see `docs/CUSTOM-PAGES.md`. There are two MQTT pages; page 2
+> shares page 1's broker or uses its own. The setup-topic JSON below still
+> works as page 1's "Layout topic (advanced)" field and replaces its rows until restart.
 
 # Using MQTT Widget
 
