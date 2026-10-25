@@ -2,7 +2,8 @@
 
 What went to Yang for sign-off before the JLCPCB order. Exported from the
 same board and schematic as `fab/hot_info_orbs_xiao_46mm_2.5_run3_gerbers.zip`
-(commit eee08bc).
+(commit eee08bc). Sent 2026-10-25 11:55 EDT; **Yang signed off at 12:33
+EDT: "Go for it!"**
 
 - `hot_info_orbs_xiao_46mm_2.5_schematic.pdf`: the schematic, one page.
 - `hot_info_orbs_xiao_46mm_2.5_board.pdf`: four pages, all at 1:1 on A4, so a

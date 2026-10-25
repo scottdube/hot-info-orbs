@@ -8,9 +8,10 @@ matched to what was sent. The back silk reads `rev 2.5 · 46 mm pitch`.
 Rev 2.5 adds three probe pads, 3V3 / GND / 5V, between DS3 and DS4
 (`tools/test_points.py`, project README). The board was rerouted for it, so
 copper, mask and drill all differ from 2.4. "Test" sits beside the pad
-column on both faces, set horizontal by Scott. Scott considers the board
-done; it waits on Yang's sign-off before upload (what he was sent is in
-`../review/`). Not yet uploaded anywhere.
+column on both faces, set horizontal by Scott. **Yang signed it off on
+2026-10-25 ("Go for it!", reply 12:33 EDT)** to the package in `../review/`,
+whose links pointed at commit `eee08bc`, the commit that made this zip. Not
+yet uploaded to JLCPCB as of that sign-off.
 
 `hot_info_orbs_xiao_46mm_2.5_run2_gerbers.zip` (2026-10-25 11:30) is the same
 copper, mask, outline and drill (diffed: only the timestamp lines differ).
