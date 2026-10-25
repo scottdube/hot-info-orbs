@@ -5,13 +5,13 @@
       "Application": "Pcbnew",
       "Version": "10.0.3"
     },
-    "CreationDate": "2026-10-20T19:05:32-04:00"
+    "CreationDate": "2026-10-25T11:21:10-04:00"
   },
   "GeneralSpecs": {
     "ProjectId": {
       "Name": "hot_info_orbs_xiao_46mm",
       "GUID": "686f745f-696e-4666-9f5f-6f7262735f78",
-      "Revision": "2.4"
+      "Revision": "2.5"
     },
     "Size": {
       "X": 224.05,

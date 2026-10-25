@@ -1,13 +1,19 @@
-# Fab package — XIAO carrier, 46 mm display pitch, rev 2.4
+# Fab package — XIAO carrier, 46 mm display pitch, rev 2.5
 
-**`hot_info_orbs_xiao_46mm_2.4_run1_gerbers.zip` is the package to send
-(generated 2026-10-20 19:05, KiCad 10.0.3). It is named for the run and is not
+**`hot_info_orbs_xiao_46mm_2.5_run1_gerbers.zip` is the package to send
+(generated 2026-10-25 11:21, KiCad 10.0.3). It is named for the run and is not
 to be regenerated:** if the board changes, the next run gets its own zip, and
 this one stays byte-identical to what was ordered, so a returned board can be
-matched to what was sent. The back silk reads `rev 2.4 · 46 mm pitch`.
-**Uploaded to JLCPCB by Scott on 2026-10-20 (evening) for a quote**; whether
-an order was placed is not recorded here. It went up through the JLCONE
-desktop app, which he drove himself.
+matched to what was sent. The back silk reads `rev 2.5 · 46 mm pitch`.
+Rev 2.5 adds three probe pads, 3V3 / GND / 5V, between DS3 and DS4
+(`tools/test_points.py`, project README). The board was rerouted for it, so
+copper, mask and drill all differ from 2.4. Not yet uploaded anywhere.
+
+`hot_info_orbs_xiao_46mm_2.4_run1_gerbers.zip` (2026-10-20 19:05) has no
+probe pads. **Scott uploaded it to JLCPCB on 2026-10-20 (evening) for a
+quote** through the JLCONE desktop app, which he drove himself. Whether an
+order was placed is not recorded here. If one was, those boards are 2.4.
+Otherwise it is superseded; do not send it.
 
 `hot_info_orbs_xiao_46mm_2.3_run3_gerbers.zip` (2026-10-20 17:44) is the same
 copper, mask, outline and drill (diffed: only the timestamp and rev-attribute
@@ -48,10 +54,10 @@ Drill tools cross-checked against the footprints:
 
 | Tool | Drill | Hits | What |
 |---|---|---|---|
-| T1 | 0.30 | 16 | vias (13 signal at 0.6 mm pad, 3 GND at 0.8 mm) |
+| T1 | 0.30 | 13 | vias, all signal at 0.6 mm pad (2.4 had 16: 13 signal plus 3 GND at 0.8 mm, which the 2.5 reroute did not need) |
 | T2 | 0.80 | 6 | C1, C2, R1 leads |
 | T3 | 0.99 | 6 | switch tab pads (2 per PTS645) |
-| T4 | 1.00 | 49 | 5 × 7 display socket pins + 14 XIAO socket pins |
+| T4 | 1.00 | 52 | 5 × 7 display socket pins + 14 XIAO socket pins + 3 probe pads (TP1–TP3) |
 | T5 | 1.30 | 6 | switch signal pins |
 
 The seven Ø3.20 mm mounting holes are `Edge.Cuts` circles the fab routes, not

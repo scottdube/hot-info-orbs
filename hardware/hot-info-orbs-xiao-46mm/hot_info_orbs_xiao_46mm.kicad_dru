@@ -1,0 +1,9 @@
+(version 1)
+
+# Rev 2.5, 2026-10-25. Freerouting wraps /MOSI round C2 pad 2 (GND) on
+# B.Cu, so the back pour reaches that pad with one spoke. The pad also has
+# its own 0.35 mm GND track on B.Cu and full spokes on F.Cu. One pad only;
+# every other thermal keeps the zone's 2-spoke minimum.
+(rule "C2 GND pad: one back spoke"
+	(condition "A.memberOfFootprint('C2') && A.Pad_Number == '2'")
+	(constraint min_resolved_spokes 1))

@@ -400,3 +400,30 @@ Before 21:30 the working tree differed from 8dda9b9 in three ways:
 **Before building any package:** run `git status` in the project folder. Then
 either commit first, or build from the working tree and say in the package
 that it is uncommitted.
+
+## `min_resolved_spokes (min 1)` is silently ignored; write `min_resolved_spokes 1` (2026-10-25)
+
+A one-pad `.kicad_dru` rule to accept one thermal spoke on C2 pad 2 (rev 2.5,
+46 mm board) did nothing with `(constraint min_resolved_spokes (min 1))`. DRC
+still said "zone min spoke count 2", and kicad-cli printed no parse error.
+Changing the condition did not help, even `A.Type == 'Pad'`. What works is
+the bare number, `(constraint min_resolved_spokes 1)`, with the condition
+`A.memberOfFootprint('C2') && A.Pad_Number == '2'`. **Test any custom rule
+in both directions:** aimed at pad 1 the same rule let the error back, which
+proves it matches the one pad and nothing wider.
+
+DRC exclusions in `.kicad_pro` were tried first and dropped. The key holds
+the marker position and the item UUIDs, and three guesses at the
+`starved_thermal` format did not match. A reroute would move the marker
+anyway. `pcbnew.WriteDRCReport` cannot be used to read the real key: from a
+script it asserts in `Pgm()`.
+
+## A reroute from bare copper drops the stitching vias (2026-10-25)
+
+`tools/route_xiao.py` removes every track **and via** before importing the
+SES. On the rev 2.5 reroute the three GND vias went: Freerouting's own one
+and the two that `tools/stitch_islands.py` had added. Nothing reports this.
+DRC is clean whether or not an island got removed. **After any reroute,
+fill with island removal off and on and compare the island lists** before
+deciding whether to rerun the stitcher. For rev 2.5 nothing ≥100 mm² was
+removed, so no via was needed.

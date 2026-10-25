@@ -149,6 +149,77 @@ session. `main_body_front` v4 has **no USB cutout yet** (an
 earlier line here said one was "4 mm off"; it never existed); the jack's
 place in the enclosure is measured in `docs/ENCLOSURE.md`.
 
+## Rev 2.5: probe pads for 3V3, GND and 5V (2026-10-25, `tools/test_points.py`)
+
+Scott wanted test pads for debugging other people's builds. RST, SCLK,
+MOSI, DC and CS1–CS5 pads were suggested; his call was "just add gnd 3.3v
+and 5v".
+
+- **Board:** TP1 3V3, TP2 GND, TP3 5V. One column at x 173.74, midway
+  between the DS3 and DS4 display circles, at y 78.46 / 81.00 / 83.54
+  (2.54 mm pitch, so a 1x3 header or a 3-pin clip fits). GND is in the
+  middle: the black probe stays put and the red one reaches either rail.
+  Each is a 2.0 mm plated pad on a 1.00 mm drill. That is the drill the
+  sockets already use, so there is no new drill size. Plated through, so
+  they can be probed from either face.
+  - Silk: the rail names beside each pad and a box round the column, on
+    both faces.
+  - With the modules plugged in, the pads stay clear in the gap, about
+    2.5 mm from each module edge. The front labels end up under DS4's
+    module, but the back labels are always readable.
+  - Rejected: the gap next to DS3 at x ~153, where the pads clipped DS3's
+    front silk circle; and a 1x8 row with the bus signals (Scott's call
+    above).
+- **Footprint:** `lib/_TestPoints.pretty/TestPoint_THTPad_D2.0mm_Drill1.0mm_P2.54`
+  is the stock KiCad `TestPoint_THTPad_D2.0mm_Drill1.0mm` trimmed so three
+  can sit at 2.54 mm pitch:
+  - courtyard r 1.5 → 1.25 (the stock courtyards overlapped: 2 DRC errors);
+  - no silk circle (the circles touched);
+  - reference on F.Fab (on silk it sat on the next pad).
+
+  Editing the stock footprint inside the board was rejected because it
+  leaves three `lib_footprint_mismatch` warnings for good.
+- **Schematic:** TP1–TP3 (`Connector:TestPoint`) go in a dashed "TEST POINTS"
+  box in the bottom housekeeping row, right of POWER FLAGS, with its top
+  aligned at y 160.02. They are wired the way POWER FLAGS is: the power
+  symbol and the TP sit on the same point, and 3V3 is joined by its local
+  label.
+  - **Not in the BOM:** `in_bom no`, and the footprint is
+    `exclude_from_bom`. A test pad is a bare hole, so there is nothing to
+    buy and the kit cost does not change. Checked: `kicad-cli sch export
+    bom` lists no TP.
+- **Rerouted from bare copper:** Freerouting finished with 49 nets,
+  0 unrouted and 0 violations, at 10, 20 and 30 passes alike.
+  - **C2 pad 2 (GND):** /MOSI now runs round it on three sides on B.Cu, so
+    the back pour reaches it with one spoke instead of two (a
+    `starved_thermal` error). It still has its own 0.35 mm GND track on
+    B.Cu and full spokes on F.Cu. `hot_info_orbs_xiao_46mm.kicad_dru` lets
+    that one pad pass with one spoke; every other thermal still needs 2.
+    Checked: the same rule aimed at pad 1 brings the error back.
+  - A DRC exclusion was rejected: the key carries the marker position and
+    item UUIDs, three guesses at the format did not match, and a reroute
+    would invalidate it anyway.
+  - **No stitching vias this time.** The reroute removed rev 2.4's three
+    GND vias (Freerouting's one, plus the two from `stitch_islands.py`).
+    Measured by filling with island removal off and on: the back pour now
+    loses no island at all. The region at x 138–184 is joined to GND
+    through TP2's and C2's pads. The front loses only the sub-100 mm²
+    slivers between socket pins, as before. So `stitch_islands.py` was
+    not rerun; its assertion of exactly two islands would fail anyway.
+- **DRC:** 0 errors, 3 warnings (the same USB-C silk warnings on U2),
+  0 unconnected, 0 parity. **ERC:** 0.
+
+Outputs:
+- `fab/hot_info_orbs_xiao_46mm_2.5_run1_gerbers.zip`. Drill T4 (1.00 mm)
+  goes from 49 to 52 hits; vias go from 16 to 13, all signal.
+- `fab/46mm_top.png` / `fab/46mm_bottom.png`.
+- `3d-assembly/hot_info_orbs_xiao_46mm_assembly.step`.
+- The rev reads 2.5 in the back silk, the board title block and the
+  schematic title block.
+
+Not updated: `overall assembly` in Fusion still holds the 2.4 STEP. The
+probe pads add no height.
+
 ## Schematic layout (2026-10-24, Scott's arrangement)
 
 The displays became a labeled block (`tools/display_block.py`, 101a0ba)
@@ -174,7 +245,8 @@ this sheet, and in his words symmetry is the key difference:**
 - **Shared left margin.** BUTTONS starts at the DISPLAYS box's left edge
   (x 16.51).
 - **Housekeeping out of the circuit rows.** POWER FLAGS (ERC only) sits
-  alone at the bottom left, clear of the title block.
+  at the bottom left, clear of the title block. Since rev 2.5, TEST POINTS
+  sits beside it with its top aligned at y 160.02.
 - Boxes hug their contents; the title goes inside the bottom-left corner.
 
 Netlist identical to ade894a (names, pins, components), ERC 0.
