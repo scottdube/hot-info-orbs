@@ -163,7 +163,11 @@ and 5v".
   sockets already use, so there is no new drill size. Plated through, so
   they can be probed from either face.
   - Silk: the rail names beside each pad and a box round the column, on
-    both faces.
+    both faces. Run 2 (`tools/test_label.py`) adds "Test" on the other
+    side of the column from the rail names, on each face, set vertically
+    and centered on GND so the one word labels all three pads. Copper is
+    unchanged, so there was no reroute. Whether a fitted DS3 covers the
+    front "Test" has not been checked.
   - With the modules plugged in, the pads stay clear in the gap, about
     2.5 mm from each module edge. The front labels end up under DS4's
     module, but the back labels are always readable.

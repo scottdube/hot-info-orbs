@@ -8722,6 +8722,17 @@
 			(justify left)
 		)
 	)
+	(gr_text "Test"
+		(at 171.44 81 90)
+		(layer "F.SilkS")
+		(uuid "9afac8b6-af69-4716-8c9d-c46852485d9c")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
 	(gr_text "Display"
 		(at 58.74 81 0)
 		(layer "F.SilkS")
@@ -8860,6 +8871,18 @@
 				(thickness 0.15)
 			)
 			(justify left mirror)
+		)
+	)
+	(gr_text "Test"
+		(at 176.04 81 90)
+		(layer "B.SilkS")
+		(uuid "263d961f-6aad-4337-8318-81a51579a42d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify mirror)
 		)
 	)
 	(gr_text "Based on https://github.com/brettdottech/info-orbs"

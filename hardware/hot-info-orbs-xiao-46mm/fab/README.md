@@ -1,13 +1,20 @@
 # Fab package — XIAO carrier, 46 mm display pitch, rev 2.5
 
-**`hot_info_orbs_xiao_46mm_2.5_run1_gerbers.zip` is the package to send
-(generated 2026-10-25 11:21, KiCad 10.0.3). It is named for the run and is not
+**`hot_info_orbs_xiao_46mm_2.5_run2_gerbers.zip` is the package to send
+(generated 2026-10-25 11:30, KiCad 10.0.3). It is named for the run and is not
 to be regenerated:** if the board changes, the next run gets its own zip, and
 this one stays byte-identical to what was ordered, so a returned board can be
 matched to what was sent. The back silk reads `rev 2.5 · 46 mm pitch`.
 Rev 2.5 adds three probe pads, 3V3 / GND / 5V, between DS3 and DS4
 (`tools/test_points.py`, project README). The board was rerouted for it, so
-copper, mask and drill all differ from 2.4. Not yet uploaded anywhere.
+copper, mask and drill all differ from 2.4. Run 2 adds the word "Test"
+beside the pad column on both faces (`tools/test_label.py`). Not yet
+uploaded anywhere.
+
+`hot_info_orbs_xiao_46mm_2.5_run1_gerbers.zip` (2026-10-25 11:21) is the same
+copper, mask, outline and drill (diffed: only the timestamp lines differ).
+It has no "Test" beside the probe pads, only the rail names. Superseded
+before anything was sent; it stays as the record, do not send it.
 
 `hot_info_orbs_xiao_46mm_2.4_run1_gerbers.zip` (2026-10-20 19:05) has no
 probe pads. **Scott uploaded it to JLCPCB on 2026-10-20 (evening) for a
