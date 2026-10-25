@@ -240,7 +240,12 @@ notifications.
   - *Why:* the one step a beginner can't skip. Seeing it is a single command
     with a progress bar takes the fear out.
 - **S19, KiCad: the v1.1 board, 2D then 3D** (5 s).
-  - *Setup:* `hardware/hot-info-orbs/` on main. Slow orbit in the 3D viewer.
+  - *Setup:* `hardware/hot-info-orbs/` is no longer on main (main carries the
+    XIAO boards); open it from the demo-typed worktree. The displays and the
+    SuperMini use `${KICAD_USER_3DMODEL_DIR}`, which is unset on the laptop,
+    so without it the 3D view is a bare board. Launch with
+    `open -a "/Applications/KiCad/PCB Editor.app" --env KICAD_USER_3DMODEL_DIR="$PWD/lib/3d" "$PWD/hot_info_orbs.kicad_pcb"`
+    from that folder (found 2026-10-25). Slow orbit in the 3D viewer.
     Rendered stills are the fallback (see Assets).
   - *Why:* for the advanced crowd. The design files are real and open, and
     they could change them.
