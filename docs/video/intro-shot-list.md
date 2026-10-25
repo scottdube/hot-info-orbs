@@ -65,11 +65,11 @@ These change settings.
 - After S23, change the town or tickers back.
 - After S23a, re-tick Stocks.
 
-**Block 5 — Board on the table (setup C):** S04, S17, S18, S20.
+**Block 5 — Board on the table (setup C):** S04, S17, S18.
 This is last because it means moving the orb off the desk set.
 
 **Edit:** S02, S31, S32, S33 cards; S05, S06, S20a, S20b, S29, S30 stills;
-S16, S18, S29 Fusion animations.
+S16, S18, S20, S29 Fusion animations.
 
 ---
 
@@ -192,9 +192,16 @@ shadows.
     left unbuilt, skip it and lean on S19.
   - *Why:* credits Yang and Scott's design. Experienced builders want to see the bare
     copper.
-- **S20, USB cable in → orbs light on the boot screen** (6 s).
-  - *Setup:* the cable enters from frame edge; hold until the boot picture
-    shows.
+- **S20, Animation: a right-angle USB-C cable plugs in, the orbs light on
+  the boot screens** (6 s, ANIM; was a camera shot until 2026-10-25, when
+  Scott found the plug-in too awkward to film on the board).
+  - *Setup:* `S20-usb-plug-dark.mp4` / `-transparent.mov` in the asset
+    folder, rendered from Fusion by `sources/fusion_usb.py`. Back view from
+    below: the 90° plug rises into the XIAO's port with its cable running
+    straight back, then the camera swings round to the front and the five
+    screens light with the real boot screens (Welcome, HOT Info Orbs, boot
+    picture, Connecting → Success, IP address), lifted from the 10-22
+    restart take by `sources/fusion_usb_screens.py`.
   - *Why:* it pictures "runs off a USB cable": nothing to wire, no power
     brick.
 
@@ -328,7 +335,7 @@ Use high-contrast text, and never use color alone to carry meaning.
 | S17 | 5 | CAM C | Displays + buttons pan | 6 s |
 | S18 | 5 | CAM C | Bare v1.1 board | 4 s |
 | S19 | 5 | LAPTOP | KiCad v1.1 | 5 s |
-| S20 | 5 | CAM C | USB in → boot | 6 s |
+| S20 | 5 | ANIM | USB in → boot | 6 s |
 | S20a | 5 | STILL | Thermal, module | 4 s |
 | S20b | 5 | STILL | Thermal, display backs | 3 s |
 | S21 | 5 | PAN | GitHub README (full-page pan) | 11 s |
@@ -393,6 +400,7 @@ third-party screenshots, and the repo is public.
 | S05 | Brett Turner's photo of his orbs, from his product page | gathered 2026-10-19 |
 | S06 | HackerBoxes #0129 product page and Instructables page, screenshots | to collect |
 | S16 | XIAO plug in/out, Fusion: `S16-xiao-plug-dark.mp4` + `-transparent.mov`, `sources/fusion_plug.py` | rendered 2026-10-22, in the cut (replaced the placeholder, held to the VO line) |
+| S20 | USB plug-in + boot, Fusion: `S20-usb-plug-dark.mp4` + `-transparent.mov`, `sources/fusion_usb.py` + `fusion_usb_screens.py` | rendered 2026-10-25 |
 | S19 | v1.1 board renders, 2D and 3D (fallback for the live capture) | to render, `kicad-cli pcb render` |
 | S29 | XIAO board 3D render; only the STEP and PCB exist (`hardware/hot-info-orbs-xiao/`) | to render |
 | S20a, S20b | Thermal images, in color, 2026-10-17 at 75 °F room: white and red hottest, blue coolest | on hand, `docs/assets/thermal/` |
