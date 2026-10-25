@@ -363,8 +363,12 @@ shot is cut to the narration, so roll at least twice the listed length.
 ## Before the shoot
 
 1. The orb firmware went back on over USB on 2026-10-17, off camera. For S22,
-   re-run the same flash on camera:
-   `cd ~/code/hot-info-orbs-main && pio run -e esp32-s3-devkitc-1 -t upload`.
+   re-run the same flash on camera. The filmed orb is the 4 MB SuperMini
+   prototype, so build from the demo-typed worktree (b63e1b7), never main,
+   whose `esp32-s3-devkitc-1` env is the XIAO pin map. `esptool flash_id`
+   must say 4MB first (checked 2026-10-25):
+   `cd ~/code/hot-info-orbs-demo-typed && PLATFORMIO_BUILD_FLAGS='-DDEMO_FIXED_TZ=-4 -DARDUINO_USB_CDC_ON_BOOT=1' pio run -e esp32-s3-devkitc-1 -t upload`
+   (`DEMO_FIXED_TZ=-5` after Nov 1).
 2. On `/settings`, every page is ticked, Web Data and MQTT included (both
    ticked 2026-10-17 to preview ahead of the shoot). Set the boot picture to
    the HOT hand.
