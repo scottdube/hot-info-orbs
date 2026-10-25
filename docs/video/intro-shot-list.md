@@ -360,7 +360,7 @@ third-party screenshots, and the repo is public.
 | S05 | Brett Turner's repo page and product page, screenshots | to collect |
 | S06 | HackerBoxes #0129 product page and Instructables page, screenshots | to collect |
 | S19 | v1.1 board renders, 2D and 3D (fallback for the live capture) | to render, `kicad-cli pcb render` |
-| S29 | XIAO board 3D render; only the STEP and PCB exist (`hardware/hot-info-orbs-xiao/`) | to render |
+| S29 | XIAO board 3D render; only the STEP and PCB exist (`hardware/hot-info-orbs-xiao-46mm/`) | to render |
 | S20a, S20b | Thermal images, in color, 2026-10-17 at 75 °F room: white and red hottest, blue coolest | on hand, `docs/assets/thermal/` |
 | S02, S33 | HOT logos: `docs/assets/hot-smcomp-logo.png`, `images/hot-logo.jpg` | on hand |
 | S30 | Enclosure concept: `docs/assets/enclosure-concept-3-winged-speedster.png` (main) | on hand |

@@ -13,6 +13,12 @@ column on both faces, set horizontal by Scott. **Yang signed it off on
 whose links pointed at commit `eee08bc`, the commit that made this zip. Not
 yet uploaded to JLCPCB as of that sign-off.
 
+**Only two zips are in this folder on `main`:** run 3 above and 2.4 run 1
+(uploaded for a quote, below). The superseded runs listed below were
+removed from `main` on 2026-10-25 to keep the folder to what matters; each
+is byte-identical at tag `board-46mm-rev2.5`:
+`git checkout board-46mm-rev2.5 -- hardware/hot-info-orbs-xiao-46mm/fab/<zip>`.
+
 `hot_info_orbs_xiao_46mm_2.5_run2_gerbers.zip` (2026-10-25 11:30) is the same
 copper, mask, outline and drill (diffed: only the timestamp lines differ).
 Its "Test" labels run vertically along the column (`tools/test_label.py`);

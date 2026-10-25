@@ -13,11 +13,11 @@ This is a concept rendering, not a model. It sets the look the design aims for:
 
 **Change from the rendering: the three buttons move to the top.** The rendering
 shows them on the front, under the displays. The XIAO carrier board
-(`hardware/hot-info-orbs-xiao/`, branch `xiao-esp32s3`) already puts its
+(the narrow one, now at tag `board-xiao-narrow-final`) already puts its
 right-angle switches on the top edge, so the board needs no change for this.
 
 **2026-10-19: the board going to the fab is `hardware/hot-info-orbs-xiao-46mm/`**
-(branch `board-46mm-pitch`): the same carrier with the five displays at
+(on `main` since 2026-10-25): the same carrier with the five displays at
 46.0 mm center to center to match `main_body_front`, 224.0 x 52.78 mm (grown
 5 mm at the top the same day, see below), **rev 2.1**. The front mock-up in
 `hardware/enclosure/front-mockup-v1/` was built on the narrow 38.98 mm board.

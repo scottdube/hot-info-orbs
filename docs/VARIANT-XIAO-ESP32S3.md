@@ -1,5 +1,12 @@
 # Variant: Seeed XIAO ESP32-S3 / ESP32-S3 Plus
 
+**2026-10-25: superseded by `hardware/hot-info-orbs-xiao-46mm/`**, the same
+carrier with the displays 46 mm apart for the enclosure, which went to the
+fab. The board this document describes left `main` that day; its folder
+is at tag `board-xiao-narrow-final`, which is where the
+`hardware/hot-info-orbs-xiao/` paths below resolve. The reasoning here
+still holds for the 46 mm board, which was copied from it.
+
 Status: **DESIGNED, NOT BUILT.** Started on branch `xiao-esp32s3`
 2026-10-14, **merged into `main` 2026-10-18.** Schematic and board are done and
 DRC-clean, the firmware compiles, and no board has been ordered or flashed.

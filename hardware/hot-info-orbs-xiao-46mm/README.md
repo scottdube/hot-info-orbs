@@ -5,8 +5,8 @@
 displays sit 46.0 mm centre to centre instead of ~38.98 mm**, to match the
 enclosure front in Fusion (`main_body_front`: bezel centres at
 32.75 + n × 46.0; see `docs/ENCLOSURE.md`). The enclosure grows out of this
-board; this board is the one going to the fab. The original project is
-untouched.
+board; this board is the one going to the fab. The original project left
+`main` on 2026-10-25 and is at tag `board-xiao-narrow-final`.
 
 What `tools/pitch_46.py` changed (run once, then `tools/route_xiao.py`):
 
