@@ -301,3 +301,17 @@ clearance from them, so KiCad flagged `copper_edge_clearance` (0.5 mm). The
 script now grows them by 0.4 mm. And reordering the nets in the DSN changes
 nothing: 12 shuffles gave a byte-identical result, because Freerouting
 orders them itself.
+
+## An unpinned platform turned CI red while local builds stayed green (2026-10-24)
+
+`platform = espressif32` with no version let CI install espressif32 8.0.0
+(Arduino core 3.3.12) when it came out on 2026-10-19. Every PlatformIO CI run
+on main failed from then on, with `'WiFiUDP' does not name a type` in
+GlobalTime.h and `'FS' was not declared` in WebServer.h. Laptops that already
+had 7.0.1 (core 2.0.17) kept building, so the failure was invisible until
+PR 3 looked at the checks.
+
+Fix: `platform = espressif32@7.0.1` in every espressif32 env. When a CI build
+fails and the local one passes, compare the `PLATFORM:` and
+`framework-arduinoespressif32 @` lines in both logs first. Moving to core 3.x
+is its own job: port, build, then repeat the on-orb tests.
