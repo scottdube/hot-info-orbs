@@ -42,31 +42,97 @@ void test_cycle() {
     TEST_ASSERT_FALSE(err.empty());
 }
 
-// --- hour --------------------------------------------------------------------
+// --- time of day -------------------------------------------------------------
 
-void test_hour() {
+static int tod(const char *in) {
     int out = -1;
     std::string err;
-    TEST_ASSERT_TRUE(parseHour("0", out, err));
-    TEST_ASSERT_EQUAL(0, out);
-    TEST_ASSERT_TRUE(parseHour("23", out, err));
-    TEST_ASSERT_EQUAL(23, out);
-    TEST_ASSERT_FALSE(parseHour("24", out, err));
-    TEST_ASSERT_FALSE(parseHour("-1", out, err));
-    TEST_ASSERT_FALSE(parseHour("", out, err));
+    return parseTimeOfDay(in, out, err) ? out : -1;
 }
 
-void test_hour_range() {
-    TEST_ASSERT_TRUE(inHourRange(18, 18, 22));
-    TEST_ASSERT_TRUE(inHourRange(21, 18, 22));
-    TEST_ASSERT_FALSE(inHourRange(22, 18, 22)); // end hour is excluded
-    TEST_ASSERT_FALSE(inHourRange(17, 18, 22));
-    TEST_ASSERT_TRUE(inHourRange(23, 23, 6)); // wraps midnight
-    TEST_ASSERT_TRUE(inHourRange(0, 23, 6));
-    TEST_ASSERT_TRUE(inHourRange(5, 23, 6));
-    TEST_ASSERT_FALSE(inHourRange(6, 23, 6));
-    TEST_ASSERT_FALSE(inHourRange(12, 23, 6));
-    TEST_ASSERT_FALSE(inHourRange(7, 7, 7)); // same hour = empty
+void test_time_of_day() {
+    TEST_ASSERT_EQUAL(0, tod("0"));
+    TEST_ASSERT_EQUAL(16 * 60, tod("16"));
+    TEST_ASSERT_EQUAL(23 * 60, tod("23"));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod("16:05"));
+    TEST_ASSERT_EQUAL(7 * 60 + 30, tod("7:30"));
+    TEST_ASSERT_EQUAL(7 * 60 + 30, tod("07:30"));
+    TEST_ASSERT_EQUAL(23 * 60 + 59, tod("23:59"));
+    TEST_ASSERT_EQUAL(0, tod("00:00"));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod(" 16:05 ")); // trimmed
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod("16.05")); // phone keypads offer '.'
+    // am/pm, any case, with or without a space
+    TEST_ASSERT_EQUAL(16 * 60, tod("4pm"));
+    TEST_ASSERT_EQUAL(16 * 60, tod("4 PM"));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod("4:05 pm"));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod("4:05p"));
+    TEST_ASSERT_EQUAL(10 * 60, tod("10am"));
+    TEST_ASSERT_EQUAL(0, tod("12am")); // midnight
+    TEST_ASSERT_EQUAL(30, tod("12:30 am"));
+    TEST_ASSERT_EQUAL(12 * 60, tod("12pm")); // noon
+    TEST_ASSERT_EQUAL(12 * 60 + 15, tod("12:15pm"));
+    // refused
+    TEST_ASSERT_EQUAL(-1, tod(""));
+    TEST_ASSERT_EQUAL(-1, tod("24"));
+    TEST_ASSERT_EQUAL(-1, tod("24:00"));
+    TEST_ASSERT_EQUAL(-1, tod("25:00"));
+    TEST_ASSERT_EQUAL(-1, tod("4:75"));
+    TEST_ASSERT_EQUAL(-1, tod("4:5")); // minutes are two digits
+    TEST_ASSERT_EQUAL(-1, tod("4:055"));
+    TEST_ASSERT_EQUAL(-1, tod("-1"));
+    TEST_ASSERT_EQUAL(-1, tod("0am")); // am/pm hours are 1..12
+    TEST_ASSERT_EQUAL(-1, tod("13pm"));
+    TEST_ASSERT_EQUAL(-1, tod("16:05:00"));
+    TEST_ASSERT_EQUAL(-1, tod("noon"));
+    TEST_ASSERT_EQUAL(-1, tod("4 :05"));
+    TEST_ASSERT_EQUAL(-1, tod("pm"));
+    int out = 99;
+    std::string err;
+    TEST_ASSERT_FALSE(parseTimeOfDay("4:75", out, err));
+    TEST_ASSERT_EQUAL(99, out); // untouched on failure
+    TEST_ASSERT_FALSE(err.empty());
+}
+
+void test_time_text() {
+    TEST_ASSERT_EQUAL_STRING("00:00", timeOfDayText(0).c_str());
+    TEST_ASSERT_EQUAL_STRING("07:30", timeOfDayText(7 * 60 + 30).c_str());
+    TEST_ASSERT_EQUAL_STRING("16:05", timeOfDayText(16 * 60 + 5).c_str());
+    TEST_ASSERT_EQUAL_STRING("23:59", timeOfDayText(23 * 60 + 59).c_str());
+    // what the page shows parses back to the same minute
+    for (int m = 0; m < 24 * 60; m += 7) {
+        TEST_ASSERT_EQUAL(m, tod(timeOfDayText(m).c_str()));
+    }
+}
+
+void test_time_range() {
+    const int h = 60;
+    TEST_ASSERT_TRUE(inTimeRange(18 * h, 18 * h, 22 * h));
+    TEST_ASSERT_TRUE(inTimeRange(21 * h + 59, 18 * h, 22 * h));
+    TEST_ASSERT_FALSE(inTimeRange(22 * h, 18 * h, 22 * h)); // end minute is excluded
+    TEST_ASSERT_FALSE(inTimeRange(18 * h - 1, 18 * h, 22 * h));
+    TEST_ASSERT_TRUE(inTimeRange(23 * h, 23 * h, 6 * h)); // wraps midnight
+    TEST_ASSERT_TRUE(inTimeRange(0, 23 * h, 6 * h));
+    TEST_ASSERT_TRUE(inTimeRange(6 * h - 1, 23 * h, 6 * h));
+    TEST_ASSERT_FALSE(inTimeRange(6 * h, 23 * h, 6 * h));
+    TEST_ASSERT_FALSE(inTimeRange(12 * h, 23 * h, 6 * h));
+    TEST_ASSERT_FALSE(inTimeRange(7 * h, 7 * h, 7 * h)); // same time = empty
+    // a minute-level window, the reason this exists
+    TEST_ASSERT_FALSE(inTimeRange(16 * h + 4, 16 * h + 5, 16 * h + 30));
+    TEST_ASSERT_TRUE(inTimeRange(16 * h + 5, 16 * h + 5, 16 * h + 30));
+    TEST_ASSERT_TRUE(inTimeRange(16 * h + 29, 16 * h + 5, 16 * h + 30));
+    TEST_ASSERT_FALSE(inTimeRange(16 * h + 30, 16 * h + 5, 16 * h + 30));
+}
+
+void test_stored_minutes() {
+    // An orb saved by hour-only firmware has dimstart=22 and no minutes key
+    TEST_ASSERT_EQUAL(22 * 60, storedMinutes(false, 0, 22));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, storedMinutes(true, 16 * 60 + 5, 16));
+    // a corrupt minutes value falls back to the hour key
+    TEST_ASSERT_EQUAL(7 * 60, storedMinutes(true, 1440, 7));
+    TEST_ASSERT_EQUAL(7 * 60, storedMinutes(true, -5, 7));
+    // the hour written beside it for older firmware rounds down
+    TEST_ASSERT_EQUAL(16, legacyHour(16 * 60 + 59));
+    TEST_ASSERT_EQUAL(0, legacyHour(0));
 }
 
 void test_list_contains() {
@@ -310,8 +376,10 @@ void test_password_hint() {
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_cycle);
-    RUN_TEST(test_hour);
-    RUN_TEST(test_hour_range);
+    RUN_TEST(test_time_of_day);
+    RUN_TEST(test_time_text);
+    RUN_TEST(test_time_range);
+    RUN_TEST(test_stored_minutes);
     RUN_TEST(test_list_contains);
     RUN_TEST(test_tickers);
     RUN_TEST(test_text);
