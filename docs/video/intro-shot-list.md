@@ -245,8 +245,10 @@ notifications.
     SuperMini use `${KICAD_USER_3DMODEL_DIR}`, which is unset on the laptop,
     so without it the 3D view is a bare board. Launch with
     `open -a "/Applications/KiCad/PCB Editor.app" --env KICAD_USER_3DMODEL_DIR="$PWD/lib/3d" "$PWD/hot_info_orbs.kicad_pcb"`
-    from that folder (found 2026-10-25). Slow orbit in the 3D viewer.
-    Rendered stills are the fallback (see Assets).
+    from that folder (found 2026-10-25). Live: hold the 2D view, then
+    Option-3 into the 3D viewer. **The orbit is rendered, not filmed**
+    (Scott, 2026-10-25: a hand orbit in the viewer is too finicky):
+    `S19-kicad-orbit-dark.mp4`, cut in after the viewer opens.
   - *Why:* for the advanced crowd. The design files are real and open, and
     they could change them.
 - **S21, GitHub README scrolling** (11 s).
@@ -410,7 +412,7 @@ third-party screenshots, and the repo is public.
 | S06 | HackerBoxes #0129 product page and Instructables page, screenshots | to collect |
 | S16 | XIAO plug in/out, Fusion: `S16-xiao-plug-dark.mp4` + `-transparent.mov`, `sources/fusion_plug.py` | rendered 2026-10-22, in the cut (replaced the placeholder, held to the VO line) |
 | S20 | USB plug-in + boot, Fusion: `S20-usb-plug-dark.mp4` + `-transparent.mov`, `sources/fusion_usb.py` + `fusion_usb_screens.py` | rendered 2026-10-25 |
-| S19 | v1.1 board renders, 2D and 3D (fallback for the live capture) | to render, `kicad-cli pcb render` |
+| S19 | v1.1 board 3D orbit, kicad-cli: `S19-kicad-orbit-dark.mp4` + `-transparent.mov`, `sources/kicad_orbit.py` | rendered 2026-10-25; the 2D half is the live screen take |
 | S29 | XIAO board 3D render; only the STEP and PCB exist (`hardware/hot-info-orbs-xiao/`) | to render |
 | S20a, S20b | Thermal images, in color, 2026-10-17 at 75 °F room: white and red hottest, blue coolest | on hand, `docs/assets/thermal/` |
 | S02, S33 | HOT logos: `docs/assets/hot-smcomp-logo.png`, `images/hot-logo.jpg` | on hand |
