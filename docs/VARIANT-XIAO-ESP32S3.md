@@ -1,6 +1,13 @@
 # Variant: Seeed XIAO ESP32-S3 / ESP32-S3 Plus
 
-Status: **DESIGNED, NOT BUILT.** Started on branch `xiao-esp32s3-plus`
+**2026-10-25: superseded by `hardware/hot-info-orbs-xiao-46mm/`**, the same
+carrier with the displays 46 mm apart for the enclosure, which went to the
+fab. The board this document describes left `main` that day; its folder
+is at tag `board-xiao-narrow-final`, which is where the
+`hardware/hot-info-orbs-xiao/` paths below resolve. The reasoning here
+still holds for the 46 mm board, which was copied from it.
+
+Status: **DESIGNED, NOT BUILT.** Started on branch `xiao-esp32s3`
 2026-10-14, **merged into `main` 2026-10-18.** Schematic and board are done and
 DRC-clean, the firmware compiles, and no board has been ordered or flashed.
 
@@ -159,10 +166,19 @@ Seeed publishes no A-02 dimensions (product page, distributors checked
 2026-10-14). Measure an A-02 and its pigtail before ordering boards; the
 script takes `PATCH=x0,x1,y0,y1` to move or resize it, then re-route.
 
+## Breadboard test rig (2026-10-24)
+
+Scott wired the XIAO and all five displays on a breadboard to the 46 mm
+schematic. **All five displays work.** His impression is that it boots and
+loads its data faster than the prototype. That has not been timed, so it is
+not a measured result. Not recorded: which module (S3 or S3 Plus), which
+firmware commit, and whether the R1/C2 reset network was on the breadboard.
+
 ## Not done
 
-- No board ordered, nothing flashed; the RC reset timing and the active-low
-  LED are reasoned, not measured.
+- No board ordered. The XIAO has run five displays on the breadboard (above).
+  The RC reset timing and the active-low LED are reasoned, not measured.
+  Boot time is not measured either.
 - 3D: done 2026-10-14 — Seeed's XIAO ESP32S3 PLUS STEP on U2 (fit by
   rendering, `tools/xiao_model.py`), display models re-pointed, assembly
   exported to `hardware/hot-info-orbs-xiao/3d-assembly/`.
