@@ -13,7 +13,7 @@ This is a concept rendering, not a model. It sets the look the design aims for:
 
 **Change from the rendering: the three buttons move to the top.** The rendering
 shows them on the front, under the displays. The XIAO carrier board
-(`hardware/hot-info-orbs-xiao/`, branch `xiao-esp32s3-plus`) already puts its
+(`hardware/hot-info-orbs-xiao/`, branch `xiao-esp32s3`) already puts its
 right-angle switches on the top edge, so the board needs no change for this.
 
 **2026-10-19: the board going to the fab is `hardware/hot-info-orbs-xiao-46mm/`**

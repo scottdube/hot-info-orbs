@@ -1,6 +1,6 @@
 # Handoff — XIAO variant build log
 
-Branch `xiao-esp32s3-plus`. Written so a fresh session (any model) can
+Branch `xiao-esp32s3`. Written so a fresh session (any model) can
 continue without re-deriving anything. Newest at the bottom.
 
 ## Decisions (Scott, 2026-10-14)
@@ -249,4 +249,4 @@ continue without re-deriving anything. Newest at the bottom.
 - Measure a uxcell right-angle switch: tab pitch 6.5 vs 7.0 mm decides
   whether the stock PTS645 footprint is usable.
 - Order / build / flash a board; measure the RC reset and LED polarity.
-- Branch has no upstream until pushed (`git push -u origin xiao-esp32s3-plus`).
+- Branch is pushed as `origin/xiao-esp32s3` (renamed from xiao-esp32s3-plus on 2026-10-23; GitHub redirects the old name).
