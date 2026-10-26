@@ -51,18 +51,28 @@ needs no re-record or re-cut.
 | S15 | MQTT | 10.6 s at 1:31.9 | IMG_4778 69 s, slowed to 79.5 % to fill |
 | S15a | Web Data sample | 5.1 s at 1:42.4 | IMG_4778 59 s |
 
-- [ ] **Seconds per page to 15** on `/settings` before rolling. At 5 s a page
+- [x] **Seconds per page to 15** on `/settings` before rolling. At 5 s a page
       is up too briefly for the 10.6 s S15 slot. Put it back afterward.
-- [ ] MQTT reads ✔ Connected and Web Data ✔ (Before the shoot, item 2).
-- [ ] Both weather pages show a town you are happy to have in a public video
+- [x] MQTT reads ✔ Connected and Web Data ✔ (Before the shoot, item 2).
+- [x] Both weather pages show a town you are happy to have in a public video
       (the orb was left on Orlando, FL after S23).
-- [ ] Bench cleared. Frame like S14 (orb row about 68% of the width) so it
+- [x] Bench cleared. Frame like S14 (orb row about 68% of the width) so it
       cuts with S13/S14. Side light, exposure locked on the screens.
-- [ ] One locked-off take, no hands, at least two full rotations, so each of
+- [x] One locked-off take, no hands, at least two full rotations, so each of
       the four pages comes up twice.
 
 Afterward Claude overwrites the four slots (same lengths), drops the S15
 slow-down, exports a review MP4, and the cut is done.
+
+**Shot 2026-10-26 (IMG_0037) and cut the same day:** S10 and S11 (the same two
+towns as before; framed tighter than S13/S14, about
+80 % of the width, left at 100 %), S15a Web Data and S15 MQTT are in, S15 at 100 %. Review export
+`review/hot-info-orbs-intro-review-2026-10-26.mp4`. **One gap: S15.** The
+prototype orb has one MQTT page, now fed a local events list, so the shot
+shows that under a VO about "live values from Home Assistant". The two-page
+firmware is on `feat/two-mqtt-pages` and is not in demo-typed. To close it,
+put the five home rows back on that page and reshoot S15 (10.6 s, MQTT
+page only), or keep the events list. Put Seconds per page back.
 
 **Block 1 — Laptop (setup E):** S22, then S19. (S21 is done: a full-page
 pan, no filming.)
