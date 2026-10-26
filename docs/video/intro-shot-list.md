@@ -74,6 +74,10 @@ firmware is on `feat/two-mqtt-pages` and is not in demo-typed. To close it,
 put the five home rows back on that page and reshoot S15 (10.6 s, MQTT
 page only), or keep the events list. Put Seconds per page back.
 
+**S15 reshot 2026-10-26 (IMG_0038) with the five home rows back, and cut.
+The video is a wrap:** final export `review/hot-info-orbs-intro-final-2026-10-26.mp4`
+(4:18). Still to do on the orb: Seconds per page and the page list back.
+
 **Block 1 — Laptop (setup E):** S22, then S19. (S21 is done: a full-page
 pan, no filming.)
 S22 restarts the orb, so do it first, before the orb is framed.
