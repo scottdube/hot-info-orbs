@@ -114,15 +114,9 @@ it.
 
 It runs off a USB cable and draws under two watts.
 
-**[Thermal image, color: the ESP32 module, 43.6 °C on its hottest point.]**
-
-The displays run on five volts, each with its own regulator. On the original
-kit they all ran off the ESP's regulator, and builders found it too hot to
-touch.
-
-**[Thermal image, color: the backs of three displays, 37.9 °C hottest.]**
-
-The displays carry their own share now, and stay warm, not hot.
+*Cut 2026-10-27 (Scott): the thermal beat (two thermal stills and the
+regulator / "too hot to touch" / "warm, not hot" lines) is out of the final
+video. The numbers stay in `docs/POWER-MEASURED.md`.*
 
 **[GitHub repo page.]**
 
@@ -197,9 +191,9 @@ Thanks to Brett Turner, to HackerBoxes, and to the members who built the first k
   Film the dim beat; if screens-off is shown, film it in a lit room and don't
   call it dark.
 - **"Under two watts"** is the measured 1.71 W at 5 V (features.html).
-- **"Too hot to touch"** is a HackerBox 0129 builder's report: 82 °C (180 °F)
+- **"Too hot to touch"** (cut 2026-10-27) is a HackerBox 0129 builder's report: 82 °C (180 °F)
   on the module running only a graphics demo (`docs/VARIANT-ESP32-S3-SUPERMINI.md`).
-- **"About forty-three degrees"** is the thermal-camera readings of 41.8–43.6 °C
+- **"About forty-three degrees"** (not in the final video) is the thermal-camera readings of 41.8–43.6 °C
   at the module's hottest point, room 75 °F, after hours of running and again
   ~20 minutes after a power cycle
   (`docs/POWER-MEASURED.md`, 2026-10-17). Surface reading, not junction.

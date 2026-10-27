@@ -101,7 +101,7 @@ These change settings.
 **Block 5 — Board on the table (setup C):** S04, S17, S18.
 This is last because it means moving the orb off the desk set.
 
-**Edit:** S02, S31, S32, S33 cards; S05, S06, S20a, S20b, S29, S30 stills;
+**Edit:** S02, S31, S32, S33 cards; S05, S06, S29, S30 stills (S20a/S20b cut 2026-10-27);
 S16, S18, S20, S29 Fusion animations.
 
 ---
@@ -322,12 +322,12 @@ notifications.
     show (Scott, 2026-10-18: the board itself names the town). Files and notes: the asset folder's `MANIFEST.md`.
   - *Why:* the "members built that kit" line lands harder with the real
     object on screen.
-- **S20a, Thermal image of the module, 43.6 °C** (4 s).
+- **S20a, Thermal image of the module, 43.6 °C** (4 s). **CUT 2026-10-27** (Scott): the thermal beat is out of the final video, S20a and S20b with their VO.
   - *Setup:* `docs/assets/thermal/module-2026-10-17.jpg`. The alternative,
     `board-2026-10-17.jpg`, shows the module and displays in one frame.
   - *Why:* the original kit's known flaw was heat (82 °C reported). A
     measured number answers it, which the experienced crowd will look for.
-- **S20b, Thermal image of the display backs, 37.9 °C** (3 s).
+- **S20b, Thermal image of the display backs, 37.9 °C** (3 s). **CUT 2026-10-27**, with S20a.
   - *Setup:* `docs/assets/thermal/display-back-2026-10-17.jpg`.
   - *Why:* shows where the heat went: spread over five displays, each warm,
     none hot.
@@ -384,8 +384,8 @@ Use high-contrast text, and never use color alone to carry meaning.
 | S18 | 5 | CAM C | Bare v1.1 board | 4 s |
 | S19 | 5 | LAPTOP | KiCad v1.1 (take + orbit) | 8 s |
 | S20 | 5 | ANIM | USB in → boot | 6 s |
-| S20a | 5 | STILL | Thermal, module | 4 s |
-| S20b | 5 | STILL | Thermal, display backs | 3 s |
+| ~~S20a~~ | 5 | STILL | Thermal, module (cut 2026-10-27) | — |
+| ~~S20b~~ | 5 | STILL | Thermal, display backs (cut 2026-10-27) | — |
 | S21 | 5 | PAN | GitHub README (full-page pan) | 11 s |
 | S22 | 6 | LAPTOP + CAM | USB flash | 6 s |
 | S23 | 6 | LAPTOP + CAM | Settings → restart | 12 s |
