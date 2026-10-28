@@ -42,7 +42,6 @@ const SKILL_CHOICES = [
   'OK, but could use help',
   'I feel confident I can do this',
   'I do SMD work with my eyes closed',
-  'I can help others',
 ];
 const PAYMENT_TITLE = 'Payment';
 const PAYMENT_TEXT =
