@@ -6,6 +6,7 @@
 // https://docs.google.com/forms/d/e/1FAIpQLSewJmwJH4fZf1O3rndbRK9dUFfkHtH9RUs-GQdB2Rw4AMjylw/viewform
 
 const LIVE_FORM_ID = '1MMD9PAcmM4eElS5t4GJQU5yMvdGBJt0DDh9DqYVrQhc';
+const FORM_TITLE = 'HOT Info Orbs: Kit Sign-up - Please do today';
 
 const DESCRIPTION =
   'Five round displays on your desk showing the time, the weather and the markets. ' +
@@ -55,7 +56,7 @@ function addRender_(form) {
 }
 
 function buildKitSignupForm() {
-  const form = FormApp.create('HOT Info Orbs: Kit Sign-up');
+  const form = FormApp.create(FORM_TITLE);
   form.setDescription(DESCRIPTION);
   form.setConfirmationMessage(CONFIRMATION);
   form.setAllowResponseEdits(true);
@@ -115,6 +116,7 @@ function buildKitSignupForm() {
 // Safe to rerun: it matches items by title and adds missing ones once.
 function updateLiveForm() {
   const form = FormApp.openById(LIVE_FORM_ID);
+  form.setTitle(FORM_TITLE);
   form.setDescription(DESCRIPTION);
   form.setConfirmationMessage(CONFIRMATION);
 
