@@ -5,15 +5,41 @@
 // Built 2026-10-28; live form:
 // https://docs.google.com/forms/d/e/1FAIpQLSewJmwJH4fZf1O3rndbRK9dUFfkHtH9RUs-GQdB2Rw4AMjylw/viewform
 
+const LIVE_FORM_ID = '1MMD9PAcmM4eElS5t4GJQU5yMvdGBJt0DDh9DqYVrQhc';
+
+const DESCRIPTION =
+  'Five round displays on your desk showing the time, the weather and the markets. ' +
+  'It updates over Wi-Fi and you set it up from any browser.\n\n' +
+  'The club build starts in January. Build night is through-hole soldering only, one evening.\n\n' +
+  "WHAT'S IN THE KIT\n" +
+  '\u2022 The carrier board\n' +
+  '\u2022 Five 1.28-inch round displays\n' +
+  '\u2022 Sockets for the displays and the XIAO, plus header pins\n' +
+  '\u2022 Three buttons\n' +
+  '\u2022 Two capacitors and a resistor\n\n' +
+  'YOU SUPPLY\n' +
+  '\u2022 A Seeed XIAO ESP32-S3 or XIAO ESP32-S3 Plus. Either fits; the Plus has more flash.\n' +
+  "\u2022 A USB-C data cable. A charge-only cable won't load the firmware.\n\n" +
+  'Feature sheet: https://scottdube.github.io/hot-info-orbs/features.html\n\n' +
+  "We'll email the final price and how to pay before parts are ordered.";
+
+const RENDER_URL =
+  'https://raw.githubusercontent.com/scottdube/hot-info-orbs/main/docs/assets/enclosure-concept-3-winged-speedster.png';
+const RENDER_TITLE = 'The Winged Speedster enclosure: a concept rendering, still a design';
+
+const KIT_COUNTS = ['1', '2', '3', '4'];
+const ENCLOSURE_CHOICES =
+  ["I'll print my own", "I'll need to find someone to print it for me", 'No enclosure'];
+
+function addRender_(form) {
+  const blob = UrlFetchApp.fetch(RENDER_URL).getBlob();
+  const image = form.addImageItem().setImage(blob).setTitle(RENDER_TITLE).setAlignment(FormApp.Alignment.CENTER);
+  form.moveItem(image.getIndex(), 0);
+}
+
 function buildKitSignupForm() {
   const form = FormApp.create('HOT Info Orbs: Kit Sign-up');
-  form.setDescription(
-    'Five round displays on your desk showing the time, the weather and the markets. ' +
-    'It updates over Wi-Fi and you set it up from any browser.\n\n' +
-    'The club build starts in January. Build night is through-hole soldering only, one evening. ' +
-    'Each kit has the board, a XIAO ESP32-S3 or S3 Plus, five displays, sockets, buttons and a USB-C cable.\n\n' +
-    'Feature sheet: https://scottdube.github.io/hot-info-orbs/features.html\n\n' +
-    "We'll email the final price and how to pay before parts are ordered.");
+  form.setDescription(DESCRIPTION);
   form.setConfirmationMessage(
     "Thanks, you're on the list. We'll email the final price and how to pay before parts are ordered.");
   form.setAllowResponseEdits(true);
@@ -33,19 +59,13 @@ function buildKitSignupForm() {
 
   form.addListItem()
     .setTitle('How many kits?')
-    .setChoiceValues(['1', '2', '3'])
-    .setRequired(true);
-
-  form.addMultipleChoiceItem()
-    .setTitle('Module')
-    .setHelpText('Either one fits the board. The Plus has 16 MB of flash; the standard S3 has 8 MB.')
-    .setChoiceValues(['XIAO ESP32-S3 (8 MB)', 'XIAO ESP32-S3 Plus (16 MB)', 'No preference'])
+    .setChoiceValues(KIT_COUNTS)
     .setRequired(true);
 
   form.addMultipleChoiceItem()
     .setTitle('Enclosure')
     .setHelpText('The 3D-printed enclosure is still a design.')
-    .setChoiceValues(["I'll print my own", "I'd like one printed for me", 'No enclosure'])
+    .setChoiceValues(ENCLOSURE_CHOICES)
     .setRequired(true);
 
   form.addMultipleChoiceItem()
@@ -55,6 +75,8 @@ function buildKitSignupForm() {
     .setRequired(true);
 
   form.addParagraphTextItem().setTitle('Questions or comments');
+
+  addRender_(form);
 
   // A Workspace account can default new forms to its own domain; members
   // sign up from personal addresses, so open it to anyone with the link.
@@ -68,4 +90,28 @@ function buildKitSignupForm() {
   Logger.log('Share:     ' + form.getPublishedUrl());
   Logger.log('Edit:      ' + form.getEditUrl());
   Logger.log('Responses: ' + sheet.getUrl());
+}
+
+// One-off, 2026-10-28: bring the live form to the design above without
+// changing its link. Kit contents listed, XIAO and USB cable now
+// builder-supplied (so the Module question goes), 4 kits max, softer
+// enclosure wording, enclosure render at the top.
+function updateLiveForm() {
+  const form = FormApp.openById(LIVE_FORM_ID);
+  form.setDescription(DESCRIPTION);
+
+  form.getItems().forEach(function (item) {
+    const title = item.getTitle();
+    if (title === 'Module') {
+      form.deleteItem(item);
+    } else if (title === 'How many kits?') {
+      item.asListItem().setChoiceValues(KIT_COUNTS);
+    } else if (title === 'Enclosure') {
+      item.asMultipleChoiceItem().setChoiceValues(ENCLOSURE_CHOICES);
+    }
+  });
+
+  if (form.getItems(FormApp.ItemType.IMAGE).length === 0) addRender_(form);
+
+  form.getItems().forEach(function (item, i) { Logger.log(i + ' ' + item.getType() + ' ' + item.getTitle()); });
 }
