@@ -11,17 +11,21 @@ const DESCRIPTION =
   'Five round displays on your desk showing the time, the weather and the markets. ' +
   'It updates over Wi-Fi and you set it up from any browser.\n\n' +
   'The club build starts in January. Build night is through-hole soldering only, one evening.\n\n' +
-  "WHAT'S IN THE KIT\n" +
+  "WHAT'S IN THE KIT: $50\n" +
   '\u2022 The carrier board\n' +
+  '\u2022 A Seeed XIAO ESP32-S3\n' +
   '\u2022 Five 1.28-inch round displays\n' +
   '\u2022 Sockets for the displays and the XIAO, plus header pins\n' +
   '\u2022 Three buttons\n' +
   '\u2022 Two capacitors and a resistor\n\n' +
   'YOU SUPPLY\n' +
-  '\u2022 A Seeed XIAO ESP32-S3 or XIAO ESP32-S3 Plus. Either fits; the Plus has more flash.\n' +
-  "\u2022 A USB-C data cable. A charge-only cable won't load the firmware.\n\n" +
+  "\u2022 A 90\u00b0 (right-angle) USB-C data cable. We'll send the exact spec. " +
+  "A charge-only cable won't load the firmware.\n\n" +
   'Feature sheet: https://scottdube.github.io/hot-info-orbs/features.html\n\n' +
-  "We'll email the final price and how to pay before parts are ordered.";
+  "Kits are $50 each. We'll email how to pay before parts are ordered.";
+
+const CONFIRMATION =
+  "Thanks, you're on the list. Kits are $50 each; we'll email how to pay before parts are ordered.";
 
 const RENDER_URL =
   'https://raw.githubusercontent.com/scottdube/hot-info-orbs/main/docs/assets/enclosure-concept-3-winged-speedster.png';
@@ -40,8 +44,7 @@ function addRender_(form) {
 function buildKitSignupForm() {
   const form = FormApp.create('HOT Info Orbs: Kit Sign-up');
   form.setDescription(DESCRIPTION);
-  form.setConfirmationMessage(
-    "Thanks, you're on the list. We'll email the final price and how to pay before parts are ordered.");
+  form.setConfirmationMessage(CONFIRMATION);
   form.setAllowResponseEdits(true);
   form.setProgressBar(false);
 
@@ -92,13 +95,12 @@ function buildKitSignupForm() {
   Logger.log('Responses: ' + sheet.getUrl());
 }
 
-// One-off, 2026-10-28: bring the live form to the design above without
-// changing its link. Kit contents listed, XIAO and USB cable now
-// builder-supplied (so the Module question goes), 4 kits max, softer
-// enclosure wording, enclosure render at the top.
+// Bring the live form to the design above without changing its link.
+// Safe to rerun: it only sets text and choices, and adds the render once.
 function updateLiveForm() {
   const form = FormApp.openById(LIVE_FORM_ID);
   form.setDescription(DESCRIPTION);
+  form.setConfirmationMessage(CONFIRMATION);
 
   form.getItems().forEach(function (item) {
     const title = item.getTitle();
