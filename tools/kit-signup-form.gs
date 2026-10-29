@@ -9,6 +9,7 @@ const LIVE_FORM_ID = '1MMD9PAcmM4eElS5t4GJQU5yMvdGBJt0DDh9DqYVrQhc';
 const FORM_TITLE = 'HOT Info Orbs: Kit Sign-up - Please do today';
 
 const DESCRIPTION =
+  'Sign-ups close Wednesday, November 4, at 6 PM.\n\n' +
   'Five round displays on your desk showing the time, the weather and the markets. ' +
   'It updates over Wi-Fi and you set it up from any browser.\n\n' +
   'Through-hole soldering only. Kits are handed out at the November meeting; build yours ' +
