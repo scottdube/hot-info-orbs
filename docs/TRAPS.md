@@ -340,6 +340,23 @@ an xref (fixed by re-activating the assembly by lineage URN); the Auto
 Explode commit worked; the first script that scrubbed the playhead and saved
 a viewport frame crashed Fusion. Unsaved storyboard lost.
 
-Do the Animation workspace steps in the Fusion UI (Animation → Auto Explode →
-Publish Video). Keep scripts to reads there. Full notes in the session memory
-`fusion-animation-workspace-api`.
+**Retry the same evening worked, one step per script call:** Fusion came
+back with the storyboard intact in the recovered document (explode 0 → 1 s,
+all levels). Activate the assembly by URN, confirm the Animation workspace,
+then set view recording OFF, assign `viewport.camera` once (the fit camera
+pulled in to 0.9 of its distance framed the whole explosion; 0.74 clipped
+it), and loop `playheadPosition = i/90` → `doEvents` → `refresh` →
+`saveAsImageFile(1920×1080)`. 91 frames took 65 s across two calls (the MCP
+call times out at ~2 min, so batch and log to a file). The camera holds
+across scrubs while recording is off. **With view recording ON the storyboard
+restores its stored view on every scrub and on the ON transition itself**, so
+the camera cannot be changed from the API once a view is recorded; the saved
+frames carry no "View is not recording" watermark either way (t=0 frames
+byte-identical in both modes), so leave recording off. ffmpeg assembled
+`docs/assets/enclosure-explode-v0.3.mp4` (hold / explode / hold / collapse /
+hold, 10 s). Viewport shading, not a ray-traced render. The crash cause is
+still not established; nothing in the working run differed except doing one
+thing per call and setting the camera explicitly instead of `viewport.fit()`.
+The fusion-essentials add-in's reads flipped the active document mid-task;
+use only the Autodesk MCP for Animation work. Session memory
+`fusion-animation-workspace-api` has the script shape.
