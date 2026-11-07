@@ -360,3 +360,15 @@ thing per call and setting the camera explicitly instead of `viewport.fit()`.
 The fusion-essentials add-in's reads flipped the active document mid-task;
 use only the Autodesk MCP for Animation work. Session memory
 `fusion-animation-workspace-api` has the script shape.
+
+**Second crash, same evening, same place.** Redoing the explode as One Level
+(so the PCB xref `hot_info_orbs_xiao_46mm_assy final` and its 26 children move
+as one block): `storyboards.add()` + `activate()` was fine; a script that
+pre-selected the 25 top-level occurrences and ran
+`PublisherExplodeDirectChildrenCommand.execute()` returned normally with
+`SelectCommand` active and storyboard end still 0; the next two reads
+(`activeCommand`, then a screenshot) timed out and Fusion was gone. The first
+crash of the day also followed the explode launch. **The explode launch from
+a script is the common factor; the frame capture never failed.** Rule now:
+Scott runs Auto Explode in the UI; scripts touch the storyboard only after
+its end is non-zero and the explode is drawn.
