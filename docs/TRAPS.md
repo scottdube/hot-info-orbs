@@ -372,3 +372,16 @@ crash of the day also followed the explode launch. **The explode launch from
 a script is the common factor; the frame capture never failed.** Rule now:
 Scott runs Auto Explode in the UI; scripts touch the storyboard only after
 its end is non-zero and the explode is drawn.
+
+**Done that way, it worked first time.** Scott added Storyboard2 and ran
+Auto Explode One Level in the UI (end 1.8 s); the script then only set the
+camera, scrubbed and saved. One Level keeps the PCB xref
+`hot_info_orbs_xiao_46mm_assy final` whole (board, sockets, five TFTs move as
+one block), which is what the published `enclosure-explode-v0.3.mp4` now
+shows. Two things to know for next time: Scott's first two "done" reports
+were the recovered Storyboard1 still active (check `storyboards.count` and
+`end` before capturing, and compare a test frame against the previous one;
+twice the file was byte-identical); and `Occurrence.boundingBox` ignores the
+explode (identical at t=0 and t=end), so re-aim the camera from a test frame:
+shift the target along the camera right vector (`dir × up`) by a fraction of
+the measured frame width, not by a bounding box.
