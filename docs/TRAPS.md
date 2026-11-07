@@ -328,3 +328,18 @@ Seen on the phone during the video shoot: a red "Not saved — 1 field needs fix
 ## Bambu H2D: the overhang-fan threshold is a no-op on Generic PLA (2026-11-06)
 
 Planned for the body-radius coupons: lower the "cooling overhang threshold" from 50% to 10% so the fan comes on earlier on the R12 radius. Generic PLA @BBL H2D already sets `fan_min_speed` = `fan_max_speed` = 100, so the part fan is at 100% on every layer after the first, and the threshold has nothing to raise. It is also a **filament** setting, so applying it to some objects means a second project filament. With different layer heights per object, Bambu Studio then refuses to slice: "The prime tower is only supported if all objects have the same variable layer height". Read the filament's fan min/max before tuning overhang fan settings. Details are in `hardware/body-radius-coupon/README.md`.
+
+## Fusion crashed driving the Animation workspace from the API
+
+2026-11-06, v0.3 `master assembly` (145 occurrences, 811 bodies). An
+explosion animation was attempted through the Fusion MCP script tool. There
+is no API for explode actions (only storyboard play/scrub), so the route was
+the UI commands plus `NuCommands.CommitCmd`. Activating the Animation
+workspace from a script blanked the canvas and flipped the active document to
+an xref (fixed by re-activating the assembly by lineage URN); the Auto
+Explode commit worked; the first script that scrubbed the playhead and saved
+a viewport frame crashed Fusion. Unsaved storyboard lost.
+
+Do the Animation workspace steps in the Fusion UI (Animation → Auto Explode →
+Publish Video). Keep scripts to reads there. Full notes in the session memory
+`fusion-animation-workspace-api`.
