@@ -385,3 +385,25 @@ twice the file was byte-identical); and `Occurrence.boundingBox` ignores the
 explode (identical at t=0 and t=end), so re-aim the camera from a test frame:
 shift the target along the camera right vector (`dir × up`) by a fraction of
 the measured frame width, not by a bounding box.
+
+### Splitting an xref's bodies into components from the API (2026-11-06)
+
+Needed `wings right` / `wings left` in `winged end caps` as separate components so the
+master assembly can Manual Explode each cap its own way. What bit:
+
+- **A Part-type document refuses `BRepBody.createComponent()`** ("Part Design documents
+  can only contain one component"). There is no API to convert; Scott flipped it to
+  Assembly in Browser > Document Settings > Design Type and saved (v3, v4).
+- **`createComponent()` returns the moved `BRepBody`, not an Occurrence.** Get the new
+  component via `moved.parentComponent` and rename it there. Timeline gains
+  `Body->Comp1`, `Body->Comp2`; the bodies do not move.
+- **The lineage URN matched four `Document` objects**: one real tab plus the proxies the
+  master holds for its xref, at different versions (v2 Part, v3, v4). `isVisible` is True
+  on all of them and `close()` returns True without closing a proxy. A proxy accepts
+  `activate()`, shows on the canvas, accepts the split, and `save()` returns True while
+  writing nothing (server version unchanged, `isModified` stays True). The tab Fusion
+  labels `name(1)` behaved the same way. What worked: `app.documents.open(dataFile, True)`
+  fresh, then pick the candidate whose `versionNumber` equals the server's latest, split
+  there, `doc.save(desc)` → `isModified` False within 0.5 s and the server shows v5.
+- The active document flips back to the master between MCP calls; activate the target
+  inside the same script that edits it.
