@@ -11,6 +11,12 @@
     #include "config.h"
 #endif
 
+// The orb's network name: the mDNS name (<name>.local) and the DHCP hostname a
+// router may list or publish in its own DNS. Shared by WifiWidget and OtaUpdater.
+#ifndef OTA_HOSTNAME
+    #define OTA_HOSTNAME "info-orbs"
+#endif
+
 #if !__has_include("secrets.h")
     #error "Copy firmware/config/secrets.h.template to firmware/config/secrets.h and paste in your own API keys"
 #else
