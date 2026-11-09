@@ -62,6 +62,7 @@ this repository is public.
 | Settings | edit `config.h`, rebuild, reflash | **a page in the browser**: `http://<orb's IP>/settings` |
 | Boot picture | fixed at build time | **upload your own** from the settings page |
 | Weather | one Visual Crossing town | also **your own Tempest stations**, one page each (see SETUP step 10) |
+| Custom pages | one MQTT page, laid out by a JSON message with pixel positions | **two MQTT pages and a JSON page**, set up on the settings page; long values wrap and the orbs on a page share one text size; Home Assistant recipes in [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) |
 
 **Upgrading a board flashed before 2026-09-23? Flash it once more over USB.**
 The WiFi updates need a new flash layout (two firmware slots instead of one), and
@@ -143,6 +144,7 @@ prototype boards already built, is at tag `v1.1-prototype-firmware`.
 | | |
 |---|---|
 | [docs/SETUP.md](docs/SETUP.md) | empty machine to running orb |
+| [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) | your own pages from MQTT or a JSON web address, with Home Assistant recipes (The Villages town squares among them) |
 | [docs/TRAPS.md](docs/TRAPS.md) | things that cost time once, so they cost it once |
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | web control panel and OTA, with the traps that will bite whoever builds them |
 | [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | the prototype's module choice, since replaced by the XIAO ESP32-S3 / S3 Plus; kept for the arguments that reversed |
