@@ -1,177 +1,174 @@
 # HoT Info Orbs
 
-Five round 240×240 displays on one SPI bus, driven by a Seeed **XIAO ESP32-S3
-or XIAO ESP32-S3 Plus** (builder's choice), on a custom carrier board.
-Clock, weather, stocks — and whatever else gets written.
+Five round 240×240 displays in a row, driven by a Seeed **XIAO ESP32-S3** or
+**XIAO ESP32-S3 Plus** on a custom carrier board. They show the time, the
+weather, stock prices, and pages you set up yourself, and they rotate through
+them on their own.
+
+![The five orbs in the enclosure, front view (render)](docs/images/overall_assembly_faces_front.png)
+
+A [Hands-On Tech Club](https://handsontech.org) build, derived from Brett
+Turner's [Info Orbs](https://github.com/brettdottech/info-orbs) (see
+[Credit](#credit-and-license)). It is built by people at every skill level, so
+the build is meant to be hard to get wrong and cheap to get into.
 
 ## Start here
 
-**Never used GitHub?** You don't need an account. The list of folders above is
-the project's files; everything you need is one of these links:
+**You don't need a GitHub account.** The list of folders above is the
+project's files. Pick the link that matches what you want:
 
-- **What it is and what it does:** the
-  [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html),
-  an ordinary web page.
-- **Getting one:** it's a Hands-On Tech Club build,
-  [handsontech.org](https://handsontech.org).
-- **The microcontroller:** a Seeed **XIAO ESP32-S3 or XIAO ESP32-S3 Plus**,
-  whichever you prefer. Same board, same pins, same firmware; the Plus has more
-  flash.
-- **You have a built one and want it running:** the
-  [setup guide](docs/SETUP.md), written for someone who has never done this.
-- **You want to order a board:** the
-  [board rev 2.5 release](../../releases/tag/board-rev2.5) has exactly the
-  files for that and nothing else: the gerber zip to upload to the fab, the
-  parts list, the schematic and board PDFs, and the 3D model.
-- **You want the source:** the green **Code** button above, then
-  **Download ZIP**, gets everything. The board is in
-  `hardware/hot-info-orbs-xiao-46mm/`, the enclosure in `hardware/enclosure/`,
-  the software in `firmware/`.
+| You want to… | Go to |
+|---|---|
+| see what it is and what it does | the [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html), an ordinary web page |
+| get a built one running | the [setup guide](docs/SETUP.md), written for someone who has never done this |
+| order a bare board | the [board rev 2.5 release](../../releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
+| print the enclosure | [hardware/enclosure/](hardware/enclosure/) |
+| get all the source | the green **Code** button above, then **Download ZIP** |
 
-Built as a club project, which shapes the whole thing: it is assembled by people
-at a wide range of skill levels, so the build has to be hard to get wrong and
-cheap to get into.
+## What it shows
 
-## Credit where it belongs
+Each page uses all five displays. Set a rotation time (on the settings page,
+or `WIDGET_CYCLE_DELAY` in `config.h`) and the orbs move from page to page on
+their own. The left and right buttons step back and forward by hand.
 
-**This is a derivative of [Info Orbs by Brett Turner](https://github.com/brettdottech/info-orbs)**
-— his project, his firmware, his idea. The upstream repository, its
-[contributors](https://github.com/brettdottech/info-orbs/graphs/contributors),
-and Brett's [assembly and flashing video](https://link.brett.tech/orbsYT) are
-where this came from, and his boards can be
-[bought as a dev kit](https://brett.tech/collections/electronics-projects/products/info-orbs-full-dev-kit)
-if you want the original rather than our variant.
+- **Clock**: normal, Nixie-tube, or custom faces, in your choice of colors.
+- **Weather** for a town (Visual Crossing), or from your own
+  [Tempest](https://tempest.earth) weather stations, one page per station.
+- **Stocks**: five tickers.
+- **Custom pages** that you set up from the browser, no rebuild:
+  - **Web Data** draws a JSON file from any web address.
+  - **MQTT** shows one live value per display from an MQTT broker, such as
+    Home Assistant.
 
-The firmware here is his, with local changes. The board is not: it is a new
-design for a different microcontroller.
+  See [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md).
 
-Licensed **AGPL-3.0**, inherited from upstream — see `LICENSE.txt`. Sharing a
-built board with someone means they are entitled to the source, which is why
-this repository is public.
+## What you need
 
-## What is different here
+- The assembled orbs: carrier board, a XIAO ESP32-S3 or S3 Plus (either one;
+  same pins, same firmware), five GC9A01 round displays, three buttons.
+- A **USB data cable**. Many cheap cables carry power only.
+- A **2.4 GHz** WiFi network. The ESP32 cannot see 5 GHz.
+- A computer with [VS Code](https://code.visualstudio.com) and the
+  [PlatformIO](https://platformio.org) extension.
+- Two free API keys, about a minute each:
+  [Visual Crossing](https://www.visualcrossing.com/sign-up) for weather and
+  [TimeZoneDB](https://timezonedb.com/register) for daylight-saving changes.
+  Register your own. A shared key uses up one free quota and can be revoked
+  for everyone who uses it.
 
-| | Upstream | This |
-|---|---|---|
-| Microcontroller | ESP32 dev kit (30/38-pin) | **Seeed XIAO ESP32-S3 or XIAO ESP32-S3 Plus** |
-| Display supply | 3.3 V, off the module's regulator | **5 V, each module regulates its own** |
-| API keys | compiled into `config.h`, shipped with live keys in the template | **`secrets.h`, gitignored, build fails without it** |
-| Board | upstream's 2-layer design | **new carrier board** for the XIAO |
-| Firmware updates | USB cable every time | **over WiFi** — browser page or `pio run -e ota` |
-| Boot splash | "Info Orbs by brett.tech", Brett's logo | **"HOT Info Orbs by HOT-Team"**, Yang's avatar for now; the Hands-On Tech hand (`images/hot-logo.jpg`) replaces it once Yang has this version |
-| Settings | edit `config.h`, rebuild, reflash | **a page in the browser**: `http://<orb's IP>/settings` |
-| Boot picture | fixed at build time | **upload your own** from the settings page |
-| Weather | one Visual Crossing town | also **your own Tempest stations**, one page each (see SETUP step 10) |
+## Getting it running
 
-**Upgrading a board flashed before 2026-09-23? Flash it once more over USB.**
-The WiFi updates need a new flash layout (two firmware slots instead of one), and
-only a USB flash writes that layout. Every update after that can go over WiFi:
-open `http://<orb's IP>/update`, choose `.pio/build/xiao-esp32s3/firmware.bin`
-and upload. The page also shows which commit is running. Set `OTA_PASSWORD` in
-`secrets.h`, or anyone on your network can flash your orbs. Details in
-[docs/SETUP.md](docs/SETUP.md#8-later-updates-no-cable-needed).
+[docs/SETUP.md](docs/SETUP.md) is the full walk-through, about 45 minutes the
+first time, and ends with a troubleshooting table organized by what you
+actually see. In short:
 
-The 5 V change is the significant one. Upstream powers all five displays from
-the ESP32 module's onboard regulator, which is why builders report the module
-running at 82 °C with the radio off. The GC9A01 modules carry their own
-regulators, so feeding them 5 V moves that load off the microcontroller
-entirely. **Check the module you buy actually has one** — they vary, and it
-looks like a small chip with capacitors either side on the back of the board.
+1. **Make your two config files.** In `firmware/config/`, copy
+   `config.h.template` to `config.h` (preferences: timezone, units, tickers)
+   and `secrets.h.template` to `secrets.h` (your API keys). Both copies are
+   ignored by git, so your keys never end up in the repository.
+   **The build stops with an error if either file is missing or a key is
+   empty.** That is on purpose: otherwise you get a blank orb and no clue why.
+2. **Flash over USB once.** In PlatformIO: *Project Tasks → xiao-esp32s3 →
+   Upload*. This first flash has to be over USB because it also sets up the
+   flash layout that WiFi updates need.
+3. **Connect it to WiFi.** The orbs start their own network, `Info-Orbs_` plus
+   two characters shown on the screens. Join it from a phone, and pick your
+   home network on the page that opens.
 
-## Getting started
+After that, you can do everything from a browser on the same network:
 
-**[docs/SETUP.md](docs/SETUP.md)** goes from an empty machine to a running orb,
-assuming no PlatformIO experience, and ends in a troubleshooting table keyed by
-the symptom you actually see.
+| Page | What it does |
+|---|---|
+| `http://<orb's IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, custom pages, your own start-up picture. The values in `config.h` are only the starting defaults. |
+| `http://<orb's IP>/update` | install new firmware: choose `.pio/build/xiao-esp32s3/firmware.bin` and upload. The page also shows which version is running. |
 
-The short version: copy **both** templates in `firmware/config/`, then build.
-
-| Copy | To | Holds |
-|---|---|---|
-| `config.h.template` | `config.h` | preferences — timezone, units, tickers |
-| `secrets.h.template` | `secrets.h` | your own API keys |
-
-Both are gitignored; the templates are what's tracked. **The build refuses to
-compile without both**, and refuses again if a key is left empty — deliberately,
-because the alternative is a blank orb on the bench and no idea why.
-
-Two free API keys are needed, about a minute each:
-[Visual Crossing](https://www.visualcrossing.com/sign-up) for weather and
-[TimeZoneDB](https://timezonedb.com/register) for DST changeovers. Register your
-own — a shared key burns one free-tier quota and can be revoked out from under
-everyone using it.
-
-To have the orbs rotate Clock → Stocks → Weather on their own, set
-`WIDGET_CYCLE_DELAY` in `config.h` to the number of seconds per page (15 works
-well; 0 turns it off). Pressing a button restarts the countdown.
-
-**After the first flash, most of `config.h` can be changed from a phone or computer.** Open
-`http://<orb's IP>/settings` to change the rotation time, tickers, weather
-location and units, timezone, clock face and colors, night-dim hours,
-upside-down mounting, and the start-up picture. The orbs restart to apply the
-changes. The values in `config.h` become the defaults, and the page's reset button returns
-to them. See [docs/SETUP.md](docs/SETUP.md#9-change-settings-from-a-browser).
+**Set `OTA_PASSWORD` in `secrets.h`.** Without it, anyone on your network can
+change your orbs' settings or flash them.
 
 ## Hardware
 
-The KiCad 10 project is in
-**[hardware/hot-info-orbs-xiao-46mm/](hardware/hot-info-orbs-xiao-46mm/)**, for a
-Seeed XIAO ESP32-S3 or XIAO ESP32-S3 Plus, with the five displays 46 mm apart to
-fit the enclosure in [hardware/enclosure/](hardware/enclosure/). Symbol and
-footprint libraries are project-local, so cloning and opening is all that is
-required — nothing to install or copy into a global library. Its README has the
-board's state and the BOM; the gerbers sent to the fab are in its `fab/`.
+- **Carrier board:** the KiCad 10 project in
+  [hardware/hot-info-orbs-xiao-46mm/](hardware/hot-info-orbs-xiao-46mm/), with
+  the displays 46 mm apart to fit the enclosure. Its symbol and footprint
+  libraries are inside the project, so you can open it without installing
+  anything. Its README has the board's history, the pin map and the BOM; the
+  files sent to the fab are in its `fab/`.
+- **Enclosure:** 3D-printed, in [hardware/enclosure/](hardware/enclosure/);
+  design notes in [docs/ENCLOSURE.md](docs/ENCLOSURE.md).
+- **Power:** 5 V USB-C. The displays run from 5 V through their own
+  regulators, not from the XIAO's 3.3 V regulator. **Check that the display
+  modules you buy have one**: a small chip with a capacitor on each side, on
+  the back of the module.
 
-Earlier boards are not in `main`, but every one is a tag away
+Older boards are not on `main`, but each one is kept under a tag
 (`git checkout <tag> -- <folder>` brings a folder back):
 
 | Tag | What |
 |---|---|
-| [`board-46mm-rev2.5`](../../releases/tag/board-46mm-rev2.5) | this board as signed off for fab, with every earlier fab-run zip in `fab/` |
-| [`board-xiao-narrow-final`](../../releases/tag/board-xiao-narrow-final) | the first XIAO carrier, displays ~39 mm apart (`hardware/hot-info-orbs-xiao/`); never ordered |
-| [`v1.1-run1`](../../releases/tag/v1.1-run1) | the v1.1 prototype, below |
-| upstream | Brett's original ESP32 dev-kit board and stand: [`PCBFiles+Schematics/`](https://github.com/brettdottech/info-orbs/tree/main/PCBFiles%2BSchematics) in his repository; removed from this one's `main` 2026-10-25 so its gerbers can't be mistaken for ours |
-
-The **v1.1 prototype** that came before it (10 boards ordered 2026-08-29, for
-an earlier module the project no longer uses) is kept at tag
-[`v1.1-run1`](../../releases/tag/v1.1-run1), with the exact gerbers sent to the
-fab in `hardware/hot-info-orbs/fab/` at that tag. Its last firmware, for the
-prototype boards already built, is at tag `v1.1-prototype-firmware`.
+| [`board-46mm-rev2.5`](../../releases/tag/board-46mm-rev2.5) | the current board as signed off for the fab, with the zips from every earlier fab run |
+| [`board-xiao-narrow-final`](../../releases/tag/board-xiao-narrow-final) | first XIAO carrier, displays ~39 mm apart; never ordered |
+| [`v1.1-run1`](../../releases/tag/v1.1-run1) | the v1.1 prototype on an ESP32-S3 SuperMini, the module used before the XIAO |
 
 ## Documentation
 
 | | |
 |---|---|
-| [docs/SETUP.md](docs/SETUP.md) | empty machine to running orb |
-| [docs/TRAPS.md](docs/TRAPS.md) | things that cost time once, so they cost it once |
-| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | web control panel and OTA, with the traps that will bite whoever builds them |
-| [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md) | the prototype's module choice, since replaced by the XIAO ESP32-S3 / S3 Plus; kept for the arguments that reversed |
-| [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | the board: XIAO ESP32-S3 / S3 Plus on edge pins only, where the twelfth pin went, what the autorouter rejected |
-| [docs/ESPHOME-EVALUATION.md](docs/ESPHOME-EVALUATION.md) | why this is not an ESPHome project |
+| [docs/SETUP.md](docs/SETUP.md) | from an empty computer to running orbs |
+| [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) | Web Data and MQTT pages, with a Home Assistant recipe |
+| [docs/TRAPS.md](docs/TRAPS.md) | problems that each cost time once, written down so they don't again |
+| [docs/ENCLOSURE.md](docs/ENCLOSURE.md) | the enclosure design and why it looks the way it does |
+| [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | why the XIAO, and how the board's pins were chosen |
+| [docs/POWER-MEASURED.md](docs/POWER-MEASURED.md) | measured current draw, and why the displays run on 5 V |
+| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | requirements for the settings page and WiFi updates |
+| [docs/TEMPEST-API.md](docs/TEMPEST-API.md) | how the Tempest weather data is read |
+| [docs/DISPLAY-EDGE-TEST.md](docs/DISPLAY-EDGE-TEST.md) | how much of each round display is usable, measured |
+| [docs/VARIANT-ESP32-S3-SUPERMINI.md](docs/VARIANT-ESP32-S3-SUPERMINI.md), [docs/ESPHOME-EVALUATION.md](docs/ESPHOME-EVALUATION.md) | history: the module used before the XIAO, and why this isn't an ESPHome project |
 
-The variant and ESPHome documents keep the reasoning that changed rather than
-only the conclusions. A decision with its argument attached can be revisited;
-one without it gets re-litigated from scratch.
+Several of these keep the reasoning behind a decision, not just the decision:
+a choice with its argument attached can be revisited without starting over.
+
+## Credit and license
+
+**This is a derivative of [Info Orbs by Brett Turner](https://github.com/brettdottech/info-orbs):
+his project, his firmware, his idea.** His repository, its
+[contributors](https://github.com/brettdottech/info-orbs/graphs/contributors)
+and his [assembly and flashing video](https://link.brett.tech/orbsYT) are where
+this came from. If you want the original rather than this variant, his boards
+can be [bought as a dev kit](https://brett.tech/collections/electronics-projects/products/info-orbs-full-dev-kit).
+
+The firmware is his, with changes. The board is new: a different
+microcontroller and a different power layout. The main differences from
+upstream:
+
+| | Upstream | This project |
+|---|---|---|
+| Microcontroller | ESP32 dev kit | Seeed XIAO ESP32-S3 or S3 Plus |
+| Display power | 3.3 V from the module's regulator | 5 V, each display regulates its own |
+| API keys | in `config.h` | in `secrets.h`, ignored by git; the build fails without it |
+| Settings | edit `config.h`, rebuild, reflash | a settings page in the browser |
+| Firmware updates | USB cable every time | over WiFi after the first flash |
+| Weather | one Visual Crossing town | also your own Tempest stations |
+
+Licensed **AGPL-3.0**, inherited from upstream (see `LICENSE.txt`). If you give
+someone a built orb, they are entitled to its source, which is why this
+repository is public.
 
 ## Contributing
 
 **Fork it and open a pull request.** Anyone can clone, build, fork and propose
-changes — no permission needed for any of that, and a fork is yours to take in
-whatever direction you like.
+changes without asking.
 
-**Push access is by invitation**, and deliberately limited to a couple of
-people. That is not gatekeeping the project, it is keeping the board files safe:
-GitHub gives a personal repository no read-only collaborator tier, so adding
-someone grants full write to everything including the KiCad files, which cannot
-be merged if two people change them at once.
+If you're building one and something is wrong or missing, such as a step in
+the setup guide or a problem worth recording, [open an issue](../../issues) or
+send a PR. A build that went wrong is worth reporting even if you already got
+around it; that is how [docs/TRAPS.md](docs/TRAPS.md) gets written.
 
-If you are building one of these and something is wrong or missing — a step in
-the setup guide, a trap worth recording — [open an issue](../../issues) or send
-a PR. Both are open to everybody, and a build that went sideways is worth
-reporting even if you already worked around it: that is how the traps file gets
-written.
+**Push access is by invitation** and kept to a few people. That protects the
+board files: GitHub gives a personal repository no read-only collaborator
+level, so a collaborator can write everything, including KiCad files, which
+git cannot merge.
 
-## For collaborators
+### For collaborators
 
 ```bash
 git pull --rebase     # before you start
@@ -180,19 +177,16 @@ git commit -am "what changed and why"
 git push
 ```
 
-`git config pull.rebase true` once, and a plain `git pull` does the right thing.
+Run `git config pull.rebase true` once, and a plain `git pull` does the right
+thing.
 
-**KiCad files cannot be merged.** If two people edit `hot_info_orbs.kicad_pcb`,
-git cannot reconcile them and somebody's work is lost. No tool fixes this, so it
-is handled by saying so out loud: *"I've got the board"* / *"it's yours"*.
-Everything else — firmware, docs, config — merges normally and needs no
-ceremony.
+**KiCad files cannot be merged.** If two people edit the same `.kicad_pcb`, one
+person's work is lost. So say it out loud first: *"I've got the board"* /
+*"it's yours"*. Firmware and docs merge normally.
 
-Do not edit the KiCad project while it is open in KiCad, including with scripts.
-KiCad holds its own copy in memory and writes it back on save, silently
-discarding changes made underneath it. That has already cost a merge here once.
+**Don't edit a KiCad project while KiCad has it open**, scripts included. KiCad
+writes its in-memory copy back on save and silently discards anything changed
+underneath it.
 
-MegaLinter runs on every push and is configured **not** to commit anything back.
-Upstream had it auto-committing fixes, which meant a bot pushed after every push
-and rejected the next one — so "the remote has moved" stopped meaning "the other
-person did something".
+MegaLinter runs on every push and does **not** commit fixes back, so if the
+remote has moved, it was a person, not a bot.
