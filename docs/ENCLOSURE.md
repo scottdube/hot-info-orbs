@@ -135,8 +135,9 @@ prod 2469, $13.26), is cheaper than the two-length cart and engages more
 everywhere.** **Decided 2026-11-09 (Scott): one length.** The Bolt Depot cart
 is now 600 x #4 x 3/8" (prod 2469, 6 bags, $13.26); the 1/4" (prod 7370) is
 out. Estimate to 32162: $8.41 Economy + $1.52 tax = **$23.19 landed**
-($0.58/kit; UPS Ground $32.54). **Ordered 2026-11-09 (Scott), Economy to
-LRD.** The boss-split test with the PA screws is now a check on the printed
+($0.58/kit; UPS Ground $32.54). **Ordered 2026-11-09 (Scott): Bolt Depot order
+2651204, PO "Info Orbs", 600 x 2469, $13.26 + $8.41 Economy + $1.52 tax =
+$23.19, Economy to LRD.** The boss-split test with the PA screws is now a check on the printed
 part, not a gate on the order. Economy dropped from
 $12.13 to $8.41 while the cart's estimated weight stayed at 1.0 lb both
 times (Scott, 2026-11-09), so Bolt Depot's Economy rate carries a
