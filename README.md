@@ -101,6 +101,17 @@ settings or install software on them. In `secrets.h`, find the line
 between the quotes, save, and upload again (step 2). The browser then asks
 for user name `admin` and that password.
 
+**Optional, for more than one orb or a fussy USB port.** Settings that belong
+to your computer, such as which USB port to upload to or which orb to update
+over WiFi, go in a file named `platformio_local.ini` next to `platformio.ini`.
+Create it only if you need it; it stays on your computer and is never uploaded
+to GitHub. For example, to update an orb you named `orb-office` (`OTA_HOSTNAME` in `config.h`) over WiFi:
+
+```ini
+[env:ota]
+upload_port = orb-office.local
+```
+
 ## Hardware
 
 *Mainly for people building or changing the board. If you have a kit, you can
