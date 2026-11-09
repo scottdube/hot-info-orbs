@@ -103,6 +103,14 @@ sheet-metal screws, so this choice is also the #4-over-M3 decision. Fastenal
 is the fallback if the sheet-metal thread cracks bosses and the hole can't
 move: same $0.04 each in the proper Hi-Lo form, bought 1,500 at a time.
 
+**Test stock on hand (2026-11-09):** Scott's 625-piece "PA Self-Tapping Micro
+Screws" kit has 50 each of M3 x 6 and M3 x 8. PA = pan head, sharp point
+(PB is the blunt-tail sibling): a ~2.9-3.0 mm, ~1.05 mm pitch, 60° thread,
+i.e. ST2.9 / type AB sheet-metal form, not Plastite or Hi-Lo. That is within
+0.15 mm and 0.01 mm pitch of a #4 AB, so the boss-split test above can be
+run with these before anything is ordered. Identification is from the label
+convention, not a measured thread.
+
 **Leftover from the #4-screw design:** the sleeve and end-cap holes were driven
 by the user param `number_4_screw_thread_dia` (2.85 mm). Each of those docs now
 has its own `screw_clearance_dia = 3.2 mm`, and the hole dimensions point at

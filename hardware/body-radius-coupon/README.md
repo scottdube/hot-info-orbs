@@ -105,11 +105,32 @@ Outer-wall speeds below the max come from the 8 s minimum layer time.
 
 ## Results
 
-| Coupon | Radius quality (1–5) | Droop at bed edge | Lap edge OK | Notes |
+Printed 2026-11-06 on the H2D in blue PLA. Scott numbered them 1, 2, 3 left
+to right off the plate, so 1 = F-A, 2 = F-B, 3 = F-C. Scored by Scott by hand
+on 2026-11-06. **Scale: 1 = worst, 5 = best, in every column.**
+
+| Coupon | Radius quality | Droop at bed edge | Lap edge | Notes |
 |---|---|---|---|---|
-| F-A | | | | |
-| F-B | | | | |
-| F-C | | | | |
+| F-A (#1) | **3** | **4** | 5 | About the same as the Nov 4 body |
+| F-B (#2) | 1–2 | 1 | 5 | Worse than the control |
+| F-C (#3) | 1–2 | 1 | 5 | Fuzzy skin did not hide it |
+
+**What was measured:** the stock profile beat both tuned variants on both
+radius quality and droop. The lap edge was fine on all three.
+
+**What it rules out:**
+- **Mesh faceting.** F-A (1° facets) looks about the same as the Nov 4 body
+  (9° facets from Fusion's 3D Print STL), so the faceting was not the problem.
+- **The B settings as a group.** 0.08 mm layers, outer wall 60 mm/s and
+  inner/outer order together made both quality and droop worse.
+
+**Cause of B's droop: not established.** B changed layer height and outer-wall
+speed at the same time, so this plate can't say which one did it. One untested
+explanation is that a slower outer wall puts more heat into an unsupported
+perimeter. Isolating it needs a coupon that changes only one of the two.
+
+**Where face-down stands:** with stock settings, droop is acceptable (4), but
+the radius quality stays at 3, the same as the real part.
 
 ## Which file was the poor print? (settled 2026-11-06)
 
@@ -158,9 +179,10 @@ are closed):
 | Coupons | 58,616 | 90 (1°) | 0.21 mm | <1 µm |
 
 A 37 µm flat is smaller than a 0.2 mm layer step, but the facet edges run the
-full 249.5 mm length as straight lines, which can show on a glossy filament. If
-coupon F-A comes out clearly better than the original part, faceting was part of
-the problem. For the real parts, export with the coupon refinement either way.
+full 249.5 mm length as straight lines, which can show on a glossy filament.
+**Answered 2026-11-06:** F-A (1° facets) is about the same as the Nov 4 body
+(9° facets), so faceting was not part of the problem. A finer export is still
+cheap insurance.
 
 ## If B and C both fail: print on end
 
@@ -181,3 +203,23 @@ print as in-plane curves.
 - **No support needed:** button holes, the bezel pin holes and the end-cap
   screw bosses.
 - **Brim:** 8–10 mm. The back body stands on only about 150 mm² per end.
+
+### Yang's on-end print (photo via Scott, 2026-11-06)
+
+This is a front body printed standing on end in dual-color silk PLA, with tree
+supports inside it. The slicer settings are unknown and the photo is soft.
+What it shows:
+- **Support scars on the top arc of each display hole.** The trees land there,
+  and the edge is ragged and torn. That is the edge the bezel opening shows,
+  about 0.75 mm of it, and the crystal rests on it.
+- **The bezel pin holes print as horizontal holes.** Several are misshapen at
+  the top, and the ones touched by supports are torn.
+- **The display face is now a layered wall,** not a bed face. Layer lines run
+  across it, with visible banding. Some of the banding may be the silk's color
+  shift; that is not established.
+- **The supports sit inside the shell.** They have to come out through the
+  Ø34 holes, and the contact points under the standoffs can't be seen.
+
+**Net:** on end trades the radius stepping for damage on the display face,
+which is the face that matters most. Face-down at stock settings (radius 3,
+droop 4) remains the better trade so far.
