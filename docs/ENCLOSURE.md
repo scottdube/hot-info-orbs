@@ -99,7 +99,10 @@ plastic, so they displace more PLA in the Ø2.2 boss; McMaster's own pilot
 for a #4 plastic screw is 2.64 mm. **Print one front body and drive a #4 x
 3/8" into a Ø2.2 boss before ordering 600** (a split boss means open the
 hole to ~2.4-2.5 mm in the model, which is Yang's). Bolt Depot has no M3
-sheet-metal screws, so this choice is also the #4-over-M3 decision. Fastenal
+sheet-metal screws, so this choice is also the #4-over-M3 decision. **No
+black #4 at Bolt Depot either** (Scott asked, 2026-11-09): their black Phillips
+pan self-tappers are stainless, black oxide from #6 up and painted-black #8
+and #10 only. Zinc is the only #4 finish there; black means McMaster. Fastenal
 is the fallback if the sheet-metal thread cracks bosses and the hole can't
 move: same $0.04 each in the proper Hi-Lo form, bought 1,500 at a time.
 
