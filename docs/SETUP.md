@@ -186,6 +186,42 @@ settings, and both pages show a ⚠ warning saying so.
 A failed or interrupted update keeps the old firmware. A new firmware that
 installs but cannot get back on WiFi is rolled back when it next restarts.
 
+### Flashing the release files over USB
+
+The [Quick start](../README.md#quick-start-no-software-to-install-on-your-pc)
+keeps novices to two safe moves: the factory reset file at `0x0`, and updates
+over WiFi. If you flash the [release files](https://github.com/scottdube/hot-info-orbs/releases)
+by hand instead, know the layout (`partitions.csv`):
+
+| Offset     | What is there                                            |
+|------------|----------------------------------------------------------|
+| `0x0`      | bootloader (S3: not `0x1000` as on the classic ESP32)    |
+| `0x8000`   | partition table                                          |
+| `0x9000`   | NVS: WiFi, settings, the weather key                     |
+| `0xE000`   | `otadata`: which app slot boots                          |
+| `0x10000`  | `app0`                                                   |
+| `0x3D0000` | `app1`                                                   |
+| `0x790000` | filesystem: the uploaded start-up picture                |
+
+- **`info_orbs_fw_combo.bin` goes at `0x0` only.** It is the whole 8 MB chip,
+  blank everywhere past the app, so it is also a factory reset.
+- **`firmware.bin` never goes at `0x0`.** That overwrites the bootloader and
+  the orbs stay dark until the combo file is flashed.
+- **`firmware.bin` at `0x10000` may not take.** WiFi updates alternate between
+  the two app slots, and `otadata` records which one boots. After an odd number
+  of WiFi updates the orb runs from `app1`, so writing `app0` alone changes
+  nothing: it reboots into the old firmware. Erase `otadata` in the same
+  session so the bootloader falls back to `app0`:
+
+  ```bash
+  esptool.py --chip esp32s3 write_flash 0x10000 firmware.bin
+  esptool.py --chip esp32s3 erase_region 0xe000 0x2000
+  ```
+
+  `pio run -t upload` never hits this: it writes `boot_app0.bin` to `0xE000`
+  with every upload. The orbs' `/update` page never hits it either, which is
+  why the Quick start uses it.
+
 ## 9. Change settings from a browser
 
 Open `http://<orb's IP>/settings` (or `http://info-orbs.local/settings`) on a
