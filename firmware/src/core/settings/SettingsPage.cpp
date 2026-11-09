@@ -268,7 +268,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     const SettingsValues d = Settings::defaults();
     const SettingsValues &stored = Settings::get(); // differs from `v` only on a rejected save
     String h;
-    h.reserve(28000); // measured page: 20.0 KB with MQTT page 2 (2026-10-24), before the API key fieldset (~0.8 KB), the time zone list (~4 KB) and the Tempest fields in every build (~1.5 KB): ~26 KB estimated, measured after the merge. Below that every append reallocs a big block on a heap with no PSRAM
+    h.reserve(25000); // measured page: 21.5 KB on the XIAO rig with both MQTT pages, the time zone list and two Tempest stations (2026-11-09). Below that every append reallocs a big block on a heap with no PSRAM
     h += PAGE_HEAD;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
     {
