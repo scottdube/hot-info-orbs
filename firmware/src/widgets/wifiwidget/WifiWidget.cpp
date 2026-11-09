@@ -22,6 +22,9 @@ void WifiWidget::setup() {
     m_manager.setFontColor(TFT_WHITE);
     m_manager.drawCenterString("Connecting", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
 
+    // DHCP hostname, so the router knows the orb by the same name as mDNS does.
+    // Must come before WiFi.mode(): that is where the core applies it.
+    WiFi.setHostname(OTA_HOSTNAME);
     WiFi.mode(WIFI_STA); // For WiFiManager explicitly set mode to station, ESP defaults to STA+AP
     // The default fast scan joins the first AP it hears, not the strongest
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);

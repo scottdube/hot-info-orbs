@@ -8,10 +8,6 @@
 #include <WebServer.h>
 #include <esp_ota_ops.h>
 
-#ifndef OTA_HOSTNAME
-    #define OTA_HOSTNAME "info-orbs"
-#endif
-
 static WebServer s_server(80);
 
 // The Arduino core marks a freshly updated image good before setup() runs, so
