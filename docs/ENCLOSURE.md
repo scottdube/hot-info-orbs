@@ -114,6 +114,43 @@ i.e. ST2.9 / type AB sheet-metal form, not Plastite or Hi-Lo. That is within
 run with these before anything is ordered. Identification is from the label
 convention, not a measured thread.
 
+**Boss depth checked in Fusion (2026-11-09, read-only, nothing saved).** Scott
+asked whether each screw length has enough boss. Measured in the open v0.4
+files (main body front v2, main body back v2, wing right/left v1, joint sleeve
+v1, master assembly v2), not the v0.3 the table above cites. All distances are
+in the body's frame, y = 0 at the front face, y along the screw:
+
+| Path | Stack the screw passes (mm) | Boss hole | #4 x 1/4" (6.35) | #4 x 3/8" (9.525) |
+|---|---|---|---|---|
+| End cap → front boss ×8 | wing 5.0 (head on the outer face, no counterbore) | Ø2.2, 7.0 long, **through** into the open interior | — | 4.5 engaged, tip 2.5 short of the interior; cannot bottom |
+| Back → PCB → front boss ×4 | back cover 2.0 + PCB 1.51 | Ø2.2, 10.0 deep, blind, 5.95 solid under it | **2.7 engaged**, 7.3 spare | 5.9 engaged, 4.1 spare |
+| PCB → front boss ×3 | PCB 1.51 | same | 4.8 engaged, 5.2 spare | 8.0 engaged, 2.0 spare |
+
+So neither stock length bottoms anywhere, and the ordered split (3/8" end
+cap, 1/4" the rest) fits. The weak spot is not depth but **engagement at the
+back cover: 2.7 mm, under three pitches of a #4 AB** (Yang's 6.5 mm nominal
+gives 2.9). A 3/8" there engages 5.9 mm with 4.1 mm to spare, and 3/8" in
+the PCB position still leaves 2.0 mm, so **one length, 600 x 3/8" (6 bags of
+prod 2469, $13.26), is cheaper than the two-length cart and engages more
+everywhere.** Not changed in the cart; Scott's call. Also found:
+
+- The eight Ø2.2 bosses are at x = -108.7, -21.2, 17.8, 105.3 (body frame),
+  z = 13.635 / 56.415, top at y = 15.95, boss OD ~5.0, so the **wall around a
+  #4 is 1.4 mm** - the split test above stays necessary.
+- The PCB (`hot_info_orbs_xiao_46mm_assy final` in the master) sits on the
+  boss tops and has 7 Ø3.2 holes on 7 of the 8 boss positions; the back
+  cover's 4 Ø3.25 holes are the outer four (x = -108.7 / 105.3). The three
+  PCB-only screws therefore take 17.8/13.635, -21.2/56.415 and 17.8/56.415;
+  the boss at -21.2/13.635 has no PCB hole. **The KiCad board on this branch
+  has no mounting holes at all** (no MountingHole footprint, no NPTH); the
+  holes exist only in Yang's Fusion PCB, which is 1.51 mm thick against the
+  board's 1.6.
+- **The v0.4 joint sleeve has no screw holes**: a 4 mm wide, 1 mm wall ring
+  straddling the body/wing seam, 2 mm on each side, outside the screw path.
+  The "end cap → joint sleeve → boss" path and its Ø3.2 x4 in the table are
+  v0.3.
+- Wing left mirrors wing right: 4 Ø3.25 x 5.0 at y = 12 / 28, z = 5.5 / 70.
+
 **Leftover from the #4-screw design:** the sleeve and end-cap holes were driven
 by the user param `number_4_screw_thread_dia` (2.85 mm). Each of those docs now
 has its own `screw_clearance_dia = 3.2 mm`, and the hole dimensions point at
