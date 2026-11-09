@@ -44,8 +44,11 @@ their own. The left and right buttons step back and forward by hand.
 
 ## What you need
 
-- The assembled orbs: carrier board, a XIAO ESP32-S3 or S3 Plus (either one;
-  same pins, same firmware), five GC9A01 round displays, three buttons.
+- The assembled orbs: carrier board, a XIAO ESP32-S3 or S3 Plus, five GC9A01
+  round displays, three buttons.
+  **S3 or S3 Plus makes no difference to the software.** Both use the same
+  file and the same Upload button; there is nothing to change. The Plus has
+  more memory, which the software does not use yet.
 - A **USB data cable**. Many cheap cables carry power only.
 - A **2.4 GHz** WiFi network. The ESP32 cannot see 5 GHz.
 - A computer with [VS Code](https://code.visualstudio.com) and the
@@ -88,7 +91,9 @@ actually see. In short:
 After that, you can do everything from a web browser on a phone or computer
 connected to the same WiFi. Type the address with the orbs' IP address in
 place of `<IP>`, for example `http://192.168.1.57/settings`.
-`http://info-orbs.local/settings` often works too, without the number.
+`http://info-orbs.local/settings` often works too, without the number. (If
+you have more than one set, see [Building more than one
+set](#building-more-than-one-set).)
 
 | Address | What it does |
 |---|---|
@@ -101,11 +106,39 @@ settings or install software on them. In `secrets.h`, find the line
 between the quotes, save, and upload again (step 2). The browser then asks
 for user name `admin` and that password.
 
-**Optional, for more than one orb or a fussy USB port.** Settings that belong
-to your computer, such as which USB port to upload to or which orb to update
-over WiFi, go in a file named `platformio_local.ini` next to `platformio.ini`.
+## Building more than one set
+
+Many members build several. Each set keeps its own WiFi network, settings-page
+choices and start-up picture inside itself, so you set each one up on its own.
+You can use the same API keys and the same `config.h` and `secrets.h` for all
+of your own sets. Each set uses the keys' free daily allowance separately.
+
+**WiFi: one at a time, or not at all.** Each new set starts its own setup
+network, `Info-Orbs_` plus two characters. Two sets can end up with the same
+two characters, so set them up one at a time. To skip the setup network
+altogether, put your WiFi name and password in `secrets.h` before you flash:
+find `//#define WIFI_SSID` and `//#define WIFI_PASS`, delete the `//` from
+both, and fill them in. Every set you flash then joins that network by itself.
+
+**Names: give each set its own.** Every set is called `info-orbs` unless you
+change it, and only one of them can answer to `info-orbs.local`. Before you
+flash a set, open `config.h`, find `//#define OTA_HOSTNAME "info-orbs"`,
+delete the `//`, and change the name, for example to `"orb-office"`. That set
+is then at `http://orb-office.local/settings`, and your router lists it under
+that name. The IP address shown on its screen always works too.
+
+**The name is built into the software file, so watch it when updating.** The
+name in `config.h` when you build is the name the set gets. If you build once
+and upload the same file to two sets, they both end up with the same name.
+To update several sets, change the name in `config.h`, build, upload to that
+set, and repeat for the next one.
+
+**Optional: update from PlatformIO by name.** Settings that belong to your
+computer, such as which USB port to upload to or which set to update over
+WiFi, go in a file named `platformio_local.ini` next to `platformio.ini`.
 Create it only if you need it; it stays on your computer and is never uploaded
-to GitHub. For example, to update an orb you named `orb-office` (`OTA_HOSTNAME` in `config.h`) over WiFi:
+to GitHub. For example, so that *Upload* in the `ota` task updates
+`orb-office`:
 
 ```ini
 [env:ota]
