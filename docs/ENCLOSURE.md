@@ -76,6 +76,33 @@ is an M3 pilot**, tight for a #4 in PLA. And no stock #4 is shorter than 1/4"
 (6.35 mm), while M3 comes in 5 mm for the 4 mm PCB-to-front position; whether
 a 5 mm (or 1/4") screw bottoms in that boss is still Yang's to confirm.
 
+**Better source than McMaster (checked live 2026-11-09): Bolt Depot.** Scott
+asked whether this commodity has a cheaper home. Amazon is mostly assortment
+kits and the 100-packs are 304 stainless at $0.06-0.07 (no cheaper than it
+is worth), and AliExpress lead time rules it out (Scott, 2026-11-09).
+Fastenal carries the exact part, #4-20 Phillips pan zinc **Hi-Lo** thread-
+rolling screws for plastic, at $0.04 each, but only as 500/1000 packs
+(924847104 1/4" 500/$21.65; 925206223 3/8" 1000/$41.30 = $62.95 for 1,500),
+so no saving at this run. **Bolt Depot** (Hingham MA, no minimum order) sells
+plain #4 zinc Phillips pan sheet-metal screws, ASME B18.6.3 type A/AB,
+**No. 1 Phillips**, by the 100:
+
+| Position | Qty for 40 kits | Bolt Depot | Bags | Cost |
+|---|---|---|---|---|
+| End cap → body, 8 mm | 320 | #4 x 3/8", prod 2469, 100/$2.21 | 4 | $8.84 |
+| Back and PCB, 6.5 + 4 mm | 280 | #4 x 1/4", prod 7370, 100/$2.07 | 3 | $6.21 |
+| **40 kits** | 600 | | 7 | **$15.05** (+ shipping, shown only at cart, ~$9 [ESTIMATE]) |
+
+That is **$0.38/kit** against $1.55 at McMaster, with 100 spares. Trade-offs:
+these are sheet-metal threads, not the Plastite/Hi-Lo profile cut for
+plastic, so they displace more PLA in the Ø2.2 boss; McMaster's own pilot
+for a #4 plastic screw is 2.64 mm. **Print one front body and drive a #4 x
+3/8" into a Ø2.2 boss before ordering 600** (a split boss means open the
+hole to ~2.4-2.5 mm in the model, which is Yang's). Bolt Depot has no M3
+sheet-metal screws, so this choice is also the #4-over-M3 decision. Fastenal
+is the fallback if the sheet-metal thread cracks bosses and the hole can't
+move: same $0.04 each in the proper Hi-Lo form, bought 1,500 at a time.
+
 **Leftover from the #4-screw design:** the sleeve and end-cap holes were driven
 by the user param `number_4_screw_thread_dia` (2.85 mm). Each of those docs now
 has its own `screw_clearance_dia = 3.2 mm`, and the hole dimensions point at
