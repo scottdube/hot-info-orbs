@@ -60,8 +60,10 @@ lengths and the nearest stock size of each:
 | PCB → front body, 4 mm | 3 | M3 x 5, 90380A347, 100/$5.92 | $0.059 | #4 x 1/4", 90380A106 | $0.095 |
 | **Per kit** | 15 | | **$1.18** | | **$1.47** |
 
-A 30-kit run: M3 = 3 packs of 8 mm + 2 of 6 mm + 1 of 5 mm = **$47.50**;
-#4 = 3 packs of 3/8" + 3 of 1/4" = **$58.56**. Torx (99512A3xx) is $0.01-0.02
+The run is **40 kits (Scott, 2026-11-09) = 600 screws**: 320 x 8 mm, 160 x
+6.5 mm, 120 x 4 mm. M3 = 4 packs of 8 mm + 2 of 6 mm + 2 of 5 mm = **$61.80**
+($1.55/kit as bought, 120 spare); #4 = 4 packs of 3/8" + 3 of 1/4" =
+**$68.54** ($1.71/kit, 100 spare). Torx (99512A3xx) is $0.01-0.02
 a screw cheaper and was rejected for the driver; black oxide and 50-packs
 cost more per piece in every size. McMaster ground shipping (~$8-10) is a
 fifth of the screw bill, so put them on another McMaster order. The BOM's
