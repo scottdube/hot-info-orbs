@@ -5,7 +5,7 @@ Five round 240×240 displays in a row, driven by a Seeed **XIAO ESP32-S3** or
 weather, stock prices, and pages you set up yourself, and they rotate through
 them on their own.
 
-![The five orbs in the enclosure, front view (render)](docs/images/overall_assembly_faces_front.png)
+![HOT Info Orbs in the enclosure, angled front view: Fusion render of the current design, not a photo](docs/images/master_assembly_angled.png)
 
 A [Hands-On Tech Club](https://handsontech.org) build, derived from Brett
 Turner's [Info Orbs](https://github.com/brettdottech/info-orbs) (see
