@@ -26,8 +26,9 @@ Click a file name to download it. Both are also on the
 2. In Chrome or Edge, open
    **[ESPConnect](https://thelastoutpostworkshop.github.io/ESPConnect/)**.
 3. Plug the orbs into the computer with the USB cable. Click **Connect** (top
-   left), pick the port that appeared when you plugged in (on a Mac it is
-   usually *USB JTAG/serial debug unit*), and click **Connect** in that box.
+   left), pick the port that appeared when you plugged in, and click
+   **Connect** in that box. On a Mac it is usually *USB JTAG/serial debug
+   unit*; on Windows, *USB Serial Device (COM3)* or another COM number.
 4. In the left column click **Flash Tools**. Under **Flash Firmware**:
    - **Firmware binary (.bin):** choose `info_orbs_fw_combo.bin`
    - **Flash offset:** `0x0`
