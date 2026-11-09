@@ -11,17 +11,18 @@ network.
 
 ### The two firmware files
 
-Both are on the [firmware release page](https://github.com/scottdube/hot-info-orbs/releases/tag/firmware-1.2.0), under **Assets**.
+Click a file name to download it. Both are also on the
+[firmware release page](https://github.com/scottdube/hot-info-orbs/releases/tag/firmware-1.2.0) under **Assets**, with their checksums.
 
 | File | What it does | Use it for |
 |---|---|---|
-| `info_orbs_fw_combo.bin` (factory reset) | wipes the board completely: WiFi, settings, start-up picture | the **first** install, or to start over |
-| `firmware.bin` (update) | keeps your WiFi and settings | **normal updates** |
+| [`info_orbs_fw_combo.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/info_orbs_fw_combo.bin) (factory reset) | wipes the board completely: WiFi, settings, start-up picture | the **first** install, or to start over |
+| [`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin) (update) | keeps your WiFi and settings | **normal updates** |
 
 ### First install: the factory reset file
 
-1. Download **`info_orbs_fw_combo.bin`** from the
-   [firmware release page](https://github.com/scottdube/hot-info-orbs/releases/tag/firmware-1.2.0).
+1. Download **[`info_orbs_fw_combo.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/info_orbs_fw_combo.bin)**
+   (click it; it goes to your Downloads folder).
 2. In Chrome or Edge, open
    **[ESPConnect](https://thelastoutpostworkshop.github.io/ESPConnect/)**.
 3. Plug the orbs into the computer with the USB cable. Click **Connect** (top
@@ -49,7 +50,8 @@ Both are on the [firmware release page](https://github.com/scottdube/hot-info-or
 
 ### Updating later: the update file
 
-Same steps, with two differences: download **`firmware.bin`**, and set the
+Same steps, with two differences: download
+**[`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin)**, and set the
 **Flash offset to `0x10000`, not `0x0`.** WiFi, keys and settings are kept, so
 steps 6 and 7 are not needed.
 
