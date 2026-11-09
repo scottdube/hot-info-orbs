@@ -41,3 +41,6 @@ package-lock.json
 **/.history/
 *-backups/
 *.kicad_prl
+
+# make_release_bins.py output; the files go to a GitHub release, not git
+release/

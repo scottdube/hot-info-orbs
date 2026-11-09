@@ -1,5 +1,11 @@
 # Setting Up Info Orbs From Scratch
 
+> **Just want it running?** You do not need anything on this page. The
+> [Quick start](../README.md#quick-start-no-software-to-install) flashes a
+> ready-made file from Chrome or Edge in about 10 minutes, and you paste your
+> two API keys on the settings page afterwards. This guide is for building the
+> software yourself.
+
 Written for someone who has never used PlatformIO. If you have, skip to
 [step 3](#3-create-your-two-config-files) — the only thing that has changed from
 upstream is that there are now **two** files to copy, not one.

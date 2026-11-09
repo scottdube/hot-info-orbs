@@ -307,6 +307,27 @@ void test_password_hint() {
     TEST_ASSERT_NULL(strstr(passwordHint("hunter2", "swordfish"), "swordfish"));
 }
 
+void test_api_key() {
+    std::string out, err;
+    TEST_ASSERT_TRUE(parseApiKey("", "old", out, err)); // blank keeps
+    TEST_ASSERT_EQUAL_STRING("old", out.c_str());
+    TEST_ASSERT_TRUE(parseApiKey("  ABC123def456 \n", "old", out, err)); // paste trimmed
+    TEST_ASSERT_EQUAL_STRING("ABC123def456", out.c_str());
+    TEST_ASSERT_TRUE(parseApiKey("a-b_c", "", out, err));
+    out = "old";
+    TEST_ASSERT_FALSE(parseApiKey("abc def", "old", out, err)); // space inside
+    TEST_ASSERT_FALSE(parseApiKey("abc&key=x", "old", out, err)); // would change the URL
+    TEST_ASSERT_FALSE(parseApiKey(std::string(65, 'k'), "old", out, err));
+    TEST_ASSERT_EQUAL_STRING("old", out.c_str()); // a refused key leaves out alone
+}
+
+void test_api_key_hint() {
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("", "", "Weather").c_str(), "Weather will not work"));
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("k", "k", "Weather").c_str(), "A key is stored"));
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("new", "old", "Weather").c_str(), "paste the key again"));
+    TEST_ASSERT_NULL(strstr(apiKeyHint("secretA", "secretB", "Weather").c_str(), "secret"));
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_cycle);
@@ -332,5 +353,7 @@ int main() {
     RUN_TEST(test_topic);
     RUN_TEST(test_password);
     RUN_TEST(test_password_hint);
+    RUN_TEST(test_api_key);
+    RUN_TEST(test_api_key_hint);
     return UNITY_END();
 }

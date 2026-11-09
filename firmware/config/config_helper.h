@@ -5,7 +5,14 @@
 // credentials from secrets.h. Both are gitignored; both have a .template
 // beside them that IS committed.
 
-#if !__has_include("config.h")
+// Release build (env:release): the downloadable .bin in the GitHub release.
+// Built from the committed templates only, so nobody's own config.h or keys
+// can end up in a public file; the keys are pasted on the settings page.
+#ifdef ORBS_RELEASE_BUILD
+    #include "config.h.template"
+    #define WEATHER_API_KEY ""
+    #define TIMEZONE_API_KEY ""
+#elif !__has_include("config.h")
     #error "Copy firmware/config/config.h.template to firmware/config/config.h and edit it to match your setup"
 #else
     #include "config.h"
@@ -17,7 +24,9 @@
     #define OTA_HOSTNAME "info-orbs"
 #endif
 
-#if !__has_include("secrets.h")
+#ifdef ORBS_RELEASE_BUILD
+// keys defined above; no secrets.h, so no OTA password either
+#elif !__has_include("secrets.h")
     #error "Copy firmware/config/secrets.h.template to firmware/config/secrets.h and paste in your own API keys"
 #else
     #include "secrets.h"

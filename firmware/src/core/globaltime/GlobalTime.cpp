@@ -131,8 +131,15 @@ bool GlobalTime::isPM() {
 }
 
 void GlobalTime::getTimeZoneOffsetFromAPI() {
+    // No key yet (a release .bin before its settings page is filled in): don't
+    // call. The caller retries every second while the offset is unknown, and
+    // every one of those would be a refused request. The clock runs on UTC
+    // until a key is saved, which restarts the orb.
+    if (Settings::get().tzkey.empty()) {
+        return;
+    }
     HTTPClient http;
-    http.begin(String(TIMEZONE_API_URL) + "?key=" + TIMEZONE_API_KEY + "&format=json&fields=gmtOffset,zoneEnd&by=zone&zone=" + String(sv::urlEncode(Settings::get().tz).c_str()));
+    http.begin(String(TIMEZONE_API_URL) + "?key=" + String(Settings::get().tzkey.c_str()) + "&format=json&fields=gmtOffset,zoneEnd&by=zone&zone=" + String(sv::urlEncode(Settings::get().tz).c_str()));
     int httpCode = http.GET();
 
     if (httpCode > 0) {

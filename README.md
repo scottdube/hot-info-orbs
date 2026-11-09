@@ -12,6 +12,67 @@ Turner's [Info Orbs](https://github.com/brettdottech/info-orbs) (see
 [Credit](#credit-and-license)). It is built by people at every skill level, so
 the build is meant to be hard to get wrong and cheap to get into.
 
+## Quick start: no software to install
+
+About 10 minutes. You need the built orbs, a **USB-C data cable** (many cheap
+cables carry power only), a computer with **Google Chrome or Microsoft Edge**
+(Safari and Firefox cannot talk to USB devices), and a **2.4 GHz** WiFi
+network.
+
+### The two firmware files
+
+Both are on the [firmware release page](https://github.com/scottdube/hot-info-orbs/releases/tag/firmware-1.2.0), under **Assets**.
+
+| File | What it does | Use it for |
+|---|---|---|
+| `info_orbs_fw_combo.bin` (factory reset) | wipes the board completely: WiFi, settings, start-up picture | the **first** install, or to start over |
+| `firmware.bin` (update) | keeps your WiFi and settings | **normal updates** |
+
+### First install: the factory reset file
+
+1. Download **`info_orbs_fw_combo.bin`** from the
+   [firmware release page](https://github.com/scottdube/hot-info-orbs/releases/tag/firmware-1.2.0).
+2. In Chrome or Edge, open
+   **[ESPConnect](https://thelastoutpostworkshop.github.io/ESPConnect/)**.
+3. Plug the orbs into the computer with the USB cable. Click **Connect** (top
+   left), pick the port that appeared when you plugged in (on a Mac it is
+   usually *USB JTAG/serial debug unit*), and click **Connect** in that box.
+4. In the left column click **Flash Tools**. Under **Flash Firmware**:
+   - **Firmware binary (.bin):** choose `info_orbs_fw_combo.bin`
+   - **Flash offset:** `0x0`
+   - click **Flash firmware** and wait for it to finish.
+5. Unplug the USB cable and plug it back in. The orbs restart.
+6. **WiFi:** the screens show a network named `Info-Orbs_` and two
+   characters. Join it on a phone; a setup page opens (if not, browse to
+   `http://192.168.4.1`). Pick your home WiFi and type its password.
+7. **Your two free keys:** the orbs show their **IP address** when they join
+   your WiFi. On a phone or computer on the same WiFi, browse to
+   `http://<that address>/settings`. The page starts with **API keys**: paste a
+   [Visual Crossing](https://www.visualcrossing.com/sign-up) key (weather) and
+   a [TimeZoneDB](https://timezonedb.com/register) key (local time), each free
+   and about a minute to get. Set your timezone and weather town on the same
+   page, then press **Save and restart**. Until the keys are in, the clock
+   shows UTC and the weather page stays empty.
+
+**Connect finds no port?** Put the XIAO in download mode: unplug, hold the
+**B** button on the XIAO, plug back in, let go, and click **Connect** again.
+
+### Updating later: the update file
+
+Same steps, with two differences: download **`firmware.bin`**, and set the
+**Flash offset to `0x10000`, not `0x0`.** WiFi, keys and settings are kept, so
+steps 6 and 7 are not needed.
+
+No cable needed for updates either: browse to `http://<orbs' address>/update`,
+choose `firmware.bin`, and press Upload.
+
+**Flashed the wrong file at the wrong offset** and the orbs stay dark? Nothing
+is broken: do the [first install](#first-install-the-factory-reset-file) again
+with the factory reset file.
+
+Want to change the code, or build it yourself? The [setup guide](docs/SETUP.md)
+covers that.
+
 ## Start here
 
 **You don't need a GitHub account.** The list of folders above is the
@@ -20,7 +81,8 @@ project's files. Pick the link that matches what you want:
 | You want to… | Go to |
 |---|---|
 | see what it is and what it does | the [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html), an ordinary web page |
-| get a built one running | the [setup guide](docs/SETUP.md), written for someone who has never done this |
+| get a built one running, nothing to install | the [Quick start](#quick-start-no-software-to-install) above: download one file, flash it from Chrome |
+| build the software yourself, or change it | the [setup guide](docs/SETUP.md), written for someone who has never done this |
 | order a bare board | the [board rev 2.5 release](https://github.com/scottdube/hot-info-orbs/releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
 | print the enclosure | not ready yet: the enclosure is still being designed. [hardware/enclosure/print/](hardware/enclosure/print/) lists the parts and where each one stands |
 | get all the source | the green **Code** button above, then **Download ZIP** |

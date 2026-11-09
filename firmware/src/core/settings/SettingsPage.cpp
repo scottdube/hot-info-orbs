@@ -216,7 +216,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     const SettingsValues d = Settings::defaults();
     const SettingsValues &stored = Settings::get(); // differs from `v` only on a rejected save
     String h;
-    h.reserve(18000); // measured page: 15.6-16.2 KB; below that every append reallocs a big block on a heap with no PSRAM
+    h.reserve(19500); // measured page: 15.6-16.2 KB before the API keys fieldset (~1.2 KB more); below that every append reallocs a big block on a heap with no PSRAM
     h += PAGE_HEAD;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
     {
@@ -232,7 +232,22 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
          "Set OTA_PASSWORD in secrets.h.</p>";
 #endif
     h += banner;
+    if (stored.wxkey.empty() || stored.tzkey.empty()) {
+        h += "<div class='banner err'>&#9888; Start here: paste your two free API keys in <b>API keys</b> below, "
+             "then press <b>Save and restart</b>.</div>";
+    }
     h += "<form method='POST' action='/settings'>";
+
+    // First on the page: a downloaded .bin has no keys until they are pasted here
+    h += "<fieldset><legend>API keys</legend>";
+    h += hint("Free, about a minute each. Sign up for your own; a shared key runs out for everyone using it.");
+    h += "<label for='wxkey'>Visual Crossing key (weather) &mdash; <a href='https://www.visualcrossing.com/sign-up'>sign up</a></label>"
+         "<input type='password' id='wxkey' name='wxkey' value='' autocomplete='off'>";
+    h += hint(sv::apiKeyHint(v.wxkey, stored.wxkey, "Weather").c_str()) + errorLine(errors, "wxkey");
+    h += "<label for='tzkey'>TimeZoneDB key (time zone, daylight saving) &mdash; <a href='https://timezonedb.com/register'>sign up</a></label>"
+         "<input type='password' id='tzkey' name='tzkey' value='' autocomplete='off'>";
+    h += hint(sv::apiKeyHint(v.tzkey, stored.tzkey, "The local time").c_str()) + errorLine(errors, "tzkey");
+    h += "</fieldset>";
 
     h += "<fieldset><legend>Rotation</legend>";
     h += "<label for='cycle'>Seconds per page</label><input type='number' id='cycle' name='cycle' min='0' max='3600' value='" + String(v.cycle) + "'>";
@@ -429,6 +444,18 @@ void SettingsPage::handlePost() {
         errors["tickers"] = err;
     }
 #endif
+    if (has("wxkey")) {
+        const std::string stored = v.wxkey;
+        if (!sv::parseApiKey(argStr(s, "wxkey"), stored, v.wxkey, err)) {
+            errors["wxkey"] = err;
+        }
+    }
+    if (has("tzkey")) {
+        const std::string stored = v.tzkey;
+        if (!sv::parseApiKey(argStr(s, "tzkey"), stored, v.tzkey, err)) {
+            errors["tzkey"] = err;
+        }
+    }
     if (has("wxloc") && !sv::normalizeText(argStr(s, "wxloc"), 64, v.wxloc, err)) {
         errors["wxloc"] = err;
     }
