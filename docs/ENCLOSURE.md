@@ -47,23 +47,26 @@ screw passes through first gets an **M3 clearance hole, Ø3.2**.
 Screw paths: the side screws run end cap → joint sleeve → front boss. The back
 screws run back → PCB → front boss.
 
-**Priced on McMaster, 2026-11-09 (live, not estimates), thread-forming screws for
-plastic, steel pan head, zinc.** 15 per kit: 8 end-cap, 4 back-cover, 3 PCB.
-Yang's model lengths and the nearest stock size of each:
+**Priced on McMaster, 2026-11-09 (live, not estimates): Phillips pan head
+thread-forming screws for plastic, zinc-plated steel.** Phillips because every
+builder has a driver (Scott, 2026-11-09); these sizes take a **No. 1 Phillips**,
+not the common No. 2. 15 per kit: 8 end-cap, 4 back-cover, 3 PCB. Yang's model
+lengths and the nearest stock size of each:
 
-| Position | Qty | M3 Torx T10 | Per pc | #4 (cheapest) | Per pc |
+| Position | Qty | M3 Phillips | Per pc | #4 Phillips | Per pc |
 |---|---|---|---|---|---|
-| End cap → body, 8 mm | 8 | M3 x 8, 99512A375, 100/$6.89 | $0.069 | #4 x 3/8" Phillips, 90380A108, 100/$9.98 | $0.100 |
-| Back → PCB → body, 6.5 mm | 4 | M3 x 6, 99512A374, 100/$6.63 | $0.066 | #4 x 1/4" Torx, 99512A346, 100/$8.54 | $0.085 |
-| PCB → front body, 4 mm | 3 | M3 x 5, 99512A373, 100/$6.43 | $0.064 | #4 x 1/4" Torx, 99512A346 | $0.085 |
-| **Per kit** | 15 | | **$1.01** | | **$1.39** |
+| End cap → body, 8 mm | 8 | M3 x 8, 90380A349, 100/$8.38 | $0.084 | #4 x 3/8", 90380A108, 100/$9.98 | $0.100 |
+| Back → PCB → body, 6.5 mm | 4 | M3 x 6, 90380A348, 100/$8.22 | $0.082 | #4 x 1/4", 90380A106, 100/$9.54 | $0.095 |
+| PCB → front body, 4 mm | 3 | M3 x 5, 90380A347, 100/$5.92 | $0.059 | #4 x 1/4", 90380A106 | $0.095 |
+| **Per kit** | 15 | | **$1.18** | | **$1.47** |
 
-A 30-kit run: M3 = 3 packs of 8 mm + 2 of 6 mm + 1 of 5 mm = **$40.36**;
-#4 = 3 packs of 3/8" + 3 of 1/4" = **$55.56**. Phillips M3 (90380A3xx) costs
-$0.08-0.09 each; black oxide and 50-packs cost more per piece in every size.
-McMaster ground shipping (~$8-10) is a quarter of the screw bill, so put
-them on another McMaster order. The BOM's AliExpress M3 x 6 socket heads are
-$0.04 each if that listing also carries 8 mm.
+A 30-kit run: M3 = 3 packs of 8 mm + 2 of 6 mm + 1 of 5 mm = **$47.50**;
+#4 = 3 packs of 3/8" + 3 of 1/4" = **$58.56**. Torx (99512A3xx) is $0.01-0.02
+a screw cheaper and was rejected for the driver; black oxide and 50-packs
+cost more per piece in every size. McMaster ground shipping (~$8-10) is a
+fifth of the screw bill, so put them on another McMaster order. The BOM's
+AliExpress M3 x 6 socket heads are $0.04 each if that listing also carries
+8 mm, but they need a hex key.
 
 Two reasons M3 beats #4 beyond price: McMaster's pilot for its M3 plastic
 screws is 2.25-2.44 mm, and for the #4 tri-lobe 2.64 mm, so the **Ø2.2 boss
