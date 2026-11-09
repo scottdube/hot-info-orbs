@@ -428,6 +428,18 @@ fill with island removal off and on and compare the island lists** before
 deciding whether to rerun the stitcher. For rev 2.5 nothing ≥100 mm² was
 removed, so no via was needed.
 
+## Removing a worktree with KiCad open leaves half a folder (2026-10-25)
+
+`git worktree remove` on the board worktree failed with "Directory not
+empty". Git had already unregistered the worktree and deleted part of the
+tree, and 140 files were left behind. KiCad had the project open: it wrote
+`hot_info_orbs_xiao_46mm.kicad_pro` back at the moment of the delete
+(timestamp matched to the second, content byte-identical to `main`), so the
+board folder was no longer empty when git reached it. **Close KiCad before
+removing or switching a worktree that holds a KiCad project.** Leftovers
+from a failed remove are safe to delete once each file is shown to be
+tracked at a commit `main` contains.
+
 ## An unpinned platform turned CI red while local builds stayed green (2026-10-24)
 
 `platform = espressif32` with no version let CI install espressif32 8.0.0
