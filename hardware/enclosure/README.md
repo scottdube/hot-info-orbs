@@ -1,7 +1,11 @@
 # Enclosure: overall assembly v5 (2026-10-19)
 
+**Not ready to print yet.** This folder holds the design so far. The
+ready-to-print files will go in [`print/`](print/), which lists the parts
+expected and the state of each.
+
 The front body with the rev 2.1 board inside and the five displays showing
-screens. Everything here is on the `board-46mm-pitch` branch.
+screens.
 
 ![front, faces populated](../../docs/images/overall_assembly_faces_front.png)
 
@@ -37,8 +41,6 @@ Detail and the placement recipe: [`docs/ENCLOSURE.md`](../../docs/ENCLOSURE.md).
 
 ## Getting it
 
-```bash
-git clone -b board-46mm-pitch https://github.com/scottdube/hot-info-orbs.git
-```
-
-Or download single files from the GitHub page with **Download raw file**.
+Everything here is on `main`. Download the whole project with the green
+**Code** button → **Download ZIP**, or single files from their GitHub page
+with **Download raw file**.
