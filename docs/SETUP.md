@@ -1,7 +1,7 @@
 # Setting Up Info Orbs From Scratch
 
 > **Just want it running?** You do not need anything on this page. The
-> [Quick start](../README.md#quick-start-no-software-to-install) flashes a
+> [Quick start](../README.md#quick-start-no-software-to-install-on-your-pc) flashes a
 > ready-made file from Chrome or Edge in about 10 minutes, and you paste your
 > free weather API key on the settings page afterwards. This guide is for building the
 > software yourself.

@@ -2,7 +2,7 @@
 
 ![HOT Info Orbs in the enclosure, angled front view: Fusion render of the current design, not a photo](docs/images/master_assembly_angled.png)
 
-## Quick start: no software to install
+## Quick start: no software to install on your PC
 
 About 10 minutes. You need the built orbs, a **USB-C data cable** (many cheap
 cables carry power only), a computer with **Google Chrome or Microsoft Edge**
@@ -71,7 +71,7 @@ project's files. Pick the link that matches what you want:
 | You want to… | Go to |
 |---|---|
 | see what it is and what it does | the [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html), an ordinary web page |
-| get a built one running, nothing to install | the [Quick start](#quick-start-no-software-to-install) above: download one file, flash it from Chrome |
+| get a built one running, nothing to install | the [Quick start](#quick-start-no-software-to-install-on-your-pc) above: download one file, flash it from Chrome |
 | build the software yourself, or change it | the [setup guide](docs/SETUP.md), written for someone who has never done this |
 | order a bare board | the [board rev 2.5 release](https://github.com/scottdube/hot-info-orbs/releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
 | print the enclosure | not ready yet: the enclosure is still being designed. [hardware/enclosure/print/](hardware/enclosure/print/) lists the parts and where each one stands |
