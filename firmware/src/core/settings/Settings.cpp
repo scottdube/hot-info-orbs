@@ -119,6 +119,10 @@ SettingsValues Settings::defaults() {
 #else
     d.mqsetup = "";
 #endif
+    // Same size on: five orbs side by side read as one panel (2026-11-09: the
+    // town-square acts jumped from 10 px to 40 px between neighbours)
+    d.mqfit = true;
+    d.mq2fit = true;
     d.mq2name = "MQTT 2";
     d.mq2same = true;
     d.mq2host = "";
@@ -178,6 +182,9 @@ void Settings::load() {
             v.mquser = p.getString("mquser", v.mquser.c_str()).c_str();
             v.mqpass = p.getString("mqpass", v.mqpass.c_str()).c_str();
             v.mqsetup = p.getString("mqsetup", v.mqsetup.c_str()).c_str();
+            // New keys: an orb saved before them gets the default
+            v.mqfit = p.getBool("mqfit", v.mqfit);
+            v.mq2fit = p.getBool("mq2fit", v.mq2fit);
             // API keys: added after schema 1 without a bump, like tstn1. An orb
             // that saved before this firmware keeps its secrets.h keys
             v.wxkey = p.getString("wxkey", v.wxkey.c_str()).c_str();
@@ -253,7 +260,9 @@ bool Settings::save(const SettingsValues &v) {
     auto putStr = [&p](const char *k, const std::string &s) { return p.putString(k, s.c_str()) == s.size(); };
     ok = ok && putStr("wdname", v.wdname) && putStr("wdurl", v.wdurl) && putStr("mqname", v.mqname) &&
          putStr("mqhost", v.mqhost) && p.putInt("mqport", v.mqport) && putStr("mquser", v.mquser) &&
-         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && putStr("wxkey", v.wxkey);
+         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && p.putBool("mqfit", v.mqfit) == 1 &&
+         p.putBool("mq2fit", v.mq2fit) == 1 &&
+         putStr("wxkey", v.wxkey);
     for (int i = 0; ok && i < 5; i++) {
         char k[8];
         snprintf(k, sizeof(k), "mqt%d", i + 1);

@@ -85,13 +85,15 @@ or `WIDGET_CYCLE_DELAY` in `config.h`) and the orbs move from page to page on
 their own. The left and right buttons step back and forward by hand.
 
 - **Clock**: normal, Nixie-tube, or custom faces, in your choice of colors.
-- **Weather** for a town (Visual Crossing), or from your own
-  [Tempest](https://tempest.earth) weather stations, one page per station.
+- **Weather** for a town (Visual Crossing), from your own
+  [Tempest](https://tempest.earth) weather stations (one page per station),
+  or both.
 - **Stocks**: five tickers.
 - **Custom pages** that you set up from the browser, no rebuild:
   - **Web Data** draws a JSON file from any web address.
-  - **MQTT** shows one live value per display from an MQTT broker, such as
-    Home Assistant.
+  - **MQTT**, up to two pages, shows one live value per display from an MQTT
+    broker, such as Home Assistant. Long values wrap, and the orbs on a page
+    share one text size.
 
   See [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md).
 
@@ -234,7 +236,7 @@ a tag (`git checkout <tag> -- <folder>` brings a folder back):
 | | |
 |---|---|
 | [docs/SETUP.md](docs/SETUP.md) | from an empty computer to running orbs |
-| [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) | Web Data and MQTT pages, with a Home Assistant recipe |
+| [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) | Web Data and MQTT pages, with Home Assistant recipes (The Villages town squares among them) |
 | [docs/TRAPS.md](docs/TRAPS.md) | problems that each cost time once, written down so they don't again |
 | [docs/ENCLOSURE.md](docs/ENCLOSURE.md) | the enclosure design and why it looks the way it does |
 | [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | why the XIAO, and how the board's pins were chosen |
@@ -268,6 +270,7 @@ upstream:
 | Settings | edit `config.h`, rebuild, reflash | a settings page in the browser |
 | Firmware updates | USB cable every time | over WiFi after the first flash |
 | Weather | one Visual Crossing town | also your own Tempest stations |
+| Custom pages | one MQTT page, laid out with pixel positions | two MQTT pages and a Web Data page, set up on the settings page |
 
 Licensed **AGPL-3.0**, inherited from upstream (see `LICENSE.txt`). If you give
 someone a built orb, they are entitled to its source, which is why this
