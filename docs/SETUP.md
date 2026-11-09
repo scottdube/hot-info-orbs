@@ -1,5 +1,11 @@
 # Setting Up Info Orbs From Scratch
 
+> **Just want it running?** You do not need anything on this page. The
+> [Quick start](../README.md#quick-start-no-software-to-install-on-your-pc) flashes a
+> ready-made file from Chrome or Edge in about 10 minutes, and you paste your
+> free weather API key on the settings page afterwards. This guide is for building the
+> software yourself.
+
 Written for someone who has never used PlatformIO. If you have, skip to
 [step 3](#3-create-your-two-config-files) — the only thing that has changed from
 upstream is that there are now **two** files to copy, not one.
@@ -72,31 +78,31 @@ personal ever gets committed. The `.template` files are the ones tracked in git,
 which is why they must never contain real values. If you ever edit a `.template`
 file, put placeholders in it, not your own keys.
 
-## 4. Get your two API keys
+## 4. Get your API key
 
-Both are free, both take about a minute, and **you need your own**. A key shared
-across several orbs burns one free-tier quota and gets rate-limited, and whoever
-owns it can revoke it without warning.
+One key, free, about a minute, and **you need your own**. A key shared across
+several orbs burns one free-tier quota and gets rate-limited, and whoever owns
+it can revoke it without warning.
 
-| Key                | Register at                                                          | What it does                                                                                                     |
-|--------------------|----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `WEATHER_API_KEY`  | [visualcrossing.com/sign-up](https://www.visualcrossing.com/sign-up) | Current conditions and forecast for the weather orb. Free tier is ~1000 records/day, far more than one orb uses. |
-| `TIMEZONE_API_KEY` | [timezonedb.com/register](https://timezonedb.com/register)           | Your UTC offset and the next daylight-saving changeover.                                                         |
+| Key               | Register at                                                          | What it does                                                                                                     |
+|-------------------|----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `WEATHER_API_KEY` | [visualcrossing.com/sign-up](https://www.visualcrossing.com/sign-up) | Current conditions and forecast for the weather orb. Free tier is ~1000 records/day, far more than one orb uses. |
 
-A note on the second one, because the name misleads: TimeZoneDB is **not** where
-the orb gets the time. The time comes from NTP (`pool.ntp.org`). TimeZoneDB
-supplies only the offset and the DST transition date — which is how the clock
-fixes itself every March and November without anyone reflashing it.
-
-Paste each key between the quotes in `secrets.h`:
+Paste it between the quotes in `secrets.h`:
 
 ```c
 #define WEATHER_API_KEY "your-key-here"
-#define TIMEZONE_API_KEY "your-key-here"
 ```
 
-Leaving one empty fails the build with a message naming the key. It will not let
+Leaving it empty fails the build with a message naming the key. It will not let
 you flash a half-configured orb.
+
+**No time zone key.** Until firmware 1.2.0 the orb asked TimeZoneDB for its
+offset, which took a second key. Now the time comes from NTP
+(`pool.ntp.org`) as before, and the firmware turns it into local time from a
+table of daylight-saving rules built into it
+(`firmware/src/core/settings/TimeZones.h`). An old `secrets.h` that still has
+`TIMEZONE_API_KEY` builds fine; the line is ignored.
 
 ## 5. Set your preferences in `config.h`
 
@@ -107,7 +113,7 @@ wiring you should leave alone unless you built a variant board.
 The four settings most people want to change:
 
 ```c
-#define TIMEZONE_API_LOCATION "America/New_York"  // from https://timezonedb.com/time-zones
+#define TIMEZONE_API_LOCATION "America/New_York"  // a name from TimeZones.h
 #define WEATHER_LOCATION "The Villages, FL"       // city, state
 //#define WEATHER_UNITS_METRIC                    // uncomment for celsius
 #define STOCK_TICKER_LIST "SPY,QQQ,AAPL,MSFT,BTC/USD"  // exactly 5

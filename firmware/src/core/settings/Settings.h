@@ -46,6 +46,9 @@ struct SettingsValues {
     std::string mql[5]; // per-orb label
     std::string mqu[5]; // per-orb unit
     std::string mqsetup; // advanced layout topic, "" = none
+    // API keys, write-only on the page. Default = secrets.h, which is "" in the
+    // release build (env:release), so a downloaded .bin gets its keys here
+    std::string wxkey; // Visual Crossing
 };
 
 // Night-dim level. The page sets hours only; the level stays a build choice.

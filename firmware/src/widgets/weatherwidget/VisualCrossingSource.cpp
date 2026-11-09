@@ -19,12 +19,15 @@
 VisualCrossingSource::VisualCrossingSource() {
     const SettingsValues &s = Settings::get();
     m_url = String("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/") +
-            sv::urlEncode(s.wxloc).c_str() + "/next3days?key=" + WEATHER_API_KEY +
+            sv::urlEncode(s.wxloc).c_str() + "/next3days?key=" + s.wxkey.c_str() +
             "&unitGroup=" + (s.wxmetric ? "metric" : "us") +
             "&include=days,current&iconSet=icons1&lang=" + LOC_LANG;
 }
 
 bool VisualCrossingSource::fetch(WeatherDataModel &model) {
+    if (Settings::get().wxkey.empty()) {
+        return false; // no key yet: the request would only be refused
+    }
     HTTPClient http;
     http.begin(m_url);
     int httpCode = http.GET();

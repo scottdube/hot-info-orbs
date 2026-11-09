@@ -122,6 +122,7 @@ SettingsValues Settings::defaults() {
     for (int i = 0; i < 5; i++) {
         d.mqt[i] = d.mql[i] = d.mqu[i] = "";
     }
+    d.wxkey = WEATHER_API_KEY;
     return d;
 }
 
@@ -170,6 +171,9 @@ void Settings::load() {
             v.mquser = p.getString("mquser", v.mquser.c_str()).c_str();
             v.mqpass = p.getString("mqpass", v.mqpass.c_str()).c_str();
             v.mqsetup = p.getString("mqsetup", v.mqsetup.c_str()).c_str();
+            // API keys: added after schema 1 without a bump, like tstn1. An orb
+            // that saved before this firmware keeps its secrets.h keys
+            v.wxkey = p.getString("wxkey", v.wxkey.c_str()).c_str();
             for (int i = 0; i < 5; i++) {
                 char k[8];
                 snprintf(k, sizeof(k), "mqt%d", i + 1);
@@ -226,7 +230,7 @@ bool Settings::save(const SettingsValues &v) {
     auto putStr = [&p](const char *k, const std::string &s) { return p.putString(k, s.c_str()) == s.size(); };
     ok = ok && putStr("wdname", v.wdname) && putStr("wdurl", v.wdurl) && putStr("mqname", v.mqname) &&
          putStr("mqhost", v.mqhost) && p.putInt("mqport", v.mqport) && putStr("mquser", v.mquser) &&
-         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup);
+         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && putStr("wxkey", v.wxkey);
     for (int i = 0; ok && i < 5; i++) {
         char k[8];
         snprintf(k, sizeof(k), "mqt%d", i + 1);

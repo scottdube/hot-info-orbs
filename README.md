@@ -1,16 +1,69 @@
 # HoT Info Orbs
 
-Five round 240×240 displays in a row, driven by a Seeed **XIAO ESP32-S3** or
-**XIAO ESP32-S3 Plus** on a custom carrier board. They show the time, the
-weather, stock prices, and pages you set up yourself, and they rotate through
-them on their own.
-
 ![HOT Info Orbs in the enclosure, angled front view: Fusion render of the current design, not a photo](docs/images/master_assembly_angled.png)
 
-A [Hands-On Tech Club](https://handsontech.org) build, derived from Brett
-Turner's [Info Orbs](https://github.com/brettdottech/info-orbs) (see
-[Credit](#credit-and-license)). It is built by people at every skill level, so
-the build is meant to be hard to get wrong and cheap to get into.
+## Quick start: no software to install on your PC
+
+About 10 minutes. You need the built orbs, a **USB-C data cable** (many cheap
+cables carry power only), a computer with **Google Chrome or Microsoft Edge**
+(Safari and Firefox cannot talk to USB devices), and a **2.4 GHz** WiFi
+network.
+
+### The two firmware files
+
+Click a file name to download it. Both are also on the
+[firmware release page](https://github.com/scottdube/hot-info-orbs/releases/tag/firmware-1.2.0) under **Assets**, with their checksums.
+
+| File | What it does | Use it for |
+|---|---|---|
+| [`info_orbs_fw_combo.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/info_orbs_fw_combo.bin) (factory reset) | wipes the board completely: WiFi, settings, start-up picture | the **first** install, or to start over |
+| [`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin) (update) | keeps your WiFi and settings | **normal updates** |
+
+### First install: the factory reset file
+
+1. Download **[`info_orbs_fw_combo.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/info_orbs_fw_combo.bin)**
+   (click it; it goes to your Downloads folder).
+2. In Chrome or Edge, open
+   **[ESPConnect](https://thelastoutpostworkshop.github.io/ESPConnect/)**.
+3. Plug the orbs into the computer with the USB cable. Click **Connect** (top
+   left), pick the port that appeared when you plugged in (on a Mac it is
+   usually *USB JTAG/serial debug unit*), and click **Connect** in that box.
+4. In the left column click **Flash Tools**. Under **Flash Firmware**:
+   - **Firmware binary (.bin):** choose `info_orbs_fw_combo.bin`
+   - **Flash offset:** `0x0`
+   - click **Flash firmware** and wait for it to finish.
+5. Unplug the USB cable and plug it back in. The orbs restart.
+6. **WiFi:** the screens show a network named `Info-Orbs_` and two
+   characters. Join it on a phone; a setup page opens (if not, browse to
+   `http://192.168.4.1`). Pick your home WiFi and type its password.
+7. **Your free weather key and time zone:** the orbs show their **IP
+   address** when they join your WiFi. On a phone or computer on the same
+   WiFi, browse to `http://<that address>/settings`. The page starts with
+   **API key**: paste a [Visual Crossing](https://www.visualcrossing.com/sign-up)
+   key, free and about a minute to get. Under **Clock**, pick your time zone
+   from the list (it starts on New York; daylight saving is automatic). Set
+   your weather town, then press **Save and restart**. Until the key is in,
+   the weather page stays empty; the clock works without it.
+
+**Connect finds no port?** Put the XIAO in download mode: unplug, hold the
+**B** button on the XIAO, plug back in, let go, and click **Connect** again.
+
+### Updating later: the update file
+
+Same steps, with two differences: download
+**[`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin)**, and set the
+**Flash offset to `0x10000`, not `0x0`.** WiFi, keys and settings are kept, so
+steps 6 and 7 are not needed.
+
+No cable needed for updates either: browse to `http://<orbs' address>/update`,
+choose `firmware.bin`, and press Upload.
+
+**Flashed the wrong file at the wrong offset** and the orbs stay dark? Nothing
+is broken: do the [first install](#first-install-the-factory-reset-file) again
+with the factory reset file.
+
+Want to change the code, or build it yourself? The [setup guide](docs/SETUP.md)
+covers that.
 
 ## Start here
 
@@ -20,7 +73,8 @@ project's files. Pick the link that matches what you want:
 | You want to… | Go to |
 |---|---|
 | see what it is and what it does | the [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html), an ordinary web page |
-| get a built one running | the [setup guide](docs/SETUP.md), written for someone who has never done this |
+| get a built one running, nothing to install | the [Quick start](#quick-start-no-software-to-install-on-your-pc) above: download one file, flash it from Chrome |
+| build the software yourself, or change it | the [setup guide](docs/SETUP.md), written for someone who has never done this |
 | order a bare board | the [board rev 2.5 release](https://github.com/scottdube/hot-info-orbs/releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
 | print the enclosure | not ready yet: the enclosure is still being designed. [hardware/enclosure/print/](hardware/enclosure/print/) lists the parts and where each one stands |
 | get all the source | the green **Code** button above, then **Download ZIP** |
@@ -53,12 +107,12 @@ their own. The left and right buttons step back and forward by hand.
 - A **2.4 GHz** WiFi network. The ESP32 cannot see 5 GHz.
 - A computer with [VS Code](https://code.visualstudio.com) and the
   [PlatformIO](https://platformio.org) extension.
-- Two free **API keys**. An API key is a code a website gives you when you
-  sign up, so the orbs can ask it for data. Each takes about a minute:
-  [Visual Crossing](https://www.visualcrossing.com/sign-up) for weather and
-  [TimeZoneDB](https://timezonedb.com/register) for daylight-saving changes.
+- One free **API key**. An API key is a code a website gives you when you
+  sign up, so the orbs can ask it for data. It takes about a minute:
+  [Visual Crossing](https://www.visualcrossing.com/sign-up), for weather.
   Sign up for your own. A shared key uses up one free allowance, and if it is
-  cancelled it stops working for everyone using it.
+  cancelled it stops working for everyone using it. The time zone needs no
+  key: the firmware carries the daylight-saving rules itself.
 
 ## Getting it running
 
