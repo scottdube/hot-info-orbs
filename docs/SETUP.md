@@ -244,8 +244,10 @@ you mistype one, the clock or weather orb shows the error.
 
 ## 10. Optional: weather from your own Tempest stations
 
-If you own a WeatherFlow Tempest station, the orbs can show its weather
-instead of Visual Crossing's, with one weather page per station (up to two).
+If you own a WeatherFlow Tempest station, the orbs can show its weather, with
+one weather page per station (up to two). If a Visual Crossing key is also
+set, the location under **Weather** keeps its page as well, so you can follow
+a third place; without that key only the Tempest pages show.
 
 Nothing to build: this works on the ready-made release file too.
 

@@ -234,7 +234,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
 #endif
     h += banner;
     // Weather works with either source: a Visual Crossing key, or a Tempest
-    // token plus a station (Tempest pages replace Visual Crossing)
+    // token plus a station (with both, both get pages)
     const bool tempestReady = !stored.tsttok.empty() && (stored.tstn1 || stored.tstn2);
     if (stored.wxkey.empty() && !tempestReady) {
         h += "<div class='banner err'>&#9888; Start here: paste your free weather API key in <b>API keys</b> below, "
@@ -316,7 +316,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
 
     h += "<fieldset><legend>Tempest stations</legend>";
     h += hint("Only if you have a Tempest weather station: its ID is the number in its tempestwx.com address. "
-              "Each station gets its own weather page, and the location above is then not used. Units follow the setting above.");
+              "Each station gets its own weather page. The location above keeps its page too while a Visual Crossing key is set. Units follow the setting above.");
     const bool hasToken = !stored.tsttok.empty();
     h += stationRow(0, "tstn1", "tlbl1", v.tstn1, v.tlbl1, d.tstn1, d.tlbl1, hasToken, errors);
     h += stationRow(1, "tstn2", "tlbl2", v.tstn2, v.tlbl2, d.tstn2, d.tlbl2, hasToken, errors);

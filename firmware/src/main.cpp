@@ -167,9 +167,11 @@ void setup() {
     }
 #endif
     bool tempestPages = false;
-    // One weather page per Tempest station; Visual Crossing only when none is
-    // set. A station without a token would fail every fetch with 401, so it
-    // gets no page (the settings page says why).
+    // One weather page per Tempest station, plus Visual Crossing for the
+    // location whenever a VC key is set (a third place, e.g. a town away from
+    // the stations). With Tempest pages and no VC key, VC is left out: it
+    // would only show a key error. A station without a token would fail every
+    // fetch with 401, so it gets no page (the settings page says why).
     const SettingsValues &wx = Settings::get();
     if (!wx.tsttok.empty() && wx.tstn1) {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(0, wx.tstn1, wx.tlbl1)));
@@ -179,7 +181,7 @@ void setup() {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(1, wx.tstn2, wx.tlbl2)));
         tempestPages = true;
     }
-    if (!tempestPages) {
+    if (!tempestPages || !wx.wxkey.empty()) {
         widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
     }
     // Custom pages: set up on /settings, registered only when configured.
