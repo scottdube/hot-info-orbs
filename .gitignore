@@ -18,6 +18,7 @@ firmware/config/config.h
 firmware/config/secrets.h
 firmware/include/build_id.h
 .pio
+platformio_local.ini
 
 # VS Code
 .vscode/
@@ -40,3 +41,6 @@ package-lock.json
 **/.history/
 *-backups/
 *.kicad_prl
+
+# make_release_bins.py output; the files go to a GitHub release, not git
+release/

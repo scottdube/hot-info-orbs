@@ -434,6 +434,41 @@ inline bool parseTopic(const std::string &in, std::string &out, std::string &err
     return true;
 }
 
+// API keys (Visual Crossing) are write-only like a password, but a
+// key is pasted, so stray spaces and line breaks around it are trimmed. The
+// service issues letters and digits; '-' and '_' are allowed in case that
+// changes. Anything else is almost always a bad paste, and the key goes into a
+// URL, so it is refused rather than sent. Blank keeps the stored key.
+inline bool parseApiKey(const std::string &in, const std::string &stored, std::string &out, std::string &err) {
+    std::string s = trim(in);
+    if (s.empty()) {
+        out = stored;
+        return true;
+    }
+    if (s.size() > 64) {
+        err = "At most 64 characters - check the paste";
+        return false;
+    }
+    for (char c : s) {
+        if (!(std::isalnum((unsigned char)c) || c == '-' || c == '_')) {
+            err = "Letters and digits only - check the paste";
+            return false;
+        }
+    }
+    out = s;
+    return true;
+}
+
+// `what` names what stops working without the key, e.g. "Weather".
+inline std::string apiKeyHint(const std::string &v, const std::string &stored, const char *what) {
+    if (v == stored) {
+        return stored.empty() ? std::string("&#9888; No key yet. ") + what + " will not work until you paste one here."
+                              : "&#10004; A key is stored. It is never shown; leave this blank to keep it.";
+    }
+    return stored.empty() ? "&#9888; Not saved: paste the key again. No key is stored."
+                          : "&#9888; Not saved: paste the key again. The stored one is unchanged.";
+}
+
 // Write-only: the page never shows the stored password. Blank keeps it,
 // `clear` (the checkbox) removes it. Not trimmed - a space may be part of it.
 inline bool parsePassword(const std::string &in, bool clear, const std::string &stored, std::string &out, std::string &err) {

@@ -52,7 +52,7 @@ public:
     String getDayAndMonth();
     bool isPM();
     bool getFormat24Hour();
-    int getTimeZoneOffset(); // seconds east of UTC; 0 until the zone lookup answers
+    int getTimeZoneOffset(); // seconds east of UTC, from the zone rule (TimeZones.h)
     bool setFormat24Hour(bool format24hour);
 
 private:
@@ -72,8 +72,7 @@ private:
     int m_year = 0;
     String m_time;
     String m_weekday;
-    int m_timeZoneOffset = -1; // A value that will be overwritten by the API
-    unsigned long m_nextTimeZoneUpdate = 0;
+    int m_timeZoneOffset = 0; // recomputed every second, so DST changes on time
 
     WiFiUDP m_udp;
     NTPClient *m_timeClient{nullptr};
@@ -83,7 +82,6 @@ private:
 
     bool m_format24hour{Settings::get().h24};
 
-    void getTimeZoneOffsetFromAPI();
 };
 
 #endif

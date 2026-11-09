@@ -6,7 +6,7 @@
 
 #define MAX_WRAPPED_LINES 10
 
-#define FIRMWARE_VERSION "1.1.0" // shown on the boot screen and the OTA update page
+#define FIRMWARE_VERSION "1.2.0" // shown on the boot screen and the OTA update page
 
 enum ScreenMode {
     Light = 1,

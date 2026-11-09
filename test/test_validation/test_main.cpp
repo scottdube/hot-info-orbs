@@ -1,5 +1,8 @@
 // Host tests for SettingsValidation.h:  pio test -e native
 #include "SettingsValidation.h"
+#include "TimeZones.h"
+#include <cstdlib>
+#include <ctime>
 #include <cstdio>
 #include <cstring>
 #include <unity.h>
@@ -307,6 +310,80 @@ void test_password_hint() {
     TEST_ASSERT_NULL(strstr(passwordHint("hunter2", "swordfish"), "swordfish"));
 }
 
+void test_api_key() {
+    std::string out, err;
+    TEST_ASSERT_TRUE(parseApiKey("", "old", out, err)); // blank keeps
+    TEST_ASSERT_EQUAL_STRING("old", out.c_str());
+    TEST_ASSERT_TRUE(parseApiKey("  ABC123def456 \n", "old", out, err)); // paste trimmed
+    TEST_ASSERT_EQUAL_STRING("ABC123def456", out.c_str());
+    TEST_ASSERT_TRUE(parseApiKey("a-b_c", "", out, err));
+    out = "old";
+    TEST_ASSERT_FALSE(parseApiKey("abc def", "old", out, err)); // space inside
+    TEST_ASSERT_FALSE(parseApiKey("abc&key=x", "old", out, err)); // would change the URL
+    TEST_ASSERT_FALSE(parseApiKey(std::string(65, 'k'), "old", out, err));
+    TEST_ASSERT_EQUAL_STRING("old", out.c_str()); // a refused key leaves out alone
+}
+
+void test_api_key_hint() {
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("", "", "Weather").c_str(), "Weather will not work"));
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("k", "k", "Weather").c_str(), "A key is stored"));
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("new", "old", "Weather").c_str(), "paste the key again"));
+    TEST_ASSERT_NULL(strstr(apiKeyHint("secretA", "secretB", "Weather").c_str(), "secret"));
+}
+
+// Offset in seconds east of UTC for `name` at the UTC date given (noon UTC)
+static long tzOffset(const char *name, int y, int mo, int d) {
+    setenv("TZ", tzdb::ruleFor(name), 1);
+    tzset();
+    return tzdb::offsetAt((time_t)(tzdb::daysFromCivil(y, mo, d) * 86400 + 12 * 3600));
+}
+
+void test_tz_find() {
+    TEST_ASSERT_NOT_NULL(tzdb::find("America/New_York"));
+    TEST_ASSERT_NOT_NULL(tzdb::find("america/new york")); // typed by hand once
+    TEST_ASSERT_NULL(tzdb::find("America/Nowhere"));
+    TEST_ASSERT_NULL(tzdb::find(""));
+    TEST_ASSERT_EQUAL_STRING("UTC0", tzdb::ruleFor("Mars/Olympus"));
+    // every name unique, every rule non-empty
+    for (int i = 0; i < tzdb::ZONE_COUNT; i++) {
+        TEST_ASSERT_TRUE(strlen(tzdb::ZONES[i].rule) > 0);
+        TEST_ASSERT_EQUAL_PTR(&tzdb::ZONES[i], tzdb::find(tzdb::ZONES[i].name));
+    }
+}
+
+void test_tz_days_from_civil() {
+    TEST_ASSERT_EQUAL_INT64(0, tzdb::daysFromCivil(1970, 1, 1));
+    TEST_ASSERT_EQUAL_INT64(19723, tzdb::daysFromCivil(2024, 1, 1));
+    TEST_ASSERT_EQUAL_INT64(19782, tzdb::daysFromCivil(2024, 2, 29)); // leap day
+}
+
+void test_tz_offsets() {
+    TEST_ASSERT_EQUAL(-5 * 3600, tzOffset("America/New_York", 2026, 1, 15));
+    TEST_ASSERT_EQUAL(-4 * 3600, tzOffset("America/New_York", 2026, 7, 15));
+    TEST_ASSERT_EQUAL(-7 * 3600, tzOffset("America/Phoenix", 2026, 1, 15));
+    TEST_ASSERT_EQUAL(-7 * 3600, tzOffset("America/Phoenix", 2026, 7, 15)); // no DST
+    TEST_ASSERT_EQUAL(-(3 * 3600 + 1800), tzOffset("America/St_Johns", 2026, 1, 15));
+    TEST_ASSERT_EQUAL(0, tzOffset("Europe/London", 2026, 1, 15));
+    TEST_ASSERT_EQUAL(3600, tzOffset("Europe/London", 2026, 7, 15));
+    TEST_ASSERT_EQUAL(5 * 3600 + 1800, tzOffset("Asia/Kolkata", 2026, 7, 15));
+    TEST_ASSERT_EQUAL(11 * 3600, tzOffset("Australia/Sydney", 2026, 1, 15)); // southern summer
+    TEST_ASSERT_EQUAL(10 * 3600, tzOffset("Australia/Sydney", 2026, 7, 15));
+    TEST_ASSERT_EQUAL(0, tzOffset("Not/A_Zone", 2026, 7, 15));
+}
+
+void test_tz_dst_switch() {
+    // US 2026: DST starts Sun Mar 8 at 02:00 EST = 07:00 UTC
+    setenv("TZ", tzdb::ruleFor("America/New_York"), 1);
+    tzset();
+    const time_t start = (time_t)(tzdb::daysFromCivil(2026, 3, 8) * 86400 + 7 * 3600);
+    TEST_ASSERT_EQUAL(-5 * 3600, tzdb::offsetAt(start - 1));
+    TEST_ASSERT_EQUAL(-4 * 3600, tzdb::offsetAt(start));
+    // ends Sun Nov 1 at 02:00 EDT = 06:00 UTC
+    const time_t end = (time_t)(tzdb::daysFromCivil(2026, 11, 1) * 86400 + 6 * 3600);
+    TEST_ASSERT_EQUAL(-4 * 3600, tzdb::offsetAt(end - 1));
+    TEST_ASSERT_EQUAL(-5 * 3600, tzdb::offsetAt(end));
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_cycle);
@@ -332,5 +409,11 @@ int main() {
     RUN_TEST(test_topic);
     RUN_TEST(test_password);
     RUN_TEST(test_password_hint);
+    RUN_TEST(test_api_key);
+    RUN_TEST(test_api_key_hint);
+    RUN_TEST(test_tz_find);
+    RUN_TEST(test_tz_days_from_civil);
+    RUN_TEST(test_tz_offsets);
+    RUN_TEST(test_tz_dst_switch);
     return UNITY_END();
 }
