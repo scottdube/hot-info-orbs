@@ -50,11 +50,12 @@ their own. The left and right buttons step back and forward by hand.
 - A **2.4 GHz** WiFi network. The ESP32 cannot see 5 GHz.
 - A computer with [VS Code](https://code.visualstudio.com) and the
   [PlatformIO](https://platformio.org) extension.
-- Two free API keys, about a minute each:
+- Two free **API keys**. An API key is a code a website gives you when you
+  sign up, so the orbs can ask it for data. Each takes about a minute:
   [Visual Crossing](https://www.visualcrossing.com/sign-up) for weather and
   [TimeZoneDB](https://timezonedb.com/register) for daylight-saving changes.
-  Register your own. A shared key uses up one free quota and can be revoked
-  for everyone who uses it.
+  Sign up for your own. A shared key uses up one free allowance, and if it is
+  cancelled it stops working for everyone using it.
 
 ## Getting it running
 
@@ -62,30 +63,48 @@ their own. The left and right buttons step back and forward by hand.
 first time, and ends with a troubleshooting table organized by what you
 actually see. In short:
 
-1. **Make your two config files.** In `firmware/config/`, copy
-   `config.h.template` to `config.h` (preferences: timezone, units, tickers)
-   and `secrets.h.template` to `secrets.h` (your API keys). Both copies are
-   ignored by git, so your keys never end up in the repository.
+1. **Make your two settings files.** In VS Code, open the `firmware/config`
+   folder. Copy `config.h.template` and paste it into the same folder, then
+   rename the copy to `config.h` (delete `.template` from the name). Do the
+   same to make `secrets.h` from `secrets.h.template`. Then open each new file
+   and fill it in: `config.h` holds your preferences (timezone, units, stock
+   tickers), `secrets.h` your API keys. [SETUP step 3](docs/SETUP.md#3-create-your-two-config-files)
+   has the details.
+   Your copies are never uploaded to GitHub, so your keys stay private.
    **The build stops with an error if either file is missing or a key is
    empty.** That is on purpose: otherwise you get a blank orb and no clue why.
-2. **Flash over USB once.** In PlatformIO: *Project Tasks → xiao-esp32s3 →
-   Upload*. This first flash has to be over USB because it also sets up the
-   flash layout that WiFi updates need.
-3. **Connect it to WiFi.** The orbs start their own network, `Info-Orbs_` plus
-   two characters shown on the screens. Join it from a phone, and pick your
-   home network on the page that opens.
+2. **Install the software over USB, once.** Installing the orbs' software is
+   called *flashing*. Plug the orbs into your computer, then in VS Code click
+   the PlatformIO icon (the alien head) on the left, and under *Project Tasks →
+   xiao-esp32s3 → General* click **Upload**. The first time has to be over USB;
+   after that, updates go over WiFi.
+3. **Connect it to WiFi.** The orbs start their own WiFi network, named
+   `Info-Orbs_` plus two characters shown on the screens. Join that network
+   from a phone, and a page opens where you pick your home network and type its
+   password. When the orbs join your network, **they show their IP address
+   on screen** (four numbers with dots, like `192.168.1.57`). Write it down:
+   it is how you reach them from a browser.
 
-After that, you can do everything from a browser on the same network:
+After that, you can do everything from a web browser on a phone or computer
+connected to the same WiFi. Type the address with the orbs' IP address in
+place of `<IP>`, for example `http://192.168.1.57/settings`.
+`http://info-orbs.local/settings` often works too, without the number.
 
-| Page | What it does |
+| Address | What it does |
 |---|---|
-| `http://<orb's IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, custom pages, your own start-up picture. The values in `config.h` are only the starting defaults. |
-| `http://<orb's IP>/update` | install new firmware: choose `.pio/build/xiao-esp32s3/firmware.bin` and upload. The page also shows which version is running. |
+| `http://<IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, custom pages, your own start-up picture. What you typed in `config.h` is only the starting point. |
+| `http://<IP>/update` | install a new version of the software without a cable: choose the file `.pio/build/xiao-esp32s3/firmware.bin` from the project folder and upload it. The page also shows which version is running. |
 
-**Set `OTA_PASSWORD` in `secrets.h`.** Without it, anyone on your network can
-change your orbs' settings or flash them.
+**Set a password.** Without one, anyone on your WiFi can change your orbs'
+settings or install software on them. In `secrets.h`, find the line
+`//#define OTA_PASSWORD ""`, delete the `//` at its start, type a password
+between the quotes, save, and upload again (step 2). The browser then asks
+for user name `admin` and that password.
 
 ## Hardware
+
+*Mainly for people building or changing the board. If you have a kit, you can
+skip this section.*
 
 - **Carrier board:** the KiCad 10 project in
   [hardware/hot-info-orbs-xiao-46mm/](hardware/hot-info-orbs-xiao-46mm/), with
@@ -95,13 +114,17 @@ change your orbs' settings or flash them.
   files sent to the fab are in its `fab/`.
 - **Enclosure:** 3D-printed, in [hardware/enclosure/](hardware/enclosure/);
   design notes in [docs/ENCLOSURE.md](docs/ENCLOSURE.md).
-- **Power:** 5 V USB-C. The displays run from 5 V through their own
-  regulators, not from the XIAO's 3.3 V regulator. **Check that the display
-  modules you buy have one**: a small chip with a capacitor on each side, on
-  the back of the module.
+- **Power:** a USB-C cable into the XIAO. The displays run from 5 V and each
+  one lowers it to 3.3 V on its own little regulator chip, so the XIAO stays
+  cool.
+- **Buying displays:** get the round 1.28" GC9A01 display named in the
+  [parts list](hardware/hot-info-orbs-xiao-46mm/bom/). If you buy a different
+  one, check two things: its pins are in the order VCC, GND, SCL, SDA, DC, CS,
+  RST, and the back of the board has a small regulator chip with a capacitor
+  on each side.
 
-Older boards are not on `main`, but each one is kept under a tag
-(`git checkout <tag> -- <folder>` brings a folder back):
+*For developers:* older boards are not on `main`, but each one is kept under
+a tag (`git checkout <tag> -- <folder>` brings a folder back):
 
 | Tag | What |
 |---|---|
@@ -155,12 +178,13 @@ repository is public.
 
 ## Contributing
 
-**Fork it and open a pull request.** Anyone can clone, build, fork and propose
-changes without asking.
+**Found a problem? Tell us.** If a step in the setup guide is wrong or
+unclear, or something went wrong in your build, [open an issue](../../issues)
+(a GitHub account is needed; it's free). You can also just tell someone at
+the club.
 
-If you're building one and something is wrong or missing, such as a step in
-the setup guide or a problem worth recording, [open an issue](../../issues) or
-send a PR. A build that went wrong is worth reporting even if you already got
+*For developers:* fork the repository and open a pull request. Anyone can
+clone, build, fork and propose changes without asking. A build that went wrong is worth reporting even if you already got
 around it; that is how [docs/TRAPS.md](docs/TRAPS.md) gets written.
 
 **Push access is by invitation** and kept to a few people. That protects the
