@@ -379,6 +379,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += textField("mqname", "Page name (16 characters)", v.mqname, d.mqname,
                    ". Its tick box above reads MQTT 1 (this name); renaming it shows it again if it was unticked.", errors);
     h += mqttRows("mq", v.mqt, v.mql, v.mqu, errors);
+    h += boolSelect("mqfit", "Text size", v.mqfit, d.mqfit, "Each orb as large as fits", "Same on every orb", errors);
     h += textField("mqsetup", "Layout topic (advanced)", v.mqsetup, d.mqsetup.empty() ? std::string("none") : d.mqsetup,
                    ". A JSON layout published here replaces the rows above until the next restart (mqttwidget/README.md).", errors);
 
@@ -394,6 +395,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     }
     h += "</div>" + String(MQ2_JS);
     h += mqttRows("mq2", v.mq2t, v.mq2l, v.mq2u, errors);
+    h += boolSelect("mq2fit", "Text size", v.mq2fit, d.mq2fit, "Each orb as large as fits", "Same on every orb", errors);
     h += "</fieldset>";
 
     h += "<fieldset><legend>Dim hours</legend>";
@@ -589,6 +591,7 @@ void SettingsPage::handlePost() {
         errors["mqname"] = err;
     }
     readRows("mq", v.mqt, v.mql, v.mqu);
+    readBool("mqfit", v.mqfit);
     if (has("mqsetup") && !sv::parseTopic(argStr(s, "mqsetup"), v.mqsetup, err)) {
         errors["mqsetup"] = err;
     }
@@ -598,6 +601,7 @@ void SettingsPage::handlePost() {
     readBool("mq2same", v.mq2same);
     readBroker("mq2", v.mq2host, v.mq2port, v.mq2user, v.mq2pass);
     readRows("mq2", v.mq2t, v.mq2l, v.mq2u);
+    readBool("mq2fit", v.mq2fit);
     // Equal hours would mean "dim around the clock" (WidgetSet's wrap branch)
     if (v.dim && v.dimstart == v.dimend && !errors.count("dimstart") && !errors.count("dimend")) {
         errors["dimend"] = "Start and end are the same hour";

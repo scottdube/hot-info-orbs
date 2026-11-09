@@ -130,8 +130,19 @@ Settings saved before page 2 existed load unchanged as page 1; page 2 starts
 empty. Each connection has its own status line under its broker.
 
 A value is the topic's payload as text. Each orb shows the label on top, the
-value in the middle at the largest size that fits and the unit
-below. It shows a dash (-) until the first value arrives.
+value in the middle and the unit below. It shows a dash (-) until the first
+value arrives.
+
+**Long text wraps.** A value that is too long for one line wraps onto up to
+three lines. A line break in the payload starts a new line where you want it:
+`5pm\nThe Rundown Band` puts the time on a line of its own.
+
+**Text size**, one setting per page:
+- **Same on every orb** (the default): all five values on the page are drawn at
+  one size, the largest that fits the longest of them. Five orbs side by side
+  then read as one panel. A long value on one orb makes all five smaller.
+- **Each orb as large as fits**: every orb sizes its own value, so a short
+  value is drawn much larger than a long one beside it.
 
 **It never blocks the orb.** Each connection makes one attempt that gives
 up after a few seconds, then at most one more every 30 seconds, while the buttons and
