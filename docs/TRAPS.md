@@ -407,3 +407,20 @@ master assembly can Manual Explode each cap its own way. What bit:
   there, `doc.save(desc)` → `isModified` False within 0.5 s and the server shows v5.
 - The active document flips back to the master between MCP calls; activate the target
   inside the same script that edits it.
+
+## `find_geometry` on the whole master assembly times out; scope it
+
+2026-11-09, screw boss check. `fusion-essentials` `find_geometry` with the
+master assembly active (26 occurrences, five display STEP models) hit the
+30 s handler limit twice and could not be cancelled. The same search answers
+in seconds with `target` set to one occurrence
+(`hot_info_orbs_xiao_46mm_PCB:1`) or with the part's own document activated
+(`doc_activate name="session:<id>"`). Cylinder length is `area / (2π r)`;
+`radius` needs a tolerance of about 0.025 (r=1.6 matched the Ø3.25 holes).
+
+## Bolt Depot Economy shipping charges per line, not per pound
+
+2026-11-09. A 7-bag, two-line cart estimated $12.13 Economy; the same 600
+screws as one line and 6 bags estimated $8.41, with "Estimated weight 1.0
+lbs" shown both times (Scott). Consolidate lines on small orders before
+worrying about weight.
