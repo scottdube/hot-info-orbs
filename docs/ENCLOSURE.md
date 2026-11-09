@@ -91,7 +91,7 @@ plain #4 zinc Phillips pan sheet-metal screws, ASME B18.6.3 type A/AB,
 |---|---|---|---|---|
 | End cap → body, 8 mm | 320 | #4 x 3/8", prod 2469, 100/$2.21 | 4 | $8.84 |
 | Back and PCB, 6.5 + 4 mm | 280 | #4 x 1/4", prod 7370, 100/$2.07 | 3 | $6.21 |
-| **40 kits** | 600 | | 7 | **$15.05** + $12.13 Economy (USPS, 3-7 days) + $1.90 FL tax = **$29.08 landed** (cart estimate to 32162, 2026-11-09; UPS Ground $17.15). **Superseded the same day: all 3/8", see the Fusion check below.** |
+| **40 kits** | 600 | | 7 | **$15.05** + $12.13 Economy (USPS, 3-7 days) + $1.90 FL tax = **$29.08 landed** (cart estimate to the LRD zip, 2026-11-09; UPS Ground $17.15). **Superseded the same day: all 3/8", see the Fusion check below.** |
 
 That is **$0.38/kit** ($0.73 landed) against $1.55 at McMaster before shipping, with 100 spares. The cart is built (300 x 7370, 400 x 2469) and not checked out. Trade-offs:
 these are sheet-metal threads, not the Plastite/Hi-Lo profile cut for
@@ -134,7 +134,7 @@ the PCB position still leaves 2.0 mm, so **one length, 600 x 3/8" (6 bags of
 prod 2469, $13.26), is cheaper than the two-length cart and engages more
 everywhere.** **Decided 2026-11-09 (Scott): one length.** The Bolt Depot cart
 is now 600 x #4 x 3/8" (prod 2469, 6 bags, $13.26); the 1/4" (prod 7370) is
-out. Estimate to 32162: $8.41 Economy + $1.52 tax = **$23.19 landed**
+out. Estimate to the LRD zip: $8.41 Economy + $1.52 tax = **$23.19 landed**
 ($0.58/kit; UPS Ground $32.54). **Ordered 2026-11-09 (Scott): Bolt Depot order
 2651204, PO "Info Orbs", 600 x 2469, $13.26 + $8.41 Economy + $1.52 tax =
 $23.19, Economy to LRD.** The boss-split test with the PA screws is now a check on the printed
