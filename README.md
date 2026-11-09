@@ -40,11 +40,13 @@ Click a file name to download it. Both are also on the
 7. **Your free weather key and time zone:** the orbs show their **IP
    address** when they join your WiFi. On a phone or computer on the same
    WiFi, browse to `http://<that address>/settings`. The page starts with
-   **API key**: paste a [Visual Crossing](https://www.visualcrossing.com/sign-up)
+   **API keys**: paste a [Visual Crossing](https://www.visualcrossing.com/sign-up)
    key, free and about a minute to get. Under **Clock**, pick your time zone
    from the list (it starts on New York; daylight saving is automatic). Set
    your weather town, then press **Save and restart**. Until the key is in,
-   the weather page stays empty; the clock works without it.
+   the weather page stays empty; the clock works without it. Own a Tempest
+   weather station? Its token goes under **API keys** too
+   ([details](docs/SETUP.md#10-optional-weather-from-your-own-tempest-stations)).
 
 **Connect finds no port?** Put the XIAO in download mode: unplug, hold the
 **B** button on the XIAO, plug back in, let go, and click **Connect** again.
