@@ -434,9 +434,9 @@ inline bool parseTopic(const std::string &in, std::string &out, std::string &err
     return true;
 }
 
-// API keys (Visual Crossing, TimeZoneDB) are write-only like a password, but a
-// key is pasted, so stray spaces and line breaks around it are trimmed. Both
-// services issue letters and digits; '-' and '_' are allowed in case that
+// API keys (Visual Crossing) are write-only like a password, but a
+// key is pasted, so stray spaces and line breaks around it are trimmed. The
+// service issues letters and digits; '-' and '_' are allowed in case that
 // changes. Anything else is almost always a bad paste, and the key goes into a
 // URL, so it is refused rather than sent. Blank keeps the stored key.
 inline bool parseApiKey(const std::string &in, const std::string &stored, std::string &out, std::string &err) {

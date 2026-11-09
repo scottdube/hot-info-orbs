@@ -45,14 +45,14 @@ Both are on the [firmware release page](https://github.com/scottdube/hot-info-or
 6. **WiFi:** the screens show a network named `Info-Orbs_` and two
    characters. Join it on a phone; a setup page opens (if not, browse to
    `http://192.168.4.1`). Pick your home WiFi and type its password.
-7. **Your two free keys:** the orbs show their **IP address** when they join
-   your WiFi. On a phone or computer on the same WiFi, browse to
-   `http://<that address>/settings`. The page starts with **API keys**: paste a
-   [Visual Crossing](https://www.visualcrossing.com/sign-up) key (weather) and
-   a [TimeZoneDB](https://timezonedb.com/register) key (local time), each free
-   and about a minute to get. Set your timezone and weather town on the same
-   page, then press **Save and restart**. Until the keys are in, the clock
-   shows UTC and the weather page stays empty.
+7. **Your free weather key and time zone:** the orbs show their **IP
+   address** when they join your WiFi. On a phone or computer on the same
+   WiFi, browse to `http://<that address>/settings`. The page starts with
+   **API key**: paste a [Visual Crossing](https://www.visualcrossing.com/sign-up)
+   key, free and about a minute to get. Under **Clock**, pick your time zone
+   from the list (it starts on New York; daylight saving is automatic). Set
+   your weather town, then press **Save and restart**. Until the key is in,
+   the weather page stays empty; the clock works without it.
 
 **Connect finds no port?** Put the XIAO in download mode: unplug, hold the
 **B** button on the XIAO, plug back in, let go, and click **Connect** again.
@@ -115,12 +115,12 @@ their own. The left and right buttons step back and forward by hand.
 - A **2.4 GHz** WiFi network. The ESP32 cannot see 5 GHz.
 - A computer with [VS Code](https://code.visualstudio.com) and the
   [PlatformIO](https://platformio.org) extension.
-- Two free **API keys**. An API key is a code a website gives you when you
-  sign up, so the orbs can ask it for data. Each takes about a minute:
-  [Visual Crossing](https://www.visualcrossing.com/sign-up) for weather and
-  [TimeZoneDB](https://timezonedb.com/register) for daylight-saving changes.
+- One free **API key**. An API key is a code a website gives you when you
+  sign up, so the orbs can ask it for data. It takes about a minute:
+  [Visual Crossing](https://www.visualcrossing.com/sign-up), for weather.
   Sign up for your own. A shared key uses up one free allowance, and if it is
-  cancelled it stops working for everyone using it.
+  cancelled it stops working for everyone using it. The time zone needs no
+  key: the firmware carries the daylight-saving rules itself.
 
 ## Getting it running
 

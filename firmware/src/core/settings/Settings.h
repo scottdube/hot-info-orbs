@@ -49,7 +49,6 @@ struct SettingsValues {
     // API keys, write-only on the page. Default = secrets.h, which is "" in the
     // release build (env:release), so a downloaded .bin gets its keys here
     std::string wxkey; // Visual Crossing
-    std::string tzkey; // TimeZoneDB
 };
 
 // Night-dim level. The page sets hours only; the level stays a build choice.

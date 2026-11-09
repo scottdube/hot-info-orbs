@@ -123,7 +123,6 @@ SettingsValues Settings::defaults() {
         d.mqt[i] = d.mql[i] = d.mqu[i] = "";
     }
     d.wxkey = WEATHER_API_KEY;
-    d.tzkey = TIMEZONE_API_KEY;
     return d;
 }
 
@@ -175,7 +174,6 @@ void Settings::load() {
             // API keys: added after schema 1 without a bump, like tstn1. An orb
             // that saved before this firmware keeps its secrets.h keys
             v.wxkey = p.getString("wxkey", v.wxkey.c_str()).c_str();
-            v.tzkey = p.getString("tzkey", v.tzkey.c_str()).c_str();
             for (int i = 0; i < 5; i++) {
                 char k[8];
                 snprintf(k, sizeof(k), "mqt%d", i + 1);
@@ -232,8 +230,7 @@ bool Settings::save(const SettingsValues &v) {
     auto putStr = [&p](const char *k, const std::string &s) { return p.putString(k, s.c_str()) == s.size(); };
     ok = ok && putStr("wdname", v.wdname) && putStr("wdurl", v.wdurl) && putStr("mqname", v.mqname) &&
          putStr("mqhost", v.mqhost) && p.putInt("mqport", v.mqport) && putStr("mquser", v.mquser) &&
-         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && putStr("wxkey", v.wxkey) &&
-         putStr("tzkey", v.tzkey);
+         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && putStr("wxkey", v.wxkey);
     for (int i = 0; ok && i < 5; i++) {
         char k[8];
         snprintf(k, sizeof(k), "mqt%d", i + 1);

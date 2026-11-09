@@ -1,5 +1,5 @@
 #include "GlobalTime.h"
-#include "SettingsValidation.h"
+#include "TimeZones.h"
 
 #include "config_helper.h"
 #include <TimeLib.h>
@@ -10,6 +10,15 @@ GlobalTime::GlobalTime() {
     m_timeClient = new NTPClient(m_udp);
     m_timeClient->begin();
     m_timeClient->setPoolServerName(NTP_SERVER);
+    // The zone rule is applied once: the settings page restarts the orb on save.
+    // NTP stays at offset 0 (UTC); the C library turns UTC into local time from
+    // the rule, daylight saving included, with no web service and no key.
+    const std::string &zone = Settings::get().tz;
+    if (tzdb::find(zone) == nullptr) {
+        Serial.printf("Time zone \"%s\" is not in the table (TimeZones.h); showing UTC\n", zone.c_str());
+    }
+    setenv("TZ", tzdb::ruleFor(zone), 1);
+    tzset();
 }
 
 GlobalTime::~GlobalTime() {
@@ -25,11 +34,12 @@ GlobalTime *GlobalTime::getInstance() {
 
 void GlobalTime::updateTime() {
     if (millis() - m_updateTimer > m_oneSecond) {
-        if (m_timeZoneOffset == -1 || (m_nextTimeZoneUpdate > 0 && m_unixEpoch > m_nextTimeZoneUpdate)) {
-            getTimeZoneOffsetFromAPI();
-        }
         m_timeClient->update();
-        m_unixEpoch = m_timeClient->getEpochTime();
+        const time_t utc = m_timeClient->getEpochTime();
+        m_timeZoneOffset = tzdb::offsetAt(utc);
+        // Local time kept as an epoch: the widgets read it through TimeLib's
+        // hour()/day(), which do no zone math of their own.
+        m_unixEpoch = utc + m_timeZoneOffset;
         m_updateTimer = millis();
         m_minute = minute(m_unixEpoch);
         if (m_format24hour) {
@@ -124,51 +134,12 @@ String GlobalTime::getDayAndMonth() {
     return m_monthName + " " + String(m_day);
 }
 
-#include <HTTPClient.h> // Include the necessary header file
-
 bool GlobalTime::isPM() {
     return hour(m_unixEpoch) >= 12;
 }
 
-void GlobalTime::getTimeZoneOffsetFromAPI() {
-    // No key yet (a release .bin before its settings page is filled in): don't
-    // call. The caller retries every second while the offset is unknown, and
-    // every one of those would be a refused request. The clock runs on UTC
-    // until a key is saved, which restarts the orb.
-    if (Settings::get().tzkey.empty()) {
-        return;
-    }
-    HTTPClient http;
-    http.begin(String(TIMEZONE_API_URL) + "?key=" + String(Settings::get().tzkey.c_str()) + "&format=json&fields=gmtOffset,zoneEnd&by=zone&zone=" + String(sv::urlEncode(Settings::get().tz).c_str()));
-    int httpCode = http.GET();
-
-    if (httpCode > 0) {
-        JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getString());
-        if (!error) {
-            m_timeZoneOffset = doc["gmtOffset"].as<int>();
-            if (doc["zoneEnd"].isNull()) {
-                // Timezone does not use DST, no futher updates necessary
-                m_nextTimeZoneUpdate = 0;
-            } else {
-                // Timezone uses DST, update when necessary
-                m_nextTimeZoneUpdate = doc["zoneEnd"].as<unsigned long>() + random(5 * 60); // Randomize update by 5 minutes to avoid flooding the API
-            }
-            Serial.print("Timezone Offset from API: ");
-            Serial.println(m_timeZoneOffset);
-            Serial.print("Next timezone update: ");
-            Serial.println(m_nextTimeZoneUpdate);
-            m_timeClient->setTimeOffset(m_timeZoneOffset);
-        } else {
-            Serial.println("Deserialization error on timezone offset API response");
-        }
-    } else {
-        Serial.println("Failed to get timezone offset from API");
-    }
-}
-
 int GlobalTime::getTimeZoneOffset() {
-    return m_timeZoneOffset == -1 ? 0 : m_timeZoneOffset;
+    return m_timeZoneOffset;
 }
 
 bool GlobalTime::getFormat24Hour() {

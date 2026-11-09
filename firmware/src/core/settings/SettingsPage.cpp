@@ -1,6 +1,7 @@
 #include "SettingsPage.h"
 
 #include "SettingsValidation.h"
+#include "TimeZones.h"
 #include "weatherwidget/TempestSource.h"
 #include "mqttwidget/MQTTWidget.h"
 #include "webdatawidget/WebDataWidget.h"
@@ -216,7 +217,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     const SettingsValues d = Settings::defaults();
     const SettingsValues &stored = Settings::get(); // differs from `v` only on a rejected save
     String h;
-    h.reserve(19500); // measured page: 15.6-16.2 KB before the API keys fieldset (~1.2 KB more); below that every append reallocs a big block on a heap with no PSRAM
+    h.reserve(23000); // measured page: 15.6-16.2 KB before the API key fieldset (~0.8 KB) and the time zone list (~4 KB); below that every append reallocs a big block on a heap with no PSRAM
     h += PAGE_HEAD;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
     {
@@ -232,21 +233,18 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
          "Set OTA_PASSWORD in secrets.h.</p>";
 #endif
     h += banner;
-    if (stored.wxkey.empty() || stored.tzkey.empty()) {
-        h += "<div class='banner err'>&#9888; Start here: paste your two free API keys in <b>API keys</b> below, "
-             "then press <b>Save and restart</b>.</div>";
+    if (stored.wxkey.empty()) {
+        h += "<div class='banner err'>&#9888; Start here: paste your free weather API key in <b>API key</b> below, "
+             "pick your time zone under <b>Clock</b>, then press <b>Save and restart</b>.</div>";
     }
     h += "<form method='POST' action='/settings'>";
 
-    // First on the page: a downloaded .bin has no keys until they are pasted here
-    h += "<fieldset><legend>API keys</legend>";
-    h += hint("Free, about a minute each. Sign up for your own; a shared key runs out for everyone using it.");
+    // First on the page: a downloaded .bin has no key until it is pasted here
+    h += "<fieldset><legend>API key</legend>";
+    h += hint("Free, about a minute. Sign up for your own; a shared key runs out for everyone using it.");
     h += "<label for='wxkey'>Visual Crossing key (weather) &mdash; <a href='https://www.visualcrossing.com/sign-up'>sign up</a></label>"
          "<input type='password' id='wxkey' name='wxkey' value='' autocomplete='off'>";
     h += hint(sv::apiKeyHint(v.wxkey, stored.wxkey, "Weather").c_str()) + errorLine(errors, "wxkey");
-    h += "<label for='tzkey'>TimeZoneDB key (time zone, daylight saving) &mdash; <a href='https://timezonedb.com/register'>sign up</a></label>"
-         "<input type='password' id='tzkey' name='tzkey' value='' autocomplete='off'>";
-    h += hint(sv::apiKeyHint(v.tzkey, stored.tzkey, "The local time").c_str()) + errorLine(errors, "tzkey");
     h += "</fieldset>";
 
     h += "<fieldset><legend>Rotation</legend>";
@@ -276,9 +274,25 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += boolSelect("ampm", "AM/PM indicator (12-hour, not Nixie)", v.ampm, d.ampm, "Off", "On", errors);
     h += colorField("clkcol", "Digit color", v.clkcol, d.clkcol, errors);
     h += colorField("shdcol", "Unlit-segment color", v.shdcol, d.shdcol, errors);
-    h += textField("tz", "Timezone", v.tz, d.tz,
-                   " &mdash; a name from <a href='https://timezonedb.com/time-zones'>timezonedb.com/time-zones</a>. Not checked until the orb asks for the time.",
-                   errors);
+    // A list, not a text box: the firmware knows only the zones in TimeZones.h.
+    // A stored name that is not in the table (typed before 2026-11-09) is kept
+    // as its own entry so saving other settings does not change it silently.
+    {
+        const tzdb::Zone *cur = tzdb::find(v.tz);
+        h += "<label for='tz'>Time zone</label><select id='tz' name='tz'>";
+        if (cur == nullptr) {
+            h += option(sv::htmlEscape(v.tz).c_str(), String(sv::htmlEscape(v.tz).c_str()) + " (not in the list: showing UTC)", true);
+        }
+        for (int i = 0; i < tzdb::ZONE_COUNT; i++) {
+            String label = tzdb::ZONES[i].name;
+            label.replace("_", " ");
+            h += option(tzdb::ZONES[i].name, label, &tzdb::ZONES[i] == cur);
+        }
+        String defName = d.tz.c_str();
+        defName.replace("_", " ");
+        h += "</select>" + hint("Daylight saving is automatic. Default: " + defName + ". Missing yours? Ask in the club and it gets added.") +
+             errorLine(errors, "tz");
+    }
     h += "</fieldset>";
 
 #ifdef STOCK_TICKER_LIST
@@ -450,17 +464,17 @@ void SettingsPage::handlePost() {
             errors["wxkey"] = err;
         }
     }
-    if (has("tzkey")) {
-        const std::string stored = v.tzkey;
-        if (!sv::parseApiKey(argStr(s, "tzkey"), stored, v.tzkey, err)) {
-            errors["tzkey"] = err;
-        }
-    }
     if (has("wxloc") && !sv::normalizeText(argStr(s, "wxloc"), 64, v.wxloc, err)) {
         errors["wxloc"] = err;
     }
-    if (has("tz") && !sv::normalizeText(argStr(s, "tz"), 48, v.tz, err)) {
-        errors["tz"] = err;
+    if (has("tz")) {
+        const std::string want = argStr(s, "tz");
+        const tzdb::Zone *z = tzdb::find(want);
+        if (z != nullptr) {
+            v.tz = z->name;
+        } else if (want != v.tz) { // an unlisted name may only stay as it was
+            errors["tz"] = "Pick a time zone from the list.";
+        }
     }
     readBool("wxmetric", v.wxmetric);
     readBool("wxdark", v.wxdark);
