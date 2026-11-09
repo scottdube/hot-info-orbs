@@ -278,15 +278,16 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     // A stored name that is not in the table (typed before 2026-11-09) is kept
     // as its own entry so saving other settings does not change it silently.
     {
-        const tzdb::Zone *cur = tzdb::find(v.tz);
+        // By index, not pointer: see tzdb::indexOf
+        const int cur = tzdb::indexOf(v.tz);
         h += "<label for='tz'>Time zone</label><select id='tz' name='tz'>";
-        if (cur == nullptr) {
+        if (cur < 0) {
             h += option(sv::htmlEscape(v.tz).c_str(), String(sv::htmlEscape(v.tz).c_str()) + " (not in the list: showing UTC)", true);
         }
         for (int i = 0; i < tzdb::ZONE_COUNT; i++) {
             String label = tzdb::ZONES[i].name;
             label.replace("_", " ");
-            h += option(tzdb::ZONES[i].name, label, &tzdb::ZONES[i] == cur);
+            h += option(tzdb::ZONES[i].name, label, i == cur);
         }
         String defName = d.tz.c_str();
         defName.replace("_", " ");

@@ -344,11 +344,15 @@ void test_tz_find() {
     TEST_ASSERT_NULL(tzdb::find("America/Nowhere"));
     TEST_ASSERT_NULL(tzdb::find(""));
     TEST_ASSERT_EQUAL_STRING("UTC0", tzdb::ruleFor("Mars/Olympus"));
-    // every name unique, every rule non-empty
+    // every name unique, every rule non-empty; the settings page selects by
+    // this index (pointers differ between .cpp files on the orb)
     for (int i = 0; i < tzdb::ZONE_COUNT; i++) {
         TEST_ASSERT_TRUE(strlen(tzdb::ZONES[i].rule) > 0);
-        TEST_ASSERT_EQUAL_PTR(&tzdb::ZONES[i], tzdb::find(tzdb::ZONES[i].name));
+        TEST_ASSERT_EQUAL_INT(i, tzdb::indexOf(tzdb::ZONES[i].name));
+        TEST_ASSERT_EQUAL_STRING(tzdb::ZONES[i].name, tzdb::find(tzdb::ZONES[i].name)->name);
     }
+    TEST_ASSERT_EQUAL_INT(-1, tzdb::indexOf("America/Nowhere"));
+    TEST_ASSERT_EQUAL_INT(0, tzdb::indexOf("america/new york"));
 }
 
 void test_tz_days_from_civil() {
