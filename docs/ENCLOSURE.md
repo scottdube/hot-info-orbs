@@ -28,7 +28,10 @@ A bezel opening wider than ~32.5 mm shows the black band inside the brass ring.
 
 ## Screws: where the thread engages (2026-11-06)
 
-Fasteners are **M3-0.5 socket head** (BOM). The thread is cut by the screw in
+Fasteners: Yang designed for **#4 self-tapping screws** and M3-0.5 socket head
+(the BOM) works too (Scott, 2026-11-08). Lengths from Yang's model, with the stock
+#4 size: end cap → body 8 mm (3/8") ×8; back cover → PCB → body 6.5 mm (1/4") ×4;
+PCB → front body 4 mm (1/4") ×3. The thread is cut by the screw in
 **main body front** only (Ø2.2 bosses, pilot for self-tapping). Every part the
 screw passes through first gets an **M3 clearance hole, Ø3.2**.
 
