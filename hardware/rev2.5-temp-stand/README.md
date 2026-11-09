@@ -57,3 +57,29 @@ both files come straight from Fusion, not a flipped mesh). Parameters BaseT,
 TabT, TabH, Toe, Heel, FootW, Lean, SeatH, StepD, HoleD, HoleIn, HoleUp1,
 HoleUp2, ReliefIn, ReliefH document the numbers; FootW, ReliefIn and TabT
 drive features, the side profile and hole circles are drawn to numbers.
+
+## Screws for the kit — McMaster, priced live 2026-11-09
+
+Four per kit (two per foot). Thread engagement is in the 4 mm PLA tab only:
+the board's end holes are Ø3.2 (M3 clearance), so the screw passes through
+the board whichever way it goes in. Thread-forming screws for plastic, steel
+pan head, read off mcmaster.com in Chrome (not estimates, no +40%):
+
+| Screw | McMaster | Pack | Per piece | Per kit (4) | McMaster hole |
+|---|---|---|---|---|---|
+| **M3 x 8 Torx T10, zinc** | 99512A375 | 100 / $6.89 | $0.069 | **$0.28** | 41 Ga. (2.44 mm) |
+| M3 x 8 Phillips #1, zinc | 90380A349 | 100 / $8.38 | $0.084 | $0.34 | 2.25 mm |
+| #4 x 5/16" Phillips #1, black oxide | 90417A117 | 100 / $7.67 | $0.077 | $0.31 | 37 Ga. (2.64 mm) |
+| #4 x 5/16" Phillips #1, zinc | 90380A107 | 50 / $6.12 | $0.122 | $0.49 | 37 Ga. (2.64 mm) |
+| #4 x 5/16" Torx T10, zinc | 99512A621 | 100 / $11.67 | $0.117 | $0.47 | 37 Ga. (2.64 mm) |
+
+Cheapest is the M3 x 8 Torx at $0.28/kit; the cheapest #4 is 3¢/kit behind.
+A 100-pack covers 25 kits. McMaster ground shipping (~$8–10) is more than
+the screws, so ride them on another McMaster order.
+
+**Hole-size note:** the foot's Ø2.6 tab hole is what McMaster lists for the
+#4 tri-lobe (2.64 mm) and is 0.15–0.35 mm over what it lists for the M3
+round-shank screws (2.25–2.44 mm). FDM holes print undersize, so the M3 may
+bite fine as drawn; if it strips, shrink `HoleD` to 2.4 rather than switch
+screws. The 5 mm M3 Torx (99512A373, $6.43/100) is the same price class if
+the proud tip past the tab is unwanted.
