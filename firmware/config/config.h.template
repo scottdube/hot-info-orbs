@@ -60,7 +60,7 @@
 // MQTT_WIDGET_USER and MQTT_WIDGET_PASS live in secrets.h
 
 // OTA UPDATE CONFIGURATION
-//#define OTA_HOSTNAME "info-orbs" // Update page at http://info-orbs.local/update - give each orb its own name if you have several
+//#define OTA_HOSTNAME "info-orbs" // Update page at http://info-orbs.local/update - give each orb its own name if you have several. Also the name the orb gives your router, so info-orbs.lan (or your router's suffix) may work too
 
 // WIFI CONFIGURATION
 // Normally WiFi is configured on the device itself, using a phone or computer to
