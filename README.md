@@ -1,16 +1,6 @@
 # HoT Info Orbs
 
-Five round 240×240 displays in a row, driven by a Seeed **XIAO ESP32-S3** or
-**XIAO ESP32-S3 Plus** on a custom carrier board. They show the time, the
-weather, stock prices, and pages you set up yourself, and they rotate through
-them on their own.
-
 ![HOT Info Orbs in the enclosure, angled front view: Fusion render of the current design, not a photo](docs/images/master_assembly_angled.png)
-
-A [Hands-On Tech Club](https://handsontech.org) build, derived from Brett
-Turner's [Info Orbs](https://github.com/brettdottech/info-orbs) (see
-[Credit](#credit-and-license)). It is built by people at every skill level, so
-the build is meant to be hard to get wrong and cheap to get into.
 
 ## Quick start: no software to install
 
