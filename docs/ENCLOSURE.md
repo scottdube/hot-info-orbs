@@ -91,9 +91,9 @@ plain #4 zinc Phillips pan sheet-metal screws, ASME B18.6.3 type A/AB,
 |---|---|---|---|---|
 | End cap → body, 8 mm | 320 | #4 x 3/8", prod 2469, 100/$2.21 | 4 | $8.84 |
 | Back and PCB, 6.5 + 4 mm | 280 | #4 x 1/4", prod 7370, 100/$2.07 | 3 | $6.21 |
-| **40 kits** | 600 | | 7 | **$15.05** (+ shipping, shown only at cart, ~$9 [ESTIMATE]) |
+| **40 kits** | 600 | | 7 | **$15.05** + $12.13 Economy (USPS, 3-7 days) + $1.90 FL tax = **$29.08 landed** (cart estimate to 32162, 2026-11-09; UPS Ground $17.15) |
 
-That is **$0.38/kit** against $1.55 at McMaster, with 100 spares. Trade-offs:
+That is **$0.38/kit** ($0.73 landed) against $1.55 at McMaster before shipping, with 100 spares. The cart is built (300 x 7370, 400 x 2469) and not checked out. Trade-offs:
 these are sheet-metal threads, not the Plastite/Hi-Lo profile cut for
 plastic, so they displace more PLA in the Ø2.2 boss; McMaster's own pilot
 for a #4 plastic screw is 2.64 mm. **Print one front body and drive a #4 x
