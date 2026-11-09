@@ -17,7 +17,7 @@ Click a file name to download it. Both are also on the
 | File | What it does | Use it for |
 |---|---|---|
 | [`info_orbs_fw_combo.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/info_orbs_fw_combo.bin) (factory reset) | wipes the board completely: WiFi, settings, start-up picture | the **first** install, or to start over |
-| [`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin) (update) | keeps your WiFi and settings | **normal updates** |
+| [`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin) (update) | keeps your WiFi and settings | **updates**, on the orbs' own update page over WiFi |
 
 ### First install: the factory reset file
 
@@ -49,19 +49,17 @@ Click a file name to download it. Both are also on the
 **Connect finds no port?** Put the XIAO in download mode: unplug, hold the
 **B** button on the XIAO, plug back in, let go, and click **Connect** again.
 
-### Updating later: the update file
+### Updating later: over WiFi, no cable
 
-Same steps, with two differences: download
-**[`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin)**, and set the
-**Flash offset to `0x10000`, not `0x0`.** WiFi, keys and settings are kept, so
-steps 6 and 7 are not needed.
+1. Download **[`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin)**.
+2. On a phone or computer on the same WiFi, browse to
+   `http://<orbs' address>/update` (the address the orbs show at start-up).
+3. Choose `firmware.bin` and press **Upload**. The orbs restart on their own
+   when it is done, with your WiFi, key and settings kept.
 
-No cable needed for updates either: browse to `http://<orbs' address>/update`,
-choose `firmware.bin`, and press Upload.
-
-**Flashed the wrong file at the wrong offset** and the orbs stay dark? Nothing
-is broken: do the [first install](#first-install-the-factory-reset-file) again
-with the factory reset file.
+**Update failed, or the orbs stay dark?** Nothing is broken: do the
+[first install](#first-install-the-factory-reset-file) again with the factory
+reset file, then steps 6 and 7.
 
 Want to change the code, or build it yourself? The [setup guide](docs/SETUP.md)
 covers that.
