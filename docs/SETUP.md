@@ -247,18 +247,22 @@ you mistype one, the clock or weather orb shows the error.
 If you own a WeatherFlow Tempest station, the orbs can show its weather
 instead of Visual Crossing's, with one weather page per station (up to two).
 
-1. Get a token: tempestwx.com > Settings > Data Authorizations > Create Token.
-   Add it to `secrets.h`: `#define TEMPEST_TOKEN "..."`.
-2. Find each station's ID: the number in the station's tempestwx.com address.
-   Put the IDs, and a short label for each (16 characters at most, shown in place
-   of the town name), in `config.h` (see the commented `TEMPEST_STATION_1` lines
-   in the template), or enter them on the settings page later.
-3. Build and upload. The settings page gets a **Tempest stations** section
-   where each station shows ✔ or ✖ for its last fetch, how long ago it was, and
-   the error if it failed.
+Nothing to build: this works on the ready-made release file too.
 
-The token never appears on the settings page. Leave `TEMPEST_TOKEN` out and
-the Tempest code is not compiled in at all.
+1. Get a token: tempestwx.com > Settings > Data Authorizations > Create Token.
+   Paste it on the settings page under **API keys** > **Tempest token**.
+2. Find each station's ID: the number in the station's tempestwx.com address.
+   Enter it under **Tempest stations** with a short label (16 characters at
+   most, shown in place of the town name), then press **Save and restart**.
+3. Each station now shows ✔ or ✖ for its last fetch, how long ago it was, and
+   the error if it failed. A station with no token says so instead.
+
+The page never shows the token once saved; leave the field blank to keep it.
+Building it yourself, you can instead put the token in `secrets.h`
+(`#define TEMPEST_TOKEN "..."`) and the stations in `config.h` (the commented
+`TEMPEST_STATION_1` lines in the template). Those are only defaults: whatever
+the page saves wins. In firmware 1.2.0 and earlier the token could only come from
+`secrets.h`, and without it the Tempest code was not compiled in at all.
 
 ## 11. Optional: run it from a phone hotspot
 

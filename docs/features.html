@@ -225,7 +225,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <li>The Tempest page shows live readings: conditions, feels-like, humidity, and wind as a range from average to gust.</li>
         <li>The 96 KB Tempest reply is streamed through a filter that keeps 744 bytes. The settings page shows ✔ / ✖ for each station's last fetch.</li>
         <li>Sunrise and sunset times above the weather icon, and a small drawing of tonight's moon below it. Times come from the weather source; the moon phase is worked out on the orb, because Tempest does not supply one.</li>
-        <li>Tempest code is left out of the build unless a Tempest token is set, so a Basic build pays nothing for it.</li>
+        <li>The Tempest token is pasted on the settings page, so the ready-made release file works with a station too. Every build carries the Tempest code (about 20 KB); without a token it stays idle.</li>
       </ul>
     </div>
     <div class="group">

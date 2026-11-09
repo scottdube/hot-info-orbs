@@ -82,7 +82,6 @@ static String textField(const char *key, const char *label, const std::string &v
            esc(value) + "'>" + hint("Default: " + esc(def) + extra) + errorLine(errors, key);
 }
 
-#ifdef TEMPEST_TOKEN
 // The last fetch per station. An orb in service has no serial cable, so this is
 // how a failing station is seen without walking over to the orbs.
 static String tempestStatusLine(int slot) {
@@ -101,19 +100,20 @@ static String tempestStatusLine(int slot) {
 }
 
 static String stationRow(int slot, const char *idKey, const char *lblKey, uint32_t id, const std::string &lbl, uint32_t defId,
-                         const std::string &defLbl, const std::map<std::string, std::string> &errors) {
+                         const std::string &defLbl, bool hasToken, const std::map<std::string, std::string> &errors) {
     String n = String(slot + 1);
     String h = "<label for='" + String(idKey) + "'>Station " + n + " ID</label><input type='text' inputmode='numeric' id='" +
                idKey + "' name='" + idKey + "' value='" + (id ? String(id) : String("")) + "'>";
     h += hint("Blank = no page. Default: " + (defId ? String(defId) : String("none"))) + errorLine(errors, idKey);
     String label = "Station " + n + " label (16 characters)";
     h += textField(lblKey, label.c_str(), lbl, defLbl, "", errors);
-    if (id) {
+    if (id && !hasToken) {
+        h += "<div class='err'>&#10006; No page for this station: paste a Tempest token under <b>API keys</b> above.</div>";
+    } else if (id) {
         h += tempestStatusLine(slot);
     }
     return h;
 }
-#endif
 
 static String ago(uint32_t at) {
     uint32_t mins = (millis() - at) / 60000;
@@ -217,7 +217,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     const SettingsValues d = Settings::defaults();
     const SettingsValues &stored = Settings::get(); // differs from `v` only on a rejected save
     String h;
-    h.reserve(23000); // measured page: 15.6-16.2 KB before the API key fieldset (~0.8 KB) and the time zone list (~4 KB); below that every append reallocs a big block on a heap with no PSRAM
+    h.reserve(25000); // measured page: 15.6-16.2 KB before the API key fieldset (~0.8 KB), the time zone list (~4 KB) and the Tempest fields in every build (~1.5 KB); below that every append reallocs a big block on a heap with no PSRAM
     h += PAGE_HEAD;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
     {
@@ -233,18 +233,24 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
          "Set OTA_PASSWORD in secrets.h.</p>";
 #endif
     h += banner;
-    if (stored.wxkey.empty()) {
-        h += "<div class='banner err'>&#9888; Start here: paste your free weather API key in <b>API key</b> below, "
+    // Weather works with either source: a Visual Crossing key, or a Tempest
+    // token plus a station (Tempest pages replace Visual Crossing)
+    const bool tempestReady = !stored.tsttok.empty() && (stored.tstn1 || stored.tstn2);
+    if (stored.wxkey.empty() && !tempestReady) {
+        h += "<div class='banner err'>&#9888; Start here: paste your free weather API key in <b>API keys</b> below, "
              "pick your time zone under <b>Clock</b>, then press <b>Save and restart</b>.</div>";
     }
     h += "<form method='POST' action='/settings'>";
 
     // First on the page: a downloaded .bin has no key until it is pasted here
-    h += "<fieldset><legend>API key</legend>";
+    h += "<fieldset><legend>API keys</legend>";
     h += hint("Free, about a minute. Sign up for your own; a shared key runs out for everyone using it.");
     h += "<label for='wxkey'>Visual Crossing key (weather) &mdash; <a href='https://www.visualcrossing.com/sign-up'>sign up</a></label>"
          "<input type='password' id='wxkey' name='wxkey' value='' autocomplete='off'>";
     h += hint(sv::apiKeyHint(v.wxkey, stored.wxkey, "Weather").c_str()) + errorLine(errors, "wxkey");
+    h += "<label for='tsttok'>Tempest token (your own weather station) &mdash; tempestwx.com &gt; Settings &gt; Data Authorizations &gt; Create Token</label>"
+         "<input type='password' id='tsttok' name='tsttok' value='' autocomplete='off'>";
+    h += hint(sv::tempestTokenHint(v.tsttok, stored.tsttok, stored.tstn1 || stored.tstn2).c_str()) + errorLine(errors, "tsttok");
     h += "</fieldset>";
 
     h += "<fieldset><legend>Rotation</legend>";
@@ -308,13 +314,13 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += boolSelect("wxdark", "Weather screens", v.wxdark, d.wxdark, "Light", "Dark", errors);
     h += "</fieldset>";
 
-#ifdef TEMPEST_TOKEN
     h += "<fieldset><legend>Tempest stations</legend>";
-    h += hint("Token set in secrets.h. Each station gets its own weather page, and the location above is then not used. Units follow the setting above.");
-    h += stationRow(0, "tstn1", "tlbl1", v.tstn1, v.tlbl1, d.tstn1, d.tlbl1, errors);
-    h += stationRow(1, "tstn2", "tlbl2", v.tstn2, v.tlbl2, d.tstn2, d.tlbl2, errors);
+    h += hint("Only if you have a Tempest weather station: its ID is the number in its tempestwx.com address. "
+              "Each station gets its own weather page, and the location above is then not used. Units follow the setting above.");
+    const bool hasToken = !stored.tsttok.empty();
+    h += stationRow(0, "tstn1", "tlbl1", v.tstn1, v.tlbl1, d.tstn1, d.tlbl1, hasToken, errors);
+    h += stationRow(1, "tstn2", "tlbl2", v.tstn2, v.tlbl2, d.tstn2, d.tlbl2, hasToken, errors);
     h += "</fieldset>";
-#endif
 
     h += "<fieldset><legend>Custom pages</legend>";
     h += hint("Pages of your own. A page appears once its address or broker is set; saving restarts the orb. Format and Home Assistant recipe: "
@@ -464,6 +470,12 @@ void SettingsPage::handlePost() {
             errors["wxkey"] = err;
         }
     }
+    if (has("tsttok")) {
+        const std::string stored = v.tsttok;
+        if (!sv::parseApiKey(argStr(s, "tsttok"), stored, v.tsttok, err)) {
+            errors["tsttok"] = err;
+        }
+    }
     if (has("wxloc") && !sv::normalizeText(argStr(s, "wxloc"), 64, v.wxloc, err)) {
         errors["wxloc"] = err;
     }
@@ -512,7 +524,6 @@ void SettingsPage::handlePost() {
     if (v.off && v.offstart == v.offend && !errors.count("offstart") && !errors.count("offend")) {
         errors["offend"] = "Start and end are the same hour";
     }
-#ifdef TEMPEST_TOKEN
     // IDs first: whether a label is required depends on its station
     if (has("tstn1") && !sv::parseStationId(argStr(s, "tstn1"), v.tstn1, err)) {
         errors["tstn1"] = err;
@@ -526,7 +537,6 @@ void SettingsPage::handlePost() {
     if (has("tlbl2") && !sv::parseStationLabel(argStr(s, "tlbl2"), v.tstn2, v.tlbl2, err)) {
         errors["tlbl2"] = err;
     }
-#endif
     // Custom pages
     if (has("wdname") && !sv::normalizeText(argStr(s, "wdname"), 16, v.wdname, err)) {
         errors["wdname"] = err;

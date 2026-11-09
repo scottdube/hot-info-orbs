@@ -123,6 +123,11 @@ SettingsValues Settings::defaults() {
         d.mqt[i] = d.mql[i] = d.mqu[i] = "";
     }
     d.wxkey = WEATHER_API_KEY;
+#ifdef TEMPEST_TOKEN
+    d.tsttok = TEMPEST_TOKEN;
+#else
+    d.tsttok = "";
+#endif
     return d;
 }
 
@@ -152,15 +157,13 @@ void Settings::load() {
             v.offstart = p.getInt("offstart", v.offstart);
             v.offend = p.getInt("offend", v.offend);
             v.invert = p.getBool("invert", v.invert);
-#ifdef TEMPEST_TOKEN
             // Added after schema 1 without a bump: an absent key falls back
-            // to the config.h default like every other key. Compiled out
-            // without a token, so that build matches main.
+            // to the config.h default like every other key. Read in every
+            // build since the token moved to the page (2026-11-09).
             v.tstn1 = p.getUInt("tstn1", v.tstn1);
             v.tlbl1 = p.getString("tlbl1", v.tlbl1.c_str()).c_str();
             v.tstn2 = p.getUInt("tstn2", v.tstn2);
             v.tlbl2 = p.getString("tlbl2", v.tlbl2.c_str()).c_str();
-#endif
             v.hidden = p.getString("hidden", v.hidden.c_str()).c_str();
             // Custom pages: added after schema 1 without a bump, like tstn1
             v.wdname = p.getString("wdname", v.wdname.c_str()).c_str();
@@ -174,6 +177,7 @@ void Settings::load() {
             // API keys: added after schema 1 without a bump, like tstn1. An orb
             // that saved before this firmware keeps its secrets.h keys
             v.wxkey = p.getString("wxkey", v.wxkey.c_str()).c_str();
+            v.tsttok = p.getString("tsttok", v.tsttok.c_str()).c_str();
             for (int i = 0; i < 5; i++) {
                 char k[8];
                 snprintf(k, sizeof(k), "mqt%d", i + 1);
@@ -219,18 +223,17 @@ bool Settings::save(const SettingsValues &v) {
               p.putInt("offstart", v.offstart) &&
               p.putInt("offend", v.offend) &&
               p.putBool("invert", v.invert) &&
-#ifdef TEMPEST_TOKEN
               p.putUInt("tstn1", v.tstn1) &&
               p.putString("tlbl1", v.tlbl1.c_str()) == v.tlbl1.size() &&
               p.putUInt("tstn2", v.tstn2) &&
               p.putString("tlbl2", v.tlbl2.c_str()) == v.tlbl2.size() &&
-#endif
               p.putString("hidden", v.hidden.c_str()) == v.hidden.size();
     // put* returns bytes written; strings compare against their own length
     auto putStr = [&p](const char *k, const std::string &s) { return p.putString(k, s.c_str()) == s.size(); };
     ok = ok && putStr("wdname", v.wdname) && putStr("wdurl", v.wdurl) && putStr("mqname", v.mqname) &&
          putStr("mqhost", v.mqhost) && p.putInt("mqport", v.mqport) && putStr("mquser", v.mquser) &&
-         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && putStr("wxkey", v.wxkey);
+         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && putStr("wxkey", v.wxkey) &&
+         putStr("tsttok", v.tsttok);
     for (int i = 0; ok && i < 5; i++) {
         char k[8];
         snprintf(k, sizeof(k), "mqt%d", i + 1);

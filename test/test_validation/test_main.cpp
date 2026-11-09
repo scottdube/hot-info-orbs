@@ -331,6 +331,19 @@ void test_api_key_hint() {
     TEST_ASSERT_NULL(strstr(apiKeyHint("secretA", "secretB", "Weather").c_str(), "secret"));
 }
 
+void test_tempest_token() {
+    std::string out, err;
+    // tempestwx.com issues a UUID: lower-case hex and hyphens, 36 characters
+    TEST_ASSERT_TRUE(parseApiKey(" 0f8e7d6c-1a2b-4c3d-9e8f-a1b2c3d4e5f6\n", "", out, err));
+    TEST_ASSERT_EQUAL_STRING("0f8e7d6c-1a2b-4c3d-9e8f-a1b2c3d4e5f6", out.c_str());
+    // Optional: no station, no warning; a station without a token says why
+    TEST_ASSERT_NOT_NULL(strstr(tempestTokenHint("", "", false).c_str(), "Optional"));
+    TEST_ASSERT_NOT_NULL(strstr(tempestTokenHint("", "", true).c_str(), "No token yet"));
+    TEST_ASSERT_NOT_NULL(strstr(tempestTokenHint("t", "t", true).c_str(), "A key is stored"));
+    TEST_ASSERT_NOT_NULL(strstr(tempestTokenHint("new", "", false).c_str(), "paste the key again"));
+    TEST_ASSERT_NULL(strstr(tempestTokenHint("secretA", "secretB", true).c_str(), "secret"));
+}
+
 // Offset in seconds east of UTC for `name` at the UTC date given (noon UTC)
 static long tzOffset(const char *name, int y, int mo, int d) {
     setenv("TZ", tzdb::ruleFor(name), 1);
@@ -411,6 +424,7 @@ int main() {
     RUN_TEST(test_password_hint);
     RUN_TEST(test_api_key);
     RUN_TEST(test_api_key_hint);
+    RUN_TEST(test_tempest_token);
     RUN_TEST(test_tz_find);
     RUN_TEST(test_tz_days_from_civil);
     RUN_TEST(test_tz_offsets);
