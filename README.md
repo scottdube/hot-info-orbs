@@ -22,7 +22,7 @@ project's files. Pick the link that matches what you want:
 | see what it is and what it does | the [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html), an ordinary web page |
 | get a built one running | the [setup guide](docs/SETUP.md), written for someone who has never done this |
 | order a bare board | the [board rev 2.5 release](https://github.com/scottdube/hot-info-orbs/releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
-| print the enclosure | [hardware/enclosure/](hardware/enclosure/) |
+| print the enclosure | not ready yet: the enclosure is still being designed. [hardware/enclosure/print/](hardware/enclosure/print/) lists the parts and where each one stands |
 | get all the source | the green **Code** button above, then **Download ZIP** |
 
 ## What it shows
