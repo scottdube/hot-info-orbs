@@ -21,7 +21,7 @@ project's files. Pick the link that matches what you want:
 |---|---|
 | see what it is and what it does | the [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html), an ordinary web page |
 | get a built one running | the [setup guide](docs/SETUP.md), written for someone who has never done this |
-| order a bare board | the [board rev 2.5 release](../../releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
+| order a bare board | the [board rev 2.5 release](https://github.com/scottdube/hot-info-orbs/releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
 | print the enclosure | [hardware/enclosure/](hardware/enclosure/) |
 | get all the source | the green **Code** button above, then **Download ZIP** |
 
@@ -172,9 +172,9 @@ a tag (`git checkout <tag> -- <folder>` brings a folder back):
 
 | Tag | What |
 |---|---|
-| [`board-46mm-rev2.5`](../../releases/tag/board-46mm-rev2.5) | the current board as signed off for the fab, with the zips from every earlier fab run |
-| [`board-xiao-narrow-final`](../../releases/tag/board-xiao-narrow-final) | first XIAO carrier, displays ~39 mm apart; never ordered |
-| [`v1.1-run1`](../../releases/tag/v1.1-run1) | the v1.1 prototype on an ESP32-S3 SuperMini, the module used before the XIAO |
+| [`board-46mm-rev2.5`](https://github.com/scottdube/hot-info-orbs/releases/tag/board-46mm-rev2.5) | the current board as signed off for the fab, with the zips from every earlier fab run |
+| [`board-xiao-narrow-final`](https://github.com/scottdube/hot-info-orbs/releases/tag/board-xiao-narrow-final) | first XIAO carrier, displays ~39 mm apart; never ordered |
+| [`v1.1-run1`](https://github.com/scottdube/hot-info-orbs/releases/tag/v1.1-run1) | the v1.1 prototype on an ESP32-S3 SuperMini, the module used before the XIAO |
 
 ## Documentation
 
@@ -223,7 +223,7 @@ repository is public.
 ## Contributing
 
 **Found a problem? Tell us.** If a step in the setup guide is wrong or
-unclear, or something went wrong in your build, [open an issue](../../issues)
+unclear, or something went wrong in your build, [open an issue](https://github.com/scottdube/hot-info-orbs/issues)
 (a GitHub account is needed; it's free). You can also just tell someone at
 the club.
 
