@@ -52,6 +52,11 @@ public:
     void drawString(const String &text, int x, int y, unsigned int fontSize, Align align, int32_t fgColor = -1, int32_t bgColor = -1, bool applyScale = true);
     void drawString(const String &text, int x, int y);
 
+    // Draw "hh:mm" with the colon 10 px clear of each side, the whole group
+    // centered on x by measured ink width. A pinned colon left "9:05" off
+    // center once 12-hour mode dropped the leading zero.
+    void drawClockTime(const String &hour, const String &minute, int x, int y, unsigned int fontSize);
+
     // Draw centered string
     void drawCenterString(const String &text, int x, int y, unsigned int fontSize = 0);
 
