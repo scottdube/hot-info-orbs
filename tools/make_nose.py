@@ -23,6 +23,10 @@ SOURCE = Path("images/booteyes/hand-source.jpg")
 OUT_JPG = Path("images/booteyes/nose.jpg")
 OUT_H = Path("firmware/src/core/booteyes/noseJpg.h")
 N = 240
+# How far the nose starts below the top of the orb. The orbs sit level, so a
+# true nose would start above the eyes; it is dropped to sit between them
+# (Scott, 2026-11-10: "lower it by a third" from the first rig look at 0).
+DROP = 80
 # Board areas of the hand (source-image pixels): the palm's glowing traces,
 # the Arduino, the index, ring and little finger boards
 REGIONS = [(620, 540, 800, 680), (675, 70, 735, 225), (592, 150, 650, 262),
@@ -74,10 +78,13 @@ def main():
     mask, shade, fade = (Image.new("L", (N, N)) for _ in range(3))
     mp, sp, fp = mask.load(), shade.load(), fade.load()
     for y in range(N):
-        w = half_width(y)
-        top = min(1, y / 40)  # fades into the forehead
+        yy = y - DROP  # row in the nose's own frame
+        if yy < 0:
+            continue
+        w = half_width(yy)
+        top = min(1, yy / 40)  # fades into the forehead
         for x in range(N):
-            fp[x, y] = int(255 * min(1, y / 50))
+            fp[x, y] = int(255 * min(1, yy / 50))
             d = abs(x - N / 2 + 0.5) / w
             if d <= 1:
                 mp[x, y] = int(255 * min(1, (1 - d) * 6))
