@@ -2,6 +2,7 @@
 
 #include "SettingsValidation.h"
 #include "TimeZones.h"
+#include "LidPalette.h"
 #include "weatherwidget/TempestSource.h"
 #include "mqttwidget/MqttFeed.h"
 #include "webdatawidget/WebDataWidget.h"
@@ -447,6 +448,15 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += "<fieldset><legend>Start-up</legend>";
     h += boolSelect("booteyes", "Waking eyes", v.booteyes, d.booteyes, "Off", "On", errors);
     h += hint("Eyes on orbs 2 and 4 wake up while the orb joins WiFi.");
+    h += "<label for='lids'>Eye lids</label><select id='lids' name='lids'>";
+    for (int i = 0; i < lids::kCount; i++) {
+        h += option(String(i), lids::kStyles[i].name, v.lids == i);
+    }
+    h += option(String(lids::kDemo), "Demo: show each in turn", v.lids == lids::kDemo);
+    h += "</select>" + hint(String("Default: ") + lids::kStyles[lids::kDefault].name +
+                            ". The demo plays a whole wake-up in each style, its name on orb 5, and stays on the eyes "
+                            "until you pick a style here (it plays even with Waking eyes Off).") +
+         errorLine(errors, "lids");
     h += "</fieldset>";
 #endif
     h += "<fieldset><legend>Mounting</legend>";
@@ -546,6 +556,15 @@ void SettingsPage::handlePost() {
     readBool("off", v.off);
     readBool("invert", v.invert);
     readBool("booteyes", v.booteyes);
+    if (has("lids")) {
+        const std::string a = argStr(s, "lids");
+        const int n = (!a.empty() && a.size() <= 3 && a.find_first_not_of("0123456789") == std::string::npos) ? atoi(a.c_str()) : -1;
+        if (lids::valid(n)) {
+            v.lids = n;
+        } else {
+            errors["lids"] = "Pick eye lids from the list.";
+        }
+    }
     if (has("face")) {
         std::string a = argStr(s, "face");
         if (a.size() == 1 && a[0] >= '0' && a[0] <= '2' && faceCompiledIn(a[0] - '0')) {

@@ -8,8 +8,13 @@
 
 namespace BootEyes {
 #ifdef BOOT_EYES
-// Starts the eye task. false = could not (out of memory); nothing was drawn.
-bool start(ScreenManager &sm, TFT_eSPI &tft);
+// Starts the eye task with lids = the "lids" setting (LidPalette.h).
+// false = could not (out of memory); nothing was drawn.
+// lids::kDemo plays the lid demo instead: one style per 12 s wake cycle, its
+// name on orb 5, for good. The eyes never hand over to the pages; the
+// settings page (still served in the demo) is how to leave it.
+bool start(ScreenManager &sm, TFT_eSPI &tft, int lids);
+bool demo(); // the lid demo is running
 // connected = true: play the finale, then keep looking around until end().
 // Returns at once. connected = false: stop at once and blank orbs 2 and 4.
 // No-op if not started.

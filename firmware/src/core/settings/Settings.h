@@ -29,6 +29,7 @@ struct SettingsValues {
     int offendm; // minute of the day; where it overlaps the dim times, off wins
     bool invert;
     bool booteyes; // waking eyes on orbs 2 and 4 while WiFi connects (BOOT_EYES builds only)
+    int lids; // eye-lid style, index into lids::kStyles, or lids::kDemo (LidPalette.h)
     uint32_t tstn1; // Tempest station ID, 0 = unused
     std::string tlbl1; // its label on the page, "" when unused
     uint32_t tstn2;

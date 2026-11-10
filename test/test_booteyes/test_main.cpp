@@ -1,5 +1,7 @@
 // Host tests for WakeScript.h:  pio test -e native -f test_booteyes
+#include "LidPalette.h"
 #include "WakeScript.h"
+#include <cstring>
 #include <unity.h>
 
 void setUp() {}
@@ -140,6 +142,114 @@ void test_second_connect_is_ignored() {
     TEST_ASSERT_TRUE(s.at(T0 + 7000).done);
 }
 
+
+// --- LidPalette.h ---------------------------------------------------------------
+
+static int styleIndex(const char *name) {
+    for (int i = 0; i < lids::kCount; i++) {
+        if (strcmp(lids::kStyles[i].name, name) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Stored as an index: these may never move (append only)
+void test_lid_indices_are_fixed() {
+    TEST_ASSERT_EQUAL(0, styleIndex("Taupe"));
+    TEST_ASSERT_EQUAL(1, styleIndex("Skin"));
+    TEST_ASSERT_EQUAL(2, styleIndex("Tan"));
+    TEST_ASSERT_EQUAL(3, styleIndex("Robot"));
+    TEST_ASSERT_EQUAL(4, styleIndex("Stone"));
+    TEST_ASSERT_EQUAL(5, styleIndex("Ash"));
+    TEST_ASSERT_EQUAL(6, styleIndex("Black"));
+    TEST_ASSERT_EQUAL(7, styleIndex("Chrome"));
+    TEST_ASSERT_EQUAL(8, styleIndex("Stainless"));
+    TEST_ASSERT_EQUAL(0, lids::kDefault);
+    TEST_ASSERT_TRUE(lids::kDemo >= lids::kCount);
+}
+
+void test_lid_valid() {
+    TEST_ASSERT_TRUE(lids::valid(0));
+    TEST_ASSERT_TRUE(lids::valid(lids::kCount - 1));
+    TEST_ASSERT_TRUE(lids::valid(lids::kDemo));
+    TEST_ASSERT_FALSE(lids::valid(-1));
+    TEST_ASSERT_FALSE(lids::valid(lids::kCount));
+}
+
+// Same packing as TFT_eSPI::color565
+void test_lid_to565() {
+    TEST_ASSERT_EQUAL_HEX16(0xFFFF, lids::to565({255, 255, 255}));
+    TEST_ASSERT_EQUAL_HEX16(0x0000, lids::to565({0, 0, 0}));
+    TEST_ASSERT_EQUAL_HEX16(0xF800, lids::to565({255, 0, 0}));
+    TEST_ASSERT_EQUAL_HEX16(0x07E0, lids::to565({0, 255, 0}));
+    TEST_ASSERT_EQUAL_HEX16(0x001F, lids::to565({0, 0, 255}));
+}
+
+// Taupe draws exactly as 1.3.0 did: shadow band to margin 20, then skin
+void test_lid_taupe_unchanged() {
+    const lids::Style &t = lids::kStyles[0];
+    const lids::Rgb a = lids::body(t, 6, 0), b = lids::body(t, 19, 3), c = lids::body(t, 20, 1);
+    TEST_ASSERT_EQUAL(128, a.r);
+    TEST_ASSERT_EQUAL(106, a.g);
+    TEST_ASSERT_EQUAL(95, a.b);
+    TEST_ASSERT_EQUAL(128, b.r);
+    TEST_ASSERT_EQUAL(170, c.r);
+    TEST_ASSERT_EQUAL(143, c.g);
+    TEST_ASSERT_EQUAL(129, c.b);
+    TEST_ASSERT_TRUE(t.strands);
+}
+
+// Chrome: bright highlight near the edge, dark band after it, light again deep
+void test_lid_chrome_bands() {
+    const lids::Style &c = lids::kStyles[styleIndex("Chrome")];
+    const int hi = lids::body(c, 12, 0).r, band = lids::body(c, 38, 0).r, deep = lids::body(c, 200, 0).r;
+    TEST_ASSERT_TRUE(hi > 240);
+    TEST_ASSERT_TRUE(band < 80);
+    TEST_ASSERT_TRUE(deep > 200);
+    TEST_ASSERT_EQUAL(lids::body(c, 255, 0).r, lids::body(c, 999, 0).r); // clamps past the map
+    TEST_ASSERT_EQUAL(lids::body(c, 38, 0).r, lids::body(c, 38, 3).r);  // not brushed
+    TEST_ASSERT_FALSE(c.strands);
+}
+
+// Stainless: brushed, so rows differ by a few steps, and stays mid-grey
+void test_lid_stainless_brushed() {
+    const lids::Style &s = lids::kStyles[styleIndex("Stainless")];
+    TEST_ASSERT_EQUAL(20, lids::body(s, 60, 3).r - lids::body(s, 60, 0).r);
+    bool seen[lids::kBrushLevels] = {};
+    for (int row = 0; row < 128; row++) {
+        const int l = lids::brushLevel(row);
+        TEST_ASSERT_TRUE(l >= 0 && l < lids::kBrushLevels);
+        seen[l] = true;
+    }
+    for (bool b : seen) {
+        TEST_ASSERT_TRUE(b); // every step shows up somewhere
+    }
+    TEST_ASSERT_EQUAL(lids::brushLevel(17), lids::brushLevel(17)); // stable frame to frame
+}
+
+void test_lid_demo_cycles_every_style() {
+    TEST_ASSERT_EQUAL(0, lids::demoStyle(0));
+    TEST_ASSERT_EQUAL(0, lids::demoStyle(lids::kDemoCycleMs - 1));
+    TEST_ASSERT_EQUAL(1, lids::demoStyle(lids::kDemoCycleMs));
+    TEST_ASSERT_EQUAL(lids::kCount - 1, lids::demoStyle(lids::kDemoCycleMs * (lids::kCount - 1)));
+    TEST_ASSERT_EQUAL(0, lids::demoStyle(lids::kDemoCycleMs * lids::kCount)); // wraps
+    TEST_ASSERT_EQUAL(500, lids::demoCycleTime(lids::kDemoCycleMs * 3 + 500));
+}
+
+// Each demo cycle is one whole wake: shut at the start, finale done and awake
+// by the end, wide open just before the next style cuts in
+void test_lid_demo_cycle_is_a_whole_wake() {
+    WakeScript w;
+    w.begin(0);
+    w.connected(lids::kDemoConnectMs);
+    TEST_ASSERT_EQUAL(0, w.at(0).open);
+    TEST_ASSERT_FALSE(w.at(lids::kDemoConnectMs + wake::kFinaleMs - 1).done);
+    TEST_ASSERT_TRUE(w.at(lids::kDemoConnectMs + wake::kFinaleMs).done);
+    TEST_ASSERT_EQUAL(lids::kDemoCycleMs, lids::kDemoConnectMs + wake::kFinaleMs + wake::kAwakeMs);
+    TEST_ASSERT_EQUAL(256, w.at(lids::kDemoCycleMs - 1).open);
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_intro_starts_shut_and_looking_down);
@@ -153,5 +263,13 @@ int main() {
     RUN_TEST(test_finale_to_awake_is_continuous);
     RUN_TEST(test_handoff_is_continuous);
     RUN_TEST(test_second_connect_is_ignored);
+    RUN_TEST(test_lid_indices_are_fixed);
+    RUN_TEST(test_lid_valid);
+    RUN_TEST(test_lid_to565);
+    RUN_TEST(test_lid_taupe_unchanged);
+    RUN_TEST(test_lid_chrome_bands);
+    RUN_TEST(test_lid_stainless_brushed);
+    RUN_TEST(test_lid_demo_cycles_every_style);
+    RUN_TEST(test_lid_demo_cycle_is_a_whole_wake);
     return UNITY_END();
 }
