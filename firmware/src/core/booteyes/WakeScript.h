@@ -1,6 +1,7 @@
 #pragma once
 // Keyframe script for the boot eyes (docs/superpowers/specs/2026-11-10-boot-eyes-design.md):
-// groggy while WiFi connects, then a 2 s finale once it has. Pure logic with no
+// groggy while WiFi connects, then a 2 s finale once it has, then awake and
+// looking around until BootEyes::end() (the first page). Pure logic with no
 // Arduino calls, so test/test_booteyes runs it on the host.
 #include <cstddef>
 #include <cstdint>
@@ -9,7 +10,7 @@ struct EyePose {
     uint16_t open; // 0 = lids shut, 256 = lids free (normal tracking)
     int16_t gazeX; // 0..1023, 512 = center
     int16_t gazeY; // 0..1023, 512 = center, low = looking down
-    bool done;     // finale finished
+    bool done;     // finale finished (the awake loop is playing)
 };
 
 namespace wake {
@@ -32,12 +33,18 @@ static const GazeKey kLoopGaze[] = {{0, 512, 400}, {1700, 512, 420}, {3000, 512,
 static const Key kFinaleOpen[] = {{300, 170}, {1500, 170}, {1600, 0}, {1800, 256}, {2000, 256}};
 static const GazeKey kFinaleGaze[] = {{300, 512, 512},  {700, 180, 520},  {1000, 180, 520}, {1300, 850, 520},
                                       {1600, 850, 520}, {1800, 512, 512}, {2000, 512, 512}};
+// Awake loop, repeating from the finale's end: center, glance one way, then the
+// other, back to center, one blink. Starts where the finale ends (256, 512, 512).
+static const Key kAwakeOpen[] = {{0, 256}, {4700, 256}, {4800, 0}, {4850, 0}, {5000, 256}, {6000, 256}};
+static const GazeKey kAwakeGaze[] = {{0, 512, 512},    {1500, 512, 512}, {1800, 200, 512}, {2600, 200, 512},
+                                     {3000, 830, 512}, {3800, 830, 512}, {4100, 512, 512}, {6000, 512, 512}};
 
 constexpr uint32_t kIntroMs = 3900;
 constexpr uint32_t kLoopMs = 3000;
 constexpr uint32_t kEarliestFinaleMs = 2600; // the first crack open always shows
 constexpr uint32_t kEaseMs = 300;
 constexpr uint32_t kFinaleMs = 2000;
+constexpr uint32_t kAwakeMs = 6000;
 
 inline int32_t smooth(uint32_t t, uint32_t t0, int32_t v0, uint32_t t1, int32_t v1) {
     if (t1 <= t0) {
@@ -111,8 +118,13 @@ class WakeScript {
   private:
     EyePose finale(uint32_t f) const {
         using namespace wake;
+        auto v = [](const Key &k) { return int32_t(k.v); };
+        auto x = [](const GazeKey &k) { return int32_t(k.x); };
+        auto y = [](const GazeKey &k) { return int32_t(k.y); };
         if (f >= kFinaleMs) {
-            return {256, 512, 512, true};
+            const uint32_t a = (f - kFinaleMs) % kAwakeMs;
+            return {uint16_t(track(kAwakeOpen, countOf(kAwakeOpen), a, v)), int16_t(track(kAwakeGaze, countOf(kAwakeGaze), a, x)),
+                    int16_t(track(kAwakeGaze, countOf(kAwakeGaze), a, y)), true};
         }
         if (f < kEaseMs) {
             const Key &o = kFinaleOpen[0];
@@ -120,9 +132,6 @@ class WakeScript {
             return {uint16_t(smooth(f, 0, m_from.open, kEaseMs, o.v)), int16_t(smooth(f, 0, m_from.gazeX, kEaseMs, g.x)),
                     int16_t(smooth(f, 0, m_from.gazeY, kEaseMs, g.y)), false};
         }
-        auto v = [](const Key &k) { return int32_t(k.v); };
-        auto x = [](const GazeKey &k) { return int32_t(k.x); };
-        auto y = [](const GazeKey &k) { return int32_t(k.y); };
         return {uint16_t(track(kFinaleOpen, countOf(kFinaleOpen), f, v)), int16_t(track(kFinaleGaze, countOf(kFinaleGaze), f, x)),
                 int16_t(track(kFinaleGaze, countOf(kFinaleGaze), f, y)), false};
     }

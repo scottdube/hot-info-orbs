@@ -1,4 +1,5 @@
 #include "WidgetSet.h"
+#include "BootEyes.h"
 #include "SettingsValidation.h"
 #include "Settings.h"
 
@@ -149,6 +150,7 @@ void WidgetSet::updateAll() {
         }
         Serial.printf("updating widget %s\n", m_widgets[i]->getName().c_str());
         if (m_loadingOnLastOrb) {
+            BootEyes::ScreenGuard guard; // the eyes are still moving on orbs 2 and 4
             m_screenManager->selectScreen(4);
             m_screenManager->fillScreen(TFT_BLACK);
             m_screenManager->setFontColor(TFT_WHITE);

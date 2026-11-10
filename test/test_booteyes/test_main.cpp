@@ -80,6 +80,46 @@ void test_finale_keyframes_and_end() {
     TEST_ASSERT_TRUE(s.at(C + 60000).done); // stays done
 }
 
+// After the finale: awake, looking around and blinking until BootEyes::end()
+void test_awake_loop_keyframes() {
+    WakeScript s = started();
+    const uint32_t C = T0 + 5000;
+    s.connected(C);
+    const uint32_t A = C + 2000; // awake loop start
+    TEST_ASSERT_EQUAL(512, s.at(A + 1500).gazeX); // hold center
+    TEST_ASSERT_EQUAL(200, s.at(A + 1800).gazeX); // glance one way
+    TEST_ASSERT_EQUAL(200, s.at(A + 2600).gazeX);
+    TEST_ASSERT_EQUAL(830, s.at(A + 3000).gazeX); // then the other
+    TEST_ASSERT_EQUAL(830, s.at(A + 3800).gazeX);
+    TEST_ASSERT_EQUAL(512, s.at(A + 4100).gazeX); // back to center
+    TEST_ASSERT_EQUAL(256, s.at(A + 4700).open);
+    TEST_ASSERT_EQUAL(0, s.at(A + 4800).open);   // blink
+    TEST_ASSERT_EQUAL(256, s.at(A + 5000).open);
+    TEST_ASSERT_TRUE(s.at(A + 4800).done);       // done = finale over
+}
+
+void test_awake_loop_repeats() {
+    WakeScript s = started();
+    const uint32_t A = T0 + 2600 + 2000; // early connect: finale at 2600
+    s.connected(T0 + 100);
+    for (uint32_t t = 0; t < 6000; t += 41) {
+        EyePose a = s.at(A + t), b = s.at(A + 6000 + t), c = s.at(A + 60000 + t);
+        TEST_ASSERT_EQUAL(a.open, b.open);
+        TEST_ASSERT_EQUAL(a.gazeX, c.gazeX);
+        TEST_ASSERT_EQUAL(a.open, c.open);
+    }
+}
+
+void test_finale_to_awake_is_continuous() {
+    WakeScript s = started();
+    const uint32_t C = T0 + 5000;
+    s.connected(C);
+    EyePose a = s.at(C + 1999), b = s.at(C + 2000), c = s.at(C + 2001);
+    TEST_ASSERT_INT_WITHIN(2, a.open, b.open);
+    TEST_ASSERT_INT_WITHIN(2, b.gazeX, c.gazeX);
+    TEST_ASSERT_EQUAL(512, b.gazeY);
+}
+
 void test_handoff_is_continuous() {
     const uint32_t connects[] = {500, 2600, 3000, 4500, 5200, 6800, 9000, 12345};
     for (uint32_t c : connects) {
@@ -108,6 +148,9 @@ int main() {
     RUN_TEST(test_never_done_without_connect);
     RUN_TEST(test_early_connect_waits_for_first_crack_open);
     RUN_TEST(test_finale_keyframes_and_end);
+    RUN_TEST(test_awake_loop_keyframes);
+    RUN_TEST(test_awake_loop_repeats);
+    RUN_TEST(test_finale_to_awake_is_continuous);
     RUN_TEST(test_handoff_is_continuous);
     RUN_TEST(test_second_connect_is_ignored);
     return UNITY_END();

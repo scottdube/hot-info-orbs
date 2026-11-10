@@ -17,9 +17,7 @@
 #include "wifiwidget/WifiWidget.h"
 #include <Arduino.h>
 #include <LittleFS.h>
-#ifdef BOOT_EYES
-    #include "BootEyes.h"
-#endif
+#include "BootEyes.h" // ScreenGuard and end() are no-ops without BOOT_EYES
 
 #ifdef STOCK_TICKER_LIST
     #include "stockwidget/StockWidget.h"
@@ -202,9 +200,10 @@ void setup() {
     if (!wifiOk) {
         wifiWidget->showPortal();
     }
-    // Eyes still showing (not blanked for the portal): they stay on orbs 2 and
-    // 4 until the first page draws, so orb 4 gets no "Success" and no
-    // "Loading data:"
+    // Eyes still showing (not blanked for the portal): they keep moving on orbs
+    // 2 and 4 until the first page draws (BootEyes::end() in loop), so orb 4
+    // gets no "Success" and no "Loading data:". Nothing in the rest of setup()
+    // draws; loop() holds a ScreenGuard for what it puts on orb 5.
     const bool eyesShowing = eyesRan && wifiOk;
     wifiWidget->setEyesRan(eyesShowing);
     widgetSet->setLoadingOnLastOrb(eyesShowing);
@@ -335,12 +334,16 @@ void checkButtons() {
 void loop() {
     if (wifiWidget->isConnected() == false) {
         wifiWidget->update();
-        wifiWidget->draw();
+        {
+            BootEyes::ScreenGuard guard; // the IP address on orb 5, beside the eyes
+            wifiWidget->draw();
+        }
         widgetSet->setClearScreensOnDrawCurrent(); // Clear screen after wifiWidget
         delay(100);
     } else {
         if (!widgetSet->initialUpdateDone()) {
             widgetSet->initializeAllWidgetsData();
+            BootEyes::end(); // the first page is next; it clears all five orbs
         }
         otaUpdater->begin(); // no-op after the first call
         settingsPage->begin(); // same server, so after OTA's

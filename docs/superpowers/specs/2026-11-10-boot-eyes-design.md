@@ -47,9 +47,13 @@ Boot with the setting on (the default):
    low. This lasts as long as WiFi takes, with no cap.
 2. When WiFi connects, the **finale** plays (about 2 s): look to one side, then
    the other, a quick blink, then wide open.
-3. Then the usual post-connect screen shows the IP address on orb 5. Orb 4
-   keeps the awake eye: the "Success" screen is skipped when the eyes ran.
-   After that the clock takes over as today.
+3. Then the eyes stay **awake** and keep moving until the first page draws: a
+   6 s loop of center, glance one way, then the other, back to center, one
+   blink. Meanwhile orb 5 shows the IP address, then "Loading" with the name of
+   each widget as its data loads. Orb 4 gets no "Success" and no "Loading
+   data:". *(Amended 2026-11-10 after the first rig boots: Scott found the
+   frozen eye during loading looked dead, and wanted all the loading text on
+   orb 5 so both eyes stay up.)*
 
 If WiFi fails and the WiFi setup portal starts, the eyes stop at once. Orbs 2
 and 4 are cleared, orb 2 gets its version text back, and the portal screens
@@ -131,10 +135,17 @@ New folder `firmware/src/core/booteyes/`:
 | `eyeData.h` | `defaultEye.h` from the example: sclera, iris, polar, upper and lower lid maps. Adafruit MIT notice kept at the top. | — |
 | `BootEyes.{h,cpp}` | `start(ScreenManager&)` creates a FreeRTOS task pinned to core 1 at priority 1 and returns false if it cannot. The task loops: `pose = script.at(millis())`, select screen index 1 (orb 2) and draw eye 0, select index 3 (orb 4) and draw eye 1, `vTaskDelay(1)`. It exits on `done` or when a stop flag is set; it checks the flag between doubled lines, never mid-transaction. `finish(bool connected)`: if connected, calls `script.connected()` and waits for the task to end (timeout 6 s, then sets the stop flag and waits for the exit). If not connected, sets the stop flag, waits for the exit, and clears both eye orbs. | WakeScript, EyeRenderer, ScreenManager |
 
-**No two threads ever draw at once.** The eye task is the only thing drawing
-between `start` and `finish`: every splash screen is drawn before `start`, and
-nothing in `begin` or `connect` draws while the eyes run. That makes locking
-unnecessary; TFT_eSPI and ScreenManager stay single-threaded.
+**Two threads take turns on the bus.** Between `start` and `finish` the eye
+task is the only thing drawing: every splash screen is drawn before `start`,
+and nothing in `begin` or `connect` draws while the eyes run. From `finish(true)`
+until `end()` (called in `loop()` right after the initial data load) the eye
+task and orb 5's start-up text share the bus through a mutex: the task holds it
+for each eye frame, and `loop()` / `WidgetSet::updateAll()` hold a
+`BootEyes::ScreenGuard` around their orb 5 drawing. No widget's `setup()` or
+`update()` draws (checked 2026-11-10), so nothing else needs the guard.
+`end()` waits for the finale to finish (6 s cap) so a quick data load does not
+cut it short. *(Amended 2026-11-10: the first version stopped the task at the
+end of the finale, which needed no lock but froze the eyes during loading.)*
 `WifiWidget::setup()` splits into three calls:
 
 - `begin(bool eyesRunning)`: configures WiFiManager and keeps the existing
