@@ -5,9 +5,11 @@
 #include "Utils.h"
 #include "Widget.h"
 
-// Clock, Parqet, Stocks, two weather pages, Web Data, the second Web Data
-// define, MQTT. At 5 an orb with two Tempest pages dropped the custom pages.
-#define MAX_WIDGETS 8
+// Clock, Parqet, Stocks, up to three weather pages (two Tempest, plus Visual
+// Crossing where its tick box exists), Web Data, the second Web Data define,
+// two MQTT pages = 10.
+// At 5 an orb with two Tempest pages dropped the custom pages.
+#define MAX_WIDGETS 10
 
 class WidgetSet {
 public:
@@ -20,11 +22,14 @@ public:
     void prev();
     void buttonPressed(uint8_t buttonId, ButtonState state);
     void showLoading();
+    // true = the boot eyes are still on orbs 2 and 4: the start-up "Loading"
+    // lines all go on orb 5 instead of orbs 4 and 5
+    void setLoadingOnLastOrb(bool lastOrb) { m_loadingOnLastOrb = lastOrb; }
     void updateAll();
     bool initialUpdateDone();
     void initializeAllWidgetsData();
     void setClearScreensOnDrawCurrent();
-    void updateBrightnessByTime(uint8_t hour24);
+    void updateBrightnessByTime(int minuteOfDay); // 0..1439
     bool panelsAsleep();
     void wakeForAMinute(); // a button press during night-off hours
 
@@ -32,6 +37,7 @@ public:
     // with " 2" etc. added when two share one (two WebData widgets)
     int8_t count();
     String key(int8_t i);
+    String label(int8_t i); // what its tick box says, e.g. "MQTT 1 (Town Squares)"
     bool shown(int8_t i);
     int8_t indexOf(Widget *w); // -1 if add() refused it
 
@@ -44,6 +50,7 @@ private:
     int8_t m_currentWidget = 0;
 
     bool m_initialized = false;
+    bool m_loadingOnLastOrb = false;
     String m_keys[MAX_WIDGETS];
     bool m_hidden[MAX_WIDGETS] = {};
     int8_t m_shownCount = 0;

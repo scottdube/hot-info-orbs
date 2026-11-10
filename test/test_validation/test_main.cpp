@@ -1,5 +1,8 @@
 // Host tests for SettingsValidation.h:  pio test -e native
 #include "SettingsValidation.h"
+#include "TimeZones.h"
+#include <cstdlib>
+#include <ctime>
 #include <cstdio>
 #include <cstring>
 #include <unity.h>
@@ -42,31 +45,97 @@ void test_cycle() {
     TEST_ASSERT_FALSE(err.empty());
 }
 
-// --- hour --------------------------------------------------------------------
+// --- time of day -------------------------------------------------------------
 
-void test_hour() {
+static int tod(const char *in) {
     int out = -1;
     std::string err;
-    TEST_ASSERT_TRUE(parseHour("0", out, err));
-    TEST_ASSERT_EQUAL(0, out);
-    TEST_ASSERT_TRUE(parseHour("23", out, err));
-    TEST_ASSERT_EQUAL(23, out);
-    TEST_ASSERT_FALSE(parseHour("24", out, err));
-    TEST_ASSERT_FALSE(parseHour("-1", out, err));
-    TEST_ASSERT_FALSE(parseHour("", out, err));
+    return parseTimeOfDay(in, out, err) ? out : -1;
 }
 
-void test_hour_range() {
-    TEST_ASSERT_TRUE(inHourRange(18, 18, 22));
-    TEST_ASSERT_TRUE(inHourRange(21, 18, 22));
-    TEST_ASSERT_FALSE(inHourRange(22, 18, 22)); // end hour is excluded
-    TEST_ASSERT_FALSE(inHourRange(17, 18, 22));
-    TEST_ASSERT_TRUE(inHourRange(23, 23, 6)); // wraps midnight
-    TEST_ASSERT_TRUE(inHourRange(0, 23, 6));
-    TEST_ASSERT_TRUE(inHourRange(5, 23, 6));
-    TEST_ASSERT_FALSE(inHourRange(6, 23, 6));
-    TEST_ASSERT_FALSE(inHourRange(12, 23, 6));
-    TEST_ASSERT_FALSE(inHourRange(7, 7, 7)); // same hour = empty
+void test_time_of_day() {
+    TEST_ASSERT_EQUAL(0, tod("0"));
+    TEST_ASSERT_EQUAL(16 * 60, tod("16"));
+    TEST_ASSERT_EQUAL(23 * 60, tod("23"));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod("16:05"));
+    TEST_ASSERT_EQUAL(7 * 60 + 30, tod("7:30"));
+    TEST_ASSERT_EQUAL(7 * 60 + 30, tod("07:30"));
+    TEST_ASSERT_EQUAL(23 * 60 + 59, tod("23:59"));
+    TEST_ASSERT_EQUAL(0, tod("00:00"));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod(" 16:05 ")); // trimmed
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod("16.05")); // phone keypads offer '.'
+    // am/pm, any case, with or without a space
+    TEST_ASSERT_EQUAL(16 * 60, tod("4pm"));
+    TEST_ASSERT_EQUAL(16 * 60, tod("4 PM"));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod("4:05 pm"));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, tod("4:05p"));
+    TEST_ASSERT_EQUAL(10 * 60, tod("10am"));
+    TEST_ASSERT_EQUAL(0, tod("12am")); // midnight
+    TEST_ASSERT_EQUAL(30, tod("12:30 am"));
+    TEST_ASSERT_EQUAL(12 * 60, tod("12pm")); // noon
+    TEST_ASSERT_EQUAL(12 * 60 + 15, tod("12:15pm"));
+    // refused
+    TEST_ASSERT_EQUAL(-1, tod(""));
+    TEST_ASSERT_EQUAL(-1, tod("24"));
+    TEST_ASSERT_EQUAL(-1, tod("24:00"));
+    TEST_ASSERT_EQUAL(-1, tod("25:00"));
+    TEST_ASSERT_EQUAL(-1, tod("4:75"));
+    TEST_ASSERT_EQUAL(-1, tod("4:5")); // minutes are two digits
+    TEST_ASSERT_EQUAL(-1, tod("4:055"));
+    TEST_ASSERT_EQUAL(-1, tod("-1"));
+    TEST_ASSERT_EQUAL(-1, tod("0am")); // am/pm hours are 1..12
+    TEST_ASSERT_EQUAL(-1, tod("13pm"));
+    TEST_ASSERT_EQUAL(-1, tod("16:05:00"));
+    TEST_ASSERT_EQUAL(-1, tod("noon"));
+    TEST_ASSERT_EQUAL(-1, tod("4 :05"));
+    TEST_ASSERT_EQUAL(-1, tod("pm"));
+    int out = 99;
+    std::string err;
+    TEST_ASSERT_FALSE(parseTimeOfDay("4:75", out, err));
+    TEST_ASSERT_EQUAL(99, out); // untouched on failure
+    TEST_ASSERT_FALSE(err.empty());
+}
+
+void test_time_text() {
+    TEST_ASSERT_EQUAL_STRING("00:00", timeOfDayText(0).c_str());
+    TEST_ASSERT_EQUAL_STRING("07:30", timeOfDayText(7 * 60 + 30).c_str());
+    TEST_ASSERT_EQUAL_STRING("16:05", timeOfDayText(16 * 60 + 5).c_str());
+    TEST_ASSERT_EQUAL_STRING("23:59", timeOfDayText(23 * 60 + 59).c_str());
+    // what the page shows parses back to the same minute
+    for (int m = 0; m < 24 * 60; m += 7) {
+        TEST_ASSERT_EQUAL(m, tod(timeOfDayText(m).c_str()));
+    }
+}
+
+void test_time_range() {
+    const int h = 60;
+    TEST_ASSERT_TRUE(inTimeRange(18 * h, 18 * h, 22 * h));
+    TEST_ASSERT_TRUE(inTimeRange(21 * h + 59, 18 * h, 22 * h));
+    TEST_ASSERT_FALSE(inTimeRange(22 * h, 18 * h, 22 * h)); // end minute is excluded
+    TEST_ASSERT_FALSE(inTimeRange(18 * h - 1, 18 * h, 22 * h));
+    TEST_ASSERT_TRUE(inTimeRange(23 * h, 23 * h, 6 * h)); // wraps midnight
+    TEST_ASSERT_TRUE(inTimeRange(0, 23 * h, 6 * h));
+    TEST_ASSERT_TRUE(inTimeRange(6 * h - 1, 23 * h, 6 * h));
+    TEST_ASSERT_FALSE(inTimeRange(6 * h, 23 * h, 6 * h));
+    TEST_ASSERT_FALSE(inTimeRange(12 * h, 23 * h, 6 * h));
+    TEST_ASSERT_FALSE(inTimeRange(7 * h, 7 * h, 7 * h)); // same time = empty
+    // a minute-level window, the reason this exists
+    TEST_ASSERT_FALSE(inTimeRange(16 * h + 4, 16 * h + 5, 16 * h + 30));
+    TEST_ASSERT_TRUE(inTimeRange(16 * h + 5, 16 * h + 5, 16 * h + 30));
+    TEST_ASSERT_TRUE(inTimeRange(16 * h + 29, 16 * h + 5, 16 * h + 30));
+    TEST_ASSERT_FALSE(inTimeRange(16 * h + 30, 16 * h + 5, 16 * h + 30));
+}
+
+void test_stored_minutes() {
+    // An orb saved by hour-only firmware has dimstart=22 and no minutes key
+    TEST_ASSERT_EQUAL(22 * 60, storedMinutes(false, 0, 22));
+    TEST_ASSERT_EQUAL(16 * 60 + 5, storedMinutes(true, 16 * 60 + 5, 16));
+    // a corrupt minutes value falls back to the hour key
+    TEST_ASSERT_EQUAL(7 * 60, storedMinutes(true, 1440, 7));
+    TEST_ASSERT_EQUAL(7 * 60, storedMinutes(true, -5, 7));
+    // the hour written beside it for older firmware rounds down
+    TEST_ASSERT_EQUAL(16, legacyHour(16 * 60 + 59));
+    TEST_ASSERT_EQUAL(0, legacyHour(0));
 }
 
 void test_list_contains() {
@@ -307,11 +376,104 @@ void test_password_hint() {
     TEST_ASSERT_NULL(strstr(passwordHint("hunter2", "swordfish"), "swordfish"));
 }
 
+void test_api_key() {
+    std::string out, err;
+    TEST_ASSERT_TRUE(parseApiKey("", "old", out, err)); // blank keeps
+    TEST_ASSERT_EQUAL_STRING("old", out.c_str());
+    TEST_ASSERT_TRUE(parseApiKey("  ABC123def456 \n", "old", out, err)); // paste trimmed
+    TEST_ASSERT_EQUAL_STRING("ABC123def456", out.c_str());
+    TEST_ASSERT_TRUE(parseApiKey("a-b_c", "", out, err));
+    out = "old";
+    TEST_ASSERT_FALSE(parseApiKey("abc def", "old", out, err)); // space inside
+    TEST_ASSERT_FALSE(parseApiKey("abc&key=x", "old", out, err)); // would change the URL
+    TEST_ASSERT_FALSE(parseApiKey(std::string(65, 'k'), "old", out, err));
+    TEST_ASSERT_EQUAL_STRING("old", out.c_str()); // a refused key leaves out alone
+}
+
+void test_api_key_hint() {
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("", "", "Weather").c_str(), "Weather will not work"));
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("k", "k", "Weather").c_str(), "A key is stored"));
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("new", "old", "Weather").c_str(), "paste the key again"));
+    TEST_ASSERT_NULL(strstr(apiKeyHint("secretA", "secretB", "Weather").c_str(), "secret"));
+}
+
+void test_tempest_token() {
+    std::string out, err;
+    // tempestwx.com issues a UUID: lower-case hex and hyphens, 36 characters
+    TEST_ASSERT_TRUE(parseApiKey(" 0f8e7d6c-1a2b-4c3d-9e8f-a1b2c3d4e5f6\n", "", out, err));
+    TEST_ASSERT_EQUAL_STRING("0f8e7d6c-1a2b-4c3d-9e8f-a1b2c3d4e5f6", out.c_str());
+    // Optional: no station, no warning; a station without a token says why
+    TEST_ASSERT_NOT_NULL(strstr(tempestTokenHint("", "", false).c_str(), "Optional"));
+    TEST_ASSERT_NOT_NULL(strstr(tempestTokenHint("", "", true).c_str(), "No token yet"));
+    TEST_ASSERT_NOT_NULL(strstr(tempestTokenHint("t", "t", true).c_str(), "A key is stored"));
+    TEST_ASSERT_NOT_NULL(strstr(tempestTokenHint("new", "", false).c_str(), "paste the key again"));
+    TEST_ASSERT_NULL(strstr(tempestTokenHint("secretA", "secretB", true).c_str(), "secret"));
+}
+
+// Offset in seconds east of UTC for `name` at the UTC date given (noon UTC)
+static long tzOffset(const char *name, int y, int mo, int d) {
+    setenv("TZ", tzdb::ruleFor(name), 1);
+    tzset();
+    return tzdb::offsetAt((time_t)(tzdb::daysFromCivil(y, mo, d) * 86400 + 12 * 3600));
+}
+
+void test_tz_find() {
+    TEST_ASSERT_NOT_NULL(tzdb::find("America/New_York"));
+    TEST_ASSERT_NOT_NULL(tzdb::find("america/new york")); // typed by hand once
+    TEST_ASSERT_NULL(tzdb::find("America/Nowhere"));
+    TEST_ASSERT_NULL(tzdb::find(""));
+    TEST_ASSERT_EQUAL_STRING("UTC0", tzdb::ruleFor("Mars/Olympus"));
+    // every name unique, every rule non-empty; the settings page selects by
+    // this index (pointers differ between .cpp files on the orb)
+    for (int i = 0; i < tzdb::ZONE_COUNT; i++) {
+        TEST_ASSERT_TRUE(strlen(tzdb::ZONES[i].rule) > 0);
+        TEST_ASSERT_EQUAL_INT(i, tzdb::indexOf(tzdb::ZONES[i].name));
+        TEST_ASSERT_EQUAL_STRING(tzdb::ZONES[i].name, tzdb::find(tzdb::ZONES[i].name)->name);
+    }
+    TEST_ASSERT_EQUAL_INT(-1, tzdb::indexOf("America/Nowhere"));
+    TEST_ASSERT_EQUAL_INT(0, tzdb::indexOf("america/new york"));
+}
+
+void test_tz_days_from_civil() {
+    TEST_ASSERT_EQUAL_INT64(0, tzdb::daysFromCivil(1970, 1, 1));
+    TEST_ASSERT_EQUAL_INT64(19723, tzdb::daysFromCivil(2024, 1, 1));
+    TEST_ASSERT_EQUAL_INT64(19782, tzdb::daysFromCivil(2024, 2, 29)); // leap day
+}
+
+void test_tz_offsets() {
+    TEST_ASSERT_EQUAL(-5 * 3600, tzOffset("America/New_York", 2026, 1, 15));
+    TEST_ASSERT_EQUAL(-4 * 3600, tzOffset("America/New_York", 2026, 7, 15));
+    TEST_ASSERT_EQUAL(-7 * 3600, tzOffset("America/Phoenix", 2026, 1, 15));
+    TEST_ASSERT_EQUAL(-7 * 3600, tzOffset("America/Phoenix", 2026, 7, 15)); // no DST
+    TEST_ASSERT_EQUAL(-(3 * 3600 + 1800), tzOffset("America/St_Johns", 2026, 1, 15));
+    TEST_ASSERT_EQUAL(0, tzOffset("Europe/London", 2026, 1, 15));
+    TEST_ASSERT_EQUAL(3600, tzOffset("Europe/London", 2026, 7, 15));
+    TEST_ASSERT_EQUAL(5 * 3600 + 1800, tzOffset("Asia/Kolkata", 2026, 7, 15));
+    TEST_ASSERT_EQUAL(11 * 3600, tzOffset("Australia/Sydney", 2026, 1, 15)); // southern summer
+    TEST_ASSERT_EQUAL(10 * 3600, tzOffset("Australia/Sydney", 2026, 7, 15));
+    TEST_ASSERT_EQUAL(0, tzOffset("Not/A_Zone", 2026, 7, 15));
+}
+
+void test_tz_dst_switch() {
+    // US 2026: DST starts Sun Mar 8 at 02:00 EST = 07:00 UTC
+    setenv("TZ", tzdb::ruleFor("America/New_York"), 1);
+    tzset();
+    const time_t start = (time_t)(tzdb::daysFromCivil(2026, 3, 8) * 86400 + 7 * 3600);
+    TEST_ASSERT_EQUAL(-5 * 3600, tzdb::offsetAt(start - 1));
+    TEST_ASSERT_EQUAL(-4 * 3600, tzdb::offsetAt(start));
+    // ends Sun Nov 1 at 02:00 EDT = 06:00 UTC
+    const time_t end = (time_t)(tzdb::daysFromCivil(2026, 11, 1) * 86400 + 6 * 3600);
+    TEST_ASSERT_EQUAL(-4 * 3600, tzdb::offsetAt(end - 1));
+    TEST_ASSERT_EQUAL(-5 * 3600, tzdb::offsetAt(end));
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_cycle);
-    RUN_TEST(test_hour);
-    RUN_TEST(test_hour_range);
+    RUN_TEST(test_time_of_day);
+    RUN_TEST(test_time_text);
+    RUN_TEST(test_time_range);
+    RUN_TEST(test_stored_minutes);
     RUN_TEST(test_list_contains);
     RUN_TEST(test_tickers);
     RUN_TEST(test_text);
@@ -332,5 +494,12 @@ int main() {
     RUN_TEST(test_topic);
     RUN_TEST(test_password);
     RUN_TEST(test_password_hint);
+    RUN_TEST(test_api_key);
+    RUN_TEST(test_api_key_hint);
+    RUN_TEST(test_tempest_token);
+    RUN_TEST(test_tz_find);
+    RUN_TEST(test_tz_days_from_civil);
+    RUN_TEST(test_tz_offsets);
+    RUN_TEST(test_tz_dst_switch);
     return UNITY_END();
 }

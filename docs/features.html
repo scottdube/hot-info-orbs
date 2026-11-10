@@ -196,6 +196,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <h3>Night and what's on screen</h3>
       <ul>
         <li>Two separate schedules: dim hours and screens-off hours. Use either, or both, so the orbs can dim in the evening and go dark at bedtime. Where they overlap, off wins.<span class="was">Was: dim hours only.</span></li>
+        <li>Start and end times are typed, to the minute: 22:30, 7:30, 10pm or 10:30 pm all work. An orb updated from the hour-only firmware keeps its hours.<span class="was">Was: whole hours from a drop-down.</span></li>
         <li>Screens off sends the display chip's own off and sleep commands to all five panels. Any button wakes them for a minute. The backlight stays on, so the screens go blank but still glow; they are not black. Truly black needs a power switch on the displays' 5 V feed; what that takes is in REQUIREMENTS.md.</li>
         <li>Choose which pages appear. Tick one to keep it on screen, or several to rotate through them; the buttons move between ticked pages only.<span class="was">Was: every page, always.</span></li>
       </ul>
@@ -225,7 +226,17 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <li>The Tempest page shows live readings: conditions, feels-like, humidity, and wind as a range from average to gust.</li>
         <li>The 96 KB Tempest reply is streamed through a filter that keeps 744 bytes. The settings page shows ✔ / ✖ for each station's last fetch.</li>
         <li>Sunrise and sunset times above the weather icon, and a small drawing of tonight's moon below it. Times come from the weather source; the moon phase is worked out on the orb, because Tempest does not supply one.</li>
-        <li>Tempest code is left out of the build unless a Tempest token is set, so a Basic build pays nothing for it.</li>
+        <li>The Tempest token is pasted on the settings page, so the ready-made release file works with a station too. Every build carries the Tempest code (about 20 KB); without a token it stays idle.</li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Custom pages</h3>
+      <ul>
+        <li>Up to two MQTT pages of five orbs each, set up on the settings page: a broker, then one topic, label and unit per orb. Works with Home Assistant or any other MQTT source.<span class="was">Was: one page, laid out by a JSON message with pixel positions.</span></li>
+        <li>A JSON page that reads any web address, set up the same way.</li>
+        <li><span class="st branch">◐ Built</span> Long values wrap onto up to three lines, and a line break in the message starts a new line, so <span class="num">5pm</span> can sit above the act's name. The orb measures the text to find the largest size that fits, instead of estimating it.<span class="was">Was: one line, sized by an estimate. Long text came out as small as 10 px and could still run off the screen.</span></li>
+        <li><span class="st branch">◐ Built</span> One text size for the whole page by default, so five orbs side by side match. A per-page setting lets each orb be as large as fits instead.<span class="was">Was: each orb sized on its own, from 10 px to 40 px across one page.</span></li>
+        <li>Ready-made Home Assistant recipes in CUSTOM-PAGES.md, including tonight's act at each of The Villages' five town squares.</li>
       </ul>
     </div>
     <div class="group">
@@ -238,7 +249,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="group">
       <h3>Quality</h3>
       <ul>
-        <li>Unit tests run on a laptop and in CI for settings validation and weather parsing: 33 tests, including WiFi roaming.<span class="was">Was: none.</span></li>
+        <li>Unit tests run on a laptop and in CI for settings validation, weather parsing, the sun and moon, and custom pages: 67 tests, including WiFi roaming and MQTT text fitting.<span class="was">Was: none.</span></li>
         <li>The linter reports problems and no longer commits changes back, so the repository only moves when a person moves it.</li>
         <li>An upstream bug is fixed: an uninitialized loop counter in the page rotation.</li>
         <li>A written setup guide goes from an empty laptop to a running orb, and a traps file records every mistake that cost time once.<span class="was">Was: Brett's assembly video and README.</span></li>
@@ -325,7 +336,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="w"><h3>Clock</h3><p>Seven-segment, Nixie, or your own JPG digits. 12 or 24 hour, with custom colors and shadow.</p></div>
     <div class="w"><h3>Weather</h3><p>Current conditions, today's high and low, a 3-day forecast, and sunrise, sunset and the moon. From Visual Crossing, or your own Tempest station.</p></div>
     <div class="w"><h3>Stocks</h3><p>Five tickers, one per orb: stocks, forex or crypto, from Twelve Data.</p></div>
-    <div class="w"><h3>Custom pages</h3><p>Your own page in the rotation, set up on the settings page: a JSON file from any web address, or one live value per orb from MQTT (Home Assistant). No rebuild.</p></div>
+    <div class="w"><h3>Custom pages</h3><p>Your own page in the rotation, set up on the settings page: a JSON file from any web address, or one live value per orb from MQTT (Home Assistant), on up to two pages of five. Long values wrap to fit. No rebuild.</p></div>
     <div class="w"><h3>And more</h3><p>A Parqet portfolio from upstream, switched on in <span class="num">config.h</span>.</p></div>
   </div>
 </section>
@@ -387,8 +398,9 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <h3>Data sources</h3>
       <dl>
         <dt>Weather</dt><dd>Visual Crossing (free key)</dd>
-        <dt>Time zone</dt><dd>TimeZoneDB (free key) for daylight-saving changes</dd>
+        <dt>Time zone</dt><dd>Picked from a list on the settings page; daylight-saving rules built in, no key</dd>
         <dt>Stocks</dt><dd>Twelve Data</dd>
+        <dt>MQTT</dt><dd>Your own broker, for example Home Assistant's Mosquitto add-on</dd>
         <dt>Tempest</dt><dd>WeatherFlow API. Each fetch takes 1.2–3.8 s, and only 744 bytes of a 96 KB reply are kept <span class="m">MEASURED</span></dd>
       </dl>
     </div>

@@ -2,10 +2,11 @@
 #define TEMPESTSOURCE_H
 
 #include "config_helper.h"
-#ifdef TEMPEST_TOKEN
+// Compiled into every build since 2026-11-09: the token is a setting
+// (Settings::tsttok, pasted on the page), so a downloaded .bin can use it.
 
-    #include "WeatherSource.h"
-    #include <string>
+#include "WeatherSource.h"
+#include <string>
 
 // A station's last fetch, for the settings page
 struct TempestStatus {
@@ -39,5 +40,4 @@ class TempestSource : public WeatherSource {
     static TempestStatus s_status[SLOTS];
 };
 
-#endif
 #endif

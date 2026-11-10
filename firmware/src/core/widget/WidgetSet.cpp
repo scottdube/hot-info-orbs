@@ -1,4 +1,5 @@
 #include "WidgetSet.h"
+#include "BootEyes.h"
 #include "SettingsValidation.h"
 #include "Settings.h"
 
@@ -41,6 +42,13 @@ int8_t WidgetSet::count() {
 
 String WidgetSet::key(int8_t i) {
     return m_keys[i];
+}
+
+String WidgetSet::label(int8_t i) {
+    // Two widgets sharing a name keep the key's " 2" so their boxes differ
+    String name = m_widgets[i]->getName();
+    String suffix = m_keys[i].substring(name.length());
+    return m_widgets[i]->showLabel() + suffix;
 }
 
 bool WidgetSet::shown(int8_t i) {
@@ -129,6 +137,9 @@ void WidgetSet::showCenteredLine(int screen, const String &text) {
 }
 
 void WidgetSet::showLoading() {
+    if (m_loadingOnLastOrb) {
+        return; // updateAll() draws "Loading" with each widget's name
+    }
     showCenteredLine(3, "Loading data:");
 }
 
@@ -138,7 +149,16 @@ void WidgetSet::updateAll() {
             continue; // a hidden widget never fetches
         }
         Serial.printf("updating widget %s\n", m_widgets[i]->getName().c_str());
-        showCenteredLine(4, m_widgets[i]->getName());
+        if (m_loadingOnLastOrb) {
+            BootEyes::ScreenGuard guard; // the eyes are still moving on orbs 2 and 4
+            m_screenManager->selectScreen(4);
+            m_screenManager->fillScreen(TFT_BLACK);
+            m_screenManager->setFontColor(TFT_WHITE);
+            m_screenManager->drawCenterString("Loading", ScreenCenterX, ScreenCenterY - 20, 22);
+            m_screenManager->drawCenterString(m_widgets[i]->getName(), ScreenCenterX, ScreenCenterY + 20, 22);
+        } else {
+            showCenteredLine(4, m_widgets[i]->getName());
+        }
         m_widgets[i]->update();
     }
 }
@@ -153,10 +173,10 @@ void WidgetSet::initializeAllWidgetsData() {
     m_initialized = true;
 }
 
-void WidgetSet::updateBrightnessByTime(uint8_t hour24) {
+void WidgetSet::updateBrightnessByTime(int minuteOfDay) {
     const SettingsValues &s = Settings::get();
-    bool isDim = s.dim && sv::inHourRange(hour24, s.dimstart, s.dimend);
-    bool isOff = s.off && sv::inHourRange(hour24, s.offstart, s.offend);
+    bool isDim = s.dim && sv::inTimeRange(minuteOfDay, s.dimstartm, s.dimendm);
+    bool isOff = s.off && sv::inTimeRange(minuteOfDay, s.offstartm, s.offendm);
 
     if (m_woken && millis() - m_wokenAt >= 60000UL) {
         m_woken = false;

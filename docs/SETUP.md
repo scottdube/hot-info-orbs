@@ -1,5 +1,11 @@
 # Setting Up Info Orbs From Scratch
 
+> **Just want it running?** You do not need anything on this page. The
+> [Quick start](../README.md#quick-start-no-software-to-install-on-your-pc) flashes a
+> ready-made file from Chrome or Edge in about 10 minutes, and you paste your
+> free weather API key on the settings page afterwards. This guide is for building the
+> software yourself.
+
 Written for someone who has never used PlatformIO. If you have, skip to
 [step 3](#3-create-your-two-config-files) — the only thing that has changed from
 upstream is that there are now **two** files to copy, not one.
@@ -72,31 +78,31 @@ personal ever gets committed. The `.template` files are the ones tracked in git,
 which is why they must never contain real values. If you ever edit a `.template`
 file, put placeholders in it, not your own keys.
 
-## 4. Get your two API keys
+## 4. Get your API key
 
-Both are free, both take about a minute, and **you need your own**. A key shared
-across several orbs burns one free-tier quota and gets rate-limited, and whoever
-owns it can revoke it without warning.
+One key, free, about a minute, and **you need your own**. A key shared across
+several orbs burns one free-tier quota and gets rate-limited, and whoever owns
+it can revoke it without warning.
 
-| Key                | Register at                                                          | What it does                                                                                                     |
-|--------------------|----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `WEATHER_API_KEY`  | [visualcrossing.com/sign-up](https://www.visualcrossing.com/sign-up) | Current conditions and forecast for the weather orb. Free tier is ~1000 records/day, far more than one orb uses. |
-| `TIMEZONE_API_KEY` | [timezonedb.com/register](https://timezonedb.com/register)           | Your UTC offset and the next daylight-saving changeover.                                                         |
+| Key               | Register at                                                          | What it does                                                                                                     |
+|-------------------|----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `WEATHER_API_KEY` | [visualcrossing.com/sign-up](https://www.visualcrossing.com/sign-up) | Current conditions and forecast for the weather orb. Free tier is ~1000 records/day, far more than one orb uses. |
 
-A note on the second one, because the name misleads: TimeZoneDB is **not** where
-the orb gets the time. The time comes from NTP (`pool.ntp.org`). TimeZoneDB
-supplies only the offset and the DST transition date — which is how the clock
-fixes itself every March and November without anyone reflashing it.
-
-Paste each key between the quotes in `secrets.h`:
+Paste it between the quotes in `secrets.h`:
 
 ```c
 #define WEATHER_API_KEY "your-key-here"
-#define TIMEZONE_API_KEY "your-key-here"
 ```
 
-Leaving one empty fails the build with a message naming the key. It will not let
+Leaving it empty fails the build with a message naming the key. It will not let
 you flash a half-configured orb.
+
+**No time zone key.** Until firmware 1.2.0 the orb asked TimeZoneDB for its
+offset, which took a second key. Now the time comes from NTP
+(`pool.ntp.org`) as before, and the firmware turns it into local time from a
+table of daylight-saving rules built into it
+(`firmware/src/core/settings/TimeZones.h`). An old `secrets.h` that still has
+`TIMEZONE_API_KEY` builds fine; the line is ignored.
 
 ## 5. Set your preferences in `config.h`
 
@@ -107,7 +113,7 @@ wiring you should leave alone unless you built a variant board.
 The four settings most people want to change:
 
 ```c
-#define TIMEZONE_API_LOCATION "America/New_York"  // from https://timezonedb.com/time-zones
+#define TIMEZONE_API_LOCATION "America/New_York"  // a name from TimeZones.h
 #define WEATHER_LOCATION "The Villages, FL"       // city, state
 //#define WEATHER_UNITS_METRIC                    // uncomment for celsius
 #define STOCK_TICKER_LIST "SPY,QQQ,AAPL,MSFT,BTC/USD"  // exactly 5
@@ -180,6 +186,42 @@ settings, and both pages show a ⚠ warning saying so.
 A failed or interrupted update keeps the old firmware. A new firmware that
 installs but cannot get back on WiFi is rolled back when it next restarts.
 
+### Flashing the release files over USB
+
+The README keeps novices to two safe moves: the
+[Quick start](../README.md#quick-start-no-software-to-install-on-your-pc) file
+at `0x0`, and [updates over WiFi](../README.md#updating-later-over-wifi-no-cable). If you flash the [release files](https://github.com/scottdube/hot-info-orbs/releases)
+by hand instead, know the layout (`partitions.csv`):
+
+| Offset     | What is there                                            |
+|------------|----------------------------------------------------------|
+| `0x0`      | bootloader (S3: not `0x1000` as on the classic ESP32)    |
+| `0x8000`   | partition table                                          |
+| `0x9000`   | NVS: WiFi, settings, the weather key                     |
+| `0xE000`   | `otadata`: which app slot boots                          |
+| `0x10000`  | `app0`                                                   |
+| `0x3D0000` | `app1`                                                   |
+| `0x790000` | filesystem: the uploaded start-up picture                |
+
+- **`info_orbs_fw_combo.bin` goes at `0x0` only.** It is the whole 8 MB chip,
+  blank everywhere past the app, so it is also a factory reset.
+- **`firmware.bin` never goes at `0x0`.** That overwrites the bootloader and
+  the orbs stay dark until the combo file is flashed.
+- **`firmware.bin` at `0x10000` may not take.** WiFi updates alternate between
+  the two app slots, and `otadata` records which one boots. After an odd number
+  of WiFi updates the orb runs from `app1`, so writing `app0` alone changes
+  nothing: it reboots into the old firmware. Erase `otadata` in the same
+  session so the bootloader falls back to `app0`:
+
+  ```bash
+  esptool.py --chip esp32s3 write_flash 0x10000 firmware.bin
+  esptool.py --chip esp32s3 erase_region 0xe000 0x2000
+  ```
+
+  `pio run -t upload` never hits this: it writes `boot_app0.bin` to `0xE000`
+  with every upload. The orbs' `/update` page never hits it either, which is
+  why the Quick start uses it.
+
 ## 9. Change settings from a browser
 
 Open `http://<orb's IP>/settings` (or `http://info-orbs.local/settings`) on a
@@ -194,6 +236,12 @@ phone or computer on the same network. It uses the same optional `admin` /
 - **Start-up picture:** pick any photo. The page crops it to a centered square
   and shows the circle the orb will display. **Upload and restart** puts it on the
   middle orb at start-up. **Use the built-in logo** takes it off again.
+- **Waking eyes** (Start-up): on by default. While the orb joins WiFi, orbs 2
+  and 4 show a pair of eyes waking up, with the bridge of a circuit-board nose
+  on the middle orb; once it connects they open fully and look around while the
+  data loads (orb 5 names what is loading). Then the start-up picture shows
+  alone for 2 seconds, and the first page comes up. Off gives the plain
+  start-up text, with the picture on the middle orb from the start.
 
 Settings survive restarts and firmware updates. A USB flash with **Erase
 Flash** first clears them.
@@ -202,21 +250,27 @@ you mistype one, the clock or weather orb shows the error.
 
 ## 10. Optional: weather from your own Tempest stations
 
-If you own a WeatherFlow Tempest station, the orbs can show its weather
-instead of Visual Crossing's, with one weather page per station (up to two).
+If you own a WeatherFlow Tempest station, the orbs can show its weather, with
+one weather page per station (up to two). If a Visual Crossing key is also
+set, the location under **Weather** keeps its page as well, so you can follow
+a third place; without that key only the Tempest pages show.
+
+Nothing to build: this works on the ready-made release file too.
 
 1. Get a token: tempestwx.com > Settings > Data Authorizations > Create Token.
-   Add it to `secrets.h`: `#define TEMPEST_TOKEN "..."`.
+   Paste it on the settings page under **API keys** > **Tempest token**.
 2. Find each station's ID: the number in the station's tempestwx.com address.
-   Put the IDs, and a short label for each (16 characters at most, shown in place
-   of the town name), in `config.h` (see the commented `TEMPEST_STATION_1` lines
-   in the template), or enter them on the settings page later.
-3. Build and upload. The settings page gets a **Tempest stations** section
-   where each station shows ✔ or ✖ for its last fetch, how long ago it was, and
-   the error if it failed.
+   Enter it under **Tempest stations** with a short label (16 characters at
+   most, shown in place of the town name), then press **Save and restart**.
+3. Each station now shows ✔ or ✖ for its last fetch, how long ago it was, and
+   the error if it failed. A station with no token says so instead.
 
-The token never appears on the settings page. Leave `TEMPEST_TOKEN` out and
-the Tempest code is not compiled in at all.
+The page never shows the token once saved; leave the field blank to keep it.
+Building it yourself, you can instead put the token in `secrets.h`
+(`#define TEMPEST_TOKEN "..."`) and the stations in `config.h` (the commented
+`TEMPEST_STATION_1` lines in the template). Those are only defaults: whatever
+the page saves wins. In firmware 1.2.0 and earlier the token could only come from
+`secrets.h`, and without it the Tempest code was not compiled in at all.
 
 ## 11. Optional: run it from a phone hotspot
 

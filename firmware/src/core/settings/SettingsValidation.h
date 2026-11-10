@@ -51,14 +51,72 @@ inline bool parseCycle(const std::string &in, int &out, std::string &err) {
     return true;
 }
 
-inline bool parseHour(const std::string &in, int &out, std::string &err) {
-    int v;
-    if (!parseInt(in, v) || v < 0 || v > 23) {
-        err = "Enter an hour from 0 to 23";
+// A time of day as minutes after midnight, 0..1439. Takes "16", "16:05",
+// "7:30", "16.05" (phone keypads offer '.'), "4pm", "4:05 pm", "12am" (midnight).
+// Minutes are always two digits, so "4:5" is refused rather than guessed.
+inline bool parseTimeOfDay(const std::string &in, int &out, std::string &err) {
+    err = "Enter a time like 22:00, 7:30 or 10pm";
+    std::string s;
+    for (char c : trim(in)) {
+        s += (char)tolower((unsigned char)c);
+    }
+    int half = 0; // 0 = 24-hour, 1 = am, 2 = pm
+    if (s.size() >= 2 && s.compare(s.size() - 2, 2, "am") == 0) {
+        half = 1, s.resize(s.size() - 2);
+    } else if (s.size() >= 2 && s.compare(s.size() - 2, 2, "pm") == 0) {
+        half = 2, s.resize(s.size() - 2);
+    } else if (!s.empty() && (s.back() == 'a' || s.back() == 'p')) {
+        half = s.back() == 'a' ? 1 : 2, s.pop_back();
+    }
+    if (half && !s.empty() && s.back() == ' ') {
+        s.pop_back();
+    }
+    size_t sep = s.find_first_of(":.");
+    std::string hs = s.substr(0, sep);
+    std::string ms = sep == std::string::npos ? "00" : s.substr(sep + 1);
+    if (hs.empty() || hs.size() > 2 || ms.size() != 2) {
         return false;
     }
-    out = v;
+    for (char c : hs + ms) {
+        if (!isdigit((unsigned char)c)) {
+            return false;
+        }
+    }
+    int h = std::stoi(hs), m = std::stoi(ms);
+    if (m > 59) {
+        return false;
+    }
+    if (half) {
+        if (h < 1 || h > 12) {
+            return false;
+        }
+        h = (h % 12) + (half == 2 ? 12 : 0);
+    } else if (h > 23) {
+        return false;
+    }
+    out = h * 60 + m;
+    err.clear();
     return true;
+}
+
+// "HH:MM", 24-hour: what the page shows, and parseTimeOfDay reads it back
+inline std::string timeOfDayText(int minutes) {
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%02d:%02d", minutes / 60 % 24, minutes % 60);
+    return buf;
+}
+
+// The dim/off times were whole hours (keys dimstart..offend) before they took
+// minutes (dimstartm..offendm). An orb saved by the older firmware has only the
+// hour key; a minutes value out of range falls back to it too.
+inline int storedMinutes(bool hasMinutes, int minutes, int hour) {
+    return hasMinutes && minutes >= 0 && minutes < 24 * 60 ? minutes : hour * 60;
+}
+
+// The hour still written beside the minutes, so going back to the hour-only
+// firmware keeps the dim/off times (rounded down to the hour)
+inline int legacyHour(int minutes) {
+    return minutes / 60;
 }
 
 // Whether a '\n'-separated list holds item exactly (the hidden-widget list;
@@ -78,14 +136,15 @@ inline bool listContains(const std::string &list, const std::string &item) {
     return false;
 }
 
-// True when hour24 falls in [start, end), wrapping midnight when end < start
-// (22..7 covers 22:00-06:59). start == end is an empty range; the page refuses it.
-inline bool inHourRange(int hour24, int start, int end) {
+// True when minute (of the day) falls in [start, end), wrapping midnight when
+// end < start (22:00..07:00 covers 22:00-06:59). start == end is an empty range;
+// the page refuses it.
+inline bool inTimeRange(int minute, int start, int end) {
     if (start < end) {
-        return hour24 >= start && hour24 < end;
+        return minute >= start && minute < end;
     }
     if (start > end) {
-        return hour24 >= start || hour24 < end;
+        return minute >= start || minute < end;
     }
     return false;
 }
@@ -432,6 +491,51 @@ inline bool parseTopic(const std::string &in, std::string &out, std::string &err
     }
     out = s;
     return true;
+}
+
+// API keys (Visual Crossing) are write-only like a password, but a
+// key is pasted, so stray spaces and line breaks around it are trimmed. The
+// service issues letters and digits; '-' and '_' are allowed in case that
+// changes. Anything else is almost always a bad paste, and the key goes into a
+// URL, so it is refused rather than sent. Blank keeps the stored key.
+inline bool parseApiKey(const std::string &in, const std::string &stored, std::string &out, std::string &err) {
+    std::string s = trim(in);
+    if (s.empty()) {
+        out = stored;
+        return true;
+    }
+    if (s.size() > 64) {
+        err = "At most 64 characters - check the paste";
+        return false;
+    }
+    for (char c : s) {
+        if (!(std::isalnum((unsigned char)c) || c == '-' || c == '_')) {
+            err = "Letters and digits only - check the paste";
+            return false;
+        }
+    }
+    out = s;
+    return true;
+}
+
+// `what` names what stops working without the key, e.g. "Weather".
+inline std::string apiKeyHint(const std::string &v, const std::string &stored, const char *what) {
+    if (v == stored) {
+        return stored.empty() ? std::string("&#9888; No key yet. ") + what + " will not work until you paste one here."
+                              : "&#10004; A key is stored. It is never shown; leave this blank to keep it.";
+    }
+    return stored.empty() ? "&#9888; Not saved: paste the key again. No key is stored."
+                          : "&#9888; Not saved: paste the key again. The stored one is unchanged.";
+}
+
+// The Tempest token is optional: most orbs have no station, so a blank one
+// only warns once a station ID is set. Otherwise it reads like the weather key.
+inline std::string tempestTokenHint(const std::string &v, const std::string &stored, bool stationSet) {
+    if (v == stored && stored.empty()) {
+        return stationSet ? "&#9888; No token yet. The Tempest pages stay off until you paste one here."
+                          : "Optional: only for owners of a Tempest weather station.";
+    }
+    return apiKeyHint(v, stored, "Tempest");
 }
 
 // Write-only: the page never shows the stored password. Blank keeps it,

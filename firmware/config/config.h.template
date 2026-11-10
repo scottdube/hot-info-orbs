@@ -4,12 +4,13 @@
 // ============= CONFIGURE THESE FIELDS BEFORE FLASHING ====================================================
 
 // MAIN CONFIGURATION
-#define TIMEZONE_API_LOCATION "America/New_York" // Use timezone from this list: https://timezonedb.com/time-zones
+#define TIMEZONE_API_LOCATION "America/New_York" // A name from firmware/src/core/settings/TimeZones.h; changeable on the settings page
 #define INVERTED_ORBS false                       // Set to true if using InfoOrbs upside down. Inverts screens and re-orders screens and buttons.
 #define WIDGET_CYCLE_DELAY 0                      // Automatically cycle widgets every X seconds, set to 0 to disable
 #define LOCALE EN                                 // Language selection for Month and Weekday - possible values are EN, DE, FR
 
 // NIGHTTIME DIMMING
+// Whole hours here; the /settings page takes any minute (22:30 or 10:30pm) and overrides these
 //#define DIM_START_HOUR 22  // Dim the screens at this time (24h format)
 //#define DIM_END_HOUR 7     // Undim the screens at this time (24h format)
 //#define DIM_BRIGHTNESS 128 // Dim brightness (0-255)
@@ -32,7 +33,8 @@
 #define WEATHER_LOCATION "The Villages, FL" // City/state for the weather, look it up on https://www.visualcrossing.com/weather-data
 #define WEATHER_SCREEN_MODE Dark        // Can be either Light or Dark
 //#define WEATHER_UNITS_METRIC          // Uncomment this line if you want metric units for the weather
-// Tempest stations, only used when TEMPEST_TOKEN is set in secrets.h. The ID is
+// Tempest stations, only used once a Tempest token is set (settings page or
+// TEMPEST_TOKEN in secrets.h). The ID is
 // the number in the station's tempestwx.com address; the label replaces the
 // town name on the page (16 characters at most). Also changeable on /settings.
 //#define TEMPEST_STATION_1 123456
@@ -142,9 +144,9 @@
 #define SPI_FREQUENCY 27000000
 
 // API KEYS ARE NOT HERE. This file is committed to git; keys are not.
-// TIMEZONE_API_KEY and WEATHER_API_KEY live in firmware/config/secrets.h -
-// copy secrets.h.template to secrets.h and paste your own keys in.
-#define TIMEZONE_API_URL "http://api.timezonedb.com/v2.1/get-time-zone"
+// WEATHER_API_KEY lives in firmware/config/secrets.h - copy
+// secrets.h.template to secrets.h and paste your own key in, or leave it blank
+// and paste it on the settings page.
 
 #define MAX_RETRIES 3
 

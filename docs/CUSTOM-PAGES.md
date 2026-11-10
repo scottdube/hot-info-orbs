@@ -2,17 +2,20 @@
 
 ## What it is
 
-Two pages of your own that you set up on the orb's settings page
+Pages of your own that you set up on the orb's settings page
 (`http://<orb>/settings`, the **Custom pages** section):
 
 - **Web Data** draws a JSON file from any `http://` or `https://` address.
 - **MQTT** shows one live value per orb from an MQTT broker, for example
-  Home Assistant.
+  Home Assistant. There are two MQTT pages, five orbs each, so one orb can
+  show, say, the weather outside on one page and the pool and power on the next.
 
-A page appears in the rotation once its address (Web Data) or broker (MQTT) is
-set, and not before. Saving restarts the orb. You can untick a custom page
-under **Rotation → Show** like any other page. The tick box uses the page's
-name, so renaming a page shows it again if it was unticked.
+Web Data appears in the rotation once its address is set; an MQTT page once
+its broker and at least one topic are set. Not before. Saving restarts the orb. You can untick a custom page
+under **Rotation → Show** like any other page. The MQTT pages' tick boxes read
+**MQTT 1** and **MQTT 2**, with the page name in brackets once you give it one:
+*MQTT 1 (Town Squares)*. Web Data's box shows its page name. The page name is
+what Show stores, so renaming a page shows it again if it was unticked.
 
 No rebuild is needed. `WEB_DATA_WIDGET_URL` (in `secrets.h`) and the `MQTT_*`
 defines (in `config.h` and `secrets.h`) are only defaults for an orb that has
@@ -90,25 +93,58 @@ Its address: `https://scottdube.github.io/hot-info-orbs/custom-pages/sample.json
 
 ## MQTT
 
-Fields on the settings page:
+There are two MQTT pages. Page 1 has the broker; page 2 either uses the same
+broker, over the same connection, or a broker of its own.
 
-- **Page name** (16 characters).
-- **Broker host name or IP address.** Blank means no MQTT page.
+**Page 1's broker:**
+
+- **Broker host name or IP address.** Blank means no page on it.
 - **Port** (default 1883).
 - **Username**, blank for no login.
 - **Password.** Write-only: the page never shows it back. Leave the field blank
   to keep the stored one, or tick **Clear the stored password**.
+
+**MQTT page 1:**
+
+- **Page name** (16 characters, default `MQTT`). Its Show tick box reads
+  *MQTT 1 (name)*, or just *MQTT 1* on the default name.
 - **One value per orb: topic, label, unit.** Five rows, orbs left to right.
-  A blank topic leaves that orb blank. No `#` or `+` wildcards. The label is up
-  to 16 characters and the unit up to 8.
+  A blank topic leaves that orb blank; with no topic at all the page does not
+  appear. No `#` or `+` wildcards. The label is up to 16 characters and the
+  unit up to 8.
 - **Layout topic (advanced).** A JSON layout published on this topic replaces
   the rows until the next restart (see `firmware/src/widgets/mqttwidget/README.md`).
+  An orb set up by layout topic alone keeps page 1 with no rows filled in.
+
+**MQTT page 2:**
+
+- **Page name** (16 characters, default `MQTT 2`). Its Show tick box reads
+  *MQTT 2 (name)*, or just *MQTT 2* on the default name.
+- **Broker.** *Same as page 1* (the default) shares page 1's broker and its
+  one connection. *Its own broker* shows broker fields like page 1's (host,
+  port, username, password) and makes a second connection. A blank host there
+  means no page 2.
+- **One value per orb: topic, label, unit**, as on page 1.
+
+Settings saved before page 2 existed load unchanged as page 1; page 2 starts
+empty. Each connection has its own status line under its broker.
 
 A value is the topic's payload as text. Each orb shows the label on top, the
-value in the middle at the largest size that fits and the unit
-below. It shows a dash (-) until the first value arrives.
+value in the middle and the unit below. It shows a dash (-) until the first
+value arrives.
 
-**It never blocks the orb.** The orb makes one connection attempt that gives
+**Long text wraps.** A value that is too long for one line wraps onto up to
+three lines. A line break in the payload starts a new line where you want it:
+`5pm\nThe Rundown Band` puts the time on a line of its own.
+
+**Text size**, one setting per page:
+- **Same on every orb** (the default): all five values on the page are drawn at
+  one size, the largest that fits the longest of them. Five orbs side by side
+  then read as one panel. A long value on one orb makes all five smaller.
+- **Each orb as large as fits**: every orb sizes its own value, so a short
+  value is drawn much larger than a long one beside it.
+
+**It never blocks the orb.** Each connection makes one attempt that gives
 up after a few seconds, then at most one more every 30 seconds, while the buttons and
 the settings page keep working. The settings page says why it is not connected:
 `can't reach broker`, `login refused`, `broker refused the connection`,
@@ -150,6 +186,101 @@ With `retain: true` the broker hands the last value to the orb as soon as it
 subscribes, so the page is not blank after a restart. The orb test below
 used (b); Statestream's retain behavior was not tested.
 
+### The Villages: tonight's act at each town square
+
+One orb per town square, showing tonight's entertainment as `5pm` on one line
+and the act below it. After tonight's show ends, the orb shows tomorrow's show
+with the day in front (`Tue 5pm`). If neither day has a show, it shows `No show`.
+
+You need Home Assistant with the MQTT integration connected to your broker
+(the Mosquitto add-on is the usual one), and an orb whose MQTT page already
+connects to that broker.
+
+**1. Install the events integration.** It is a community integration, not
+ours: [netnutmike/homeassistant-villages-app](https://github.com/netnutmike/homeassistant-villages-app).
+In HACS, open the menu (⋮) → *Custom repositories*, add that address as an
+*Integration*, install **The Villages Events**, and restart Home Assistant.
+Then add it under *Settings → Devices & services → Add integration*; the
+defaults are fine. It reads the events from The Villages' own website, which
+is not an official interface, so a change on their side can stop it.
+
+Check it worked: under *Developer tools → States*, search for
+`villages_events`. Each town square gets two sensors, for example
+`sensor.villages_events_eastport_today` and `…_tomorrow`. Real act names in
+their `events` attribute mean it works. If the names look made up, the
+integration has fallen back to sample data; its log says why.
+
+**2. Add the automation.** *Settings → Automations & scenes → Create
+automation → Create new automation*, then ⋮ → *Edit in YAML*, replace
+everything with this, and save. Every 5 minutes it sends each square's act to
+its own topic.
+
+```yaml
+alias: "Orbs: Villages town-square entertainment"
+mode: single
+triggers:
+  - trigger: time_pattern
+    minutes: "/5"
+  - trigger: homeassistant
+    event: start
+actions:
+  - variables:
+      squares:
+        - topic: orbs/villages/spanish_springs
+          sensor: sensor.villages_events_spanish_springs_town_square
+        - topic: orbs/villages/lake_sumter
+          sensor: sensor.villages_events_lake_sumter_landing_market_square
+        - topic: orbs/villages/brownwood
+          sensor: sensor.villages_events_brownwood_paddock_square
+        - topic: orbs/villages/sawgrass
+          sensor: sensor.villages_events_sawgrass_grove
+        - topic: orbs/villages/eastport
+          sensor: sensor.villages_events_eastport
+  - repeat:
+      for_each: "{{ squares }}"
+      sequence:
+        - action: mqtt.publish
+          data:
+            topic: "{{ repeat.item.topic }}"
+            retain: true
+            payload: >-
+              {%- macro hm(t) -%}
+                {{ (t.strftime('%-I') ~ (t.strftime(':%M') if t.minute else '') ~ t.strftime('%p') | lower) }}
+              {%- endmacro -%}
+              {%- set ns = namespace(txt='') -%}
+              {%- for day in ['today', 'tomorrow'] if ns.txt == '' -%}
+                {%- set evs = (state_attr(repeat.item.sensor ~ '_' ~ day, 'events') or [])
+                              | selectattr('start_time') | sort(attribute='start_time', reverse=true) | list -%}
+                {%- for e in evs if ns.txt == '' -%}
+                  {%- set t = as_local(as_datetime(e.start_time)) -%}
+                  {%- set end = as_datetime(e.end_time or e.start_time) -%}
+                  {%- if day == 'tomorrow' or end > now() -%}
+                    {%- set ns.txt = ((t.strftime('%a') ~ ' ') if day == 'tomorrow' else '')
+                                     ~ hm(t) ~ '\n' ~ (e.performer | regex_replace('[^ -~]', '') | trim) -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endfor -%}
+              {{ ns.txt or 'No show' }}
+```
+
+How it picks the act: of today's events that have not ended, the one that
+starts latest (the evening show, not the noon one). Characters the orb's font
+cannot draw are left out. The `'\n'` puts the time on its own line. Run it
+once by hand (⋮ → *Run actions*) instead of waiting 5 minutes.
+
+**3. Set the orb's rows.** On the orb's settings page, on an MQTT page:
+
+| Orb | Topic | Label | Unit |
+|---|---|---|---|
+| 1 | `orbs/villages/spanish_springs` | Spanish Springs | (blank) |
+| 2 | `orbs/villages/lake_sumter` | Lake Sumter | (blank) |
+| 3 | `orbs/villages/brownwood` | Brownwood | (blank) |
+| 4 | `orbs/villages/sawgrass` | Sawgrass Grove | (blank) |
+| 5 | `orbs/villages/eastport` | Eastport | (blank) |
+
+Leave **Text size** on *Same on every orb*, so the five acts are drawn at one
+size. Name the page what you like, for example `Town Squares`.
+
 ## Tested
 
 On-orb tests, run by hand. Each result records what was done and what was seen.
@@ -162,3 +293,7 @@ On-orb tests, run by hand. Each result records what was done and what was seen.
 | 4 | MQTT against a home broker shows live Home Assistant values | ✔ Mosquitto add-on on a Home Assistant host, orb with its own broker user. A temperature sensor's current state sent with HA's `mqtt.publish` service to the orb's topic: `/settings` read `✔ Connected. Newest value under a minute ago`, and the value showed on orb 1, checked by eye. Before the login was set: `✖ login refused`, at once. Statestream not tested | 2026-10-17 |
 | 5 | A wrong broker host shows the failure; buttons and the settings page still respond | ✔ Broker `10.255.255.1`: ✖ `can't reach broker`, each try took 3.0 s. Sampling `/settings` every second for 60 s: replies in 0.08–0.67 s except one 2.1–2.5 s stall at each retry, about 30 s apart | 2026-10-17 |
 | 6 | Flash use of the final build, as a share of the OTA slot (stop line 92%) | ✔ 87.9% (1,728,477 of 1,966,080 bytes) | 2026-10-17 |
+| 7 | Two MQTT pages on one broker: both show live values, one connection | ✔ On the XIAO rig, build 0201bcd (this branch merged onto `xiao-esp32s3`). Page 1 = five `orbs/villages/*` rows, page 2 "Home" = `orbs/outside`, `orbs/humidity`, `orbs/pool`, `orbs/power`, `orbs/today`, Broker "Same as page 1". Both pages appear under Show; one status line, `✔ Connected. Newest value under a minute ago`. The Home page showed live values on all five orbs, checked by eye (Scott). Builds: `xiao-esp32s3` 43.6% of its slot, `supermini-proto` 88.3% (1,735,401 of 1,966,080 bytes) | 2026-10-24 |
+| 8 | Page 2 on a broker of its own: its own status line, page 1 unaffected | ✔ On the XIAO rig, build 0201bcd. Page 2 set to "Its own broker": the HOT club's public Meshtastic broker (`mqtt.villagesmesh.com:1883`, login from the club's Meshtastic page), rows on exact `msh/US/FL/thevillages/2/json/…/!<node>` topics. Read-back matched the POST. A second status line appeared, `✔ Connected. No value received yet` (the mesh is quiet: one JSON message in 90 s across all nodes, watched from a laptop), then `✔ Connected. Newest value under a minute ago` 15 s after the laptop saw a message on one of the rows' topics. Page 1's line stayed `✔ Connected` with fresh values throughout. Afterward page 2 went back to the Home rows on "Same as page 1", read back as posted, one status line again | 2026-10-24 |
+| 9 | Settings saved before page 2 load as page 1; `POST /settings` with both row sets, then a read-back of `/settings` shows what was posted | ✔ After the OTA, page 1's name, broker and five rows read back the same as before it; page 2 empty, "Same as page 1". POST of `mqname=Town Squares`, `mq2name=Home`, `mq2same=1` and the five Home rows: `✔ Saved`, and after the restart every field read back as posted, the other Show ticks unchanged. `/settings` is now 19,959 bytes (16,645 before), answered in 0.5 s | 2026-10-24 |
+| 10 | The Show row names the MQTT pages *MQTT 1 (name)* and *MQTT 2 (name)*; the stored Show choices are unchanged by the update | ✔ OTA of build 2ad2292 (this branch merged onto `xiao-esp32s3`) to the XIAO rig. The Show row read Clock, Stock, Weather Dover, Weather The Villages, Web Data, *MQTT 1 (Town Squares)*, *MQTT 2 (Home)*, all seven still ticked as before the update; the page-name hints read "Its tick box above reads MQTT 1 (this name)" and "… MQTT 2 …"; one status line, `✔ Connected. Newest value under a minute ago` | 2026-10-24 |

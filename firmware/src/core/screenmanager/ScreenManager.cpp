@@ -5,10 +5,20 @@
 
 ScreenManager::ScreenManager(TFT_eSPI &tft) : m_tft(tft) {
 
+    // A panel re-aligns its SPI byte framing only on a CS high-to-low edge.
+    // On the XIAO board nothing holds DS1-DS3's CS (GPIO3/4/5) high during
+    // boot, so a panel can sit selected while noise clocks in. The first
+    // init() brings the SPI pins up with every panel deselected (its commands
+    // reach nothing); selecting then gives all five a clean edge, and the
+    // second init() sends the software reset and init sequence to aligned
+    // panels. TFT_eSPI starts the bus only on the first call.
     for (int i = 0; i < NUM_SCREENS; i++) {
         pinMode(m_screen_cs[i], OUTPUT);
-        digitalWrite(m_screen_cs[i], LOW);
+        digitalWrite(m_screen_cs[i], HIGH);
     }
+    m_tft.init();
+    delay(1);
+    selectAllScreens();
 
     m_tft.init();
     m_tft.setRotation(Settings::get().invert ? 2 : 0);
@@ -190,6 +200,12 @@ unsigned int ScreenManager::calculateFitFontSize(uint32_t limit_width, uint32_t 
     unsigned int calcFontSize = m_render.calculateFitFontSize(limit_width, limit_height, layout, text.c_str());
     // Serial.printf("calcFitFontSize: t=%s, w=%d, h=%d -> fs=%d\n", str, limit_width, limit_height, calcFontSize);
     return calcFontSize;
+}
+
+void ScreenManager::measureText(const String &text, unsigned int fontSize, int &w, int &h) {
+    FT_BBox box = m_render.calculateBoundingBox(0, 0, fontSize, Align::TopLeft, Layout::Horizontal, text.c_str());
+    w = box.xMax - box.xMin;
+    h = box.yMax - box.yMin;
 }
 
 void ScreenManager::drawString(const String &text, int x, int y) {

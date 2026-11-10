@@ -16,11 +16,24 @@ WifiWidget::~WifiWidget() {}
 WiFiManager wifimgr;
 
 void WifiWidget::setup() {
-    m_manager.setFont(DEFAULT_FONT);
+    begin(true);
+    if (!connect()) {
+        showPortal();
+    }
+}
+
+void WifiWidget::drawConnecting() {
     m_manager.selectScreen(statusScreenIndex);
     m_manager.clearScreen();
-    m_manager.setFontColor(TFT_WHITE);
     m_manager.drawCenterString("Connecting", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
+}
+
+void WifiWidget::begin(bool showConnecting) {
+    m_manager.setFont(DEFAULT_FONT);
+    m_manager.setFontColor(TFT_WHITE);
+    if (showConnecting) {
+        drawConnecting();
+    }
 
     // DHCP hostname, so the router knows the orb by the same name as mDNS does.
     // Must come before WiFi.mode(): that is where the core applies it.
@@ -46,6 +59,7 @@ void WifiWidget::setup() {
     // these are stored by the ESP WiFi library
     if (digitalRead(BUTTON_RIGHT) == Button::PRESSED_LEVEL) {
         wifimgr.resetSettings();
+        m_manager.selectScreen(statusScreenIndex);
         m_manager.drawCenterString("Wifi Settings reset", ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
         delay(messageDelay);
     }
@@ -62,25 +76,36 @@ void WifiWidget::setup() {
 
     wifimgr.setCleanConnect(true);
     wifimgr.setConnectRetries(5);
+}
 
+bool WifiWidget::connect() {
     // WiFiManager automatically connects using saved credentials...
     if (wifimgr.autoConnect(m_apssid.c_str())) {
         Serial.print("WifiManager connected.");
-    } else { // ...if connection fails (no saved credentials), it starts an access point with a WiFi setup portal at 192.168.4.1
-        m_configPortalRunning = true;
-        Serial.println("Configuration portal running.");
-        m_manager.selectScreen(statusScreenIndex);
-        m_manager.clearScreen();
-        m_manager.drawCenterString("Configure", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
-        m_manager.selectScreen(statusScreenIndex + 1);
-        m_manager.drawCenterString("Connect", ScreenCenterX, ScreenCenterY - lineHeight * 2, fontSize);
-        m_manager.drawCenterString("phone or PC", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
-        m_manager.drawCenterString("to WiFi network:", ScreenCenterX, ScreenCenterY, fontSize);
-        m_manager.setFontColor(TFT_SKYBLUE);
-        m_manager.drawCenterString(m_apssid, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
-        m_manager.setFontColor(TFT_GREENYELLOW);
-        m_manager.drawCenterString("192.168.4.1", ScreenCenterX, ScreenCenterY + lineHeight * 2, fontSize);
+        return true;
     }
+    // ...if that fails (no saved credentials), it has started an access point
+    // with a WiFi setup portal at 192.168.4.1
+    return false;
+}
+
+void WifiWidget::showPortal() {
+    m_configPortalRunning = true;
+    Serial.println("Configuration portal running.");
+    m_manager.setFont(DEFAULT_FONT);
+    m_manager.setFontColor(TFT_WHITE);
+    m_manager.selectScreen(statusScreenIndex);
+    m_manager.clearScreen();
+    m_manager.drawCenterString("Configure", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
+    m_manager.selectScreen(statusScreenIndex + 1);
+    m_manager.clearScreen(); // the boot eyes put the version text here
+    m_manager.drawCenterString("Connect", ScreenCenterX, ScreenCenterY - lineHeight * 2, fontSize);
+    m_manager.drawCenterString("phone or PC", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
+    m_manager.drawCenterString("to WiFi network:", ScreenCenterX, ScreenCenterY, fontSize);
+    m_manager.setFontColor(TFT_SKYBLUE);
+    m_manager.drawCenterString(m_apssid, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
+    m_manager.setFontColor(TFT_GREENYELLOW);
+    m_manager.drawCenterString("192.168.4.1", ScreenCenterX, ScreenCenterY + lineHeight * 2, fontSize);
 }
 
 void WifiWidget::update(bool force) {
@@ -194,8 +219,10 @@ void WifiWidget::draw(bool force) {
         m_manager.drawCenterString(m_dotsString, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
     } else if (m_isConnected && !m_hasDisplayedSuccess) {
         m_hasDisplayedSuccess = true;
-        m_manager.clearScreen();
-        m_manager.drawCenterString("Success", ScreenCenterX, ScreenCenterY, fontSize);
+        if (!m_eyesRan) { // with the boot eyes, orb 4 keeps the awake eye
+            m_manager.clearScreen();
+            m_manager.drawCenterString("Success", ScreenCenterX, ScreenCenterY, fontSize);
+        }
         m_manager.selectScreen(statusScreenIndex + 1);
         m_manager.clearScreen();
         m_manager.drawCenterString("IP Address", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);

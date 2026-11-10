@@ -1,18 +1,66 @@
 # HoT Info Orbs
 
-Five round 240×240 displays in a row, driven by a Seeed **XIAO ESP32-S3** or
-**XIAO ESP32-S3 Plus** on a custom carrier board. They show the time, the
-weather, stock prices, and pages you set up yourself, and they rotate through
-them on their own.
-
 ![HOT Info Orbs in the enclosure, angled front view: Fusion render of the current design, not a photo](docs/images/master_assembly_angled.png)
 
-A [Hands-On Tech Club](https://handsontech.org) build, derived from Brett
-Turner's [Info Orbs](https://github.com/brettdottech/info-orbs) (see
-[Credit](#credit-and-license)). It is built by people at every skill level, so
-the build is meant to be hard to get wrong and cheap to get into.
+## Quick start: no software to install on your PC
 
-## Start here
+About 10 minutes. You need the built orbs, a **USB-C data cable** (many cheap
+cables carry power only), a computer with **Google Chrome or Microsoft Edge**
+(Safari and Firefox cannot talk to USB devices), and a **2.4 GHz** WiFi
+network.
+
+1. Download the firmware, **[`info_orbs_fw_combo.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/info_orbs_fw_combo.bin)**
+   (click it; it goes to your Downloads folder). It is also on the
+   [firmware release page](https://github.com/scottdube/hot-info-orbs/releases/tag/firmware-1.2.0)
+   under **Assets**, with its checksum.
+2. In Chrome or Edge, open
+   **[ESPConnect](https://thelastoutpostworkshop.github.io/ESPConnect/)**.
+3. Plug the orbs into the computer with the USB cable. Click **Connect** (top
+   left), pick the port that appeared when you plugged in, and click
+   **Connect** in that box. On a Mac it is usually *USB JTAG/serial debug
+   unit*; on Windows, *USB Serial Device (COM3)* or another COM number.
+4. In the left column click **Flash Tools**. Under **Flash Firmware**:
+   - **Firmware binary (.bin):** choose `info_orbs_fw_combo.bin`
+   - **Flash offset:** `0x0`
+   - click **Flash firmware** and wait for it to finish.
+5. Unplug the USB cable and plug it back in. The orbs restart.
+6. **WiFi:** the screens show a network named `Info-Orbs_` and two
+   characters. Join it on a phone; a setup page opens (if not, browse to
+   `http://192.168.4.1`). Pick your home WiFi and type its password.
+7. **Your free weather key and time zone:** the orbs show their **IP
+   address** when they join your WiFi. On a phone or computer on the same
+   WiFi, browse to `http://<that address>/settings`. The page starts with
+   **API keys**: paste a [Visual Crossing](https://www.visualcrossing.com/sign-up)
+   key, free and about a minute to get. Under **Clock**, pick your time zone
+   from the list (it starts on New York; daylight saving is automatic). Set
+   your weather town, then press **Save and restart**. Until the key is in,
+   the weather page stays empty; the clock works without it. Own a Tempest
+   weather station? Its token goes under **API keys** too
+   ([details](docs/SETUP.md#10-optional-weather-from-your-own-tempest-stations)).
+
+**Connect finds no port?** Put the XIAO in download mode: unplug, hold the
+**B** button on the XIAO, plug back in, let go, and click **Connect** again.
+
+## Updating later: over WiFi, no cable
+
+After the first install, new versions go in over WiFi with a second, smaller
+file, `firmware.bin`. It replaces only the software and keeps your WiFi, key,
+settings and start-up picture.
+
+1. Download **[`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin)**.
+2. On a phone or computer on the same WiFi, browse to
+   `http://<orbs' address>/update` (the address the orbs show at start-up).
+3. Choose `firmware.bin` and press **Upload**. The orbs restart on their own
+   when it is done, with your WiFi, key and settings kept.
+
+**Update failed, or the orbs stay dark?** Nothing is broken: do the
+[Quick start](#quick-start-no-software-to-install-on-your-pc) again. It wipes
+the board, so WiFi and the weather key go back in at steps 6 and 7.
+
+Want to change the code, or build it yourself? The [setup guide](docs/SETUP.md)
+covers that.
+
+## Want a more hands-on install? Start here
 
 **You don't need a GitHub account.** The list of folders above is the
 project's files. Pick the link that matches what you want:
@@ -20,7 +68,8 @@ project's files. Pick the link that matches what you want:
 | You want to… | Go to |
 |---|---|
 | see what it is and what it does | the [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html), an ordinary web page |
-| get a built one running | the [setup guide](docs/SETUP.md), written for someone who has never done this |
+| get a built one running, nothing to install | the [Quick start](#quick-start-no-software-to-install-on-your-pc) above: download one file, flash it from Chrome |
+| build the software yourself, or change it | the [setup guide](docs/SETUP.md), written for someone who has never done this |
 | order a bare board | the [board rev 2.5 release](https://github.com/scottdube/hot-info-orbs/releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
 | print the enclosure | not ready yet: the enclosure is still being designed. [hardware/enclosure/print/](hardware/enclosure/print/) lists the parts and where each one stands |
 | get all the source | the green **Code** button above, then **Download ZIP** |
@@ -32,13 +81,15 @@ or `WIDGET_CYCLE_DELAY` in `config.h`) and the orbs move from page to page on
 their own. The left and right buttons step back and forward by hand.
 
 - **Clock**: normal, Nixie-tube, or custom faces, in your choice of colors.
-- **Weather** for a town (Visual Crossing), or from your own
-  [Tempest](https://tempest.earth) weather stations, one page per station.
+- **Weather** for a town (Visual Crossing), from your own
+  [Tempest](https://tempest.earth) weather stations (one page per station),
+  or both.
 - **Stocks**: five tickers.
 - **Custom pages** that you set up from the browser, no rebuild:
   - **Web Data** draws a JSON file from any web address.
-  - **MQTT** shows one live value per display from an MQTT broker, such as
-    Home Assistant.
+  - **MQTT**, up to two pages, shows one live value per display from an MQTT
+    broker, such as Home Assistant. Long values wrap, and the orbs on a page
+    share one text size.
 
   See [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md).
 
@@ -53,12 +104,12 @@ their own. The left and right buttons step back and forward by hand.
 - A **2.4 GHz** WiFi network. The ESP32 cannot see 5 GHz.
 - A computer with [VS Code](https://code.visualstudio.com) and the
   [PlatformIO](https://platformio.org) extension.
-- Two free **API keys**. An API key is a code a website gives you when you
-  sign up, so the orbs can ask it for data. Each takes about a minute:
-  [Visual Crossing](https://www.visualcrossing.com/sign-up) for weather and
-  [TimeZoneDB](https://timezonedb.com/register) for daylight-saving changes.
+- One free **API key**. An API key is a code a website gives you when you
+  sign up, so the orbs can ask it for data. It takes about a minute:
+  [Visual Crossing](https://www.visualcrossing.com/sign-up), for weather.
   Sign up for your own. A shared key uses up one free allowance, and if it is
-  cancelled it stops working for everyone using it.
+  cancelled it stops working for everyone using it. The time zone needs no
+  key: the firmware carries the daylight-saving rules itself.
 
 ## Getting it running
 
@@ -97,7 +148,7 @@ set](#building-more-than-one-set).)
 
 | Address | What it does |
 |---|---|
-| `http://<IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, custom pages, your own start-up picture. What you typed in `config.h` is only the starting point. |
+| `http://<IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, the waking eyes at start-up, custom pages, your own start-up picture. What you typed in `config.h` is only the starting point. |
 | `http://<IP>/update` | install a new version of the software without a cable: choose the file `.pio/build/xiao-esp32s3/firmware.bin` from the project folder and upload it. The page also shows which version is running. |
 
 **Set a password.** Without one, anyone on your WiFi can change your orbs'
@@ -181,7 +232,7 @@ a tag (`git checkout <tag> -- <folder>` brings a folder back):
 | | |
 |---|---|
 | [docs/SETUP.md](docs/SETUP.md) | from an empty computer to running orbs |
-| [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) | Web Data and MQTT pages, with a Home Assistant recipe |
+| [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) | Web Data and MQTT pages, with Home Assistant recipes (The Villages town squares among them) |
 | [docs/TRAPS.md](docs/TRAPS.md) | problems that each cost time once, written down so they don't again |
 | [docs/ENCLOSURE.md](docs/ENCLOSURE.md) | the enclosure design and why it looks the way it does |
 | [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | why the XIAO, and how the board's pins were chosen |
@@ -215,6 +266,7 @@ upstream:
 | Settings | edit `config.h`, rebuild, reflash | a settings page in the browser |
 | Firmware updates | USB cable every time | over WiFi after the first flash |
 | Weather | one Visual Crossing town | also your own Tempest stations |
+| Custom pages | one MQTT page, laid out with pixel positions | two MQTT pages and a Web Data page, set up on the settings page |
 
 Licensed **AGPL-3.0**, inherited from upstream (see `LICENSE.txt`). If you give
 someone a built orb, they are entitled to its source, which is why this

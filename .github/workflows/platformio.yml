@@ -41,7 +41,6 @@ jobs:
           p = "config/secrets.h"
           s = open(p).read()
           s = s.replace('#define WEATHER_API_KEY ""',  '#define WEATHER_API_KEY "CI_BUILD_ONLY"')
-          s = s.replace('#define TIMEZONE_API_KEY ""', '#define TIMEZONE_API_KEY "CI_BUILD_ONLY"')
           open(p, "w").write(s)
           PY
 

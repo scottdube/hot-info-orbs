@@ -17,6 +17,10 @@
 #include "wifiwidget/WifiWidget.h"
 #include <Arduino.h>
 #include <LittleFS.h>
+#include "BootEyes.h" // ScreenGuard and end() are no-ops without BOOT_EYES
+#ifdef BOOT_EYES
+    #include "noseJpg.h"
+#endif
 
 #ifdef STOCK_TICKER_LIST
     #include "stockwidget/StockWidget.h"
@@ -48,8 +52,7 @@ bool isConnected{true};
 
 ScreenManager *sm;
 WidgetSet *widgetSet;
-MQTTWidget *mqttWidget{nullptr};
-bool mqttInRotation{false}; // stays connected only while its page can come up
+MqttFeed *mqttFeeds[2]{}; // page 1's broker; page 2's own broker, if it has one
 
 // This function should probably be moved somewhere else
 bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap) {
@@ -80,6 +83,43 @@ void setupButtons() {
     attachInterrupt(digitalPinToInterrupt(BUTTON_RIGHT), isrButtonChangeRight, CHANGE);
 }
 
+// Name, team and version. With the boot eyes on, this moves from orb 2 to orb 5
+// and gains a "Connecting" line, since orb 4 (the WiFi status orb) is an eye.
+static bool s_fsMounted = false;
+// The eyes are up from WiFi connect until the first page (orb 3 shows the nose)
+static bool s_eyesShowing = false;
+
+// Orb 3's start-up picture: the uploaded one if there is one and it decodes;
+// the built-in logo otherwise, drawn over whatever part of a bad file got drawn
+static void drawBootPicture() {
+    sm->selectScreen(2);
+    TJpgDec.setJpgScale(1);
+    bool pictureUnreadable = false;
+    if (s_fsMounted && LittleFS.exists("/boot.jpg")) {
+        pictureUnreadable = TJpgDec.drawFsJpg(0, 0, "/boot.jpg", LittleFS) != JDR_OK;
+    }
+    if (!s_fsMounted || !LittleFS.exists("/boot.jpg") || pictureUnreadable) {
+        TJpgDec.drawJpg(0, 0, logo_start, logo_end - logo_start);
+    }
+    SettingsPage::setBootStatus(s_fsMounted, pictureUnreadable);
+}
+
+static void drawVersionScreen(int screen, bool withConnecting) {
+    const int up = withConnecting ? 20 : 0;
+    sm->selectScreen(screen);
+    sm->setFontColor(TFT_WHITE);
+    sm->drawCenterString("HOT Info Orbs", ScreenCenterX, ScreenCenterY - 50 - up, 22);
+    sm->drawCenterString("by", ScreenCenterX, ScreenCenterY - 5 - up, 22);
+    sm->drawCenterString("HOT-Team", ScreenCenterX, ScreenCenterY + 30 - up, 22);
+    sm->setFontColor(TFT_RED);
+    sm->drawCenterString("version: " FIRMWARE_VERSION, ScreenCenterX, ScreenCenterY + 65 - up, 14);
+    if (withConnecting) {
+        sm->setFontColor(TFT_WHITE);
+        sm->drawCenterString("Connecting", ScreenCenterX, ScreenCenterY + 85, 19);
+    }
+    sm->setFontColor(TFT_WHITE);
+}
+
 void setup() {
     Serial.begin(115200);
     Serial.println();
@@ -89,11 +129,16 @@ void setup() {
     // widget read their settings once, at construction
     Settings::load();
     m_widgetCycleDelay = Settings::get().cycle * 1000UL;
+#ifdef BOOT_EYES
+    const bool eyesWanted = Settings::get().booteyes;
+#else
+    const bool eyesWanted = false;
+#endif
 
     // Holds the uploaded boot picture. true = format if it will not mount: a
     // new board's partition has never been formatted (a few seconds, once)
-    bool fsMounted = LittleFS.begin(true);
-    Serial.printf("LittleFS %s\n", fsMounted ? "mounted" : "FAILED - built-in logo only");
+    s_fsMounted = LittleFS.begin(true);
+    Serial.printf("LittleFS %s\n", s_fsMounted ? "mounted" : "FAILED - built-in logo only");
 
     TJpgDec.setSwapBytes(true); // JPEG rendering setup
     TJpgDec.setCallback(tft_output);
@@ -117,26 +162,25 @@ void setup() {
         sm->drawCenterString(line, ScreenCenterX, ScreenCenterY + 75, 14);
     }
 
-    sm->selectScreen(1);
-    sm->drawCenterString("HOT Info Orbs", ScreenCenterX, ScreenCenterY - 50, 22);
-    sm->drawCenterString("by", ScreenCenterX, ScreenCenterY - 5, 22);
-    sm->drawCenterString("HOT-Team", ScreenCenterX, ScreenCenterY + 30, 22);
-    sm->setFontColor(TFT_RED);
-    sm->drawCenterString("version: " FIRMWARE_VERSION, ScreenCenterX, ScreenCenterY + 65, 14);
-
-    sm->selectScreen(2);
-
-    TJpgDec.setJpgScale(1);
-    // The uploaded picture if there is one and it decodes; the built-in logo
-    // otherwise, drawn over whatever part of a bad file got drawn
-    bool pictureUnreadable = false;
-    if (fsMounted && LittleFS.exists("/boot.jpg")) {
-        pictureUnreadable = TJpgDec.drawFsJpg(0, 0, "/boot.jpg", LittleFS) != JDR_OK;
+    if (eyesWanted) {
+        drawVersionScreen(4, true); // orbs 2 and 4 become the eyes
+    } else {
+        drawVersionScreen(1, false);
     }
-    if (!fsMounted || !LittleFS.exists("/boot.jpg") || pictureUnreadable) {
-        TJpgDec.drawJpg(0, 0, logo_start, logo_end - logo_start);
+
+#ifdef BOOT_EYES
+    if (eyesWanted) {
+        // Orb 3 is the bridge of the nose between the eyes; the picture gets
+        // its 2 s once the data has loaded (loop)
+        sm->selectScreen(2);
+        TJpgDec.setJpgScale(1);
+        TJpgDec.drawJpg(0, 0, kNoseJpg, sizeof(kNoseJpg));
+    } else {
+        drawBootPicture();
     }
-    SettingsPage::setBootStatus(fsMounted, pictureUnreadable);
+#else
+    drawBootPicture();
+#endif
 
     widgetSet = new WidgetSet(sm);
 
@@ -153,7 +197,40 @@ void setup() {
     wifiWidget = new WifiWidget(*sm);
     otaUpdater = new OtaUpdater(*sm);
     settingsPage = new SettingsPage(*otaUpdater);
-    wifiWidget->setup();
+    // Every splash screen is drawn before the eyes start: from here until
+    // BootEyes::finish the eye task is the only thing drawing
+    wifiWidget->begin(!eyesWanted);
+    bool eyesRan = false;
+#ifdef BOOT_EYES
+    if (eyesWanted) {
+        eyesRan = BootEyes::start(*sm, tft);
+        if (!eyesRan) { // fall back to today's screens on orbs 2, 3 and 4
+            drawBootPicture();
+            drawVersionScreen(1, false);
+            wifiWidget->drawConnecting();
+        }
+    }
+#endif
+    const bool wifiOk = wifiWidget->connect();
+#ifdef BOOT_EYES
+    if (eyesRan) {
+        BootEyes::finish(wifiOk);
+        if (!wifiOk) {
+            drawBootPicture();           // no face without the eyes
+            drawVersionScreen(1, false); // orb 5 is about to show the portal steps
+        }
+    }
+#endif
+    if (!wifiOk) {
+        wifiWidget->showPortal();
+    }
+    // Eyes still showing (not blanked for the portal): they keep moving on orbs
+    // 2 and 4 until the first page draws (BootEyes::end() in loop), so orb 4
+    // gets no "Success" and no "Loading data:". Nothing in the rest of setup()
+    // draws; loop() holds a ScreenGuard for what it puts on orb 5.
+    s_eyesShowing = eyesRan && wifiOk;
+    wifiWidget->setEyesRan(s_eyesShowing);
+    widgetSet->setLoadingOnLastOrb(s_eyesShowing);
 
     globalTime = GlobalTime::getInstance();
 
@@ -167,19 +244,21 @@ void setup() {
     }
 #endif
     bool tempestPages = false;
-#ifdef TEMPEST_TOKEN
-    // One weather page per Tempest station; Visual Crossing only when none is set
+    // One weather page per Tempest station, plus Visual Crossing for the
+    // location whenever a VC key is set (a third place, e.g. a town away from
+    // the stations). With Tempest pages and no VC key, VC is left out: it
+    // would only show a key error. A station without a token would fail every
+    // fetch with 401, so it gets no page (the settings page says why).
     const SettingsValues &wx = Settings::get();
-    if (wx.tstn1) {
+    if (!wx.tsttok.empty() && wx.tstn1) {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(0, wx.tstn1, wx.tlbl1)));
         tempestPages = true;
     }
-    if (wx.tstn2) {
+    if (!wx.tsttok.empty() && wx.tstn2) {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(1, wx.tstn2, wx.tlbl2)));
         tempestPages = true;
     }
-#endif
-    if (!tempestPages) {
+    if (!tempestPages || !wx.wxkey.empty()) {
         widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
     }
     // Custom pages: set up on /settings, registered only when configured.
@@ -191,15 +270,33 @@ void setup() {
 #ifdef WEB_DATA_STOCK_WIDGET_URL
     widgetSet->add(new WebDataWidget(*sm, WEB_DATA_STOCK_WIDGET_URL, "WebData"));
 #endif
-    if (!cp.mqhost.empty()) {
-        mqttWidget = new MQTTWidget(*sm, cp);
-        widgetSet->add(mqttWidget);
+    // Two MQTT pages. Page 2 shares page 1's broker connection unless it names its own.
+    const MqttPlan mp = mqttPlan(cp.mqhost, cp.mqt, cp.mqsetup, cp.mq2same, cp.mq2host, cp.mq2t);
+    if (mp.page1 || (mp.page2 && !mp.page2OwnBroker)) {
+        mqttFeeds[0] = new MqttFeed(0, cp.mqhost, cp.mqport, cp.mquser, cp.mqpass);
+    }
+    if (mp.page2OwnBroker) {
+        mqttFeeds[1] = new MqttFeed(1, cp.mq2host, cp.mq2port, cp.mq2user, cp.mq2pass);
+    }
+    MQTTWidget *mqttPages[2]{};
+    if (mp.page1) {
+        mqttPages[0] = new MQTTWidget(*sm, *mqttFeeds[0], 1, cp.mqname, cp.mqt, cp.mql, cp.mqu, cp.mqsetup, cp.mqfit);
+        widgetSet->add(mqttPages[0]);
+    }
+    if (mp.page2) {
+        mqttPages[1] = new MQTTWidget(*sm, *mqttFeeds[mp.page2OwnBroker ? 1 : 0], 2, cp.mq2name, cp.mq2t, cp.mq2l, cp.mq2u, "", cp.mq2fit);
+        widgetSet->add(mqttPages[1]);
     }
     settingsPage->setWidgets(widgetSet);
-    if (mqttWidget) {
-        // After every add(): shown() depends on how many pages are shown
-        int8_t i = widgetSet->indexOf(mqttWidget);
-        mqttInRotation = i >= 0 && widgetSet->shown(i);
+    for (MQTTWidget *page : mqttPages) {
+        if (page) {
+            // After every add(): shown() depends on how many pages are shown.
+            // A connection stays up only while one of its pages can come up.
+            int8_t i = widgetSet->indexOf(page);
+            if (i >= 0 && widgetSet->shown(i)) {
+                page->feed().setWanted(true);
+            }
+        }
     }
 
     m_widgetCycleDelayPrev = millis();
@@ -261,12 +358,24 @@ void checkButtons() {
 void loop() {
     if (wifiWidget->isConnected() == false) {
         wifiWidget->update();
-        wifiWidget->draw();
+        {
+            BootEyes::ScreenGuard guard; // the IP address on orb 5, beside the eyes
+            wifiWidget->draw();
+        }
         widgetSet->setClearScreensOnDrawCurrent(); // Clear screen after wifiWidget
         delay(100);
     } else {
         if (!widgetSet->initialUpdateDone()) {
             widgetSet->initializeAllWidgetsData();
+            if (s_eyesShowing) {
+                // Data loaded: the face cuts to the picture alone for 2 s,
+                // then the first page (which clears all five orbs)
+                BootEyes::end();
+                s_eyesShowing = false;
+                sm->fillAllScreens(TFT_BLACK);
+                drawBootPicture();
+                delay(2000);
+            }
         }
         otaUpdater->begin(); // no-op after the first call
         settingsPage->begin(); // same server, so after OTA's
@@ -280,10 +389,12 @@ void loop() {
         checkButtons();
 
         widgetSet->updateCurrent();
-        if (mqttInRotation) {
-            mqttWidget->service(); // values current when the page comes up
+        for (MqttFeed *feed : mqttFeeds) {
+            if (feed && feed->wanted()) {
+                feed->service(); // values current when a page comes up
+            }
         }
-        widgetSet->updateBrightnessByTime(globalTime->getHour24());
+        widgetSet->updateBrightnessByTime(globalTime->getHour24() * 60 + globalTime->getMinute());
         if (!widgetSet->panelsAsleep()) {
             widgetSet->drawCurrent();
             checkCycleWidgets(); // a switch redraws all five screens

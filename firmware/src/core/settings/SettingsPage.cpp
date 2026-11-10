@@ -1,8 +1,9 @@
 #include "SettingsPage.h"
 
 #include "SettingsValidation.h"
+#include "TimeZones.h"
 #include "weatherwidget/TempestSource.h"
-#include "mqttwidget/MQTTWidget.h"
+#include "mqttwidget/MqttFeed.h"
 #include "webdatawidget/WebDataWidget.h"
 #include "Utils.h"
 #include "build_id.h"
@@ -55,12 +56,6 @@ static String uptime() {
     return buf;
 }
 
-static String hourText(int h) {
-    char buf[8];
-    snprintf(buf, sizeof(buf), "%02d:00", h);
-    return buf;
-}
-
 // --- form pieces --------------------------------------------------------------
 
 static String errorLine(const std::map<std::string, std::string> &errors, const char *key) {
@@ -81,7 +76,6 @@ static String textField(const char *key, const char *label, const std::string &v
            esc(value) + "'>" + hint("Default: " + esc(def) + extra) + errorLine(errors, key);
 }
 
-#ifdef TEMPEST_TOKEN
 // The last fetch per station. An orb in service has no serial cable, so this is
 // how a failing station is seen without walking over to the orbs.
 static String tempestStatusLine(int slot) {
@@ -100,19 +94,20 @@ static String tempestStatusLine(int slot) {
 }
 
 static String stationRow(int slot, const char *idKey, const char *lblKey, uint32_t id, const std::string &lbl, uint32_t defId,
-                         const std::string &defLbl, const std::map<std::string, std::string> &errors) {
+                         const std::string &defLbl, bool hasToken, const std::map<std::string, std::string> &errors) {
     String n = String(slot + 1);
     String h = "<label for='" + String(idKey) + "'>Station " + n + " ID</label><input type='text' inputmode='numeric' id='" +
                idKey + "' name='" + idKey + "' value='" + (id ? String(id) : String("")) + "'>";
     h += hint("Blank = no page. Default: " + (defId ? String(defId) : String("none"))) + errorLine(errors, idKey);
     String label = "Station " + n + " label (16 characters)";
     h += textField(lblKey, label.c_str(), lbl, defLbl, "", errors);
-    if (id) {
+    if (id && !hasToken) {
+        h += "<div class='err'>&#10006; No page for this station: paste a Tempest token under <b>API keys</b> above.</div>";
+    } else if (id) {
         h += tempestStatusLine(slot);
     }
     return h;
 }
-#endif
 
 static String ago(uint32_t at) {
     uint32_t mins = (millis() - at) / 60000;
@@ -131,10 +126,11 @@ static String webDataStatusLine() {
     return "<div class='" + String(st.ok ? "hint" : "err") + "'>" + line + "</div>";
 }
 
-static String mqttStatusLine() {
-    const MqttStatus &st = MQTTWidget::status();
+// slot 0 = page 1's broker (page 2 too when it shares it), 1 = page 2's own
+static String mqttStatusLine(int slot) {
+    const MqttStatus &st = MqttFeed::status(slot);
     if (!st.attempted) {
-        return hint("&#9888; Not connected since start-up (it connects only while the page is ticked).");
+        return hint("&#9888; Not connected since start-up (it connects only while a page on it has a topic and is ticked).");
     }
     String line = String(st.connected ? "&#10004; Connected" : "&#10006; ") + (st.connected ? "" : esc(st.reason.c_str()));
     line += st.lastValueAt ? ". Newest value " + ago(st.lastValueAt) : String(". No value received yet");
@@ -148,6 +144,61 @@ static String plainInput(const char *key, const std::string &value, const char *
     return "<input type='text' id='" + String(key) + "' name='" + key + "' value='" + esc(value) + "' placeholder='" + placeholder + "'>";
 }
 
+// An MQTT broker's fields. pre is "mq" (page 1's broker) or "mq2" (page 2's own),
+// so the keys are mqhost / mq2host and so on.
+static String mqttBrokerFields(const char *pre, const std::string &host, int port, const std::string &user, const std::string &pass,
+                               const std::string &storedPass, const std::string &defHost, int defPort, const std::string &defUser,
+                               const char *hostExtra, const std::map<std::string, std::string> &errors) {
+    char kh[12], kp[12], ku[12], kw[12], kc[16];
+    snprintf(kh, sizeof(kh), "%shost", pre);
+    snprintf(kp, sizeof(kp), "%sport", pre);
+    snprintf(ku, sizeof(ku), "%suser", pre);
+    snprintf(kw, sizeof(kw), "%spass", pre);
+    snprintf(kc, sizeof(kc), "%spassclr", pre);
+    String h = textField(kh, "Broker host name or IP address", host, defHost.empty() ? std::string("none") : defHost, hostExtra, errors);
+    h += "<label for='" + String(kp) + "'>Port</label><input type='number' id='" + kp + "' name='" + kp + "' min='1' max='65535' value='" +
+         String(port) + "'>";
+    h += hint("Default: " + String(defPort)) + errorLine(errors, kp);
+    h += textField(ku, "Username", user, defUser.empty() ? std::string("none") : defUser, ". Blank = no login.", errors);
+    h += "<label for='" + String(kw) + "'>Password</label><input type='password' id='" + kw + "' name='" + kw +
+         "' value='' autocomplete='new-password'>";
+    h += hint(sv::passwordHint(pass, storedPass)) + errorLine(errors, kw);
+    h += "<label class='chk'><input type='checkbox' name='" + String(kc) + "' value='1'> Clear the stored password</label>";
+    return h;
+}
+
+// A page's five topic / label / unit rows. pre is "mq" (page 1) or "mq2" (page 2).
+static String mqttRows(const char *pre, const std::string (&t)[5], const std::string (&l)[5], const std::string (&u)[5],
+                       const std::map<std::string, std::string> &errors) {
+    String h = "<label>One value per orb: topic, label, unit</label>"
+               "<div style='display:grid;grid-template-columns:5fr 3fr 2fr;gap:.3em'>";
+    for (int i = 0; i < 5; i++) {
+        char kt[8], kl[8], ku[8], ph[24];
+        snprintf(kt, sizeof(kt), "%st%d", pre, i + 1);
+        snprintf(kl, sizeof(kl), "%sl%d", pre, i + 1);
+        snprintf(ku, sizeof(ku), "%su%d", pre, i + 1);
+        snprintf(ph, sizeof(ph), "Orb %d topic", i + 1);
+        h += plainInput(kt, t[i], ph) + plainInput(kl, l[i], "Label") + plainInput(ku, u[i], "Unit");
+    }
+    h += "</div>";
+    h += hint("Orbs left to right. A blank topic leaves that orb blank; with no topic at all the page does not appear. "
+              "No # or + wildcards. Label up to 16 characters, unit up to 8.");
+    for (int i = 0; i < 5; i++) {
+        char k[8];
+        snprintf(k, sizeof(k), "%st%d", pre, i + 1);
+        h += errorLine(errors, k);
+        snprintf(k, sizeof(k), "%sl%d", pre, i + 1);
+        h += errorLine(errors, k);
+        snprintf(k, sizeof(k), "%su%d", pre, i + 1);
+        h += errorLine(errors, k);
+    }
+    return h;
+}
+
+// Page 2's own broker fields show only while "Its own broker" is chosen
+static const char *MQ2_JS = "<script>(()=>{const s=document.getElementById('mq2same'),d=document.getElementById('mq2own');"
+                            "const f=()=>{d.style.display=s.value=='1'?'none':''};s.onchange=f;f()})()</script>";
+
 static String option(const String &value, const String &text, bool selected) {
     return "<option value='" + value + "'" + (selected ? " selected" : "") + ">" + text + "</option>";
 }
@@ -159,12 +210,13 @@ static String boolSelect(const char *key, const char *label, bool value, bool de
            hint(String("Default: ") + (def ? onText : offText)) + errorLine(errors, key);
 }
 
-static String hourSelect(const char *key, const char *label, int value, int def, const std::map<std::string, std::string> &errors) {
-    String s = "<label for='" + String(key) + "'>" + label + "</label><select id='" + key + "' name='" + key + "'>";
-    for (int h = 0; h < 24; h++) {
-        s += option(String(h), hourText(h), h == value);
-    }
-    return s + "</select>" + hint("Default: " + hourText(def)) + errorLine(errors, key);
+// A typed box, not <input type=time>: on an iPhone that is a wheel with no
+// keyboard, and typing the time was the point. sv::parseTimeOfDay reads it.
+static String timeField(const char *key, const char *label, int minutes, int def, const std::map<std::string, std::string> &errors) {
+    return "<label for='" + String(key) + "'>" + label + "</label><input type='text' id='" + key + "' name='" + key +
+           "' size='8' autocomplete='off' value='" + sv::timeOfDayText(minutes).c_str() + "'>" +
+           hint("Default: " + String(sv::timeOfDayText(def).c_str()) + ". 24-hour (22:00, 7:30) or am/pm (10pm, 7:30am).") +
+           errorLine(errors, key);
 }
 
 static String colorField(const char *key, const char *label, uint16_t value, uint16_t def, const std::map<std::string, std::string> &errors) {
@@ -216,7 +268,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     const SettingsValues d = Settings::defaults();
     const SettingsValues &stored = Settings::get(); // differs from `v` only on a rejected save
     String h;
-    h.reserve(18000); // measured page: 15.6-16.2 KB; below that every append reallocs a big block on a heap with no PSRAM
+    h.reserve(25000); // measured page: 21.5 KB on the XIAO rig with both MQTT pages, the time zone list and two Tempest stations (2026-11-09). Below that every append reallocs a big block on a heap with no PSRAM
     h += PAGE_HEAD;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
     {
@@ -232,7 +284,25 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
          "Set OTA_PASSWORD in secrets.h.</p>";
 #endif
     h += banner;
+    // Weather works with either source: a Visual Crossing key, or a Tempest
+    // token plus a station (with both, both get pages)
+    const bool tempestReady = !stored.tsttok.empty() && (stored.tstn1 || stored.tstn2);
+    if (stored.wxkey.empty() && !tempestReady) {
+        h += "<div class='banner err'>&#9888; Start here: paste your free weather API key in <b>API keys</b> below, "
+             "pick your time zone under <b>Clock</b>, then press <b>Save and restart</b>.</div>";
+    }
     h += "<form method='POST' action='/settings'>";
+
+    // First on the page: a downloaded .bin has no key until it is pasted here
+    h += "<fieldset><legend>API keys</legend>";
+    h += hint("Free, about a minute. Sign up for your own; a shared key runs out for everyone using it.");
+    h += "<label for='wxkey'>Visual Crossing key (weather) &mdash; <a href='https://www.visualcrossing.com/sign-up'>sign up</a></label>"
+         "<input type='password' id='wxkey' name='wxkey' value='' autocomplete='off'>";
+    h += hint(sv::apiKeyHint(v.wxkey, stored.wxkey, "Weather").c_str()) + errorLine(errors, "wxkey");
+    h += "<label for='tsttok'>Tempest token (your own weather station) &mdash; tempestwx.com &gt; Settings &gt; Data Authorizations &gt; Create Token</label>"
+         "<input type='password' id='tsttok' name='tsttok' value='' autocomplete='off'>";
+    h += hint(sv::tempestTokenHint(v.tsttok, stored.tsttok, stored.tstn1 || stored.tstn2).c_str()) + errorLine(errors, "tsttok");
+    h += "</fieldset>";
 
     h += "<fieldset><legend>Rotation</legend>";
     h += "<label for='cycle'>Seconds per page</label><input type='number' id='cycle' name='cycle' min='0' max='3600' value='" + String(v.cycle) + "'>";
@@ -242,7 +312,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
         for (int8_t i = 0; i < m_widgets->count(); i++) {
             std::string k = m_widgets->key(i).c_str();
             h += "<label class='chk'><input type='checkbox' name='shw" + String(i) + "' value='1'" +
-                 (sv::listContains(v.hidden, k) ? "" : " checked") + "> " + sv::htmlEscape(k).c_str() + "</label>";
+                 (sv::listContains(v.hidden, k) ? "" : " checked") + "> " + sv::htmlEscape(m_widgets->label(i).c_str()).c_str() + "</label>";
         }
         h += hint("Tick one to keep it on screen, or several to rotate through them. The buttons move between ticked pages only.") +
              errorLine(errors, "show");
@@ -261,9 +331,26 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += boolSelect("ampm", "AM/PM indicator (12-hour, not Nixie)", v.ampm, d.ampm, "Off", "On", errors);
     h += colorField("clkcol", "Digit color", v.clkcol, d.clkcol, errors);
     h += colorField("shdcol", "Unlit-segment color", v.shdcol, d.shdcol, errors);
-    h += textField("tz", "Timezone", v.tz, d.tz,
-                   " &mdash; a name from <a href='https://timezonedb.com/time-zones'>timezonedb.com/time-zones</a>. Not checked until the orb asks for the time.",
-                   errors);
+    // A list, not a text box: the firmware knows only the zones in TimeZones.h.
+    // A stored name that is not in the table (typed before 2026-11-09) is kept
+    // as its own entry so saving other settings does not change it silently.
+    {
+        // By index, not pointer: see tzdb::indexOf
+        const int cur = tzdb::indexOf(v.tz);
+        h += "<label for='tz'>Time zone</label><select id='tz' name='tz'>";
+        if (cur < 0) {
+            h += option(sv::htmlEscape(v.tz).c_str(), String(sv::htmlEscape(v.tz).c_str()) + " (not in the list: showing UTC)", true);
+        }
+        for (int i = 0; i < tzdb::ZONE_COUNT; i++) {
+            String label = tzdb::ZONES[i].name;
+            label.replace("_", " ");
+            h += option(tzdb::ZONES[i].name, label, i == cur);
+        }
+        String defName = d.tz.c_str();
+        defName.replace("_", " ");
+        h += "</select>" + hint("Daylight saving is automatic. Default: " + defName + ". Missing yours? Ask in the club and it gets added.") +
+             errorLine(errors, "tz");
+    }
     h += "</fieldset>";
 
 #ifdef STOCK_TICKER_LIST
@@ -279,16 +366,17 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += boolSelect("wxdark", "Weather screens", v.wxdark, d.wxdark, "Light", "Dark", errors);
     h += "</fieldset>";
 
-#ifdef TEMPEST_TOKEN
     h += "<fieldset><legend>Tempest stations</legend>";
-    h += hint("Token set in secrets.h. Each station gets its own weather page, and the location above is then not used. Units follow the setting above.");
-    h += stationRow(0, "tstn1", "tlbl1", v.tstn1, v.tlbl1, d.tstn1, d.tlbl1, errors);
-    h += stationRow(1, "tstn2", "tlbl2", v.tstn2, v.tlbl2, d.tstn2, d.tlbl2, errors);
+    h += hint("Only if you have a Tempest weather station: its ID is the number in its tempestwx.com address. "
+              "Each station gets its own weather page. The location above keeps its page too while a Visual Crossing key is set. Units follow the setting above.");
+    const bool hasToken = !stored.tsttok.empty();
+    h += stationRow(0, "tstn1", "tlbl1", v.tstn1, v.tlbl1, d.tstn1, d.tlbl1, hasToken, errors);
+    h += stationRow(1, "tstn2", "tlbl2", v.tstn2, v.tlbl2, d.tstn2, d.tlbl2, hasToken, errors);
     h += "</fieldset>";
-#endif
 
     h += "<fieldset><legend>Custom pages</legend>";
-    h += hint("Pages of your own. A page appears once its address or broker is set; saving restarts the orb. Format and Home Assistant recipe: "
+    h += hint("Pages of your own. Web Data appears once its address is set, an MQTT page once its broker and a topic are set; "
+              "saving restarts the orb. Format and Home Assistant recipe: "
               "<a href='https://github.com/scottdube/hot-info-orbs/blob/main/docs/CUSTOM-PAGES.md'>CUSTOM-PAGES.md</a>.");
 
     h += "<h4>Web Data</h4>";
@@ -311,59 +399,56 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     }
 
     h += "<h4>MQTT</h4>";
+    h += hint("Two pages of five orbs each. Page 2 can use page 1's broker (one connection for both) or a broker of its own.");
+    h += mqttBrokerFields("mq", v.mqhost, v.mqport, v.mquser, v.mqpass, stored.mqpass, d.mqhost, d.mqport, d.mquser,
+                          ". Blank = no page on it.", errors);
+    if (!v.mqhost.empty()) {
+        h += mqttStatusLine(0);
+    }
+
+    h += "<h4>MQTT page 1</h4>";
     h += textField("mqname", "Page name (16 characters)", v.mqname, d.mqname,
-                   ". Its tick box above uses this name, so renaming it shows it again if it was unticked.", errors);
-    h += textField("mqhost", "Broker host name or IP address", v.mqhost, d.mqhost.empty() ? std::string("none") : d.mqhost,
-                   ". Blank = no page.", errors);
-    h += "<label for='mqport'>Port</label><input type='number' id='mqport' name='mqport' min='1' max='65535' value='" + String(v.mqport) + "'>";
-    h += hint("Default: " + String(d.mqport)) + errorLine(errors, "mqport");
-    h += textField("mquser", "Username", v.mquser, d.mquser.empty() ? std::string("none") : d.mquser, ". Blank = no login.", errors);
-    h += "<label for='mqpass'>Password</label><input type='password' id='mqpass' name='mqpass' value='' autocomplete='new-password'>";
-    h += hint(sv::passwordHint(v.mqpass, stored.mqpass)) +
-         errorLine(errors, "mqpass");
-    h += "<label class='chk'><input type='checkbox' name='mqpassclr' value='1'> Clear the stored password</label>";
-    h += "<label>One value per orb: topic, label, unit</label>"
-         "<div style='display:grid;grid-template-columns:5fr 3fr 2fr;gap:.3em'>";
-    for (int i = 0; i < 5; i++) {
-        char kt[8], kl[8], ku[8], ph[24];
-        snprintf(kt, sizeof(kt), "mqt%d", i + 1);
-        snprintf(kl, sizeof(kl), "mql%d", i + 1);
-        snprintf(ku, sizeof(ku), "mqu%d", i + 1);
-        snprintf(ph, sizeof(ph), "Orb %d topic", i + 1);
-        h += plainInput(kt, v.mqt[i], ph) + plainInput(kl, v.mql[i], "Label") + plainInput(ku, v.mqu[i], "Unit");
-    }
-    h += "</div>";
-    h += hint("Orbs left to right. A blank topic leaves that orb blank. No # or + wildcards. Label up to 16 characters, unit up to 8.");
-    for (int i = 0; i < 5; i++) {
-        char k[8];
-        snprintf(k, sizeof(k), "mqt%d", i + 1);
-        h += errorLine(errors, k);
-        snprintf(k, sizeof(k), "mql%d", i + 1);
-        h += errorLine(errors, k);
-        snprintf(k, sizeof(k), "mqu%d", i + 1);
-        h += errorLine(errors, k);
-    }
+                   ". Its tick box above reads MQTT 1 (this name); renaming it shows it again if it was unticked.", errors);
+    h += mqttRows("mq", v.mqt, v.mql, v.mqu, errors);
+    h += boolSelect("mqfit", "Text size", v.mqfit, d.mqfit, "Each orb as large as fits", "Same on every orb", errors);
     h += textField("mqsetup", "Layout topic (advanced)", v.mqsetup, d.mqsetup.empty() ? std::string("none") : d.mqsetup,
                    ". A JSON layout published here replaces the rows above until the next restart (mqttwidget/README.md).", errors);
-    if (!v.mqhost.empty()) {
-        h += mqttStatusLine();
+
+    h += "<h4>MQTT page 2</h4>";
+    h += textField("mq2name", "Page name (16 characters)", v.mq2name, d.mq2name,
+                   ". Its tick box above reads MQTT 2 (this name); renaming it shows it again if it was unticked.", errors);
+    h += boolSelect("mq2same", "Broker", v.mq2same, d.mq2same, "Its own broker", "Same as page 1", errors);
+    h += "<div id='mq2own'>";
+    h += mqttBrokerFields("mq2", v.mq2host, v.mq2port, v.mq2user, v.mq2pass, stored.mq2pass, d.mq2host, d.mq2port, d.mq2user,
+                          ". Blank = no page 2.", errors);
+    if (!v.mq2same && !v.mq2host.empty()) {
+        h += mqttStatusLine(1);
     }
+    h += "</div>" + String(MQ2_JS);
+    h += mqttRows("mq2", v.mq2t, v.mq2l, v.mq2u, errors);
+    h += boolSelect("mq2fit", "Text size", v.mq2fit, d.mq2fit, "Each orb as large as fits", "Same on every orb", errors);
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Dim hours</legend>";
+    h += "<fieldset><legend>Dim times</legend>";
     h += boolSelect("dim", "Dim", v.dim, d.dim, "Off", "On", errors);
     h += hint("Darkens the colors drawn; the backlight itself stays on.");
-    h += hourSelect("dimstart", "From", v.dimstart, d.dimstart, errors);
-    h += hourSelect("dimend", "Until", v.dimend, d.dimend, errors);
+    h += timeField("dimstartm", "From", v.dimstartm, d.dimstartm, errors);
+    h += timeField("dimendm", "Until", v.dimendm, d.dimendm, errors);
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Screens-off hours</legend>";
+    h += "<fieldset><legend>Screens-off times</legend>";
     h += boolSelect("off", "Screens off", v.off, d.off, "Off", "On", errors);
-    h += hint("Blanks the panels; any button wakes them for a minute. Where these hours overlap the dim hours, off wins.");
-    h += hourSelect("offstart", "From", v.offstart, d.offstart, errors);
-    h += hourSelect("offend", "Until", v.offend, d.offend, errors);
+    h += hint("Blanks the panels; any button wakes them for a minute. Where these times overlap the dim times, off wins.");
+    h += timeField("offstartm", "From", v.offstartm, d.offstartm, errors);
+    h += timeField("offendm", "Until", v.offendm, d.offendm, errors);
     h += "</fieldset>";
 
+#ifdef BOOT_EYES
+    h += "<fieldset><legend>Start-up</legend>";
+    h += boolSelect("booteyes", "Waking eyes", v.booteyes, d.booteyes, "Off", "On", errors);
+    h += hint("Eyes on orbs 2 and 4 wake up while the orb joins WiFi.");
+    h += "</fieldset>";
+#endif
     h += "<fieldset><legend>Mounting</legend>";
     h += boolSelect("invert", "Orbs", v.invert, d.invert, "Right way up", "Upside down", errors);
     h += "</fieldset>";
@@ -429,11 +514,29 @@ void SettingsPage::handlePost() {
         errors["tickers"] = err;
     }
 #endif
+    if (has("wxkey")) {
+        const std::string stored = v.wxkey;
+        if (!sv::parseApiKey(argStr(s, "wxkey"), stored, v.wxkey, err)) {
+            errors["wxkey"] = err;
+        }
+    }
+    if (has("tsttok")) {
+        const std::string stored = v.tsttok;
+        if (!sv::parseApiKey(argStr(s, "tsttok"), stored, v.tsttok, err)) {
+            errors["tsttok"] = err;
+        }
+    }
     if (has("wxloc") && !sv::normalizeText(argStr(s, "wxloc"), 64, v.wxloc, err)) {
         errors["wxloc"] = err;
     }
-    if (has("tz") && !sv::normalizeText(argStr(s, "tz"), 48, v.tz, err)) {
-        errors["tz"] = err;
+    if (has("tz")) {
+        const std::string want = argStr(s, "tz");
+        const tzdb::Zone *z = tzdb::find(want);
+        if (z != nullptr) {
+            v.tz = z->name;
+        } else if (want != v.tz) { // an unlisted name may only stay as it was
+            errors["tz"] = "Pick a time zone from the list.";
+        }
     }
     readBool("wxmetric", v.wxmetric);
     readBool("wxdark", v.wxdark);
@@ -442,6 +545,7 @@ void SettingsPage::handlePost() {
     readBool("dim", v.dim);
     readBool("off", v.off);
     readBool("invert", v.invert);
+    readBool("booteyes", v.booteyes);
     if (has("face")) {
         std::string a = argStr(s, "face");
         if (a.size() == 1 && a[0] >= '0' && a[0] <= '2' && faceCompiledIn(a[0] - '0')) {
@@ -456,22 +560,15 @@ void SettingsPage::handlePost() {
     if (has("shdcol") && !sv::parseHexColor(argStr(s, "shdcol"), v.shdcol, err)) {
         errors["shdcol"] = err;
     }
-    if (has("dimstart") && !sv::parseHour(argStr(s, "dimstart"), v.dimstart, err)) {
-        errors["dimstart"] = err;
+    for (auto f : {std::make_pair("dimstartm", &v.dimstartm), std::make_pair("dimendm", &v.dimendm),
+                   std::make_pair("offstartm", &v.offstartm), std::make_pair("offendm", &v.offendm)}) {
+        if (has(f.first) && !sv::parseTimeOfDay(argStr(s, f.first), *f.second, err)) {
+            errors[f.first] = err;
+        }
     }
-    if (has("dimend") && !sv::parseHour(argStr(s, "dimend"), v.dimend, err)) {
-        errors["dimend"] = err;
+    if (v.off && v.offstartm == v.offendm && !errors.count("offstartm") && !errors.count("offendm")) {
+        errors["offendm"] = "Start and end are the same time";
     }
-    if (has("offstart") && !sv::parseHour(argStr(s, "offstart"), v.offstart, err)) {
-        errors["offstart"] = err;
-    }
-    if (has("offend") && !sv::parseHour(argStr(s, "offend"), v.offend, err)) {
-        errors["offend"] = err;
-    }
-    if (v.off && v.offstart == v.offend && !errors.count("offstart") && !errors.count("offend")) {
-        errors["offend"] = "Start and end are the same hour";
-    }
-#ifdef TEMPEST_TOKEN
     // IDs first: whether a label is required depends on its station
     if (has("tstn1") && !sv::parseStationId(argStr(s, "tstn1"), v.tstn1, err)) {
         errors["tstn1"] = err;
@@ -485,7 +582,6 @@ void SettingsPage::handlePost() {
     if (has("tlbl2") && !sv::parseStationLabel(argStr(s, "tlbl2"), v.tstn2, v.tlbl2, err)) {
         errors["tlbl2"] = err;
     }
-#endif
     // Custom pages
     if (has("wdname") && !sv::normalizeText(argStr(s, "wdname"), 16, v.wdname, err)) {
         errors["wdname"] = err;
@@ -496,46 +592,68 @@ void SettingsPage::handlePost() {
             errors["wdurl"] = err;
         }
     }
+    // MQTT: page 1's broker, page 1's rows and layout topic, then page 2's
+    auto readBroker = [&](const char *pre, std::string &host, int &port, std::string &user, std::string &pass) {
+        char k[16], kc[16];
+        snprintf(k, sizeof(k), "%shost", pre);
+        if (has(k) && !sv::parseHost(argStr(s, k), host, err)) {
+            errors[k] = err;
+        }
+        snprintf(k, sizeof(k), "%sport", pre);
+        if (has(k) && !sv::parsePort(argStr(s, k), port, err)) {
+            errors[k] = err;
+        }
+        snprintf(k, sizeof(k), "%suser", pre);
+        if (has(k) && !sv::parseOptionalText(argStr(s, k), 64, user, err)) {
+            errors[k] = err;
+        }
+        snprintf(k, sizeof(k), "%spass", pre);
+        snprintf(kc, sizeof(kc), "%spassclr", pre);
+        if (has(k) || has(kc)) {
+            const std::string stored = pass;
+            if (!sv::parsePassword(argStr(s, k), has(kc), stored, pass, err)) {
+                errors[k] = err;
+            }
+        }
+    };
+    auto readRows = [&](const char *pre, std::string (&t)[5], std::string (&l)[5], std::string (&u)[5]) {
+        for (int i = 0; i < 5; i++) {
+            char k[8];
+            String orb = "Orb " + String(i + 1) + " ";
+            snprintf(k, sizeof(k), "%st%d", pre, i + 1);
+            if (has(k) && !sv::parseTopic(argStr(s, k), t[i], err)) {
+                errors[k] = (orb + "topic: ").c_str() + err;
+            }
+            snprintf(k, sizeof(k), "%sl%d", pre, i + 1);
+            if (has(k) && !sv::parseOptionalText(argStr(s, k), 16, l[i], err)) {
+                errors[k] = (orb + "label: ").c_str() + err;
+            }
+            snprintf(k, sizeof(k), "%su%d", pre, i + 1);
+            if (has(k) && !sv::parseOptionalText(argStr(s, k), 8, u[i], err)) {
+                errors[k] = (orb + "unit: ").c_str() + err;
+            }
+        }
+    };
+    readBroker("mq", v.mqhost, v.mqport, v.mquser, v.mqpass);
     if (has("mqname") && !sv::normalizeText(argStr(s, "mqname"), 16, v.mqname, err)) {
         errors["mqname"] = err;
     }
-    if (has("mqhost") && !sv::parseHost(argStr(s, "mqhost"), v.mqhost, err)) {
-        errors["mqhost"] = err;
-    }
-    if (has("mqport") && !sv::parsePort(argStr(s, "mqport"), v.mqport, err)) {
-        errors["mqport"] = err;
-    }
-    if (has("mquser") && !sv::parseOptionalText(argStr(s, "mquser"), 64, v.mquser, err)) {
-        errors["mquser"] = err;
-    }
-    if (has("mqpass") || has("mqpassclr")) {
-        const std::string stored = v.mqpass;
-        if (!sv::parsePassword(argStr(s, "mqpass"), has("mqpassclr"), stored, v.mqpass, err)) {
-            errors["mqpass"] = err;
-        }
-    }
-    for (int i = 0; i < 5; i++) {
-        char k[8];
-        String orb = "Orb " + String(i + 1) + " ";
-        snprintf(k, sizeof(k), "mqt%d", i + 1);
-        if (has(k) && !sv::parseTopic(argStr(s, k), v.mqt[i], err)) {
-            errors[k] = (orb + "topic: ").c_str() + err;
-        }
-        snprintf(k, sizeof(k), "mql%d", i + 1);
-        if (has(k) && !sv::parseOptionalText(argStr(s, k), 16, v.mql[i], err)) {
-            errors[k] = (orb + "label: ").c_str() + err;
-        }
-        snprintf(k, sizeof(k), "mqu%d", i + 1);
-        if (has(k) && !sv::parseOptionalText(argStr(s, k), 8, v.mqu[i], err)) {
-            errors[k] = (orb + "unit: ").c_str() + err;
-        }
-    }
+    readRows("mq", v.mqt, v.mql, v.mqu);
+    readBool("mqfit", v.mqfit);
     if (has("mqsetup") && !sv::parseTopic(argStr(s, "mqsetup"), v.mqsetup, err)) {
         errors["mqsetup"] = err;
     }
-    // Equal hours would mean "dim around the clock" (WidgetSet's wrap branch)
-    if (v.dim && v.dimstart == v.dimend && !errors.count("dimstart") && !errors.count("dimend")) {
-        errors["dimend"] = "Start and end are the same hour";
+    if (has("mq2name") && !sv::normalizeText(argStr(s, "mq2name"), 16, v.mq2name, err)) {
+        errors["mq2name"] = err;
+    }
+    readBool("mq2same", v.mq2same);
+    readBroker("mq2", v.mq2host, v.mq2port, v.mq2user, v.mq2pass);
+    readRows("mq2", v.mq2t, v.mq2l, v.mq2u);
+    readBool("mq2fit", v.mq2fit);
+    // Equal times are an empty range to sv::inTimeRange, which reads as "never
+    // dims" when the box says On; refuse it rather than save a silent no-op
+    if (v.dim && v.dimstartm == v.dimendm && !errors.count("dimstartm") && !errors.count("dimendm")) {
+        errors["dimendm"] = "Start and end are the same time";
     }
 
     if (!errors.empty()) {
