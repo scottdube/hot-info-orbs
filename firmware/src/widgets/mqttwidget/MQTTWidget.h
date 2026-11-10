@@ -2,6 +2,7 @@
 #define MQTT_WIDGET_H
 
 #include "MqttFeed.h"
+#include "MqttText.h"
 #include "Settings.h"
 #include "Utils.h"
 #include "Widget.h"
@@ -27,6 +28,8 @@ struct OrbConfig {
     bool autoLayout = false; // a settings-page row: label / value / unit, value fitted to the orb
     String value; // latest value shown
     bool dirty = true; // needs drawing the next time this page draws
+    String fitFor; // the text fitSize was measured for
+    int fitSize = 0; // largest font size at which fitFor fits this orb (MqttText.h)
 };
 
 // One MQTT page: five orbs, one per settings row. The broker connection is
@@ -34,9 +37,11 @@ struct OrbConfig {
 class MQTTWidget : public Widget {
 public:
     // topics/labels/units: the page's five settings rows. setupTopic is the
-    // advanced layout topic ("" = none), page 1 only.
+    // advanced layout topic ("" = none), page 1 only. sameSize: every orb's value
+    // at one font size, the largest that fits all five.
     MQTTWidget(ScreenManager &manager, MqttFeed &feed, int page, const std::string &name, const std::string (&topics)[5],
-               const std::string (&labels)[5], const std::string (&units)[5], const std::string &setupTopic);
+               const std::string (&labels)[5], const std::string (&units)[5], const std::string &setupTopic,
+               bool sameSize);
     void setup() override;
     void update(bool force = false) override;
     void draw(bool force = false) override;
@@ -60,6 +65,11 @@ private:
     void drawOrb(int orbid); // Draw a single orb based on orbid
 
     int m_page; // 1 or 2, for its Show label
+    bool m_sameSize;
+    int m_sharedSize = 0; // the size every orb's value is drawn at when m_sameSize; 0 = none yet
+    String valueText(const OrbConfig &orb); // the value, or a hyphen until one arrives
+    int bestSize(OrbConfig &orb); // cached in orb.fitFor / fitSize
+    void valueBox(const OrbConfig &orb, int &top, int &bottom);
     String m_name, m_setupTopic;
     bool extractValue(const OrbConfig &orb, const String &message, String &out);
 };

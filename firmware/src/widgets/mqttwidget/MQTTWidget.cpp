@@ -1,8 +1,11 @@
 #include "MQTTWidget.h"
 
+static constexpr int MQTT_VALUE_MAX_W = 190; // px, the width the one-line value had
+
 MQTTWidget::MQTTWidget(ScreenManager &manager, MqttFeed &feed, int page, const std::string &name, const std::string (&topics)[5],
-                       const std::string (&labels)[5], const std::string (&units)[5], const std::string &setupTopic)
-    : Widget(manager), m_feed(feed), m_page(page), m_name(name.c_str()), m_setupTopic(setupTopic.c_str()) {
+                       const std::string (&labels)[5], const std::string (&units)[5], const std::string &setupTopic,
+                       bool sameSize)
+    : Widget(manager), m_feed(feed), m_page(page), m_sameSize(sameSize), m_name(name.c_str()), m_setupTopic(setupTopic.c_str()) {
     // One orb per settings row with a topic; the others stay blank
     for (int i = 0; i < 5; i++) {
         if (topics[i].empty()) {
@@ -98,6 +101,22 @@ void MQTTWidget::subscribeAll() {
 // Draw method: only the current page's draw() is called, so this is the only place orbs are painted
 void MQTTWidget::draw(bool force) {
     m_manager.setFont(DEFAULT_FONT);
+    if (m_sameSize) {
+        // One size for the page: when a new value changes it, every orb redraws
+        std::vector<int> sizes;
+        for (auto &o : orbConfigs) {
+            if (o.autoLayout && o.value.length()) {
+                sizes.push_back(bestSize(o));
+            }
+        }
+        int s = mqttSharedSize(sizes);
+        if (s != m_sharedSize) {
+            m_sharedSize = s;
+            for (auto &o : orbConfigs) {
+                o.dirty = true;
+            }
+        }
+    }
     for (int i = 0; i < 5; i++) {
         OrbConfig *orb = nullptr;
         for (auto &o : orbConfigs) {
@@ -271,13 +290,36 @@ void MQTTWidget::drawOrb(int orbid) {
     m_manager.fillScreen(orb->orbBgColor);
     m_manager.setFontColor(orb->orbTextColor, orb->orbBgColor);
     if (orb->autoLayout) {
-        // Label on top, the value as large as fits in the middle, unit below.
-        // A hyphen until the first value arrives (the font has no en dash: it drew a box).
+        // Label on top, the value wrapped onto up to three lines as large as fits
+        // between them, unit below (MqttText.h). A hyphen until the first value
+        // arrives (the font has no en dash: it drew a box).
         if (orb->orbdesc.length()) {
             m_manager.drawString(orb->orbdesc, ScreenCenterX, 62, 22, Align::MiddleCenter);
         }
-        String v = orb->value.length() ? orb->value : String("-");
-        m_manager.drawFittedString(v, ScreenCenterX, ScreenCenterY, 190, 80, Align::MiddleCenter);
+        String v = valueText(*orb);
+        int size = bestSize(*orb);
+        if (m_sameSize && orb->value.length() && m_sharedSize > 0) {
+            size = m_sharedSize; // never larger than this orb's own best, so it fits
+        }
+        int top, bottom;
+        valueBox(*orb, top, bottom);
+        auto measure = [this](const std::string &t, int fs) {
+            TextExtent e;
+            m_manager.measureText(String(t.c_str()), fs, e.w, e.h);
+            return e;
+        };
+        std::vector<std::string> lines = mqttWrap(std::string(v.c_str()), size, MQTT_VALUE_MAX_W, measure);
+        int inkH = 0;
+        for (const auto &l : lines) {
+            TextExtent e = measure(l.empty() ? std::string("X") : l, size);
+            inkH = e.h > inkH ? e.h : inkH;
+        }
+        int blockH = mqttBlockHeight((int)lines.size(), size, inkH);
+        int y = (top + bottom) / 2 - blockH / 2 + inkH / 2; // centre of the first line
+        for (size_t i = 0; i < lines.size(); i++) {
+            int yi = y + (int)(i * size * MQTT_TEXT_LINE_PITCH);
+            m_manager.drawString(String(lines[i].c_str()), ScreenCenterX, yi, size, Align::MiddleCenter, -1, -1, false);
+        }
         if (orb->orbvalunit.length()) {
             m_manager.drawString(orb->orbvalunit, ScreenCenterX, 180, 22, Align::MiddleCenter);
         }
@@ -286,6 +328,35 @@ void MQTTWidget::drawOrb(int orbid) {
     // Layout-topic orbs: upstream positions and size
     m_manager.drawString(orb->orbdesc, orb->xpostxt, orb->ypostxt, orb->orbsize, Align::MiddleCenter);
     m_manager.drawString(orb->value + orb->orbvalunit, orb->xposval, orb->yposval, orb->orbsize, Align::MiddleCenter);
+}
+
+String MQTTWidget::valueText(const OrbConfig &orb) {
+    return orb.value.length() ? orb.value : String("-");
+}
+
+// The value's area: below the label (centred at y 62) and above the unit (y 180).
+// Without them it grows to 56 px from the centre, where the 240 px round screen
+// is still 212 px wide, so a 190 px line never reaches the rim.
+void MQTTWidget::valueBox(const OrbConfig &orb, int &top, int &bottom) {
+    top = orb.orbdesc.length() ? 76 : 64;
+    bottom = orb.orbvalunit.length() ? 166 : 176;
+}
+
+int MQTTWidget::bestSize(OrbConfig &orb) {
+    String v = valueText(orb);
+    if (orb.fitSize > 0 && orb.fitFor == v) {
+        return orb.fitSize;
+    }
+    int top, bottom;
+    valueBox(orb, top, bottom);
+    auto measure = [this](const std::string &t, int fs) {
+        TextExtent e;
+        m_manager.measureText(String(t.c_str()), fs, e.w, e.h);
+        return e;
+    };
+    orb.fitSize = mqttBestSize(std::string(v.c_str()), MQTT_VALUE_MAX_W, bottom - top, measure);
+    orb.fitFor = v;
+    return orb.fitSize;
 }
 
 String MQTTWidget::getName() {

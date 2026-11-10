@@ -130,8 +130,19 @@ Settings saved before page 2 existed load unchanged as page 1; page 2 starts
 empty. Each connection has its own status line under its broker.
 
 A value is the topic's payload as text. Each orb shows the label on top, the
-value in the middle at the largest size that fits and the unit
-below. It shows a dash (-) until the first value arrives.
+value in the middle and the unit below. It shows a dash (-) until the first
+value arrives.
+
+**Long text wraps.** A value that is too long for one line wraps onto up to
+three lines. A line break in the payload starts a new line where you want it:
+`5pm\nThe Rundown Band` puts the time on a line of its own.
+
+**Text size**, one setting per page:
+- **Same on every orb** (the default): all five values on the page are drawn at
+  one size, the largest that fits the longest of them. Five orbs side by side
+  then read as one panel. A long value on one orb makes all five smaller.
+- **Each orb as large as fits**: every orb sizes its own value, so a short
+  value is drawn much larger than a long one beside it.
 
 **It never blocks the orb.** Each connection makes one attempt that gives
 up after a few seconds, then at most one more every 30 seconds, while the buttons and
@@ -174,6 +185,101 @@ The topic for an orb is
 With `retain: true` the broker hands the last value to the orb as soon as it
 subscribes, so the page is not blank after a restart. The orb test below
 used (b); Statestream's retain behavior was not tested.
+
+### The Villages: tonight's act at each town square
+
+One orb per town square, showing tonight's entertainment as `5pm` on one line
+and the act below it. After tonight's show ends, the orb shows tomorrow's show
+with the day in front (`Tue 5pm`). If neither day has a show, it shows `No show`.
+
+You need Home Assistant with the MQTT integration connected to your broker
+(the Mosquitto add-on is the usual one), and an orb whose MQTT page already
+connects to that broker.
+
+**1. Install the events integration.** It is a community integration, not
+ours: [netnutmike/homeassistant-villages-app](https://github.com/netnutmike/homeassistant-villages-app).
+In HACS, open the menu (⋮) → *Custom repositories*, add that address as an
+*Integration*, install **The Villages Events**, and restart Home Assistant.
+Then add it under *Settings → Devices & services → Add integration*; the
+defaults are fine. It reads the events from The Villages' own website, which
+is not an official interface, so a change on their side can stop it.
+
+Check it worked: under *Developer tools → States*, search for
+`villages_events`. Each town square gets two sensors, for example
+`sensor.villages_events_eastport_today` and `…_tomorrow`. Real act names in
+their `events` attribute mean it works. If the names look made up, the
+integration has fallen back to sample data; its log says why.
+
+**2. Add the automation.** *Settings → Automations & scenes → Create
+automation → Create new automation*, then ⋮ → *Edit in YAML*, replace
+everything with this, and save. Every 5 minutes it sends each square's act to
+its own topic.
+
+```yaml
+alias: "Orbs: Villages town-square entertainment"
+mode: single
+triggers:
+  - trigger: time_pattern
+    minutes: "/5"
+  - trigger: homeassistant
+    event: start
+actions:
+  - variables:
+      squares:
+        - topic: orbs/villages/spanish_springs
+          sensor: sensor.villages_events_spanish_springs_town_square
+        - topic: orbs/villages/lake_sumter
+          sensor: sensor.villages_events_lake_sumter_landing_market_square
+        - topic: orbs/villages/brownwood
+          sensor: sensor.villages_events_brownwood_paddock_square
+        - topic: orbs/villages/sawgrass
+          sensor: sensor.villages_events_sawgrass_grove
+        - topic: orbs/villages/eastport
+          sensor: sensor.villages_events_eastport
+  - repeat:
+      for_each: "{{ squares }}"
+      sequence:
+        - action: mqtt.publish
+          data:
+            topic: "{{ repeat.item.topic }}"
+            retain: true
+            payload: >-
+              {%- macro hm(t) -%}
+                {{ (t.strftime('%-I') ~ (t.strftime(':%M') if t.minute else '') ~ t.strftime('%p') | lower) }}
+              {%- endmacro -%}
+              {%- set ns = namespace(txt='') -%}
+              {%- for day in ['today', 'tomorrow'] if ns.txt == '' -%}
+                {%- set evs = (state_attr(repeat.item.sensor ~ '_' ~ day, 'events') or [])
+                              | selectattr('start_time') | sort(attribute='start_time', reverse=true) | list -%}
+                {%- for e in evs if ns.txt == '' -%}
+                  {%- set t = as_local(as_datetime(e.start_time)) -%}
+                  {%- set end = as_datetime(e.end_time or e.start_time) -%}
+                  {%- if day == 'tomorrow' or end > now() -%}
+                    {%- set ns.txt = ((t.strftime('%a') ~ ' ') if day == 'tomorrow' else '')
+                                     ~ hm(t) ~ '\n' ~ (e.performer | regex_replace('[^ -~]', '') | trim) -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endfor -%}
+              {{ ns.txt or 'No show' }}
+```
+
+How it picks the act: of today's events that have not ended, the one that
+starts latest (the evening show, not the noon one). Characters the orb's font
+cannot draw are left out. The `'\n'` puts the time on its own line. Run it
+once by hand (⋮ → *Run actions*) instead of waiting 5 minutes.
+
+**3. Set the orb's rows.** On the orb's settings page, on an MQTT page:
+
+| Orb | Topic | Label | Unit |
+|---|---|---|---|
+| 1 | `orbs/villages/spanish_springs` | Spanish Springs | (blank) |
+| 2 | `orbs/villages/lake_sumter` | Lake Sumter | (blank) |
+| 3 | `orbs/villages/brownwood` | Brownwood | (blank) |
+| 4 | `orbs/villages/sawgrass` | Sawgrass Grove | (blank) |
+| 5 | `orbs/villages/eastport` | Eastport | (blank) |
+
+Leave **Text size** on *Same on every orb*, so the five acts are drawn at one
+size. Name the page what you like, for example `Town Squares`.
 
 ## Tested
 

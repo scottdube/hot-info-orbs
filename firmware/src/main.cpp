@@ -166,19 +166,21 @@ void setup() {
     }
 #endif
     bool tempestPages = false;
-#ifdef TEMPEST_TOKEN
-    // One weather page per Tempest station; Visual Crossing only when none is set
+    // One weather page per Tempest station, plus Visual Crossing for the
+    // location whenever a VC key is set (a third place, e.g. a town away from
+    // the stations). With Tempest pages and no VC key, VC is left out: it
+    // would only show a key error. A station without a token would fail every
+    // fetch with 401, so it gets no page (the settings page says why).
     const SettingsValues &wx = Settings::get();
-    if (wx.tstn1) {
+    if (!wx.tsttok.empty() && wx.tstn1) {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(0, wx.tstn1, wx.tlbl1)));
         tempestPages = true;
     }
-    if (wx.tstn2) {
+    if (!wx.tsttok.empty() && wx.tstn2) {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(1, wx.tstn2, wx.tlbl2)));
         tempestPages = true;
     }
-#endif
-    if (!tempestPages) {
+    if (!tempestPages || !wx.wxkey.empty()) {
         widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
     }
     // Custom pages: set up on /settings, registered only when configured.
@@ -200,11 +202,11 @@ void setup() {
     }
     MQTTWidget *mqttPages[2]{};
     if (mp.page1) {
-        mqttPages[0] = new MQTTWidget(*sm, *mqttFeeds[0], 1, cp.mqname, cp.mqt, cp.mql, cp.mqu, cp.mqsetup);
+        mqttPages[0] = new MQTTWidget(*sm, *mqttFeeds[0], 1, cp.mqname, cp.mqt, cp.mql, cp.mqu, cp.mqsetup, cp.mqfit);
         widgetSet->add(mqttPages[0]);
     }
     if (mp.page2) {
-        mqttPages[1] = new MQTTWidget(*sm, *mqttFeeds[mp.page2OwnBroker ? 1 : 0], 2, cp.mq2name, cp.mq2t, cp.mq2l, cp.mq2u, "");
+        mqttPages[1] = new MQTTWidget(*sm, *mqttFeeds[mp.page2OwnBroker ? 1 : 0], 2, cp.mq2name, cp.mq2t, cp.mq2l, cp.mq2u, "", cp.mq2fit);
         widgetSet->add(mqttPages[1]);
     }
     settingsPage->setWidgets(widgetSet);
