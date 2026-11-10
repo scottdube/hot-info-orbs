@@ -190,7 +190,6 @@ void setup() {
         }
     }
 #endif
-    wifiWidget->setEyesRan(eyesRan);
     const bool wifiOk = wifiWidget->connect();
 #ifdef BOOT_EYES
     if (eyesRan) {
@@ -203,6 +202,12 @@ void setup() {
     if (!wifiOk) {
         wifiWidget->showPortal();
     }
+    // Eyes still showing (not blanked for the portal): they stay on orbs 2 and
+    // 4 until the first page draws, so orb 4 gets no "Success" and no
+    // "Loading data:"
+    const bool eyesShowing = eyesRan && wifiOk;
+    wifiWidget->setEyesRan(eyesShowing);
+    widgetSet->setLoadingOnLastOrb(eyesShowing);
 
     globalTime = GlobalTime::getInstance();
 
