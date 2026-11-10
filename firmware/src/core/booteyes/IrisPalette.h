@@ -11,6 +11,9 @@
 // little saturation in places, so a rotation gives muddy, uneven colors;
 // a ramp gives a clean blue every time.
 //
+// Ice: a short ramp that starts at mid ice blue, not near black, so the iris
+// reads bright and glowing (the Night King look) and the fibres stay faint.
+//
 // The stored value is an index into kIrises, so colors are only ever APPENDED.
 #include "LidPalette.h" // lids::Rgb, lids::to565
 #include <cstdint>
@@ -31,6 +34,7 @@ static const Iris kIrises[] = {
     {"Amber", {55, 28, 0}, {250, 195, 70}},
     {"Violet", {35, 10, 60}, {200, 160, 245}},
     {"Red", {60, 0, 0}, {255, 90, 60}},
+    {"Ice", {90, 170, 230}, {225, 245, 255}},
 };
 constexpr int kCount = int(sizeof(kIrises) / sizeof(kIrises[0]));
 constexpr int kNatural = 0;

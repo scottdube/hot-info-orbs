@@ -9,6 +9,8 @@
 // Animated_Eyes_2 original. Chrome and Stainless are new: shaded by distance
 // from the lid edge, so the bands follow the lid's curve like a reflection on
 // a metal shell. A flat grey read as plastic in the mind's eye, not metal.
+// Frost (added the same evening): pale blue-grey, for a Night King look with
+// the Ice iris and lashes off; Robot is too dark and saturated for that.
 // Lash strands are their own setting ("Eyelashes", any style), not part of a
 // style: they were asked for as a switch, metal included.
 //
@@ -52,6 +54,7 @@ static const Style kStyles[] = {
     {"Black", {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, Finish::Flat},
     {"Chrome", {0, 0, 0}, {0, 0, 0}, {28, 32, 38}, Finish::Chrome},
     {"Stainless", {0, 0, 0}, {0, 0, 0}, {58, 60, 62}, Finish::Stainless},
+    {"Frost", {165, 178, 192}, {118, 132, 150}, {20, 28, 40}, Finish::Flat},
 };
 constexpr int kCount = int(sizeof(kStyles) / sizeof(kStyles[0]));
 constexpr int kDefault = 0; // Taupe, as shipped in 1.3.0

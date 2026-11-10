@@ -166,6 +166,7 @@ void test_lid_indices_are_fixed() {
     TEST_ASSERT_EQUAL(6, styleIndex("Black"));
     TEST_ASSERT_EQUAL(7, styleIndex("Chrome"));
     TEST_ASSERT_EQUAL(8, styleIndex("Stainless"));
+    TEST_ASSERT_EQUAL(9, styleIndex("Frost"));
     TEST_ASSERT_EQUAL(0, lids::kDefault);
     TEST_ASSERT_TRUE(lids::kDemo >= lids::kCount);
 }
@@ -252,14 +253,14 @@ void test_lid_demo_cycle_is_a_whole_wake() {
 // --- IrisPalette.h --------------------------------------------------------------
 
 void test_iris_indices_are_fixed() {
-    const char *want[] = {"Natural", "Blue", "Brown", "Green", "Grey", "Amber", "Violet", "Red"};
-    TEST_ASSERT_EQUAL(8, iriscolor::kCount);
+    const char *want[] = {"Natural", "Blue", "Brown", "Green", "Grey", "Amber", "Violet", "Red", "Ice"};
+    TEST_ASSERT_EQUAL(9, iriscolor::kCount);
     for (int i = 0; i < iriscolor::kCount; i++) {
         TEST_ASSERT_EQUAL_STRING(want[i], iriscolor::kIrises[i].name);
     }
     TEST_ASSERT_EQUAL(0, iriscolor::kDefault);
-    TEST_ASSERT_TRUE(iriscolor::valid(7));
-    TEST_ASSERT_FALSE(iriscolor::valid(8));
+    TEST_ASSERT_TRUE(iriscolor::valid(iriscolor::kCount - 1));
+    TEST_ASSERT_FALSE(iriscolor::valid(iriscolor::kCount));
     TEST_ASSERT_FALSE(iriscolor::valid(-1));
 }
 
