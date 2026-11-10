@@ -188,9 +188,9 @@ installs but cannot get back on WiFi is rolled back when it next restarts.
 
 ### Flashing the release files over USB
 
-The [Quick start](../README.md#quick-start-no-software-to-install-on-your-pc)
-keeps novices to two safe moves: the factory reset file at `0x0`, and updates
-over WiFi. If you flash the [release files](https://github.com/scottdube/hot-info-orbs/releases)
+The README keeps novices to two safe moves: the
+[Quick start](../README.md#quick-start-no-software-to-install-on-your-pc) file
+at `0x0`, and [updates over WiFi](../README.md#updating-later-over-wifi-no-cable). If you flash the [release files](https://github.com/scottdube/hot-info-orbs/releases)
 by hand instead, know the layout (`partitions.csv`):
 
 | Offset     | What is there                                            |
