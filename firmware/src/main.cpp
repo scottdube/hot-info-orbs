@@ -18,6 +18,9 @@
 #include <Arduino.h>
 #include <LittleFS.h>
 #include "BootEyes.h" // ScreenGuard and end() are no-ops without BOOT_EYES
+#ifdef BOOT_EYES
+    #include "noseJpg.h"
+#endif
 
 #ifdef STOCK_TICKER_LIST
     #include "stockwidget/StockWidget.h"
@@ -82,6 +85,25 @@ void setupButtons() {
 
 // Name, team and version. With the boot eyes on, this moves from orb 2 to orb 5
 // and gains a "Connecting" line, since orb 4 (the WiFi status orb) is an eye.
+static bool s_fsMounted = false;
+// The eyes are up from WiFi connect until the first page (orb 3 shows the nose)
+static bool s_eyesShowing = false;
+
+// Orb 3's start-up picture: the uploaded one if there is one and it decodes;
+// the built-in logo otherwise, drawn over whatever part of a bad file got drawn
+static void drawBootPicture() {
+    sm->selectScreen(2);
+    TJpgDec.setJpgScale(1);
+    bool pictureUnreadable = false;
+    if (s_fsMounted && LittleFS.exists("/boot.jpg")) {
+        pictureUnreadable = TJpgDec.drawFsJpg(0, 0, "/boot.jpg", LittleFS) != JDR_OK;
+    }
+    if (!s_fsMounted || !LittleFS.exists("/boot.jpg") || pictureUnreadable) {
+        TJpgDec.drawJpg(0, 0, logo_start, logo_end - logo_start);
+    }
+    SettingsPage::setBootStatus(s_fsMounted, pictureUnreadable);
+}
+
 static void drawVersionScreen(int screen, bool withConnecting) {
     const int up = withConnecting ? 20 : 0;
     sm->selectScreen(screen);
@@ -115,8 +137,8 @@ void setup() {
 
     // Holds the uploaded boot picture. true = format if it will not mount: a
     // new board's partition has never been formatted (a few seconds, once)
-    bool fsMounted = LittleFS.begin(true);
-    Serial.printf("LittleFS %s\n", fsMounted ? "mounted" : "FAILED - built-in logo only");
+    s_fsMounted = LittleFS.begin(true);
+    Serial.printf("LittleFS %s\n", s_fsMounted ? "mounted" : "FAILED - built-in logo only");
 
     TJpgDec.setSwapBytes(true); // JPEG rendering setup
     TJpgDec.setCallback(tft_output);
@@ -146,19 +168,19 @@ void setup() {
         drawVersionScreen(1, false);
     }
 
-    sm->selectScreen(2);
-
-    TJpgDec.setJpgScale(1);
-    // The uploaded picture if there is one and it decodes; the built-in logo
-    // otherwise, drawn over whatever part of a bad file got drawn
-    bool pictureUnreadable = false;
-    if (fsMounted && LittleFS.exists("/boot.jpg")) {
-        pictureUnreadable = TJpgDec.drawFsJpg(0, 0, "/boot.jpg", LittleFS) != JDR_OK;
+#ifdef BOOT_EYES
+    if (eyesWanted) {
+        // Orb 3 is the bridge of the nose between the eyes; the picture gets
+        // its 2 s once the data has loaded (loop)
+        sm->selectScreen(2);
+        TJpgDec.setJpgScale(1);
+        TJpgDec.drawJpg(0, 0, kNoseJpg, sizeof(kNoseJpg));
+    } else {
+        drawBootPicture();
     }
-    if (!fsMounted || !LittleFS.exists("/boot.jpg") || pictureUnreadable) {
-        TJpgDec.drawJpg(0, 0, logo_start, logo_end - logo_start);
-    }
-    SettingsPage::setBootStatus(fsMounted, pictureUnreadable);
+#else
+    drawBootPicture();
+#endif
 
     widgetSet = new WidgetSet(sm);
 
@@ -182,7 +204,8 @@ void setup() {
 #ifdef BOOT_EYES
     if (eyesWanted) {
         eyesRan = BootEyes::start(*sm, tft);
-        if (!eyesRan) { // fall back to today's screens on orbs 2 and 4
+        if (!eyesRan) { // fall back to today's screens on orbs 2, 3 and 4
+            drawBootPicture();
             drawVersionScreen(1, false);
             wifiWidget->drawConnecting();
         }
@@ -193,6 +216,7 @@ void setup() {
     if (eyesRan) {
         BootEyes::finish(wifiOk);
         if (!wifiOk) {
+            drawBootPicture();           // no face without the eyes
             drawVersionScreen(1, false); // orb 5 is about to show the portal steps
         }
     }
@@ -204,9 +228,9 @@ void setup() {
     // 2 and 4 until the first page draws (BootEyes::end() in loop), so orb 4
     // gets no "Success" and no "Loading data:". Nothing in the rest of setup()
     // draws; loop() holds a ScreenGuard for what it puts on orb 5.
-    const bool eyesShowing = eyesRan && wifiOk;
-    wifiWidget->setEyesRan(eyesShowing);
-    widgetSet->setLoadingOnLastOrb(eyesShowing);
+    s_eyesShowing = eyesRan && wifiOk;
+    wifiWidget->setEyesRan(s_eyesShowing);
+    widgetSet->setLoadingOnLastOrb(s_eyesShowing);
 
     globalTime = GlobalTime::getInstance();
 
@@ -343,7 +367,15 @@ void loop() {
     } else {
         if (!widgetSet->initialUpdateDone()) {
             widgetSet->initializeAllWidgetsData();
-            BootEyes::end(); // the first page is next; it clears all five orbs
+            if (s_eyesShowing) {
+                // Data loaded: the face cuts to the picture alone for 2 s,
+                // then the first page (which clears all five orbs)
+                BootEyes::end();
+                s_eyesShowing = false;
+                sm->fillAllScreens(TFT_BLACK);
+                drawBootPicture();
+                delay(2000);
+            }
         }
         otaUpdater->begin(); // no-op after the first call
         settingsPage->begin(); // same server, so after OTA's

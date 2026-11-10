@@ -54,6 +54,15 @@ Boot with the setting on (the default):
    data:". *(Amended 2026-11-10 after the first rig boots: Scott found the
    frozen eye during loading looked dead, and wanted all the loading text on
    orb 5 so both eyes stay up.)*
+4. Orb 3 shows the **bridge of the nose** the whole time the eyes are up: a
+   mosaic of tiles cut from the circuit boards of the Hands-On Tech hand
+   (`tools/make_nose.py`, from `images/booteyes/hand-source.jpg`; 10 KB,
+   compiled in only with `BOOT_EYES`). When the data has loaded the eyes stop,
+   the orbs go black and orb 3 shows the start-up picture (uploaded, or the
+   built-in hand) alone for 2 s, then the first page. If the eyes do not start
+   or WiFi falls back to the portal, orb 3 shows the picture as before.
+   *(Added 2026-11-10, Scott: the hand gets its moment at the end instead of
+   being covered by the face.)*
 
 If WiFi fails and the WiFi setup portal starts, the eyes stop at once. Orbs 2
 and 4 are cleared, orb 2 gets its version text back, and the portal screens
