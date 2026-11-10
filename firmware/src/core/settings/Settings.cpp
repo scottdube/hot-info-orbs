@@ -65,6 +65,7 @@ SettingsValues Settings::defaults() {
     d.offendm = 6 * 60;
 #endif
     d.invert = INVERTED_ORBS;
+    d.booteyes = true;
 #ifdef TEMPEST_STATION_1
     d.tstn1 = TEMPEST_STATION_1;
 #else
@@ -171,6 +172,7 @@ void Settings::load() {
             v.offstartm = sv::storedMinutes(p.isKey("offstartm"), p.getInt("offstartm", -1), p.getInt("offstart", v.offstartm / 60));
             v.offendm = sv::storedMinutes(p.isKey("offendm"), p.getInt("offendm", -1), p.getInt("offend", v.offendm / 60));
             v.invert = p.getBool("invert", v.invert);
+            v.booteyes = p.getBool("booteyes", v.booteyes); // added 2026-11; absent = default
             // Added after schema 1 without a bump: an absent key falls back
             // to the config.h default like every other key. Read in every
             // build since the token moved to the page (2026-11-09).
@@ -260,6 +262,7 @@ bool Settings::save(const SettingsValues &v) {
               p.putInt("offstart", sv::legacyHour(v.offstartm)) &&
               p.putInt("offend", sv::legacyHour(v.offendm)) &&
               p.putBool("invert", v.invert) &&
+              p.putBool("booteyes", v.booteyes) &&
               p.putUInt("tstn1", v.tstn1) &&
               p.putString("tlbl1", v.tlbl1.c_str()) == v.tlbl1.size() &&
               p.putUInt("tstn2", v.tstn2) &&
