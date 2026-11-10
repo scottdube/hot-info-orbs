@@ -9,20 +9,10 @@ cables carry power only), a computer with **Google Chrome or Microsoft Edge**
 (Safari and Firefox cannot talk to USB devices), and a **2.4 GHz** WiFi
 network.
 
-### The two firmware files
-
-Click a file name to download it. Both are also on the
-[firmware release page](https://github.com/scottdube/hot-info-orbs/releases/tag/firmware-1.2.0) under **Assets**, with their checksums.
-
-| File | What it does | Use it for |
-|---|---|---|
-| [`info_orbs_fw_combo.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/info_orbs_fw_combo.bin) (factory reset) | wipes the board completely: WiFi, settings, start-up picture | the **first** install, or to start over |
-| [`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin) (update) | keeps your WiFi and settings | **updates**, on the orbs' own update page over WiFi |
-
-### First install: the factory reset file
-
-1. Download **[`info_orbs_fw_combo.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/info_orbs_fw_combo.bin)**
-   (click it; it goes to your Downloads folder).
+1. Download the firmware, **[`info_orbs_fw_combo.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/info_orbs_fw_combo.bin)**
+   (click it; it goes to your Downloads folder). It is also on the
+   [firmware release page](https://github.com/scottdube/hot-info-orbs/releases/tag/firmware-1.2.0)
+   under **Assets**, with its checksum.
 2. In Chrome or Edge, open
    **[ESPConnect](https://thelastoutpostworkshop.github.io/ESPConnect/)**.
 3. Plug the orbs into the computer with the USB cable. Click **Connect** (top
@@ -51,7 +41,11 @@ Click a file name to download it. Both are also on the
 **Connect finds no port?** Put the XIAO in download mode: unplug, hold the
 **B** button on the XIAO, plug back in, let go, and click **Connect** again.
 
-### Updating later: over WiFi, no cable
+## Updating later: over WiFi, no cable
+
+After the first install, new versions go in over WiFi with a second, smaller
+file, `firmware.bin`. It replaces only the software and keeps your WiFi, key,
+settings and start-up picture.
 
 1. Download **[`firmware.bin`](https://github.com/scottdube/hot-info-orbs/releases/download/firmware-1.2.0/firmware.bin)**.
 2. On a phone or computer on the same WiFi, browse to
@@ -60,8 +54,8 @@ Click a file name to download it. Both are also on the
    when it is done, with your WiFi, key and settings kept.
 
 **Update failed, or the orbs stay dark?** Nothing is broken: do the
-[first install](#first-install-the-factory-reset-file) again with the factory
-reset file, then steps 6 and 7.
+[Quick start](#quick-start-no-software-to-install-on-your-pc) again. It wipes
+the board, so WiFi and the weather key go back in at steps 6 and 7.
 
 Want to change the code, or build it yourself? The [setup guide](docs/SETUP.md)
 covers that.
@@ -154,7 +148,7 @@ set](#building-more-than-one-set).)
 
 | Address | What it does |
 |---|---|
-| `http://<IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, custom pages, your own start-up picture. What you typed in `config.h` is only the starting point. |
+| `http://<IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, the waking eyes at start-up, custom pages, your own start-up picture. What you typed in `config.h` is only the starting point. |
 | `http://<IP>/update` | install a new version of the software without a cable: choose the file `.pio/build/xiao-esp32s3/firmware.bin` from the project folder and upload it. The page also shows which version is running. |
 
 **Set a password.** Without one, anyone on your WiFi can change your orbs'

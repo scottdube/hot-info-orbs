@@ -188,9 +188,9 @@ installs but cannot get back on WiFi is rolled back when it next restarts.
 
 ### Flashing the release files over USB
 
-The [Quick start](../README.md#quick-start-no-software-to-install-on-your-pc)
-keeps novices to two safe moves: the factory reset file at `0x0`, and updates
-over WiFi. If you flash the [release files](https://github.com/scottdube/hot-info-orbs/releases)
+The README keeps novices to two safe moves: the
+[Quick start](../README.md#quick-start-no-software-to-install-on-your-pc) file
+at `0x0`, and [updates over WiFi](../README.md#updating-later-over-wifi-no-cable). If you flash the [release files](https://github.com/scottdube/hot-info-orbs/releases)
 by hand instead, know the layout (`partitions.csv`):
 
 | Offset     | What is there                                            |
@@ -236,6 +236,12 @@ phone or computer on the same network. It uses the same optional `admin` /
 - **Start-up picture:** pick any photo. The page crops it to a centered square
   and shows the circle the orb will display. **Upload and restart** puts it on the
   middle orb at start-up. **Use the built-in logo** takes it off again.
+- **Waking eyes** (Start-up): on by default. While the orb joins WiFi, orbs 2
+  and 4 show a pair of eyes waking up, with the bridge of a circuit-board nose
+  on the middle orb; once it connects they open fully and look around while the
+  data loads (orb 5 names what is loading). Then the start-up picture shows
+  alone for 2 seconds, and the first page comes up. Off gives the plain
+  start-up text, with the picture on the middle orb from the start.
 
 Settings survive restarts and firmware updates. A USB flash with **Erase
 Flash** first clears them.

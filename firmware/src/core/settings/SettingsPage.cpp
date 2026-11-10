@@ -443,6 +443,12 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += timeField("offendm", "Until", v.offendm, d.offendm, errors);
     h += "</fieldset>";
 
+#ifdef BOOT_EYES
+    h += "<fieldset><legend>Start-up</legend>";
+    h += boolSelect("booteyes", "Waking eyes", v.booteyes, d.booteyes, "Off", "On", errors);
+    h += hint("Eyes on orbs 2 and 4 wake up while the orb joins WiFi.");
+    h += "</fieldset>";
+#endif
     h += "<fieldset><legend>Mounting</legend>";
     h += boolSelect("invert", "Orbs", v.invert, d.invert, "Right way up", "Upside down", errors);
     h += "</fieldset>";
@@ -539,6 +545,7 @@ void SettingsPage::handlePost() {
     readBool("dim", v.dim);
     readBool("off", v.off);
     readBool("invert", v.invert);
+    readBool("booteyes", v.booteyes);
     if (has("face")) {
         std::string a = argStr(s, "face");
         if (a.size() == 1 && a[0] >= '0' && a[0] <= '2' && faceCompiledIn(a[0] - '0')) {

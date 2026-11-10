@@ -1,4 +1,5 @@
 #include "WidgetSet.h"
+#include "BootEyes.h"
 #include "SettingsValidation.h"
 #include "Settings.h"
 
@@ -136,6 +137,9 @@ void WidgetSet::showCenteredLine(int screen, const String &text) {
 }
 
 void WidgetSet::showLoading() {
+    if (m_loadingOnLastOrb) {
+        return; // updateAll() draws "Loading" with each widget's name
+    }
     showCenteredLine(3, "Loading data:");
 }
 
@@ -145,7 +149,16 @@ void WidgetSet::updateAll() {
             continue; // a hidden widget never fetches
         }
         Serial.printf("updating widget %s\n", m_widgets[i]->getName().c_str());
-        showCenteredLine(4, m_widgets[i]->getName());
+        if (m_loadingOnLastOrb) {
+            BootEyes::ScreenGuard guard; // the eyes are still moving on orbs 2 and 4
+            m_screenManager->selectScreen(4);
+            m_screenManager->fillScreen(TFT_BLACK);
+            m_screenManager->setFontColor(TFT_WHITE);
+            m_screenManager->drawCenterString("Loading", ScreenCenterX, ScreenCenterY - 20, 22);
+            m_screenManager->drawCenterString(m_widgets[i]->getName(), ScreenCenterX, ScreenCenterY + 20, 22);
+        } else {
+            showCenteredLine(4, m_widgets[i]->getName());
+        }
         m_widgets[i]->update();
     }
 }

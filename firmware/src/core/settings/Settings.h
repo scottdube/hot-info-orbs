@@ -28,6 +28,7 @@ struct SettingsValues {
     int offstartm; // minute of the day 0..1439
     int offendm; // minute of the day; where it overlaps the dim times, off wins
     bool invert;
+    bool booteyes; // waking eyes on orbs 2 and 4 while WiFi connects (BOOT_EYES builds only)
     uint32_t tstn1; // Tempest station ID, 0 = unused
     std::string tlbl1; // its label on the page, "" when unused
     uint32_t tstn2;
