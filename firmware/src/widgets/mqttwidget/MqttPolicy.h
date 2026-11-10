@@ -6,6 +6,7 @@
 // mistyped broker froze the orb - no buttons, and no settings page to fix it on.
 
 #include <cstdint>
+#include <string>
 
 constexpr uint32_t MQTT_RETRY_MS = 30000;
 constexpr int MQTT_SOCKET_TIMEOUT_S = 3; // PubSubClient::setSocketTimeout
@@ -37,4 +38,43 @@ inline const char *mqttStateText(int state) {
     default:
         return "not connected";
     }
+}
+
+// Which MQTT pages register (settings page, Custom pages). A page needs a
+// broker and at least one topic; page 1 also counts its layout topic, so an
+// orb set up by layout topic alone keeps its page. Page 2 either shares page
+// 1's broker (one connection for both) or names its own (a second one).
+struct MqttPlan {
+    bool page1;
+    bool page2;
+    bool page2OwnBroker; // page 2 registers on a connection of its own
+};
+
+inline bool mqttAnyTopic(const std::string (&topics)[5]) {
+    for (const auto &t : topics) {
+        if (!t.empty()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+inline MqttPlan mqttPlan(const std::string &host1, const std::string (&topics1)[5], const std::string &layout, bool page2SameBroker,
+                         const std::string &host2, const std::string (&topics2)[5]) {
+    MqttPlan p{};
+    p.page1 = !host1.empty() && (mqttAnyTopic(topics1) || !layout.empty());
+    p.page2 = !(page2SameBroker ? host1 : host2).empty() && mqttAnyTopic(topics2);
+    p.page2OwnBroker = p.page2 && !page2SameBroker;
+    return p;
+}
+
+// The page's tick box in the settings page's Show row: "MQTT 1 (Town Squares)",
+// so it reads as an MQTT page whatever it is called. A page still on its
+// default name ("MQTT", "MQTT 2") gets the number alone.
+inline std::string mqttShowLabel(int page, const std::string &name) {
+    std::string n = "MQTT " + std::to_string(page);
+    if (name.empty() || name == n || (page == 1 && name == "MQTT")) {
+        return n;
+    }
+    return n + " (" + name + ")";
 }

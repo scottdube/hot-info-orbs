@@ -202,6 +202,12 @@ unsigned int ScreenManager::calculateFitFontSize(uint32_t limit_width, uint32_t 
     return calcFontSize;
 }
 
+void ScreenManager::measureText(const String &text, unsigned int fontSize, int &w, int &h) {
+    FT_BBox box = m_render.calculateBoundingBox(0, 0, fontSize, Align::TopLeft, Layout::Horizontal, text.c_str());
+    w = box.xMax - box.xMin;
+    h = box.yMax - box.yMin;
+}
+
 void ScreenManager::drawString(const String &text, int x, int y) {
     // Use current font size and alignment
     drawString(text, x, y, 0, m_render.getAlignment());

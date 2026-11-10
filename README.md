@@ -40,11 +40,13 @@ Click a file name to download it. Both are also on the
 7. **Your free weather key and time zone:** the orbs show their **IP
    address** when they join your WiFi. On a phone or computer on the same
    WiFi, browse to `http://<that address>/settings`. The page starts with
-   **API key**: paste a [Visual Crossing](https://www.visualcrossing.com/sign-up)
+   **API keys**: paste a [Visual Crossing](https://www.visualcrossing.com/sign-up)
    key, free and about a minute to get. Under **Clock**, pick your time zone
    from the list (it starts on New York; daylight saving is automatic). Set
    your weather town, then press **Save and restart**. Until the key is in,
-   the weather page stays empty; the clock works without it.
+   the weather page stays empty; the clock works without it. Own a Tempest
+   weather station? Its token goes under **API keys** too
+   ([details](docs/SETUP.md#10-optional-weather-from-your-own-tempest-stations)).
 
 **Connect finds no port?** Put the XIAO in download mode: unplug, hold the
 **B** button on the XIAO, plug back in, let go, and click **Connect** again.
@@ -64,7 +66,7 @@ reset file, then steps 6 and 7.
 Want to change the code, or build it yourself? The [setup guide](docs/SETUP.md)
 covers that.
 
-## Start here
+## Want a more hands-on install? Start here
 
 **You don't need a GitHub account.** The list of folders above is the
 project's files. Pick the link that matches what you want:
@@ -85,13 +87,15 @@ or `WIDGET_CYCLE_DELAY` in `config.h`) and the orbs move from page to page on
 their own. The left and right buttons step back and forward by hand.
 
 - **Clock**: normal, Nixie-tube, or custom faces, in your choice of colors.
-- **Weather** for a town (Visual Crossing), or from your own
-  [Tempest](https://tempest.earth) weather stations, one page per station.
+- **Weather** for a town (Visual Crossing), from your own
+  [Tempest](https://tempest.earth) weather stations (one page per station),
+  or both.
 - **Stocks**: five tickers.
 - **Custom pages** that you set up from the browser, no rebuild:
   - **Web Data** draws a JSON file from any web address.
-  - **MQTT** shows one live value per display from an MQTT broker, such as
-    Home Assistant.
+  - **MQTT**, up to two pages, shows one live value per display from an MQTT
+    broker, such as Home Assistant. Long values wrap, and the orbs on a page
+    share one text size.
 
   See [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md).
 
@@ -234,7 +238,7 @@ a tag (`git checkout <tag> -- <folder>` brings a folder back):
 | | |
 |---|---|
 | [docs/SETUP.md](docs/SETUP.md) | from an empty computer to running orbs |
-| [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) | Web Data and MQTT pages, with a Home Assistant recipe |
+| [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) | Web Data and MQTT pages, with Home Assistant recipes (The Villages town squares among them) |
 | [docs/TRAPS.md](docs/TRAPS.md) | problems that each cost time once, written down so they don't again |
 | [docs/ENCLOSURE.md](docs/ENCLOSURE.md) | the enclosure design and why it looks the way it does |
 | [docs/VARIANT-XIAO-ESP32S3.md](docs/VARIANT-XIAO-ESP32S3.md) | why the XIAO, and how the board's pins were chosen |
@@ -268,6 +272,7 @@ upstream:
 | Settings | edit `config.h`, rebuild, reflash | a settings page in the browser |
 | Firmware updates | USB cable every time | over WiFi after the first flash |
 | Weather | one Visual Crossing town | also your own Tempest stations |
+| Custom pages | one MQTT page, laid out with pixel positions | two MQTT pages and a Web Data page, set up on the settings page |
 
 Licensed **AGPL-3.0**, inherited from upstream (see `LICENSE.txt`). If you give
 someone a built orb, they are entitled to its source, which is why this

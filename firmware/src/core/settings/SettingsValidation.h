@@ -528,6 +528,16 @@ inline std::string apiKeyHint(const std::string &v, const std::string &stored, c
                           : "&#9888; Not saved: paste the key again. The stored one is unchanged.";
 }
 
+// The Tempest token is optional: most orbs have no station, so a blank one
+// only warns once a station ID is set. Otherwise it reads like the weather key.
+inline std::string tempestTokenHint(const std::string &v, const std::string &stored, bool stationSet) {
+    if (v == stored && stored.empty()) {
+        return stationSet ? "&#9888; No token yet. The Tempest pages stay off until you paste one here."
+                          : "Optional: only for owners of a Tempest weather station.";
+    }
+    return apiKeyHint(v, stored, "Tempest");
+}
+
 // Write-only: the page never shows the stored password. Blank keeps it,
 // `clear` (the checkbox) removes it. Not trimmed - a space may be part of it.
 inline bool parsePassword(const std::string &in, bool clear, const std::string &stored, std::string &out, std::string &err) {

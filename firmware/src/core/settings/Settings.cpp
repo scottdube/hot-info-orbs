@@ -120,10 +120,26 @@ SettingsValues Settings::defaults() {
 #else
     d.mqsetup = "";
 #endif
+    // Same size on: five orbs side by side read as one panel (2026-11-09: the
+    // town-square acts jumped from 10 px to 40 px between neighbours)
+    d.mqfit = true;
+    d.mq2fit = true;
+    d.mq2name = "MQTT 2";
+    d.mq2same = true;
+    d.mq2host = "";
+    d.mq2port = 1883;
+    d.mq2user = "";
+    d.mq2pass = "";
     for (int i = 0; i < 5; i++) {
         d.mqt[i] = d.mql[i] = d.mqu[i] = "";
+        d.mq2t[i] = d.mq2l[i] = d.mq2u[i] = "";
     }
     d.wxkey = WEATHER_API_KEY;
+#ifdef TEMPEST_TOKEN
+    d.tsttok = TEMPEST_TOKEN;
+#else
+    d.tsttok = "";
+#endif
     return d;
 }
 
@@ -155,15 +171,13 @@ void Settings::load() {
             v.offstartm = sv::storedMinutes(p.isKey("offstartm"), p.getInt("offstartm", -1), p.getInt("offstart", v.offstartm / 60));
             v.offendm = sv::storedMinutes(p.isKey("offendm"), p.getInt("offendm", -1), p.getInt("offend", v.offendm / 60));
             v.invert = p.getBool("invert", v.invert);
-#ifdef TEMPEST_TOKEN
             // Added after schema 1 without a bump: an absent key falls back
-            // to the config.h default like every other key. Compiled out
-            // without a token, so that build matches main.
+            // to the config.h default like every other key. Read in every
+            // build since the token moved to the page (2026-11-09).
             v.tstn1 = p.getUInt("tstn1", v.tstn1);
             v.tlbl1 = p.getString("tlbl1", v.tlbl1.c_str()).c_str();
             v.tstn2 = p.getUInt("tstn2", v.tstn2);
             v.tlbl2 = p.getString("tlbl2", v.tlbl2.c_str()).c_str();
-#endif
             v.hidden = p.getString("hidden", v.hidden.c_str()).c_str();
             // Custom pages: added after schema 1 without a bump, like tstn1
             v.wdname = p.getString("wdname", v.wdname.c_str()).c_str();
@@ -174,9 +188,13 @@ void Settings::load() {
             v.mquser = p.getString("mquser", v.mquser.c_str()).c_str();
             v.mqpass = p.getString("mqpass", v.mqpass.c_str()).c_str();
             v.mqsetup = p.getString("mqsetup", v.mqsetup.c_str()).c_str();
+            // New keys: an orb saved before them gets the default
+            v.mqfit = p.getBool("mqfit", v.mqfit);
+            v.mq2fit = p.getBool("mq2fit", v.mq2fit);
             // API keys: added after schema 1 without a bump, like tstn1. An orb
             // that saved before this firmware keeps its secrets.h keys
             v.wxkey = p.getString("wxkey", v.wxkey.c_str()).c_str();
+            v.tsttok = p.getString("tsttok", v.tsttok.c_str()).c_str();
             for (int i = 0; i < 5; i++) {
                 char k[8];
                 snprintf(k, sizeof(k), "mqt%d", i + 1);
@@ -185,6 +203,22 @@ void Settings::load() {
                 v.mql[i] = p.getString(k, v.mql[i].c_str()).c_str();
                 snprintf(k, sizeof(k), "mqu%d", i + 1);
                 v.mqu[i] = p.getString(k, v.mqu[i].c_str()).c_str();
+            }
+            // Second MQTT page: new keys, so an orb saved before it loads page 1 unchanged
+            v.mq2name = p.getString("mq2name", v.mq2name.c_str()).c_str();
+            v.mq2same = p.getBool("mq2same", v.mq2same);
+            v.mq2host = p.getString("mq2host", v.mq2host.c_str()).c_str();
+            v.mq2port = p.getInt("mq2port", v.mq2port);
+            v.mq2user = p.getString("mq2user", v.mq2user.c_str()).c_str();
+            v.mq2pass = p.getString("mq2pass", v.mq2pass.c_str()).c_str();
+            for (int i = 0; i < 5; i++) {
+                char k[8];
+                snprintf(k, sizeof(k), "mq2t%d", i + 1);
+                v.mq2t[i] = p.getString(k, v.mq2t[i].c_str()).c_str();
+                snprintf(k, sizeof(k), "mq2l%d", i + 1);
+                v.mq2l[i] = p.getString(k, v.mq2l[i].c_str()).c_str();
+                snprintf(k, sizeof(k), "mq2u%d", i + 1);
+                v.mq2u[i] = p.getString(k, v.mq2u[i].c_str()).c_str();
             }
         }
         p.end();
@@ -226,18 +260,18 @@ bool Settings::save(const SettingsValues &v) {
               p.putInt("offstart", sv::legacyHour(v.offstartm)) &&
               p.putInt("offend", sv::legacyHour(v.offendm)) &&
               p.putBool("invert", v.invert) &&
-#ifdef TEMPEST_TOKEN
               p.putUInt("tstn1", v.tstn1) &&
               p.putString("tlbl1", v.tlbl1.c_str()) == v.tlbl1.size() &&
               p.putUInt("tstn2", v.tstn2) &&
               p.putString("tlbl2", v.tlbl2.c_str()) == v.tlbl2.size() &&
-#endif
               p.putString("hidden", v.hidden.c_str()) == v.hidden.size();
     // put* returns bytes written; strings compare against their own length
     auto putStr = [&p](const char *k, const std::string &s) { return p.putString(k, s.c_str()) == s.size(); };
     ok = ok && putStr("wdname", v.wdname) && putStr("wdurl", v.wdurl) && putStr("mqname", v.mqname) &&
          putStr("mqhost", v.mqhost) && p.putInt("mqport", v.mqport) && putStr("mquser", v.mquser) &&
-         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && putStr("wxkey", v.wxkey);
+         putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && p.putBool("mqfit", v.mqfit) == 1 &&
+         p.putBool("mq2fit", v.mq2fit) == 1 &&
+         putStr("wxkey", v.wxkey) && putStr("tsttok", v.tsttok);
     for (int i = 0; ok && i < 5; i++) {
         char k[8];
         snprintf(k, sizeof(k), "mqt%d", i + 1);
@@ -246,6 +280,17 @@ bool Settings::save(const SettingsValues &v) {
         ok = ok && putStr(k, v.mql[i]);
         snprintf(k, sizeof(k), "mqu%d", i + 1);
         ok = ok && putStr(k, v.mqu[i]);
+    }
+    ok = ok && putStr("mq2name", v.mq2name) && p.putBool("mq2same", v.mq2same) && putStr("mq2host", v.mq2host) &&
+         p.putInt("mq2port", v.mq2port) && putStr("mq2user", v.mq2user) && putStr("mq2pass", v.mq2pass);
+    for (int i = 0; ok && i < 5; i++) {
+        char k[8];
+        snprintf(k, sizeof(k), "mq2t%d", i + 1);
+        ok = putStr(k, v.mq2t[i]);
+        snprintf(k, sizeof(k), "mq2l%d", i + 1);
+        ok = ok && putStr(k, v.mq2l[i]);
+        snprintf(k, sizeof(k), "mq2u%d", i + 1);
+        ok = ok && putStr(k, v.mq2u[i]);
     }
     // schema last: a save that dies part-way leaves no schema key on a fresh
     // orb, so load() keeps using config.h

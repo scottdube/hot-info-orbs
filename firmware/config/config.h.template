@@ -33,7 +33,8 @@
 #define WEATHER_LOCATION "The Villages, FL" // City/state for the weather, look it up on https://www.visualcrossing.com/weather-data
 #define WEATHER_SCREEN_MODE Dark        // Can be either Light or Dark
 //#define WEATHER_UNITS_METRIC          // Uncomment this line if you want metric units for the weather
-// Tempest stations, only used when TEMPEST_TOKEN is set in secrets.h. The ID is
+// Tempest stations, only used once a Tempest token is set (settings page or
+// TEMPEST_TOKEN in secrets.h). The ID is
 // the number in the station's tempestwx.com address; the label replaces the
 // town name on the page (16 characters at most). Also changeable on /settings.
 //#define TEMPEST_STATION_1 123456

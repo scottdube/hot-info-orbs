@@ -99,8 +99,17 @@ static const Zone ZONES[] = {
 static const int ZONE_COUNT = sizeof(ZONES) / sizeof(ZONES[0]);
 
 // Accepts the case and spacing people type (an old saved "america/new york"
-// would otherwise be lost); returns nullptr when the name is not in the table.
-inline const Zone *find(const std::string &name) {
+// would otherwise be lost); returns -1 when the name is not in the table.
+//
+// Compare zones by this index, never by the pointer find() returns: ZONES is
+// `static`, so every .cpp that includes this header has its own copy, while
+// the inline find() is one function the linker shares. On the orb, find()
+// called from SettingsPage.cpp returned a pointer into GlobalTime.cpp's copy,
+// so `&ZONES[i] == cur` never matched and the drop-down marked no zone
+// selected; saving any setting then stored the first zone (2026-11-09, found
+// on the 1.2.0 settings page). A native test cannot catch it: one test file
+// is one copy.
+inline int indexOf(const std::string &name) {
     std::string want;
     for (char c : name) {
         if (c == ' ') {
@@ -114,10 +123,16 @@ inline const Zone *find(const std::string &name) {
             have += (char)std::tolower((unsigned char)*p);
         }
         if (have == want) {
-            return &ZONES[i];
+            return i;
         }
     }
-    return nullptr;
+    return -1;
+}
+
+// The table entry for a name, or nullptr; read its fields, don't compare it.
+inline const Zone *find(const std::string &name) {
+    const int i = indexOf(name);
+    return i < 0 ? nullptr : &ZONES[i];
 }
 
 // The rule for a name; UTC when the name is unknown, so the clock still runs.

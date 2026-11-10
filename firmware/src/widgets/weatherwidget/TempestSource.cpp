@@ -1,9 +1,8 @@
 #include "TempestSource.h"
-#ifdef TEMPEST_TOKEN
 
-    #include "Settings.h"
-    #include "TempestParse.h"
-    #include <HTTPClient.h>
+#include "Settings.h"
+#include "TempestParse.h"
+#include <HTTPClient.h>
 
 TempestStatus TempestSource::s_status[TempestSource::SLOTS];
 
@@ -20,7 +19,7 @@ bool TempestSource::fetch(WeatherDataModel &model) {
     uint32_t start = millis();
     bool metric = Settings::get().wxmetric;
     String url = String("https://swd.weatherflow.com/swd/rest/better_forecast?station_id=") + m_station +
-                 "&units_temp=" + (metric ? "c" : "f") + "&units_wind=" + (metric ? "kph" : "mph") + "&token=" + TEMPEST_TOKEN;
+                 "&units_temp=" + (metric ? "c" : "f") + "&units_wind=" + (metric ? "kph" : "mph") + "&token=" + Settings::get().tsttok.c_str();
     HTTPClient http;
     http.useHTTP10(true); // no chunked encoding, so getStream() is plain JSON
     http.begin(url);
@@ -65,5 +64,3 @@ bool TempestSource::fetch(WeatherDataModel &model) {
     }
     return true;
 }
-
-#endif

@@ -48,8 +48,7 @@ bool isConnected{true};
 
 ScreenManager *sm;
 WidgetSet *widgetSet;
-MQTTWidget *mqttWidget{nullptr};
-bool mqttInRotation{false}; // stays connected only while its page can come up
+MqttFeed *mqttFeeds[2]{}; // page 1's broker; page 2's own broker, if it has one
 
 // This function should probably be moved somewhere else
 bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap) {
@@ -167,19 +166,21 @@ void setup() {
     }
 #endif
     bool tempestPages = false;
-#ifdef TEMPEST_TOKEN
-    // One weather page per Tempest station; Visual Crossing only when none is set
+    // One weather page per Tempest station, plus Visual Crossing for the
+    // location whenever a VC key is set (a third place, e.g. a town away from
+    // the stations). With Tempest pages and no VC key, VC is left out: it
+    // would only show a key error. A station without a token would fail every
+    // fetch with 401, so it gets no page (the settings page says why).
     const SettingsValues &wx = Settings::get();
-    if (wx.tstn1) {
+    if (!wx.tsttok.empty() && wx.tstn1) {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(0, wx.tstn1, wx.tlbl1)));
         tempestPages = true;
     }
-    if (wx.tstn2) {
+    if (!wx.tsttok.empty() && wx.tstn2) {
         widgetSet->add(new WeatherWidget(*sm, new TempestSource(1, wx.tstn2, wx.tlbl2)));
         tempestPages = true;
     }
-#endif
-    if (!tempestPages) {
+    if (!tempestPages || !wx.wxkey.empty()) {
         widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
     }
     // Custom pages: set up on /settings, registered only when configured.
@@ -191,15 +192,33 @@ void setup() {
 #ifdef WEB_DATA_STOCK_WIDGET_URL
     widgetSet->add(new WebDataWidget(*sm, WEB_DATA_STOCK_WIDGET_URL, "WebData"));
 #endif
-    if (!cp.mqhost.empty()) {
-        mqttWidget = new MQTTWidget(*sm, cp);
-        widgetSet->add(mqttWidget);
+    // Two MQTT pages. Page 2 shares page 1's broker connection unless it names its own.
+    const MqttPlan mp = mqttPlan(cp.mqhost, cp.mqt, cp.mqsetup, cp.mq2same, cp.mq2host, cp.mq2t);
+    if (mp.page1 || (mp.page2 && !mp.page2OwnBroker)) {
+        mqttFeeds[0] = new MqttFeed(0, cp.mqhost, cp.mqport, cp.mquser, cp.mqpass);
+    }
+    if (mp.page2OwnBroker) {
+        mqttFeeds[1] = new MqttFeed(1, cp.mq2host, cp.mq2port, cp.mq2user, cp.mq2pass);
+    }
+    MQTTWidget *mqttPages[2]{};
+    if (mp.page1) {
+        mqttPages[0] = new MQTTWidget(*sm, *mqttFeeds[0], 1, cp.mqname, cp.mqt, cp.mql, cp.mqu, cp.mqsetup, cp.mqfit);
+        widgetSet->add(mqttPages[0]);
+    }
+    if (mp.page2) {
+        mqttPages[1] = new MQTTWidget(*sm, *mqttFeeds[mp.page2OwnBroker ? 1 : 0], 2, cp.mq2name, cp.mq2t, cp.mq2l, cp.mq2u, "", cp.mq2fit);
+        widgetSet->add(mqttPages[1]);
     }
     settingsPage->setWidgets(widgetSet);
-    if (mqttWidget) {
-        // After every add(): shown() depends on how many pages are shown
-        int8_t i = widgetSet->indexOf(mqttWidget);
-        mqttInRotation = i >= 0 && widgetSet->shown(i);
+    for (MQTTWidget *page : mqttPages) {
+        if (page) {
+            // After every add(): shown() depends on how many pages are shown.
+            // A connection stays up only while one of its pages can come up.
+            int8_t i = widgetSet->indexOf(page);
+            if (i >= 0 && widgetSet->shown(i)) {
+                page->feed().setWanted(true);
+            }
+        }
     }
 
     m_widgetCycleDelayPrev = millis();
@@ -280,8 +299,10 @@ void loop() {
         checkButtons();
 
         widgetSet->updateCurrent();
-        if (mqttInRotation) {
-            mqttWidget->service(); // values current when the page comes up
+        for (MqttFeed *feed : mqttFeeds) {
+            if (feed && feed->wanted()) {
+                feed->service(); // values current when a page comes up
+            }
         }
         widgetSet->updateBrightnessByTime(globalTime->getHour24() * 60 + globalTime->getMinute());
         if (!widgetSet->panelsAsleep()) {
