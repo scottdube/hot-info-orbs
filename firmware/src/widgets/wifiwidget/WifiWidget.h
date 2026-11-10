@@ -9,6 +9,13 @@ public:
     WifiWidget(ScreenManager &manager);
     ~WifiWidget() override;
     void setup() override;
+    // setup() is begin(true) + connect() + showPortal() on failure. main.cpp
+    // calls the parts itself so the boot eyes can run during connect().
+    void begin(bool showConnecting);
+    void drawConnecting();
+    bool connect();
+    void showPortal();
+    void setEyesRan(bool ran) { m_eyesRan = ran; }
     void update(bool force = false) override;
     void draw(bool force = false) override;
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
@@ -27,6 +34,7 @@ private:
     bool m_hasDisplayedError{false};
     bool m_hasDisplayedSuccess{false};
     bool m_configPortalRunning{false};
+    bool m_eyesRan{false}; // orb 4 holds an awake eye: no "Success" there
 
     String m_connectionString{""};
     String m_dotsString{""};

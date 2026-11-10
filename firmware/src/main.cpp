@@ -17,6 +17,9 @@
 #include "wifiwidget/WifiWidget.h"
 #include <Arduino.h>
 #include <LittleFS.h>
+#ifdef BOOT_EYES
+    #include "BootEyes.h"
+#endif
 
 #ifdef STOCK_TICKER_LIST
     #include "stockwidget/StockWidget.h"
@@ -79,6 +82,24 @@ void setupButtons() {
     attachInterrupt(digitalPinToInterrupt(BUTTON_RIGHT), isrButtonChangeRight, CHANGE);
 }
 
+// Name, team and version. With the boot eyes on, this moves from orb 2 to orb 5
+// and gains a "Connecting" line, since orb 4 (the WiFi status orb) is an eye.
+static void drawVersionScreen(int screen, bool withConnecting) {
+    const int up = withConnecting ? 20 : 0;
+    sm->selectScreen(screen);
+    sm->setFontColor(TFT_WHITE);
+    sm->drawCenterString("HOT Info Orbs", ScreenCenterX, ScreenCenterY - 50 - up, 22);
+    sm->drawCenterString("by", ScreenCenterX, ScreenCenterY - 5 - up, 22);
+    sm->drawCenterString("HOT-Team", ScreenCenterX, ScreenCenterY + 30 - up, 22);
+    sm->setFontColor(TFT_RED);
+    sm->drawCenterString("version: " FIRMWARE_VERSION, ScreenCenterX, ScreenCenterY + 65 - up, 14);
+    if (withConnecting) {
+        sm->setFontColor(TFT_WHITE);
+        sm->drawCenterString("Connecting", ScreenCenterX, ScreenCenterY + 85, 19);
+    }
+    sm->setFontColor(TFT_WHITE);
+}
+
 void setup() {
     Serial.begin(115200);
     Serial.println();
@@ -88,6 +109,11 @@ void setup() {
     // widget read their settings once, at construction
     Settings::load();
     m_widgetCycleDelay = Settings::get().cycle * 1000UL;
+#ifdef BOOT_EYES
+    const bool eyesWanted = Settings::get().booteyes;
+#else
+    const bool eyesWanted = false;
+#endif
 
     // Holds the uploaded boot picture. true = format if it will not mount: a
     // new board's partition has never been formatted (a few seconds, once)
@@ -116,12 +142,11 @@ void setup() {
         sm->drawCenterString(line, ScreenCenterX, ScreenCenterY + 75, 14);
     }
 
-    sm->selectScreen(1);
-    sm->drawCenterString("HOT Info Orbs", ScreenCenterX, ScreenCenterY - 50, 22);
-    sm->drawCenterString("by", ScreenCenterX, ScreenCenterY - 5, 22);
-    sm->drawCenterString("HOT-Team", ScreenCenterX, ScreenCenterY + 30, 22);
-    sm->setFontColor(TFT_RED);
-    sm->drawCenterString("version: " FIRMWARE_VERSION, ScreenCenterX, ScreenCenterY + 65, 14);
+    if (eyesWanted) {
+        drawVersionScreen(4, true); // orbs 2 and 4 become the eyes
+    } else {
+        drawVersionScreen(1, false);
+    }
 
     sm->selectScreen(2);
 
@@ -152,7 +177,32 @@ void setup() {
     wifiWidget = new WifiWidget(*sm);
     otaUpdater = new OtaUpdater(*sm);
     settingsPage = new SettingsPage(*otaUpdater);
-    wifiWidget->setup();
+    // Every splash screen is drawn before the eyes start: from here until
+    // BootEyes::finish the eye task is the only thing drawing
+    wifiWidget->begin(!eyesWanted);
+    bool eyesRan = false;
+#ifdef BOOT_EYES
+    if (eyesWanted) {
+        eyesRan = BootEyes::start(*sm, tft);
+        if (!eyesRan) { // fall back to today's screens on orbs 2 and 4
+            drawVersionScreen(1, false);
+            wifiWidget->drawConnecting();
+        }
+    }
+#endif
+    wifiWidget->setEyesRan(eyesRan);
+    const bool wifiOk = wifiWidget->connect();
+#ifdef BOOT_EYES
+    if (eyesRan) {
+        BootEyes::finish(wifiOk);
+        if (!wifiOk) {
+            drawVersionScreen(1, false); // orb 5 is about to show the portal steps
+        }
+    }
+#endif
+    if (!wifiOk) {
+        wifiWidget->showPortal();
+    }
 
     globalTime = GlobalTime::getInstance();
 
