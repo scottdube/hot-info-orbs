@@ -72,8 +72,10 @@ int GlobalTime::getHour24() {
     return m_hour24;
 }
 
+// Two digits in 24-hour mode only ("09:05"); 12-hour mode gives "9:05", the
+// way ClockWidget blanks its first digit. Used by the weather and Parqet clocks.
 String GlobalTime::getHourPadded() {
-    if (m_hour < 10) {
+    if (m_format24hour && m_hour < 10) {
         return "0" + String(m_hour);
     } else {
         return String(m_hour);
