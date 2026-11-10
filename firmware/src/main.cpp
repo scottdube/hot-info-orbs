@@ -205,7 +205,8 @@ void setup() {
     bool eyesRan = false;
 #ifdef BOOT_EYES
     if (eyesWanted) {
-        eyesRan = BootEyes::start(*sm, tft, Settings::get().lids);
+        const SettingsValues &v = Settings::get();
+        eyesRan = BootEyes::start(*sm, tft, {v.lids, v.iris, v.lashes});
         if (!eyesRan) { // fall back to today's screens on orbs 2, 3 and 4
             drawBootPicture();
             drawVersionScreen(1, false);

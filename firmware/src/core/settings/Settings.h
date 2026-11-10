@@ -30,6 +30,8 @@ struct SettingsValues {
     bool invert;
     bool booteyes; // waking eyes on orbs 2 and 4 while WiFi connects (BOOT_EYES builds only)
     int lids; // eye-lid style, index into lids::kStyles, or lids::kDemo (LidPalette.h)
+    int iris; // iris color, index into iriscolor::kIrises (IrisPalette.h); 0 = natural
+    bool lashes; // lash strands on the upper lids
     uint32_t tstn1; // Tempest station ID, 0 = unused
     std::string tlbl1; // its label on the page, "" when unused
     uint32_t tstn2;

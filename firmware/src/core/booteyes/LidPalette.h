@@ -9,6 +9,8 @@
 // Animated_Eyes_2 original. Chrome and Stainless are new: shaded by distance
 // from the lid edge, so the bands follow the lid's curve like a reflection on
 // a metal shell. A flat grey read as plastic in the mind's eye, not metal.
+// Lash strands are their own setting ("Eyelashes", any style), not part of a
+// style: they were asked for as a switch, metal included.
 //
 // The stored value is an index into kStyles, so styles are only ever APPENDED
 // (an orb that saved "Ash" must still get Ash after an update). kDemo is the
@@ -36,21 +38,20 @@ struct Stop {
 
 struct Style {
     const char *name;
-    Rgb skin, shadow, lash; // shadow unused for metal; lash = the edge line
+    Rgb skin, shadow, lash; // shadow unused for metal; lash = edge line and strands
     Finish finish;
-    bool strands; // lash strands on the upper lid
 };
 
 static const Style kStyles[] = {
-    {"Taupe", {170, 143, 129}, {128, 106, 95}, {30, 22, 20}, Finish::Flat, true},
-    {"Skin", {224, 172, 138}, {176, 122, 96}, {40, 25, 20}, Finish::Flat, true},
-    {"Tan", {160, 110, 75}, {112, 72, 50}, {35, 20, 15}, Finish::Flat, true},
-    {"Robot", {90, 100, 115}, {55, 62, 72}, {8, 8, 10}, Finish::Flat, true},
-    {"Stone", {157, 136, 126}, {118, 100, 92}, {30, 22, 20}, Finish::Flat, true},
-    {"Ash", {137, 125, 123}, {100, 90, 90}, {28, 22, 22}, Finish::Flat, true},
-    {"Black", {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, Finish::Flat, false},
-    {"Chrome", {0, 0, 0}, {0, 0, 0}, {28, 32, 38}, Finish::Chrome, false},
-    {"Stainless", {0, 0, 0}, {0, 0, 0}, {58, 60, 62}, Finish::Stainless, false},
+    {"Taupe", {170, 143, 129}, {128, 106, 95}, {30, 22, 20}, Finish::Flat},
+    {"Skin", {224, 172, 138}, {176, 122, 96}, {40, 25, 20}, Finish::Flat},
+    {"Tan", {160, 110, 75}, {112, 72, 50}, {35, 20, 15}, Finish::Flat},
+    {"Robot", {90, 100, 115}, {55, 62, 72}, {8, 8, 10}, Finish::Flat},
+    {"Stone", {157, 136, 126}, {118, 100, 92}, {30, 22, 20}, Finish::Flat},
+    {"Ash", {137, 125, 123}, {100, 90, 90}, {28, 22, 22}, Finish::Flat},
+    {"Black", {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, Finish::Flat},
+    {"Chrome", {0, 0, 0}, {0, 0, 0}, {28, 32, 38}, Finish::Chrome},
+    {"Stainless", {0, 0, 0}, {0, 0, 0}, {58, 60, 62}, Finish::Stainless},
 };
 constexpr int kCount = int(sizeof(kStyles) / sizeof(kStyles[0]));
 constexpr int kDefault = 0; // Taupe, as shipped in 1.3.0

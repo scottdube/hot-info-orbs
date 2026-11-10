@@ -1,4 +1,5 @@
 // Host tests for WakeScript.h:  pio test -e native -f test_booteyes
+#include "IrisPalette.h"
 #include "LidPalette.h"
 #include "WakeScript.h"
 #include <cstring>
@@ -197,7 +198,6 @@ void test_lid_taupe_unchanged() {
     TEST_ASSERT_EQUAL(170, c.r);
     TEST_ASSERT_EQUAL(143, c.g);
     TEST_ASSERT_EQUAL(129, c.b);
-    TEST_ASSERT_TRUE(t.strands);
 }
 
 // Chrome: bright highlight near the edge, dark band after it, light again deep
@@ -209,7 +209,6 @@ void test_lid_chrome_bands() {
     TEST_ASSERT_TRUE(deep > 200);
     TEST_ASSERT_EQUAL(lids::body(c, 255, 0).r, lids::body(c, 999, 0).r); // clamps past the map
     TEST_ASSERT_EQUAL(lids::body(c, 38, 0).r, lids::body(c, 38, 3).r);  // not brushed
-    TEST_ASSERT_FALSE(c.strands);
 }
 
 // Stainless: brushed, so rows differ by a few steps, and stays mid-grey
@@ -250,6 +249,51 @@ void test_lid_demo_cycle_is_a_whole_wake() {
     TEST_ASSERT_EQUAL(256, w.at(lids::kDemoCycleMs - 1).open);
 }
 
+// --- IrisPalette.h --------------------------------------------------------------
+
+void test_iris_indices_are_fixed() {
+    const char *want[] = {"Natural", "Blue", "Brown", "Green", "Grey", "Amber", "Violet", "Red"};
+    TEST_ASSERT_EQUAL(8, iriscolor::kCount);
+    for (int i = 0; i < iriscolor::kCount; i++) {
+        TEST_ASSERT_EQUAL_STRING(want[i], iriscolor::kIrises[i].name);
+    }
+    TEST_ASSERT_EQUAL(0, iriscolor::kDefault);
+    TEST_ASSERT_TRUE(iriscolor::valid(7));
+    TEST_ASSERT_FALSE(iriscolor::valid(8));
+    TEST_ASSERT_FALSE(iriscolor::valid(-1));
+}
+
+void test_iris_luma() {
+    TEST_ASSERT_EQUAL(0, iriscolor::luma565(0x0000));
+    TEST_ASSERT_TRUE(iriscolor::luma565(0xFFFF) >= 248);
+    TEST_ASSERT_TRUE(iriscolor::luma565(0x07E0) > iriscolor::luma565(0xF800)); // green reads brighter than red
+    TEST_ASSERT_TRUE(iriscolor::luma565(0xF800) > iriscolor::luma565(0x001F)); // red brighter than blue
+}
+
+// The texture's range maps onto the whole ramp: dark end at lo, light at hi
+void test_iris_ramp_stretches_the_range() {
+    uint16_t r[256];
+    const iriscolor::Iris &blue = iriscolor::kIrises[1];
+    iriscolor::buildRamp(blue, 40, 200, r);
+    TEST_ASSERT_EQUAL_HEX16(lids::to565(blue.dark), r[0]);
+    TEST_ASSERT_EQUAL_HEX16(lids::to565(blue.dark), r[40]);
+    TEST_ASSERT_EQUAL_HEX16(lids::to565(blue.light), r[200]);
+    TEST_ASSERT_EQUAL_HEX16(lids::to565(blue.light), r[255]);
+    TEST_ASSERT_TRUE((r[120] & 0x1F) > (r[40] & 0x1F)); // bluer toward light
+}
+
+void test_iris_range_trims_two_percent() {
+    uint32_t h[256] = {};
+    h[5] = 1;     // a speck, under 2%
+    h[60] = 500;
+    h[180] = 500;
+    h[250] = 1;   // a speck
+    int lo = 0, hi = 0;
+    iriscolor::range(h, lo, hi);
+    TEST_ASSERT_EQUAL(60, lo);
+    TEST_ASSERT_EQUAL(180, hi);
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_intro_starts_shut_and_looking_down);
@@ -271,5 +315,9 @@ int main() {
     RUN_TEST(test_lid_stainless_brushed);
     RUN_TEST(test_lid_demo_cycles_every_style);
     RUN_TEST(test_lid_demo_cycle_is_a_whole_wake);
+    RUN_TEST(test_iris_indices_are_fixed);
+    RUN_TEST(test_iris_luma);
+    RUN_TEST(test_iris_ramp_stretches_the_range);
+    RUN_TEST(test_iris_range_trims_two_percent);
     return UNITY_END();
 }

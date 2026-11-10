@@ -1,5 +1,6 @@
 #ifdef BOOT_EYES
     #include "EyeRenderer.h"
+    #include "IrisPalette.h"
     #include "LidPalette.h"
     #include <Arduino.h>
 
@@ -19,7 +20,21 @@ constexpr int32_t kLashSp = 6;    // strand spacing, source px
 constexpr int32_t kLashFan16 = 5; // outward lean, x16
 } // namespace
 
-EyeRenderer::EyeRenderer(TFT_eSPI &tft) : m_tft(tft) { setStyle(lids::kDefault); }
+EyeRenderer::EyeRenderer(TFT_eSPI &tft) : m_tft(tft) {
+    setStyle(lids::kDefault);
+    uint32_t hist[256] = {};
+    for (uint32_t i = 0; i < IRIS_MAP_WIDTH * IRIS_MAP_HEIGHT; i++) {
+        hist[iriscolor::luma565(pgm_read_word(eyedata::iris + i))]++;
+    }
+    iriscolor::range(hist, m_irisLo, m_irisHi);
+}
+
+void EyeRenderer::setIris(int index) {
+    m_irisNatural = !iriscolor::valid(index) || index == iriscolor::kNatural;
+    if (!m_irisNatural) {
+        iriscolor::buildRamp(iriscolor::kIrises[index], m_irisLo, m_irisHi, m_irisRamp);
+    }
+}
 
 void EyeRenderer::setStyle(int index) {
     if (index < 0 || index >= lids::kCount) {
@@ -35,7 +50,6 @@ void EyeRenderer::setStyle(int index) {
         }
     }
     m_lash = lids::to565(s.lash);
-    m_strands = s.strands;
     m_style = index;
 }
 
@@ -119,6 +133,9 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                 if (d < IRIS_MAP_HEIGHT) {
                     const uint32_t a = (IRIS_MAP_WIDTH * (p >> 7)) / 512;
                     p = pgm_read_word(iris + d * IRIS_MAP_WIDTH + a);
+                    if (!m_irisNatural) {
+                        p = m_irisRamp[iriscolor::luma565(p)];
+                    }
                 } else {
                     p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
                 }

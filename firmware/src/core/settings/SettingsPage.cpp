@@ -2,6 +2,7 @@
 
 #include "SettingsValidation.h"
 #include "TimeZones.h"
+#include "IrisPalette.h"
 #include "LidPalette.h"
 #include "weatherwidget/TempestSource.h"
 #include "mqttwidget/MqttFeed.h"
@@ -457,6 +458,13 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
                             ". The demo plays a whole wake-up in each style, its name on orb 5, and stays on the eyes "
                             "until you pick a style here (it plays even with Waking eyes Off).") +
          errorLine(errors, "lids");
+    h += boolSelect("lashes", "Eyelashes", v.lashes, d.lashes, "Off", "On", errors);
+    h += "<label for='iris'>Iris</label><select id='iris' name='iris'>";
+    for (int i = 0; i < iriscolor::kCount; i++) {
+        h += option(String(i), iriscolor::kIrises[i].name, v.iris == i);
+    }
+    h += "</select>" + hint(String("Default: ") + iriscolor::kIrises[iriscolor::kDefault].name + ". Eyelashes and iris apply to the demo too.") +
+         errorLine(errors, "iris");
     h += "</fieldset>";
 #endif
     h += "<fieldset><legend>Mounting</legend>";
@@ -556,6 +564,7 @@ void SettingsPage::handlePost() {
     readBool("off", v.off);
     readBool("invert", v.invert);
     readBool("booteyes", v.booteyes);
+    readBool("lashes", v.lashes);
     if (has("lids")) {
         const std::string a = argStr(s, "lids");
         const int n = (!a.empty() && a.size() <= 3 && a.find_first_not_of("0123456789") == std::string::npos) ? atoi(a.c_str()) : -1;
@@ -563,6 +572,15 @@ void SettingsPage::handlePost() {
             v.lids = n;
         } else {
             errors["lids"] = "Pick eye lids from the list.";
+        }
+    }
+    if (has("iris")) {
+        const std::string a = argStr(s, "iris");
+        const int n = (!a.empty() && a.size() <= 3 && a.find_first_not_of("0123456789") == std::string::npos) ? atoi(a.c_str()) : -1;
+        if (iriscolor::valid(n)) {
+            v.iris = n;
+        } else {
+            errors["iris"] = "Pick an iris color from the list.";
         }
     }
     if (has("face")) {

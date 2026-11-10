@@ -116,7 +116,7 @@ void release() {
 }
 } // namespace
 
-bool BootEyes::start(ScreenManager &sm, TFT_eSPI &tft, int lidStyle) {
+bool BootEyes::start(ScreenManager &sm, TFT_eSPI &tft, const Look &look) {
     s_sm = &sm;
     s_lock = xSemaphoreCreateMutex();
     s_screens = xSemaphoreCreateMutex();
@@ -124,12 +124,14 @@ bool BootEyes::start(ScreenManager &sm, TFT_eSPI &tft, int lidStyle) {
     s_stop = false;
     s_exited = false;
     if (s_lock && s_screens && s_renderer) {
-        s_demo = lidStyle == lids::kDemo;
+        s_renderer->setIris(look.iris);
+        s_renderer->setLashes(look.lashes);
+        s_demo = look.lids == lids::kDemo;
         if (s_demo) {
             s_demoStart = millis();
             s_demoShown = -1;
         } else {
-            s_renderer->setStyle(lidStyle);
+            s_renderer->setStyle(look.lids);
         }
         s_script.begin(millis());
         // Core 1 beside loopTask (blocked in autoConnect); WiFi runs on core 0
