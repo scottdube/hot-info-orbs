@@ -302,7 +302,7 @@ void loop() {
                 feed->service(); // values current when a page comes up
             }
         }
-        widgetSet->updateBrightnessByTime(globalTime->getHour24());
+        widgetSet->updateBrightnessByTime(globalTime->getHour24() * 60 + globalTime->getMinute());
         if (!widgetSet->panelsAsleep()) {
             widgetSet->drawCurrent();
             checkCycleWidgets(); // a switch redraws all five screens
