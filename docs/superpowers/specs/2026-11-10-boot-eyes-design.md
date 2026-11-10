@@ -238,6 +238,11 @@ rendered, the key is ignored, and boot is today's.
   2. Check that the caruncles face orb 3.
   3. Boot with eyes off: compare with today's boot.
   4. Toggle `invert` and check the eyes are upright and still face inward.
+
+  Results 2026-11-10 (Scott, watching the rig): all four pass. Eyes on, with
+  the amendments above (awake loop, loading on orb 5, nose dropped 80 px, hand
+  for 2 s); eyes off matches the old boot; upside down has the eyes upright,
+  facing orb 3, nose upright, loading text on the new orb 5.
 - **Not covered by a test:** the portal path needs a board with no saved WiFi.
   It is checked by reading the code unless a spare board can have its WiFi
   wiped.

@@ -154,7 +154,7 @@ set](#building-more-than-one-set).)
 
 | Address | What it does |
 |---|---|
-| `http://<IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, custom pages, your own start-up picture. What you typed in `config.h` is only the starting point. |
+| `http://<IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, the waking eyes at start-up, custom pages, your own start-up picture. What you typed in `config.h` is only the starting point. |
 | `http://<IP>/update` | install a new version of the software without a cable: choose the file `.pio/build/xiao-esp32s3/firmware.bin` from the project folder and upload it. The page also shows which version is running. |
 
 **Set a password.** Without one, anyone on your WiFi can change your orbs'
