@@ -283,7 +283,7 @@ void loop() {
         if (mqttInRotation) {
             mqttWidget->service(); // values current when the page comes up
         }
-        widgetSet->updateBrightnessByTime(globalTime->getHour24());
+        widgetSet->updateBrightnessByTime(globalTime->getHour24() * 60 + globalTime->getMinute());
         if (!widgetSet->panelsAsleep()) {
             widgetSet->drawCurrent();
             checkCycleWidgets(); // a switch redraws all five screens

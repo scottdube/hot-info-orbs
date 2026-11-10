@@ -24,7 +24,7 @@ public:
     bool initialUpdateDone();
     void initializeAllWidgetsData();
     void setClearScreensOnDrawCurrent();
-    void updateBrightnessByTime(uint8_t hour24);
+    void updateBrightnessByTime(int minuteOfDay); // 0..1439
     bool panelsAsleep();
     void wakeForAMinute(); // a button press during night-off hours
 
