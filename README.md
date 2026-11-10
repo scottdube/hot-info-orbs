@@ -66,7 +66,7 @@ reset file, then steps 6 and 7.
 Want to change the code, or build it yourself? The [setup guide](docs/SETUP.md)
 covers that.
 
-## Start here
+## Want a more hands-on install? Start here
 
 **You don't need a GitHub account.** The list of folders above is the
 project's files. Pick the link that matches what you want:
