@@ -81,7 +81,9 @@ today's, byte for byte in what is drawn.
 - **Orientation:** both panels use the rotation ScreenManager already set. The
   left and right eye textures are mirrored as in the example (`e ? 1 : −1` lid
   step), so each caruncle (inner corner) faces orb 3. Checked on the rig with
-  `invert` off. With `invert` on it is unchecked; see Testing.
+  `invert` off. With `invert` on, `ScreenManager::selectScreen` already
+  reverses the chip-select order so logical indices stay in the viewer's
+  order; the eyes need no swap. Confirmed on the rig in Testing.
 
 ## Wake script
 
@@ -124,7 +126,7 @@ New folder `firmware/src/core/booteyes/`:
 
 | Unit | Does | Depends on |
 |---|---|---|
-| `WakeScript.{h,cpp}` | Pure logic. `begin(nowMs)`, `connected(nowMs)`, `EyePose at(nowMs)`, where `EyePose = {uint16_t open; int16_t gazeX, gazeY; bool done;}`. Holds the tables above. | nothing (native-testable) |
+| `WakeScript.h` (header-only) | Pure logic. `begin(nowMs)`, `connected(nowMs)`, `EyePose at(nowMs)`, where `EyePose = {uint16_t open; int16_t gazeX, gazeY; bool done;}`. Holds the tables above. | nothing (native-testable) |
 | `EyeRenderer.{h,cpp}` | Draws one eye for a pose: sclera, iris and polar maps, lid thresholds from tracking plus `open`, the Taupe lids and lashes, 2× scaling, `pushPixels` per doubled line. | TFT_eSPI, eye data |
 | `eyeData.h` | `defaultEye.h` from the example: sclera, iris, polar, upper and lower lid maps. Adafruit MIT notice kept at the top. | — |
 | `BootEyes.{h,cpp}` | `start(ScreenManager&)` creates a FreeRTOS task pinned to core 1 at priority 1 and returns false if it cannot. The task loops: `pose = script.at(millis())`, select screen index 1 (orb 2) and draw eye 0, select index 3 (orb 4) and draw eye 1, `vTaskDelay(1)`. It exits on `done` or when a stop flag is set; it checks the flag between doubled lines, never mid-transaction. `finish(bool connected)`: if connected, calls `script.connected()` and waits for the task to end (timeout 6 s, then sets the stop flag and waits for the exit). If not connected, sets the stop flag, waits for the exit, and clears both eye orbs. | WakeScript, EyeRenderer, ScreenManager |
@@ -163,14 +165,17 @@ orb 5 is unchanged.
 
 - **NVS:** key `booteyes`, a bool, default `true`, added to `SettingsValues`.
   Absent means the default, as with every other key.
-- **Settings page:** a checkbox in the "Start-up picture" fieldset reading
-  "Waking eyes on orbs 2 and 4 at start-up". Saving restarts the orb, as all
-  settings do, so the next boot shows the change.
+- **Settings page:** an Off/On select, "Waking eyes", in a new "Start-up"
+  fieldset of the main form, just before "Mounting", with the hint "Eyes on
+  orbs 2 and 4 wake up while the orb joins WiFi." (Changed while planning: the
+  "Start-up picture" fieldset sits outside the main form, and every other bool
+  on the page is a `boolSelect`, not a checkbox.) Saving restarts the orb, as
+  all settings do, so the next boot shows the change.
 
 **Build gate:** `-D BOOT_EYES` goes in `env:xiao-esp32s3` `build_flags`, which
 `ota` and `release` inherit. `env:supermini-proto` gets
 `build_unflags = -D BOOT_EYES`: its 1.875 MB slot is already 88.5% full and
-~200 KB more would bring it to ~99%. Without `BOOT_EYES`, the checkbox is not
+~200 KB more would bring it to ~99%. Without `BOOT_EYES`, the select is not
 rendered, the key is ignored, and boot is today's.
 
 ## Error handling and edge cases
@@ -202,9 +207,11 @@ rendered, the key is ignored, and boot is today's.
   - the hand-off is continuous: the pose at finale t = 0 equals the groggy
     pose at that same moment (±1 on every field), tested at several points in
     the intro and the loop.
-- **Settings:** the `booteyes` key defaults to true when absent and
-  round-trips, in the existing settings tests.
-- **Builds:** every env through `ci_build.sh`. `supermini-proto` must build
+- **Settings:** no host test: `Settings.cpp` uses `Preferences`, which the
+  native env cannot compile. The default and the round trip are checked on
+  the rig (an upgraded orb boots with eyes on; Off survives a restart).
+- **Builds:** `pio run -e xiao-esp32s3 -e ota -e release -e supermini-proto -e
+  displaytest` and `pio test -e native` (there is no `ci_build.sh`). `supermini-proto` must build
   without the eye code; record the flash % change for `xiao-esp32s3`.
 - **On the rig** (OTA, so NVS and the filesystem are kept):
   1. Boot with eyes on: groggy, then finale, then IP on orb 5, then the clock.
