@@ -110,7 +110,7 @@ inline Screens screens(Case c, const std::string &savedSsid, const std::string &
     case Case::NotFound:
         return {true,
                 {{"WiFi", Kind::Plain}, {"not found", Kind::Plain}, saved},
-                {{"Will retry.", Kind::Plain}, {"To change it,", Kind::Plain}, ap, open, address}};
+                {{"To change, join", Kind::Plain}, ap, open, address}}; // Scott dropped "Will retry." 2026-11-11
     case Case::WrongPassword:
         return {true,
                 {{"Wrong password", Kind::Plain}, {"for WiFi", Kind::Plain}, saved},

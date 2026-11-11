@@ -80,8 +80,8 @@ void test_failure_screens_name_the_saved_network() {
 void test_headlines_say_what_went_wrong() {
     TEST_ASSERT_TRUE(has(screens(Case::NotFound, "h", "a").headline, "not found", Kind::Plain));
     TEST_ASSERT_TRUE(has(screens(Case::WrongPassword, "h", "a").headline, "Wrong password", Kind::Plain));
-    TEST_ASSERT_TRUE(has(screens(Case::NotFound, "h", "a").steps, "Will retry.", Kind::Plain));
-    TEST_ASSERT_FALSE(has(screens(Case::WrongPassword, "h", "a").steps, "Will retry.", Kind::Plain));
+    TEST_ASSERT_TRUE(has(screens(Case::NotFound, "h", "a").steps, "To change, join", Kind::Plain));
+    TEST_ASSERT_FALSE(has(screens(Case::NotFound, "h", "a").steps, "Will retry.", Kind::Plain));
 }
 
 int main() {

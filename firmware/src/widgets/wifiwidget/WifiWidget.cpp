@@ -10,7 +10,7 @@ const int fontSize = 19;
 const int messageDelay = 5000;
 const int maxLineWidth = 200; // clears the round edge on every line the portal screens use
 // While the setup portal waits for a saved network that wasn't heard: first
-// look after a minute, then every two (the "Will retry." on orb 5)
+// look after a minute, then every two (orb 5 no longer says so: Scott, 2026-11-11)
 const unsigned long lookFirstMs = 60000;
 const unsigned long lookEveryMs = 120000;
 
