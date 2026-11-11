@@ -59,11 +59,14 @@ void EyeRenderer::setStyle(int index) {
     m_style = index;
 }
 
-void EyeRenderer::setInwardTurn(float degrees) {
-    const float a = constrain(degrees, -60.0f, 60.0f) * float(PI) / 180.0f;
-    m_turned = degrees != 0;
+void EyeRenderer::setTurn(float inward, float down) {
+    const float a = constrain(inward, -60.0f, 60.0f) * float(PI) / 180.0f;
+    const float d = constrain(down, -60.0f, 60.0f) * float(PI) / 180.0f;
+    m_turned = inward != 0 || down != 0;
     m_turnSin = sinf(a);
     m_turnCos = cosf(a);
+    m_downSin = sinf(d);
+    m_downCos = cosf(d);
 }
 
 bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *abort) {
@@ -141,15 +144,21 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
             // A turned eye: where on the straight-on art this pixel of the turned
             // ball lies. Moving the flat iris around the opening read as a
             // slide, not a turn (rig, 2026-11-11).
-            int32_t sX = scleraX, iX = irisX;
+            // Undo the roll down, then the inward turn: the eye turns in, then rolls.
+            int32_t sX = scleraX, iX = irisX, sY = scleraY, iY = irisY;
             if (m_turned) {
                 const float fx = float(int32_t(scleraX) - SCLERA_WIDTH / 2);
                 const float fy = float(int32_t(scleraY) - SCLERA_HEIGHT / 2);
                 const float z2 = kBallR * kBallR - fx * fx - fy * fy;
                 const float z = z2 > 0 ? sqrtf(z2) : 0;
-                sX = SCLERA_WIDTH / 2 + lroundf(fx * m_turnCos - z * turnSin);
+                const float v = fy * m_downCos - z * m_downSin; // art row, from center
+                const float w = fy * m_downSin + z * m_downCos; // depth before the roll
+                sX = SCLERA_WIDTH / 2 + lroundf(fx * m_turnCos - w * turnSin);
                 sX = constrain(sX, 0, SCLERA_WIDTH - 1);
                 iX = sX - (SCLERA_WIDTH - IRIS_WIDTH) / 2;
+                sY = SCLERA_HEIGHT / 2 + lroundf(v);
+                sY = constrain(sY, 0, SCLERA_HEIGHT - 1);
+                iY = sY - (SCLERA_HEIGHT - IRIS_HEIGHT) / 2;
             }
             uint32_t p;
             if (vLo <= lT || vUp <= uT) {
@@ -171,10 +180,10 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                         p = m_lash;
                     }
                 }
-            } else if (irisY < 0 || irisY >= IRIS_HEIGHT || iX < 0 || iX >= IRIS_WIDTH) {
-                p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + sX);
+            } else if (iY < 0 || iY >= IRIS_HEIGHT || iX < 0 || iX >= IRIS_WIDTH) {
+                p = pgm_read_word(sclera + sY * SCLERA_WIDTH + sX);
             } else {
-                p = pgm_read_word(polar + irisY * IRIS_WIDTH + iX);
+                p = pgm_read_word(polar + iY * IRIS_WIDTH + iX);
                 const uint32_t d = (kIrisScale * (p & 0x7F)) / 128;
                 if (d < IRIS_MAP_HEIGHT) {
                     const uint32_t a = (IRIS_MAP_WIDTH * (p >> 7)) / 512;
@@ -183,7 +192,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                         p = m_irisRamp[iriscolor::luma565(p)];
                     }
                 } else {
-                    p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + sX); // the pupil: the art's disk
+                    p = pgm_read_word(sclera + sY * SCLERA_WIDTH + sX); // the pupil: the art's disk
                 }
             }
             const uint16_t q = uint16_t(p >> 8 | p << 8);
