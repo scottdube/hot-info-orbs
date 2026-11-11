@@ -32,6 +32,10 @@ static_assert(wififail::reason::AuthExpire == WIFI_REASON_AUTH_EXPIRE &&
 // Password refusals in a row while connect() runs (issue #20)
 static volatile bool s_connecting = false;
 static volatile int s_refusals = 0;
+// Latched at kRefusalsForWrongPassword, cleared only when connect() starts:
+// WiFiManager's own disconnect (reason 8) lands after the refusals, before
+// autoConnect returns, and reset the count on the rig (2026-11-11).
+static volatile bool s_passwordRefused = false;
 
 void WifiWidget::setup() {
     begin(true);
@@ -67,7 +71,8 @@ void WifiWidget::begin(bool showConnecting) {
                     return;
                 }
                 s_refusals = wififail::passwordRefused(reason) ? s_refusals + 1 : 0;
-                if (s_refusals == wififail::kRefusalsForWrongPassword) {
+                if (s_refusals == wififail::kRefusalsForWrongPassword && !s_passwordRefused) {
+                    s_passwordRefused = true;
                     // Same password, same answer: no more attempts. WiFiManager
                     // reads the count on each pass of its retry loop.
                     wifimgr.setConnectRetries(1);
@@ -126,6 +131,7 @@ void WifiWidget::begin(bool showConnecting) {
 bool WifiWidget::connect() {
     // WiFiManager automatically connects using saved credentials...
     s_refusals = 0;
+    s_passwordRefused = false;
     s_connecting = true;
     const bool ok = wifimgr.autoConnect(m_apssid.c_str());
     s_connecting = false;
@@ -175,7 +181,7 @@ void WifiWidget::showPortal(bool eyesShown) {
     // Why the saved network failed, recorded by autoConnect() (issue #20)
     const bool saved = wifimgr.getWiFiIsSaved();
     m_savedSsid = saved ? wifimgr.getWiFiSSID(true) : String("");
-    const int result = s_refusals >= wififail::kRefusalsForWrongPassword ? wififail::wl::WrongPassword
+    const int result = s_passwordRefused ? wififail::wl::WrongPassword
                                                                           : wifimgr.getLastConxResult();
     m_failCase = wififail::classify(saved, result);
     Serial.printf("[%lu] Configuration portal running. Saved network \"%s\", last result %d, reason %u, case %d\n",
