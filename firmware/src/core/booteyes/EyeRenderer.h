@@ -17,21 +17,18 @@ class EyeRenderer {
     // index into iriscolor::kIrises; out of range = natural
     void setIris(int index);
     void setLashes(bool on) { m_strands = on; } // strands on the upper lid
-    // Turn both eyes inward (toward orb 3) by this many degrees, as balls:
-    // the iris moves ball-radius * sin(angle) toward the nose and narrows to
-    // cos(angle), from one number so the two cues agree. The gaze lines then
-    // cross in front of the face; the angle sets how severe the cross is.
-    // 0 = the waking eyes (gazeX drives them). The crossed eyes (issue #20) set it.
+    // Turn the next draw's eye inward (toward orb 3) by this many degrees,
+    // negative = outward. The eye is drawn as a ball rotated about its
+    // vertical axis: every pixel samples the straight-on art where the turned
+    // ball puts it, so iris, pupil and veins turn together and the iris
+    // squashes toward the far side. The lids stay put. 0 = the waking eyes
+    // (gazeX drives them). The crossed eyes (issue #20) set it.
     void setInwardTurn(float degrees);
 
   private:
-    // Source column in the iris map for an unturned column, squeezed toward the iris center
-    int32_t turnedIrisX(int32_t irisX) const;
-    uint16_t scleraPixel(int32_t x, int32_t y) const;
-
     TFT_eSPI &m_tft;
-    uint8_t m_turn16 = 16;
-    int32_t m_turnOffset = 0; // iris center toward the nose, source px
+    bool m_turned = false;
+    float m_turnSin = 0, m_turnCos = 1; // of the inward turn
     uint8_t m_uThreshold[2] = {128, 128}; // upper-lid tracking, filtered per eye
     uint16_t m_line[240];
     // Lid body by [brushing step][margin], RGB565; flat styles fill every step alike

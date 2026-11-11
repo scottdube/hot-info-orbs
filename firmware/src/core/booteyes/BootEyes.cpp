@@ -30,9 +30,10 @@ constexpr uint32_t kFinaleTimeoutMs = 6000;
 // the angle sets the severity. Both cues (position, narrowing) come from it.
 // Simulator sheet: 20 mild, 35 clear, 48 iris at the ball's edge.
 // Per eye, from straight on (55 both went the wrong way on the rig). Scott,
-// 2026-11-11: orb 2 inward 25, then "the opposite way by the same amount".
-// Negative = toward the viewer's left (outward for orb 2).
-constexpr float kCrossedDeg[2] = {-25, 0}; // side 0 = orb 2, side 1 = orb 4
+// 2026-11-11: -25 read as outward, as it should; but moving the flat iris
+// around the opening read as a slide, not a turn, so the renderer now turns
+// a ball. Negative = outward.
+constexpr float kCrossedDeg[2] = {25, 0}; // side 0 = orb 2, side 1 = orb 4
 constexpr int16_t kCrossedGazeY = 512;          // level
 // Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
 // on the rig, because the upper lid follows the pupil and the pupil is aside.
