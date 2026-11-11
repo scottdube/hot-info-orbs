@@ -17,9 +17,17 @@ class EyeRenderer {
     // index into iriscolor::kIrises; out of range = natural
     void setIris(int index);
     void setLashes(bool on) { m_strands = on; } // strands on the upper lid
+    // An eye turned sideways shows its iris as an upright oval, not a slid
+    // circle: the iris is drawn narrower by 16/turn16 (16 = facing front).
+    // The waking eyes stay at 16; the crossed eyes (issue #20) set it.
+    void setIrisTurn(uint8_t turn16) { m_turn16 = turn16 < 16 ? 16 : turn16; }
 
   private:
+    // Source column in the iris map for an unturned column, squeezed toward the iris center
+    int32_t turnedIrisX(int32_t irisX) const;
+
     TFT_eSPI &m_tft;
+    uint8_t m_turn16 = 16;
     uint8_t m_uThreshold[2] = {128, 128}; // upper-lid tracking, filtered per eye
     uint16_t m_line[240];
     // Lid body by [brushing step][margin], RGB565; flat styles fill every step alike

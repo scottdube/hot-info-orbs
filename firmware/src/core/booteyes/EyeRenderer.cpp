@@ -54,6 +54,10 @@ void EyeRenderer::setStyle(int index) {
     m_style = index;
 }
 
+int32_t EyeRenderer::turnedIrisX(int32_t irisX) const {
+    return m_turn16 == 16 ? irisX : IRIS_WIDTH / 2 + ((irisX - IRIS_WIDTH / 2) * m_turn16) / 16;
+}
+
 bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *abort) {
     // Gaze 0..1023 -> window offset into the 200x200 sclera, slightly converged
     const int32_t gazeWindowX = map(pose.gazeX, 0, 1023, 0, SCLERA_WIDTH - SCREEN_WIDTH) + (side ? 4 : -4);
@@ -138,10 +142,11 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                         p = m_lash;
                     }
                 }
-            } else if (irisY < 0 || irisY >= IRIS_HEIGHT || irisX < 0 || irisX >= IRIS_WIDTH) {
+            } else if (const int32_t ix = turnedIrisX(irisX);
+                       irisY < 0 || irisY >= IRIS_HEIGHT || ix < 0 || ix >= IRIS_WIDTH) {
                 p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
             } else {
-                p = pgm_read_word(polar + irisY * IRIS_WIDTH + irisX);
+                p = pgm_read_word(polar + irisY * IRIS_WIDTH + ix);
                 const uint32_t d = (kIrisScale * (p & 0x7F)) / 128;
                 if (d < IRIS_MAP_HEIGHT) {
                     const uint32_t a = (IRIS_MAP_WIDTH * (p >> 7)) / 512;

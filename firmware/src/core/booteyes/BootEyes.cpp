@@ -20,8 +20,12 @@ constexpr uint32_t kFinaleTimeoutMs = 6000;
 // photos draw it). Side 0 (orb 2) looks to the viewer's right, side 1 (orb 4)
 // to the left. Rig history 2026-11-11: {150, 873} at y 470 read as barely
 // crossed; 48 px in at y 470 read as a sideways glance, not crossed.
+// Scott's reference photo: the eye turns, so the iris is an upright oval
+// tucked into the inner corner, only a little below level. Sliding the full
+// circle in (5f7886d) had the wrong perspective.
 constexpr int16_t kCrossedGazeX[2] = {0, 1023}; // 40 source px in (the window's edge)
-constexpr int16_t kCrossedGazeY = 100;          // 29 source px down
+constexpr int16_t kCrossedGazeY = 300;          // 15 source px down
+constexpr uint8_t kCrossedTurn16 = 26;          // iris 16/26 = 62% as wide: turned ~52 degrees
 // Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
 // on the rig, because the upper lid follows the pupil and the pupil is aside.
 constexpr uint16_t kCrossedOpen = 256 + 160;
@@ -109,6 +113,7 @@ void eyeTask(void *) {
 // One still frame per eye, drawn after the task has stopped
 void drawCrossed() {
     static const volatile bool kNever = false;
+    s_renderer->setIrisTurn(kCrossedTurn16);
     for (int f = 0; f < kCrossedFrames; f++) {
         for (uint8_t side = 0; side < 2; side++) {
             s_sm->selectScreen(side ? kRightScreen : kLeftScreen);
