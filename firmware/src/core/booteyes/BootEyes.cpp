@@ -29,8 +29,8 @@ constexpr uint32_t kFinaleTimeoutMs = 6000;
 // Scott, 2026-11-11: a line straight out of each pupil must cross the other's;
 // the angle sets the severity. Both cues (position, narrowing) come from it.
 // Simulator sheet: 20 mild, 35 clear, 48 iris at the ball's edge.
-constexpr float kCrossedDeg = 55; // 40 read as nearly parallel on the rig; the orbs are an orb apart, so the lines must turn hard to meet near the nose
-constexpr int16_t kCrossedGazeY = 300;          // 15 source px down
+constexpr float kCrossedDeg = 0; // straight on: the baseline to work from (55 went the wrong way on the rig)
+constexpr int16_t kCrossedGazeY = 512;          // level
 // Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
 // on the rig, because the upper lid follows the pupil and the pupil is aside.
 constexpr uint16_t kCrossedOpen = 256 + 160;
