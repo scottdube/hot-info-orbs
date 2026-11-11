@@ -29,7 +29,9 @@ constexpr uint32_t kFinaleTimeoutMs = 6000;
 // Scott, 2026-11-11: a line straight out of each pupil must cross the other's;
 // the angle sets the severity. Both cues (position, narrowing) come from it.
 // Simulator sheet: 20 mild, 35 clear, 48 iris at the ball's edge.
-constexpr float kCrossedDeg = 0; // straight on: the baseline to work from (55 went the wrong way on the rig)
+// Per eye, from straight on (55 both went the wrong way on the rig). Scott,
+// 2026-11-11: turn the left eye (orb 2, viewer's left) inward 25.
+constexpr float kCrossedDeg[2] = {25, 0}; // side 0 = orb 2, side 1 = orb 4
 constexpr int16_t kCrossedGazeY = 512;          // level
 // Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
 // on the rig, because the upper lid follows the pupil and the pupil is aside.
@@ -118,9 +120,9 @@ void eyeTask(void *) {
 // One still frame per eye, drawn after the task has stopped
 void drawCrossed() {
     static const volatile bool kNever = false;
-    s_renderer->setInwardTurn(kCrossedDeg);
     for (int f = 0; f < kCrossedFrames; f++) {
         for (uint8_t side = 0; side < 2; side++) {
+            s_renderer->setInwardTurn(kCrossedDeg[side]);
             s_sm->selectScreen(side ? kRightScreen : kLeftScreen);
             s_renderer->draw(side, {kCrossedOpen, 512, kCrossedGazeY, false}, &kNever);
         }
