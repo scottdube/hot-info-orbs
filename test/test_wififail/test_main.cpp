@@ -29,6 +29,16 @@ void test_anything_else_is_other() {
     TEST_ASSERT_TRUE(Case::Other == classify(true, 0));
 }
 
+void test_password_refusal_reasons() {
+    using namespace wififail::reason;
+    TEST_ASSERT_TRUE(wififail::passwordRefused(FourWayHandshakeTimeout)); // WPA2 wrong password
+    TEST_ASSERT_TRUE(wififail::passwordRefused(AuthFail));
+    TEST_ASSERT_TRUE(wififail::passwordRefused(AuthExpire));
+    TEST_ASSERT_TRUE(wififail::passwordRefused(HandshakeTimeout));
+    TEST_ASSERT_FALSE(wififail::passwordRefused(NoApFound));
+    TEST_ASSERT_FALSE(wififail::passwordRefused(AssocLeave)); // our own disconnect
+}
+
 void test_only_not_found_keeps_looking() {
     // a wrong password or an unknown fault would restart the orb forever
     TEST_ASSERT_TRUE(keepsLooking(Case::NotFound));
@@ -80,6 +90,7 @@ int main() {
     RUN_TEST(test_saved_network_not_heard);
     RUN_TEST(test_wrong_password);
     RUN_TEST(test_anything_else_is_other);
+    RUN_TEST(test_password_refusal_reasons);
     RUN_TEST(test_only_not_found_keeps_looking);
     RUN_TEST(test_first_setup_screens_unchanged);
     RUN_TEST(test_failure_screens_name_the_saved_network);

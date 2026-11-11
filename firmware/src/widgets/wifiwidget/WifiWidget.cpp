@@ -20,6 +20,19 @@ WifiWidget::~WifiWidget() {}
 
 WiFiManager wifimgr;
 
+// The station's last disconnect reason (wifi_err_reason_t), from the event task
+static volatile uint8_t s_lastDisconnectReason = 0;
+static_assert(wififail::reason::AuthExpire == WIFI_REASON_AUTH_EXPIRE &&
+                  wififail::reason::AssocLeave == WIFI_REASON_ASSOC_LEAVE &&
+                  wififail::reason::FourWayHandshakeTimeout == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT &&
+                  wififail::reason::NoApFound == WIFI_REASON_NO_AP_FOUND &&
+                  wififail::reason::AuthFail == WIFI_REASON_AUTH_FAIL &&
+                  wififail::reason::HandshakeTimeout == WIFI_REASON_HANDSHAKE_TIMEOUT,
+              "WifiFailPolicy.h reason codes drifted from the SDK's wifi_err_reason_t");
+// Password refusals in a row while connect() runs (issue #20)
+static volatile bool s_connecting = false;
+static volatile int s_refusals = 0;
+
 void WifiWidget::setup() {
     begin(true);
     if (!connect()) {
@@ -42,6 +55,27 @@ void WifiWidget::begin(bool showConnecting) {
 
     // DHCP hostname, so the router knows the orb by the same name as mDNS does.
     // Must come before WiFi.mode(): that is where the core applies it.
+    static bool s_reasonHooked = false;
+    if (!s_reasonHooked) {
+        s_reasonHooked = true;
+        WiFi.onEvent(
+            [](arduino_event_id_t, arduino_event_info_t info) {
+                const uint8_t reason = info.wifi_sta_disconnected.reason;
+                s_lastDisconnectReason = reason;
+                Serial.printf("[%lu] WiFi disconnected, reason %u\n", millis(), reason);
+                if (!s_connecting) {
+                    return;
+                }
+                s_refusals = wififail::passwordRefused(reason) ? s_refusals + 1 : 0;
+                if (s_refusals == wififail::kRefusalsForWrongPassword) {
+                    // Same password, same answer: no more attempts. WiFiManager
+                    // reads the count on each pass of its retry loop.
+                    wifimgr.setConnectRetries(1);
+                    Serial.println("WiFi: password refused, no more attempts");
+                }
+            },
+            ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+    }
     WiFi.setHostname(OTA_HOSTNAME);
     WiFi.mode(WIFI_STA); // For WiFiManager explicitly set mode to station, ESP defaults to STA+AP
     // The default fast scan joins the first AP it hears, not the strongest
@@ -80,12 +114,22 @@ void WifiWidget::begin(bool showConnecting) {
     m_apssid = "Info-Orbs_" + WiFi.macAddress().substring(15);
 
     wifimgr.setCleanConnect(true);
-    wifimgr.setConnectRetries(5);
+    // Give up on the saved network in under a minute (issue #20). Unset, each
+    // attempt waited ESP32's 60 s default: a wrong password took 5 minutes on
+    // the rig before the portal came up (2026-11-11). A working router joins in
+    // a few seconds; a network not heard keeps being scanned for while the
+    // portal runs, so fewer, shorter attempts lose nothing.
+    wifimgr.setConnectTimeout(15); // seconds per attempt
+    wifimgr.setConnectRetries(3);
 }
 
 bool WifiWidget::connect() {
     // WiFiManager automatically connects using saved credentials...
-    if (wifimgr.autoConnect(m_apssid.c_str())) {
+    s_refusals = 0;
+    s_connecting = true;
+    const bool ok = wifimgr.autoConnect(m_apssid.c_str());
+    s_connecting = false;
+    if (ok) {
         Serial.print("WifiManager connected.");
         return true;
     }
@@ -127,13 +171,15 @@ void WifiWidget::drawLines(const std::vector<wififail::Line> &lines, int centerY
 
 void WifiWidget::showPortal(bool eyesShown) {
     m_configPortalRunning = true;
+    m_portalOverEyes = eyesShown;
     // Why the saved network failed, recorded by autoConnect() (issue #20)
     const bool saved = wifimgr.getWiFiIsSaved();
     m_savedSsid = saved ? wifimgr.getWiFiSSID(true) : String("");
-    const int result = wifimgr.getLastConxResult();
+    const int result = s_refusals >= wififail::kRefusalsForWrongPassword ? wififail::wl::WrongPassword
+                                                                          : wifimgr.getLastConxResult();
     m_failCase = wififail::classify(saved, result);
-    Serial.printf("Configuration portal running. Saved network \"%s\", last result %d, case %d\n",
-                  m_savedSsid.c_str(), result, (int)m_failCase);
+    Serial.printf("[%lu] Configuration portal running. Saved network \"%s\", last result %d, reason %u, case %d\n",
+                  millis(), m_savedSsid.c_str(), result, s_lastDisconnectReason, (int)m_failCase);
     const wififail::Screens text = wififail::screens(m_failCase, m_savedSsid.c_str(), m_apssid.c_str());
 
     m_manager.setFont(DEFAULT_FONT);
@@ -208,6 +254,15 @@ void WifiWidget::update(bool force) {
     lookForSavedNetwork();
 
     if (WiFi.status() == WL_CONNECTED) {
+        // Joined from the setup portal over the crossed eyes: start again, so
+        // the start-up runs as on any boot (waking eyes on orbs 2 and 4 while
+        // the data loads). Carrying on left orb 2 frozen crossed and put
+        // "Loading" on orb 4 (rig, 2026-11-11). The network is saved by now.
+        if (m_configPortalRunning && m_portalOverEyes) {
+            Serial.println("Joined from the setup portal, restarting");
+            delay(1000); // let the portal's reply reach the phone
+            ESP.restart();
+        }
         if (wifimgr.getConfigPortalActive()) {
             wifimgr.stopConfigPortal(); // frees port 80 for the OTA update page
         }

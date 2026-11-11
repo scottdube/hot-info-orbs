@@ -39,6 +39,7 @@ private:
     bool m_hasDisplayedError{false};
     bool m_hasDisplayedSuccess{false};
     bool m_configPortalRunning{false};
+    bool m_portalOverEyes{false}; // the portal came up over the crossed eyes
     bool m_eyesRan{false}; // orb 4 holds an awake eye: no "Success" there
 
     String m_connectionString{""};

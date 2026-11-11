@@ -42,6 +42,32 @@ inline Case classify(bool hasSavedNetwork, int lastResult) {
     return Case::Other;
 }
 
+// Station disconnect reasons: ESP-IDF's wifi_err_reason_t (esp_wifi_types.h),
+// fixed by the SDK, not by the router. 1..66 are IEEE 802.11 reason codes,
+// 200+ are Espressif's. Copied here so the native tests build without the SDK;
+// WifiWidget.cpp static_asserts each one against the SDK's.
+namespace reason {
+constexpr int AuthExpire = 2;             // WIFI_REASON_AUTH_EXPIRE
+constexpr int AssocLeave = 8;             // WIFI_REASON_ASSOC_LEAVE: our own disconnect()
+constexpr int FourWayHandshakeTimeout = 15; // WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT
+constexpr int NoApFound = 201;            // WIFI_REASON_NO_AP_FOUND
+constexpr int AuthFail = 202;             // WIFI_REASON_AUTH_FAIL
+constexpr int HandshakeTimeout = 204;     // WIFI_REASON_HANDSHAKE_TIMEOUT
+} // namespace reason
+
+// The network heard us and refused the password. WiFiManager maps only
+// AuthExpire and AuthFail to "wrong password". On WPA2-PSK a wrong password
+// shows up as FourWayHandshakeTimeout instead: the AP checks the password in
+// the handshake and simply stops answering, on any brand of router. Measured
+// 2026-11-11 on the Legacy IoT network: 15 about every 3 s, status stays
+// DISCONNECTED, so WiFiManager called it "other" and retried for 5 minutes.
+// A weak signal can also time the handshake out, so the caller wants it twice.
+inline bool passwordRefused(int r) {
+    return r == reason::AuthExpire || r == reason::FourWayHandshakeTimeout || r == reason::AuthFail ||
+           r == reason::HandshakeTimeout;
+}
+constexpr int kRefusalsForWrongPassword = 2;
+
 // Keep scanning for the saved network while the setup portal runs, and
 // restart when it is heard. Only when it was not heard: retrying a refused
 // password, or a fault we can't name, would restart the orb forever.
