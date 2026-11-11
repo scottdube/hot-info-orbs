@@ -26,6 +26,9 @@ class EyeRenderer {
     // down = then rolled down about the horizontal axis, degrees; negative = up.
     // nudge = the whole ball moved toward the nose, source px (panel px / 2).
     void setTurn(float inward, float down, float nudge = 0);
+    // The next draw of each eye puts the upper lid where it settles instead of
+    // filtering toward it over a few frames: for a single still frame
+    void snapLids() { m_snapLids = 3; }
 
   private:
     TFT_eSPI &m_tft;
@@ -34,6 +37,7 @@ class EyeRenderer {
     float m_downSin = 0, m_downCos = 1; // of the downward roll
     float m_nudge = 0;                  // ball center toward the nose, source px
     uint8_t m_uThreshold[2] = {128, 128}; // upper-lid tracking, filtered per eye
+    uint8_t m_snapLids = 0;               // bit per side: skip the filter once
     uint16_t m_line[240];
     // Lid body by [brushing step][margin], RGB565; flat styles fill every step alike
     uint16_t m_body[4][256];

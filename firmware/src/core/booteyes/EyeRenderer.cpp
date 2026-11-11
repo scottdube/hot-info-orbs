@@ -99,7 +99,12 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
              pgm_read_byte(upper + sampleY * SCREEN_WIDTH + (SCREEN_WIDTH - 1 - sampleX))) /
             2;
     }
-    m_uThreshold[side] = (m_uThreshold[side] * 3 + n) / 4;
+    if (m_snapLids & (1 << side)) {
+        m_uThreshold[side] = n;
+        m_snapLids &= ~(1 << side);
+    } else {
+        m_uThreshold[side] = (m_uThreshold[side] * 3 + n) / 4;
+    }
     uint32_t uT = m_uThreshold[side];
     uint32_t lT = 254 - uT;
     // The script closes the lids over the tracking: 254 = shut

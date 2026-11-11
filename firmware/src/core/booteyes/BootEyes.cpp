@@ -51,8 +51,6 @@ constexpr int16_t kCrossedGazeY = 512;          // level
 // Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
 // on the rig, because the upper lid follows the pupil and the pupil is aside.
 constexpr uint16_t kCrossedOpen = 256 + 160;
-// Frames to draw: the renderer filters upper-lid tracking over a few frames
-constexpr int kCrossedFrames = 6;
 
 ScreenManager *s_sm = nullptr;
 EyeRenderer *s_renderer = nullptr;
@@ -132,15 +130,16 @@ void eyeTask(void *) {
     vTaskDelete(nullptr);
 }
 
-// One still frame per eye, drawn after the task has stopped
+// One still frame per eye, drawn once after the task has stopped. Drawing six
+// frames each while the lid filter settled showed on the rig as the lids
+// moving, part of an unclean change-over (Scott, 2026-11-11).
 void drawCrossed() {
     static const volatile bool kNever = false;
-    for (int f = 0; f < kCrossedFrames; f++) {
-        for (uint8_t side = 0; side < 2; side++) {
-            s_renderer->setTurn(kCrossedDeg[side], kCrossedDownDeg, kCrossedNudge);
-            s_sm->selectScreen(side ? kCrossedRightScreen : kCrossedLeftScreen);
-            s_renderer->draw(side, {kCrossedOpen, 512, kCrossedGazeY, false}, &kNever);
-        }
+    s_renderer->snapLids();
+    for (uint8_t side = 0; side < 2; side++) {
+        s_renderer->setTurn(kCrossedDeg[side], kCrossedDownDeg, kCrossedNudge);
+        s_sm->selectScreen(side ? kCrossedRightScreen : kCrossedLeftScreen);
+        s_renderer->draw(side, {kCrossedOpen, 512, kCrossedGazeY, false}, &kNever);
     }
 }
 
@@ -205,6 +204,10 @@ void BootEyes::finish(bool connected) {
         return; // the task plays the finale, then the awake loop, until end()
     }
     stopTask();
+    // Blank every orb first: the waking eyes froze on orbs 2 and 4 and stayed
+    // there beside the crossed ones on 1 and 3 until the nose and the text
+    // covered them, four eyes at once (rig, 2026-11-11)
+    s_sm->fillAllScreens(TFT_BLACK);
     drawCrossed();
     release();
 }
