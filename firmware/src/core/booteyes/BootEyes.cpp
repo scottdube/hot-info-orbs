@@ -17,7 +17,9 @@ constexpr int kLabelScreen = 4; // orb 5: the style name in the lid demo
 constexpr uint32_t kFinaleTimeoutMs = 6000;
 // WiFi didn't connect (issue #20): wide open, crossed toward the nose on orb 3.
 // Side 0 (orb 2) looks to the viewer's right, side 1 (orb 4) to the left.
-constexpr int16_t kCrossedGazeX[2] = {150, 873};
+// Past 0..1023 on purpose: {150, 873} (the window's edge, iris 30 source px
+// off center) read on the rig as barely crossed (2026-11-11); this is 48 px.
+constexpr int16_t kCrossedGazeX[2] = {-114, 1137};
 constexpr int16_t kCrossedGazeY = 470; // a little down, toward the nose
 // Frames to draw: the renderer filters upper-lid tracking over a few frames
 constexpr int kCrossedFrames = 6;

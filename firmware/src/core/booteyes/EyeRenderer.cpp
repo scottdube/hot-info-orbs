@@ -10,6 +10,7 @@ namespace eyedata {
 using namespace eyedata;
 
 namespace {
+constexpr int kOverX = 24;          // how far gaze may push the window past the sclera, source px
 constexpr int kCrop = 4;             // 128 - 2*4 = 120 source px -> 240 panel px
 constexpr uint32_t kIrisScale = 110; // fixed pupil: midpoint of the example's IRIS_MIN..IRIS_MAX (90..130)
 // Lids, in lid-map units: margin past the closing threshold, small = lid edge.
@@ -57,7 +58,9 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
     // Gaze 0..1023 -> window offset into the 200x200 sclera, slightly converged
     int32_t eyeX = map(pose.gazeX, 0, 1023, 0, SCLERA_WIDTH - SCREEN_WIDTH) + (side ? 4 : -4);
     int32_t eyeY = map(pose.gazeY, 0, 1023, 0, SCLERA_HEIGHT - SCREEN_HEIGHT);
-    eyeX = constrain(eyeX, 0, SCLERA_WIDTH - SCREEN_WIDTH);
+    // Gaze past 0..1023 (the crossed eyes) moves the iris beyond the sclera
+    // window; the sclera's edge column is repeated to fill in
+    eyeX = constrain(eyeX, -kOverX, SCLERA_WIDTH - SCREEN_WIDTH + kOverX);
     eyeY = constrain(eyeY, 0, SCLERA_HEIGHT - SCREEN_HEIGHT);
 
     // Upper lid tracks the pupil (sampled just above it); the lower lid follows
@@ -94,7 +97,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
             finished = false;
             break;
         }
-        uint32_t scleraX = eyeX;
+        int32_t scleraX = eyeX;
         int32_t irisX = eyeX - (SCLERA_WIDTH - IRIS_WIDTH) / 2;
         int16_t lidX = side ? 0 : SCREEN_WIDTH - 1;
         uint16_t o = 0;
@@ -126,7 +129,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                     }
                 }
             } else if (irisY < 0 || irisY >= IRIS_HEIGHT || irisX < 0 || irisX >= IRIS_WIDTH) {
-                p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
+                p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + constrain(scleraX, 0, SCLERA_WIDTH - 1));
             } else {
                 p = pgm_read_word(polar + irisY * IRIS_WIDTH + irisX);
                 const uint32_t d = (kIrisScale * (p & 0x7F)) / 128;
@@ -137,7 +140,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                         p = m_irisRamp[iriscolor::luma565(p)];
                     }
                 } else {
-                    p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
+                    p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + constrain(scleraX, 0, SCLERA_WIDTH - 1));
                 }
             }
             const uint16_t q = uint16_t(p >> 8 | p << 8);
