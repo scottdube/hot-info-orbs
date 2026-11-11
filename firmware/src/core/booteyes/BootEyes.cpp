@@ -1,13 +1,17 @@
 #ifdef BOOT_EYES
     #include "BootEyes.h"
     #include "EyeRenderer.h"
+    #include "LidPalette.h"
+    #include "Utils.h" // ScreenCenterX/Y
     #include "WakeScript.h"
     #include <Arduino.h>
+    #include <WiFi.h>
     #include <new>
 
 namespace {
 constexpr int kLeftScreen = 1;  // orb 2
 constexpr int kRightScreen = 3; // orb 4
+constexpr int kLabelScreen = 4; // orb 5: the style name in the lid demo
 // Longest wait for the finale in end(): connected at t ~ 0, then 2.6 s to the
 // first crack open plus the 2 s finale
 constexpr uint32_t kFinaleTimeoutMs = 6000;
@@ -20,6 +24,10 @@ SemaphoreHandle_t s_screens = nullptr; // the SPI bus: eye task vs. start-up tex
 TaskHandle_t s_task = nullptr;
 volatile bool s_stop = false;
 volatile bool s_exited = false;
+bool s_demo = false;
+uint32_t s_demoStart = 0;
+int s_demoShown = -1;      // style whose label is on orb 5
+bool s_demoShownIp = false; // the label has the IP address on it
 
 EyePose currentPose() {
     xSemaphoreTake(s_lock, portMAX_DELAY);
@@ -37,9 +45,46 @@ bool drawEye(int screen, uint8_t side, const EyePose &pose) {
     return ok;
 }
 
+// The demo's caption on orb 5, redrawn with each new style
+void drawDemoLabel(int style) {
+    xSemaphoreTake(s_screens, portMAX_DELAY);
+    s_sm->selectScreen(kLabelScreen);
+    s_sm->fillScreen(TFT_BLACK);
+    s_sm->setFontColor(TFT_LIGHTGREY);
+    s_sm->drawCenterString("Eye lids", ScreenCenterX, ScreenCenterY - 55, 16);
+    s_sm->setFontColor(TFT_WHITE);
+    s_sm->drawCenterString(lids::kStyles[style].name, ScreenCenterX, ScreenCenterY, 30);
+    s_sm->setFontColor(TFT_LIGHTGREY);
+    char n[8];
+    snprintf(n, sizeof(n), "%d of %d", style + 1, lids::kCount);
+    s_sm->drawCenterString(n, ScreenCenterX, ScreenCenterY + 40, 14);
+    if (WiFi.isConnected()) { // where the settings page is, to leave the demo
+        s_sm->drawCenterString(WiFi.localIP().toString(), ScreenCenterX, ScreenCenterY + 70, 14);
+    }
+    s_sm->setFontColor(TFT_WHITE);
+    xSemaphoreGive(s_screens);
+}
+
+// One whole wake (asleep, groggy, finale, awake) per style, from the top
+EyePose demoPose() {
+    const uint32_t t = millis() - s_demoStart;
+    const int style = lids::demoStyle(t);
+    const bool ip = WiFi.isConnected();
+    if (style != s_demoShown || ip != s_demoShownIp) {
+        s_demoShown = style;
+        s_demoShownIp = ip;
+        s_renderer->setStyle(style);
+        drawDemoLabel(style);
+    }
+    WakeScript w;
+    w.begin(0);
+    w.connected(lids::kDemoConnectMs);
+    return w.at(lids::demoCycleTime(t));
+}
+
 void eyeTask(void *) {
     while (!s_stop) {
-        const EyePose pose = currentPose();
+        const EyePose pose = s_demo ? demoPose() : currentPose();
         if (!drawEye(kLeftScreen, 0, pose) || !drawEye(kRightScreen, 1, pose)) {
             break;
         }
@@ -71,7 +116,7 @@ void release() {
 }
 } // namespace
 
-bool BootEyes::start(ScreenManager &sm, TFT_eSPI &tft) {
+bool BootEyes::start(ScreenManager &sm, TFT_eSPI &tft, const Look &look) {
     s_sm = &sm;
     s_lock = xSemaphoreCreateMutex();
     s_screens = xSemaphoreCreateMutex();
@@ -79,6 +124,15 @@ bool BootEyes::start(ScreenManager &sm, TFT_eSPI &tft) {
     s_stop = false;
     s_exited = false;
     if (s_lock && s_screens && s_renderer) {
+        s_renderer->setIris(look.iris);
+        s_renderer->setLashes(look.lashes);
+        s_demo = look.lids == lids::kDemo;
+        if (s_demo) {
+            s_demoStart = millis();
+            s_demoShown = -1;
+        } else {
+            s_renderer->setStyle(look.lids);
+        }
         s_script.begin(millis());
         // Core 1 beside loopTask (blocked in autoConnect); WiFi runs on core 0
         if (xTaskCreatePinnedToCore(eyeTask, "booteyes", 6144, nullptr, 1, &s_task, 1) == pdPASS) {
@@ -117,6 +171,8 @@ void BootEyes::end() {
     stopTask();
     release();
 }
+
+bool BootEyes::demo() { return s_task != nullptr && s_demo; }
 
 void BootEyes::lockScreens() {
     if (s_screens) {

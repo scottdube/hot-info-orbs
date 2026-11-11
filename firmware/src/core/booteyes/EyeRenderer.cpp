@@ -1,5 +1,7 @@
 #ifdef BOOT_EYES
     #include "EyeRenderer.h"
+    #include "IrisPalette.h"
+    #include "LidPalette.h"
     #include <Arduino.h>
 
 namespace eyedata {
@@ -10,18 +12,45 @@ using namespace eyedata;
 namespace {
 constexpr int kCrop = 4;             // 128 - 2*4 = 120 source px -> 240 panel px
 constexpr uint32_t kIrisScale = 110; // fixed pupil: midpoint of the example's IRIS_MIN..IRIS_MAX (90..130)
-// Lids, in lid-map units: margin past the closing threshold, small = lid edge
-constexpr int32_t kLashW = 6;     // lash line
-constexpr int32_t kShadowW = 14;  // shadow band after it
+// Lids, in lid-map units: margin past the closing threshold, small = lid edge.
+// Line width and colors are in LidPalette.h.
+using lids::kLashW;
 constexpr int32_t kLashLen = 45;  // lash strands, upper lid only
 constexpr int32_t kLashSp = 6;    // strand spacing, source px
 constexpr int32_t kLashFan16 = 5; // outward lean, x16
 } // namespace
 
 EyeRenderer::EyeRenderer(TFT_eSPI &tft) : m_tft(tft) {
-    m_skin = tft.color565(170, 143, 129); // "Taupe", chosen on the rig 2026-11-10
-    m_shadow = tft.color565(128, 106, 95);
-    m_lash = tft.color565(30, 22, 20);
+    setStyle(lids::kDefault);
+    uint32_t hist[256] = {};
+    for (uint32_t i = 0; i < IRIS_MAP_WIDTH * IRIS_MAP_HEIGHT; i++) {
+        hist[iriscolor::luma565(pgm_read_word(eyedata::iris + i))]++;
+    }
+    iriscolor::range(hist, m_irisLo, m_irisHi);
+}
+
+void EyeRenderer::setIris(int index) {
+    m_irisNatural = !iriscolor::valid(index) || index == iriscolor::kNatural;
+    if (!m_irisNatural) {
+        iriscolor::buildRamp(iriscolor::kIrises[index], m_irisLo, m_irisHi, m_irisRamp);
+    }
+}
+
+void EyeRenderer::setStyle(int index) {
+    if (index < 0 || index >= lids::kCount) {
+        index = lids::kDefault;
+    }
+    if (index == m_style) {
+        return;
+    }
+    const lids::Style &s = lids::kStyles[index];
+    for (int level = 0; level < lids::kBrushLevels; level++) {
+        for (int m = 0; m < 256; m++) {
+            m_body[level][m] = lids::to565(lids::body(s, m, level));
+        }
+    }
+    m_lash = lids::to565(s.lash);
+    m_style = index;
 }
 
 bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *abort) {
@@ -69,6 +98,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
         int32_t irisX = eyeX - (SCLERA_WIDTH - IRIS_WIDTH) / 2;
         int16_t lidX = side ? 0 : SCREEN_WIDTH - 1;
         uint16_t o = 0;
+        const uint16_t *body = m_body[lids::brushLevel(screenY)]; // one brushing step per row
         for (int screenX = 0; screenX < SCREEN_WIDTH; screenX++, scleraX++, irisX++, lidX += dLidX) {
             if (screenX < kCrop || screenX >= SCREEN_WIDTH - kCrop) {
                 continue;
@@ -81,10 +111,10 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                 const int32_t mL = (vLo <= lT) ? int32_t(lT) - int32_t(vLo) : 9999;
                 const int32_t m = mU < mL ? mU : mL;
                 const bool upperHit = (vUp <= uT) && (mU <= mL);
-                p = (m < kLashW + kShadowW) ? m_shadow : m_skin;
+                p = body[m > 255 ? 255 : m];
                 if (m < kLashW) {
                     p = m_lash; // lash line
-                } else if (upperHit && m < kLashW + kLashLen) { // strands, fanning out
+                } else if (m_strands && upperHit && m < kLashW + kLashLen) { // strands, fanning out
                     const int32_t k = m - kLashW;
                     const int32_t ox = int32_t(screenX) - 64;
                     const int32_t sx = int32_t(screenX) * 16 - (ox * k * kLashFan16) / 64;
@@ -103,6 +133,9 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                 if (d < IRIS_MAP_HEIGHT) {
                     const uint32_t a = (IRIS_MAP_WIDTH * (p >> 7)) / 512;
                     p = pgm_read_word(iris + d * IRIS_MAP_WIDTH + a);
+                    if (!m_irisNatural) {
+                        p = m_irisRamp[iriscolor::luma565(p)];
+                    }
                 } else {
                     p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
                 }
