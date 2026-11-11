@@ -21,6 +21,9 @@ constexpr uint32_t kFinaleTimeoutMs = 6000;
 // off center) read on the rig as barely crossed (2026-11-11); this is 48 px.
 constexpr int16_t kCrossedGazeX[2] = {-114, 1137};
 constexpr int16_t kCrossedGazeY = 470; // a little down, toward the nose
+// Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
+// on the rig, because the upper lid follows the pupil and the pupil is aside.
+constexpr uint16_t kCrossedOpen = 256 + 160;
 // Frames to draw: the renderer filters upper-lid tracking over a few frames
 constexpr int kCrossedFrames = 6;
 
@@ -108,7 +111,7 @@ void drawCrossed() {
     for (int f = 0; f < kCrossedFrames; f++) {
         for (uint8_t side = 0; side < 2; side++) {
             s_sm->selectScreen(side ? kRightScreen : kLeftScreen);
-            s_renderer->draw(side, {256, kCrossedGazeX[side], kCrossedGazeY, false}, &kNever);
+            s_renderer->draw(side, {kCrossedOpen, kCrossedGazeX[side], kCrossedGazeY, false}, &kNever);
         }
     }
 }
