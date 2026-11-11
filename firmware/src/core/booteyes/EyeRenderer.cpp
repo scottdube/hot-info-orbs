@@ -59,7 +59,7 @@ void EyeRenderer::setStyle(int index) {
 }
 
 void EyeRenderer::setInwardTurn(float degrees) {
-    const float a = constrain(degrees, 0.0f, 60.0f) * float(PI) / 180.0f;
+    const float a = constrain(degrees, -60.0f, 60.0f) * float(PI) / 180.0f;
     m_turn16 = uint8_t(lroundf(16.0f / cosf(a)));
     m_turnOffset = lroundf(kBallR * sinf(a));
 }
