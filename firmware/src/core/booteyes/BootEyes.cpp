@@ -12,6 +12,11 @@ namespace {
 constexpr int kLeftScreen = 1;  // orb 2
 constexpr int kRightScreen = 3; // orb 4
 constexpr int kLabelScreen = 4; // orb 5: the style name in the lid demo
+// The crossed eyes move to orbs 1 and 3 around the nose on orb 2, so the WiFi
+// error text sits together on orbs 4 and 5 (Scott, 2026-11-11). main.cpp
+// draws the nose.
+constexpr int kCrossedLeftScreen = 0;  // orb 1
+constexpr int kCrossedRightScreen = 2; // orb 3
 // Longest wait for the finale in end(): connected at t ~ 0, then 2.6 s to the
 // first crack open plus the 2 s finale
 constexpr uint32_t kFinaleTimeoutMs = 6000;
@@ -133,7 +138,7 @@ void drawCrossed() {
     for (int f = 0; f < kCrossedFrames; f++) {
         for (uint8_t side = 0; side < 2; side++) {
             s_renderer->setTurn(kCrossedDeg[side], kCrossedDownDeg, kCrossedNudge);
-            s_sm->selectScreen(side ? kRightScreen : kLeftScreen);
+            s_sm->selectScreen(side ? kCrossedRightScreen : kCrossedLeftScreen);
             s_renderer->draw(side, {kCrossedOpen, 512, kCrossedGazeY, false}, &kNever);
         }
     }

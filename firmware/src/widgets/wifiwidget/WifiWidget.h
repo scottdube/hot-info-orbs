@@ -15,8 +15,8 @@ public:
     void begin(bool showConnecting);
     void drawConnecting();
     bool connect();
-    // eyesShown: BootEyes left crossed eyes on orbs 2 and 4, so what went
-    // wrong goes on orb 1; without them it goes on orb 4, as before
+    // What went wrong goes on orbs 4 and 5. eyesShown: BootEyes left crossed
+    // eyes on orbs 1 and 3, so joining from the portal restarts the orb
     void showPortal(bool eyesShown = false);
     void setEyesRan(bool ran) { m_eyesRan = ran; }
     void update(bool force = false) override;
@@ -56,7 +56,6 @@ private:
 
     // Portal running because the saved network wasn't heard: look for it
     wififail::Case m_failCase{wififail::Case::NeverSetUp};
-    int m_headlineScreen{3};
     String m_savedSsid{""};
     unsigned long m_nextLook{0};
     bool m_lookScanning{false};

@@ -217,11 +217,16 @@ void setup() {
     const bool wifiOk = wifiWidget->connect();
 #ifdef BOOT_EYES
     if (eyesRan) {
-        BootEyes::finish(wifiOk); // on failure: crossed eyes, nose stays on orb 3
+        BootEyes::finish(wifiOk); // on failure: crossed eyes on orbs 1 and 3
+        if (!wifiOk) {
+            sm->selectScreen(1); // the nose between them, on orb 2
+            TJpgDec.setJpgScale(1);
+            TJpgDec.drawJpg(0, 0, kNoseJpg, sizeof(kNoseJpg));
+        }
     }
 #endif
     if (!wifiOk) {
-        wifiWidget->showPortal(eyesRan); // with the eyes, what went wrong is on orb 1
+        wifiWidget->showPortal(eyesRan); // what went wrong, on orbs 4 and 5
     }
     // Eyes still showing (not blanked for the portal): they keep moving on orbs
     // 2 and 4 until the first page draws (BootEyes::end() in loop), so orb 4

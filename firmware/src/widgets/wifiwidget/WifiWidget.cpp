@@ -189,8 +189,9 @@ void WifiWidget::showPortal(bool eyesShown) {
     const wififail::Screens text = wififail::screens(m_failCase, m_savedSsid.c_str(), m_apssid.c_str());
 
     m_manager.setFont(DEFAULT_FONT);
-    m_headlineScreen = eyesShown ? 0 : statusScreenIndex;
-    m_manager.selectScreen(m_headlineScreen);
+    // Orbs 4 and 5, with or without the eyes: the crossed eyes sit on orbs 1
+    // and 3 (Scott, 2026-11-11; the headline was on orb 1 beside them before)
+    m_manager.selectScreen(statusScreenIndex);
     m_manager.clearScreen();
     int headlineY = ScreenCenterY;
     if (text.cross) {
@@ -369,17 +370,12 @@ void WifiWidget::draw(bool force) {
     const int blankRectTop = ScreenCenterY + lineHeight / 2;
 
     if (!m_isConnected && m_configPortalRunning) {
-        // The portal screens stand as drawn; orb 4 may hold a crossed eye
+        // The portal screens stand as drawn (orbs 4 and 5)
     } else if (!m_isConnected && !m_connectionFailed) {
         m_manager.fillRect(0, blankRectTop, ScreenWidth, ScreenHeight - blankRectTop, TFT_BLACK);
         m_manager.drawCenterString(m_dotsString, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
     } else if (m_isConnected && !m_hasDisplayedSuccess) {
         m_hasDisplayedSuccess = true;
-        if (m_configPortalRunning && m_headlineScreen != statusScreenIndex) {
-            m_manager.selectScreen(m_headlineScreen); // "WiFi not found" is no longer true
-            m_manager.clearScreen();
-            m_manager.selectScreen(statusScreenIndex);
-        }
         if (!m_eyesRan) { // with the boot eyes, orb 4 keeps the awake eye
             m_manager.clearScreen();
             m_manager.drawCenterString("Success", ScreenCenterX, ScreenCenterY, fontSize);
