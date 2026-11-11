@@ -33,7 +33,7 @@ constexpr uint32_t kFinaleTimeoutMs = 6000;
 // 2026-11-11: -25 read as outward, as it should; but moving the flat iris
 // around the opening read as a slide, not a turn, so the renderer now turns
 // a ball. Negative = outward.
-constexpr float kCrossedDeg[2] = {25, 25}; // side 0 = orb 2, side 1 = orb 4
+constexpr float kCrossedDeg[2] = {30, 30}; // side 0 = orb 2, side 1 = orb 4
 // Then both roll down until the iris is near the display's bottom edge (Scott,
 // 2026-11-11; simulator: 20 leaves a small gap, 25 touches). The lids stay put,
 // so the iris tucks under the lower lid.
