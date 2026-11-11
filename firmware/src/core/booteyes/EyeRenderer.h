@@ -17,18 +17,21 @@ class EyeRenderer {
     // index into iriscolor::kIrises; out of range = natural
     void setIris(int index);
     void setLashes(bool on) { m_strands = on; } // strands on the upper lid
-    // An eye turned sideways shows its iris as an upright oval, not a slid
-    // circle: the iris is drawn narrower by 16/turn16 (16 = facing front).
-    // The waking eyes stay at 16; the crossed eyes (issue #20) set it.
-    void setIrisTurn(uint8_t turn16) { m_turn16 = turn16 < 16 ? 16 : turn16; }
+    // Turn both eyes inward (toward orb 3) by this many degrees, as balls:
+    // the iris moves ball-radius * sin(angle) toward the nose and narrows to
+    // cos(angle), from one number so the two cues agree. The gaze lines then
+    // cross in front of the face; the angle sets how severe the cross is.
+    // 0 = the waking eyes (gazeX drives them). The crossed eyes (issue #20) set it.
+    void setInwardTurn(float degrees);
 
   private:
     // Source column in the iris map for an unturned column, squeezed toward the iris center
     int32_t turnedIrisX(int32_t irisX) const;
-    uint32_t turnedScleraX(uint32_t scleraX, int32_t irisX, int32_t chord, int32_t irisShift) const;
+    uint16_t scleraPixel(int32_t x, int32_t y) const;
 
     TFT_eSPI &m_tft;
     uint8_t m_turn16 = 16;
+    int32_t m_turnOffset = 0; // iris center toward the nose, source px
     uint8_t m_uThreshold[2] = {128, 128}; // upper-lid tracking, filtered per eye
     uint16_t m_line[240];
     // Lid body by [brushing step][margin], RGB565; flat styles fill every step alike
