@@ -66,6 +66,9 @@ SettingsValues Settings::defaults() {
 #endif
     d.invert = INVERTED_ORBS;
     d.booteyes = true;
+    d.lids = 0; // Taupe (lids::kDefault); Settings stays free of the eye code
+    d.iris = 0; // Natural
+    d.lashes = true;
 #ifdef TEMPEST_STATION_1
     d.tstn1 = TEMPEST_STATION_1;
 #else
@@ -173,6 +176,9 @@ void Settings::load() {
             v.offendm = sv::storedMinutes(p.isKey("offendm"), p.getInt("offendm", -1), p.getInt("offend", v.offendm / 60));
             v.invert = p.getBool("invert", v.invert);
             v.booteyes = p.getBool("booteyes", v.booteyes); // added 2026-11; absent = default
+            v.lids = p.getInt("lids", v.lids);               // added 2026-11-10; absent = default
+            v.iris = p.getInt("iris", v.iris);               // same
+            v.lashes = p.getBool("lashes", v.lashes);        // same
             // Added after schema 1 without a bump: an absent key falls back
             // to the config.h default like every other key. Read in every
             // build since the token moved to the page (2026-11-09).
@@ -263,6 +269,9 @@ bool Settings::save(const SettingsValues &v) {
               p.putInt("offend", sv::legacyHour(v.offendm)) &&
               p.putBool("invert", v.invert) &&
               p.putBool("booteyes", v.booteyes) &&
+              p.putInt("lids", v.lids) &&
+              p.putInt("iris", v.iris) &&
+              p.putBool("lashes", v.lashes) &&
               p.putUInt("tstn1", v.tstn1) &&
               p.putString("tlbl1", v.tlbl1.c_str()) == v.tlbl1.size() &&
               p.putUInt("tstn2", v.tstn2) &&

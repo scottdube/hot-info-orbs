@@ -98,9 +98,7 @@ void WeatherWidget::displayClock(int displayIndex) {
     const String weekDay = m_time->getWeekday();
     m_manager.drawCenterString(weekDay, center, dayOfWeekY, 22);
 
-    m_manager.drawString(m_time->getHourPadded(), center - 10, clockY, 66, Align::MiddleRight);
-    m_manager.drawString(":", center, clockY, 66, Align::MiddleCenter);
-    m_manager.drawString(m_time->getMinutePadded(), center + 10, clockY, 66, Align::MiddleLeft);
+    m_manager.drawClockTime(m_time->getHourPadded(), m_time->getMinutePadded(), center, clockY, 66);
 }
 
 // Write an image to the screen from a hex array.

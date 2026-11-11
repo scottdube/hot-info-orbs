@@ -7,9 +7,19 @@
 #include <TFT_eSPI.h>
 
 namespace BootEyes {
+struct Look {
+    int lids;    // "lids" setting: lids::kStyles index or lids::kDemo (LidPalette.h)
+    int iris;    // "iris" setting: iriscolor::kIrises index (IrisPalette.h)
+    bool lashes; // "lashes" setting: strands on the upper lids
+};
 #ifdef BOOT_EYES
-// Starts the eye task. false = could not (out of memory); nothing was drawn.
-bool start(ScreenManager &sm, TFT_eSPI &tft);
+// Starts the eye task in the given look.
+// false = could not (out of memory); nothing was drawn.
+// lids::kDemo plays the lid demo instead: one style per 12 s wake cycle, its
+// name on orb 5, for good. The eyes never hand over to the pages; the
+// settings page (still served in the demo) is how to leave it.
+bool start(ScreenManager &sm, TFT_eSPI &tft, const Look &look);
+bool demo(); // the lid demo is running
 // connected = true: play the finale, then keep looking around until end().
 // Returns at once. connected = false: stop at once and blank orbs 2 and 4.
 // No-op if not started.

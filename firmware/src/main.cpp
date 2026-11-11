@@ -18,6 +18,7 @@
 #include <Arduino.h>
 #include <LittleFS.h>
 #include "BootEyes.h" // ScreenGuard and end() are no-ops without BOOT_EYES
+#include "LidPalette.h"
 #ifdef BOOT_EYES
     #include "noseJpg.h"
 #endif
@@ -130,7 +131,8 @@ void setup() {
     Settings::load();
     m_widgetCycleDelay = Settings::get().cycle * 1000UL;
 #ifdef BOOT_EYES
-    const bool eyesWanted = Settings::get().booteyes;
+    // The lid demo plays whatever Waking eyes says: it was asked for by name
+    const bool eyesWanted = Settings::get().booteyes || Settings::get().lids == lids::kDemo;
 #else
     const bool eyesWanted = false;
 #endif
@@ -203,7 +205,8 @@ void setup() {
     bool eyesRan = false;
 #ifdef BOOT_EYES
     if (eyesWanted) {
-        eyesRan = BootEyes::start(*sm, tft);
+        const SettingsValues &v = Settings::get();
+        eyesRan = BootEyes::start(*sm, tft, {v.lids, v.iris, v.lashes});
         if (!eyesRan) { // fall back to today's screens on orbs 2, 3 and 4
             drawBootPicture();
             drawVersionScreen(1, false);
@@ -365,6 +368,20 @@ void loop() {
         widgetSet->setClearScreensOnDrawCurrent(); // Clear screen after wifiWidget
         delay(100);
     } else {
+#ifdef BOOT_EYES
+        if (s_eyesShowing && BootEyes::demo()) {
+            // Lid demo: the eyes stay up for good and only the web server
+            // runs, so the settings page can end it. No pages, no buttons.
+            otaUpdater->begin();
+            settingsPage->begin();
+            {
+                BootEyes::ScreenGuard guard; // an OTA upload draws its progress
+                otaUpdater->handle();
+            }
+            delay(2);
+            return;
+        }
+#endif
         if (!widgetSet->initialUpdateDone()) {
             widgetSet->initializeAllWidgetsData();
             if (s_eyesShowing) {
