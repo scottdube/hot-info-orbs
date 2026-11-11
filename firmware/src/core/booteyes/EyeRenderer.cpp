@@ -201,6 +201,10 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                     if (!m_irisNatural) {
                         p = m_irisRamp[iriscolor::luma565(p)];
                     }
+                } else if (m_turn16 != 16 && (ix - IRIS_WIDTH / 2) * (ix - IRIS_WIDTH / 2) +
+                                                     (irisY - IRIS_HEIGHT / 2) * (irisY - IRIS_HEIGHT / 2) <
+                                                 kPupilR2) {
+                    p = 0; // the pupil: the disk it used to show through is filled
                 } else {
                     p = scleraPixel(scleraX, scleraY);
                 }
