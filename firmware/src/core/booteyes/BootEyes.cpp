@@ -15,12 +15,13 @@ constexpr int kLabelScreen = 4; // orb 5: the style name in the lid demo
 // Longest wait for the finale in end(): connected at t ~ 0, then 2.6 s to the
 // first crack open plus the 2 s finale
 constexpr uint32_t kFinaleTimeoutMs = 6000;
-// WiFi didn't connect (issue #20): wide open, crossed toward the nose on orb 3.
-// Side 0 (orb 2) looks to the viewer's right, side 1 (orb 4) to the left.
-// Past 0..1023 on purpose: {150, 873} (the window's edge, iris 30 source px
-// off center) read on the rig as barely crossed (2026-11-11); this is 48 px.
-constexpr int16_t kCrossedGazeX[2] = {-114, 1137};
-constexpr int16_t kCrossedGazeY = 470; // a little down, toward the nose
+// WiFi didn't connect (issue #20): wide open, looking at the tip of the nose,
+// so the irises sit in the lower inner corners (as cross-eyed cartoons and
+// photos draw it). Side 0 (orb 2) looks to the viewer's right, side 1 (orb 4)
+// to the left. Rig history 2026-11-11: {150, 873} at y 470 read as barely
+// crossed; 48 px in at y 470 read as a sideways glance, not crossed.
+constexpr int16_t kCrossedGazeX[2] = {0, 1023}; // 40 source px in (the window's edge)
+constexpr int16_t kCrossedGazeY = 100;          // 29 source px down
 // Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
 // on the rig, because the upper lid follows the pupil and the pupil is aside.
 constexpr uint16_t kCrossedOpen = 256 + 160;
