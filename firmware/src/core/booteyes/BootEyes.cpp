@@ -15,6 +15,12 @@ constexpr int kLabelScreen = 4; // orb 5: the style name in the lid demo
 // Longest wait for the finale in end(): connected at t ~ 0, then 2.6 s to the
 // first crack open plus the 2 s finale
 constexpr uint32_t kFinaleTimeoutMs = 6000;
+// WiFi didn't connect (issue #20): wide open, crossed toward the nose on orb 3.
+// Side 0 (orb 2) looks to the viewer's right, side 1 (orb 4) to the left.
+constexpr int16_t kCrossedGazeX[2] = {150, 873};
+constexpr int16_t kCrossedGazeY = 470; // a little down, toward the nose
+// Frames to draw: the renderer filters upper-lid tracking over a few frames
+constexpr int kCrossedFrames = 6;
 
 ScreenManager *s_sm = nullptr;
 EyeRenderer *s_renderer = nullptr;
@@ -94,6 +100,17 @@ void eyeTask(void *) {
     vTaskDelete(nullptr);
 }
 
+// One still frame per eye, drawn after the task has stopped
+void drawCrossed() {
+    static const volatile bool kNever = false;
+    for (int f = 0; f < kCrossedFrames; f++) {
+        for (uint8_t side = 0; side < 2; side++) {
+            s_sm->selectScreen(side ? kRightScreen : kLeftScreen);
+            s_renderer->draw(side, {256, kCrossedGazeX[side], kCrossedGazeY, false}, &kNever);
+        }
+    }
+}
+
 void stopTask() {
     s_stop = true; // checked between lines, never mid-transaction
     while (!s_exited) {
@@ -155,8 +172,7 @@ void BootEyes::finish(bool connected) {
         return; // the task plays the finale, then the awake loop, until end()
     }
     stopTask();
-    s_sm->clearScreen(kLeftScreen);
-    s_sm->clearScreen(kRightScreen);
+    drawCrossed();
     release();
 }
 

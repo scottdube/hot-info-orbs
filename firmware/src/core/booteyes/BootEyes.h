@@ -21,7 +21,8 @@ struct Look {
 bool start(ScreenManager &sm, TFT_eSPI &tft, const Look &look);
 bool demo(); // the lid demo is running
 // connected = true: play the finale, then keep looking around until end().
-// Returns at once. connected = false: stop at once and blank orbs 2 and 4.
+// Returns at once. connected = false: stop at once and leave the eyes wide
+// and crossed on orbs 2 and 4, a still frame (the WiFi setup screens follow).
 // No-op if not started.
 void finish(bool connected);
 // Stops the eyes for the first page, after the finale has played (gives up

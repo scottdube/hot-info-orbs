@@ -8,6 +8,11 @@ const int lineHeight = 40;
 const int statusScreenIndex = 3;
 const int fontSize = 19;
 const int messageDelay = 5000;
+const int maxLineWidth = 200; // clears the round edge on every line the portal screens use
+// While the setup portal waits for a saved network that wasn't heard: first
+// look after a minute, then every two (the "Will retry." on orb 5)
+const unsigned long lookFirstMs = 60000;
+const unsigned long lookEveryMs = 120000;
 
 WifiWidget::WifiWidget(ScreenManager &manager) : Widget(manager) {}
 
@@ -89,23 +94,110 @@ bool WifiWidget::connect() {
     return false;
 }
 
-void WifiWidget::showPortal() {
-    m_configPortalRunning = true;
-    Serial.println("Configuration portal running.");
-    m_manager.setFont(DEFAULT_FONT);
+void WifiWidget::drawLines(const std::vector<wififail::Line> &lines, int centerY) {
+    int y = centerY - lineHeight * (int(lines.size()) - 1) / 2;
+    for (const wififail::Line &line : lines) {
+        const String text = line.text.c_str();
+        switch (line.kind) {
+        case wififail::Kind::Network: {
+            // A network name can be 32 characters: shrink a long one to the orb's width
+            m_manager.setFontColor(TFT_SKYBLUE);
+            int w, h;
+            m_manager.measureText(text, fontSize, w, h);
+            if (w > maxLineWidth) {
+                m_manager.drawFittedString(text, ScreenCenterX, y, maxLineWidth, lineHeight - 8, Align::MiddleCenter);
+            } else {
+                m_manager.drawCenterString(text, ScreenCenterX, y, fontSize);
+            }
+            break;
+        }
+        case wififail::Kind::Address:
+            m_manager.setFontColor(TFT_GREENYELLOW);
+            m_manager.drawCenterString(text, ScreenCenterX, y, fontSize);
+            break;
+        default:
+            m_manager.setFontColor(TFT_WHITE);
+            m_manager.drawCenterString(text, ScreenCenterX, y, fontSize);
+            break;
+        }
+        y += lineHeight;
+    }
     m_manager.setFontColor(TFT_WHITE);
-    m_manager.selectScreen(statusScreenIndex);
+}
+
+void WifiWidget::showPortal(bool eyesShown) {
+    m_configPortalRunning = true;
+    // Why the saved network failed, recorded by autoConnect() (issue #20)
+    const bool saved = wifimgr.getWiFiIsSaved();
+    m_savedSsid = saved ? wifimgr.getWiFiSSID(true) : String("");
+    const int result = wifimgr.getLastConxResult();
+    m_failCase = wififail::classify(saved, result);
+    Serial.printf("Configuration portal running. Saved network \"%s\", last result %d, case %d\n",
+                  m_savedSsid.c_str(), result, (int)m_failCase);
+    const wififail::Screens text = wififail::screens(m_failCase, m_savedSsid.c_str(), m_apssid.c_str());
+
+    m_manager.setFont(DEFAULT_FONT);
+    m_headlineScreen = eyesShown ? 0 : statusScreenIndex;
+    m_manager.selectScreen(m_headlineScreen);
     m_manager.clearScreen();
-    m_manager.drawCenterString("Configure", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
+    int headlineY = ScreenCenterY;
+    if (text.cross) {
+        // An X above the words: the failure reads without color
+        const int c = ScreenCenterY - 72, r = 16;
+        for (int w = -2; w <= 2; w++) {
+            m_manager.drawLine(ScreenCenterX - r + w, c - r, ScreenCenterX + r + w, c + r, TFT_RED);
+            m_manager.drawLine(ScreenCenterX + r + w, c - r, ScreenCenterX - r + w, c + r, TFT_RED);
+        }
+        headlineY += 12;
+    }
+    drawLines(text.headline, headlineY);
+
     m_manager.selectScreen(statusScreenIndex + 1);
     m_manager.clearScreen(); // the boot eyes put the version text here
-    m_manager.drawCenterString("Connect", ScreenCenterX, ScreenCenterY - lineHeight * 2, fontSize);
-    m_manager.drawCenterString("phone or PC", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
-    m_manager.drawCenterString("to WiFi network:", ScreenCenterX, ScreenCenterY, fontSize);
-    m_manager.setFontColor(TFT_SKYBLUE);
-    m_manager.drawCenterString(m_apssid, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
-    m_manager.setFontColor(TFT_GREENYELLOW);
-    m_manager.drawCenterString("192.168.4.1", ScreenCenterX, ScreenCenterY + lineHeight * 2, fontSize);
+    drawLines(text.steps, ScreenCenterY);
+
+    if (wififail::keepsLooking(m_failCase)) {
+        m_nextLook = millis() + lookFirstMs;
+    }
+}
+
+// The setup portal turns the station off, so WiFiManager never tries the saved
+// network again: an orb started while the router was off waited in setup until
+// someone power-cycled it. While nobody is on the portal, scan for the saved
+// network now and then, and restart when it is heard; autoConnect() then joins.
+void WifiWidget::lookForSavedNetwork() {
+    if (!m_configPortalRunning || !wififail::keepsLooking(m_failCase) || m_savedSsid.isEmpty()) {
+        return;
+    }
+    if (m_lookScanning) {
+        const int n = WiFi.scanComplete();
+        if (n == WIFI_SCAN_RUNNING) {
+            return;
+        }
+        m_lookScanning = false;
+        bool heard = false;
+        for (int i = 0; i < n; i++) {
+            heard = heard || WiFi.SSID(i) == m_savedSsid;
+        }
+        WiFi.scanDelete();
+        Serial.printf("Setup: %s %s\n", m_savedSsid.c_str(), heard ? "heard, restarting to join it" : "still not heard");
+        if (heard && WiFi.softAPgetStationNum() == 0) {
+            delay(100);
+            ESP.restart();
+        }
+        return;
+    }
+    if ((long)(millis() - m_nextLook) < 0) {
+        return;
+    }
+    m_nextLook = millis() + lookEveryMs;
+    // A scan hops channels and would drop a phone part-way through setup
+    if (WiFi.softAPgetStationNum() > 0) {
+        return;
+    }
+    if (WiFi.scanNetworks(true) == WIFI_SCAN_RUNNING) {
+        m_lookScanning = true;
+    }
 }
 
 void WifiWidget::update(bool force) {
@@ -113,6 +205,7 @@ void WifiWidget::update(bool force) {
 
     // If WiFiManager is non-blocking, this keeps the configuration portal running
     wifimgr.process();
+    lookForSavedNetwork();
 
     if (WiFi.status() == WL_CONNECTED) {
         if (wifimgr.getConfigPortalActive()) {
@@ -214,11 +307,18 @@ void WifiWidget::draw(bool force) {
     m_manager.selectScreen(statusScreenIndex);
     const int blankRectTop = ScreenCenterY + lineHeight / 2;
 
-    if (!m_isConnected && !m_connectionFailed) {
+    if (!m_isConnected && m_configPortalRunning) {
+        // The portal screens stand as drawn; orb 4 may hold a crossed eye
+    } else if (!m_isConnected && !m_connectionFailed) {
         m_manager.fillRect(0, blankRectTop, ScreenWidth, ScreenHeight - blankRectTop, TFT_BLACK);
         m_manager.drawCenterString(m_dotsString, ScreenCenterX, ScreenCenterY + lineHeight, fontSize);
     } else if (m_isConnected && !m_hasDisplayedSuccess) {
         m_hasDisplayedSuccess = true;
+        if (m_configPortalRunning && m_headlineScreen != statusScreenIndex) {
+            m_manager.selectScreen(m_headlineScreen); // "WiFi not found" is no longer true
+            m_manager.clearScreen();
+            m_manager.selectScreen(statusScreenIndex);
+        }
         if (!m_eyesRan) { // with the boot eyes, orb 4 keeps the awake eye
             m_manager.clearScreen();
             m_manager.drawCenterString("Success", ScreenCenterX, ScreenCenterY, fontSize);

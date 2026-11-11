@@ -3,6 +3,7 @@
     #define WIFIWIDGET_H
 
     #include "Widget.h"
+    #include "WifiFailPolicy.h"
 
 class WifiWidget : public Widget {
 public:
@@ -14,7 +15,9 @@ public:
     void begin(bool showConnecting);
     void drawConnecting();
     bool connect();
-    void showPortal();
+    // eyesShown: BootEyes left crossed eyes on orbs 2 and 4, so what went
+    // wrong goes on orb 1; without them it goes on orb 4, as before
+    void showPortal(bool eyesShown = false);
     void setEyesRan(bool ran) { m_eyesRan = ran; }
     void update(bool force = false) override;
     void draw(bool force = false) override;
@@ -27,6 +30,8 @@ public:
 
 private:
     void connectionTimedOut();
+    void drawLines(const std::vector<wififail::Line> &lines, int centerY);
+    void lookForSavedNetwork();
 
     bool m_isConnected{false};
     bool m_connectionFailed{false};
@@ -47,6 +52,13 @@ private:
     bool m_roamScanning{false};
     unsigned long m_roamJoinStarted{0};
     String m_roamSsid{""};
+
+    // Portal running because the saved network wasn't heard: look for it
+    wififail::Case m_failCase{wififail::Case::NeverSetUp};
+    int m_headlineScreen{3};
+    String m_savedSsid{""};
+    unsigned long m_nextLook{0};
+    bool m_lookScanning{false};
 };
 
 #endif // WIFIWIDGET_H
