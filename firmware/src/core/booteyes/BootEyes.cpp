@@ -38,6 +38,10 @@ constexpr float kCrossedDeg[2] = {30, 30}; // side 0 = orb 2, side 1 = orb 4
 // 2026-11-11; simulator: 20 leaves a small gap, 25 touches). The lids stay put,
 // so the iris tucks under the lower lid.
 constexpr float kCrossedDownDeg = 20;
+// And both balls moved toward the nose, source px: Scott saw a sliver of white
+// between the iris and the panel's inner edge at 30 in / 20 down. Simulator:
+// 6 nearly closes it; 12 cuts into the iris and shows a seam at the outer rim.
+constexpr float kCrossedNudge = 6;
 constexpr int16_t kCrossedGazeY = 512;          // level
 // Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
 // on the rig, because the upper lid follows the pupil and the pupil is aside.
@@ -128,7 +132,7 @@ void drawCrossed() {
     static const volatile bool kNever = false;
     for (int f = 0; f < kCrossedFrames; f++) {
         for (uint8_t side = 0; side < 2; side++) {
-            s_renderer->setTurn(kCrossedDeg[side], kCrossedDownDeg);
+            s_renderer->setTurn(kCrossedDeg[side], kCrossedDownDeg, kCrossedNudge);
             s_sm->selectScreen(side ? kRightScreen : kLeftScreen);
             s_renderer->draw(side, {kCrossedOpen, 512, kCrossedGazeY, false}, &kNever);
         }

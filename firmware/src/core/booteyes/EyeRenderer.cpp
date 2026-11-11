@@ -59,10 +59,11 @@ void EyeRenderer::setStyle(int index) {
     m_style = index;
 }
 
-void EyeRenderer::setTurn(float inward, float down) {
+void EyeRenderer::setTurn(float inward, float down, float nudge) {
     const float a = constrain(inward, -60.0f, 60.0f) * float(PI) / 180.0f;
     const float d = constrain(down, -60.0f, 60.0f) * float(PI) / 180.0f;
-    m_turned = inward != 0 || down != 0;
+    m_turned = inward != 0 || down != 0 || nudge != 0;
+    m_nudge = constrain(nudge, -20.0f, 20.0f);
     m_turnSin = sinf(a);
     m_turnCos = cosf(a);
     m_downSin = sinf(d);
@@ -147,7 +148,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
             // Undo the roll down, then the inward turn: the eye turns in, then rolls.
             int32_t sX = scleraX, iX = irisX, sY = scleraY, iY = irisY;
             if (m_turned) {
-                const float fx = float(int32_t(scleraX) - SCLERA_WIDTH / 2);
+                const float fx = float(int32_t(scleraX) - SCLERA_WIDTH / 2) - (side ? -m_nudge : m_nudge);
                 const float fy = float(int32_t(scleraY) - SCLERA_HEIGHT / 2);
                 const float z2 = kBallR * kBallR - fx * fx - fy * fy;
                 const float z = z2 > 0 ? sqrtf(z2) : 0;
