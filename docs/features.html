@@ -138,7 +138,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 <header class="hero">
   <div class="copy">
-    <div class="eyebrow">Hands-On Tech Club · feature &amp; spec sheet · Sept 2026</div>
+    <div class="eyebrow">Hands-On Tech Club · feature &amp; spec sheet · Nov 2026</div>
     <div class="brand">
       <div class="badge"><img src="assets/hot-smcomp-logo.png" alt="Hands-On Tech Small Computing logo: a hand made of tech icons holding a chip" width="184" height="240"></div>
       <h1>HOT <span>Info Orbs</span></h1>
@@ -166,7 +166,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="fig"><b>5 × 240²</b><span>round GC9A01 displays on one SPI bus</span></div>
     <div class="fig"><b>1.71 W</b><span>typical draw at 5 V, measured</span></div>
     <div class="fig"><b>0 cables</b><span>to update the firmware or change a setting after the first flash</span></div>
-    <div class="fig"><b>43%</b><span>of a firmware slot used; the stop line is 92%</span></div>
+    <div class="fig"><b>48%</b><span>of a firmware slot used; the stop line is 92%</span></div>
   </div>
 </section>
 
@@ -180,7 +180,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <span><span class="st ship">✔ Shipping</span> on <span class="num">main</span>, running on the orbs; unmarked items are shipping</span>
     <span><span class="st branch">◐ Built</span> on a branch, soaking on one orb</span>
     <span><span class="st prop">○ Proposed</span> researched, not built</span>
-    <span><span class="st prop">◔ Designed</span> schematic, board and firmware done, nothing fabricated or flashed</span>
+    <span><span class="st prop">◔ Designed</span> designed, not yet run on hardware</span>
   </div>
   <div class="groups">
     <div class="group">
@@ -234,22 +234,30 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <ul>
         <li>Up to two MQTT pages of five orbs each, set up on the settings page: a broker, then one topic, label and unit per orb. Works with Home Assistant or any other MQTT source.<span class="was">Was: one page, laid out by a JSON message with pixel positions.</span></li>
         <li>A JSON page that reads any web address, set up the same way.</li>
-        <li><span class="st branch">◐ Built</span> Long values wrap onto up to three lines, and a line break in the message starts a new line, so <span class="num">5pm</span> can sit above the act's name. The orb measures the text to find the largest size that fits, instead of estimating it.<span class="was">Was: one line, sized by an estimate. Long text came out as small as 10 px and could still run off the screen.</span></li>
-        <li><span class="st branch">◐ Built</span> One text size for the whole page by default, so five orbs side by side match. A per-page setting lets each orb be as large as fits instead.<span class="was">Was: each orb sized on its own, from 10 px to 40 px across one page.</span></li>
+        <li>Long values wrap onto up to three lines, and a line break in the message starts a new line, so <span class="num">5pm</span> can sit above the act's name. The orb measures the text to find the largest size that fits, instead of estimating it.<span class="was">Was: one line, sized by an estimate. Long text came out as small as 10 px and could still run off the screen.</span></li>
+        <li>One text size for the whole page by default, so five orbs side by side match. A per-page setting lets each orb be as large as fits instead.<span class="was">Was: each orb sized on its own, from 10 px to 40 px across one page.</span></li>
         <li>Ready-made Home Assistant recipes in CUSTOM-PAGES.md, including tonight's act at each of The Villages' five town squares.</li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>Waking eyes</h3>
+      <ul>
+        <li>At start-up the orbs wake up: eyes on orbs 2 and 4 open while WiFi connects, then look around while the data loads. Orb 3 shows the HOT hand as a nose and orb 5 the start-up progress. A “Waking eyes” setting turns it off; it is on by default.</li>
+        <li>Eye lids in ten styles, picked on the settings page: Taupe (default), Skin, Tan, Robot, Stone, Ash, Black, and the metal finishes Chrome and Stainless, plus Frost. A lid demo cycles through every style so you can choose.</li>
+        <li>Iris color: Natural (default), Blue, Brown, Green, Grey, Amber, Violet, Red or Ice. Eyelashes switch on or off. Both apply to the demo too.</li>
       </ul>
     </div>
     <div class="group">
       <h3>Port and branding</h3>
       <ul>
-        <li><span class="st prop">◔ Designed</span> Ported to the Seeed XIAO ESP32-S3 / XIAO ESP32-S3 Plus pin map. Every pin is a setting in <span class="num">config.h</span>, so a different module needs a new pin map, not new code.</li>
+        <li>Ported to the Seeed XIAO ESP32-S3 / XIAO ESP32-S3 Plus pin map; a XIAO has run all five displays on a breadboard rig since 24 Oct 2026. Every pin is a setting in <span class="num">config.h</span>, so a different module needs a new pin map, not new code.</li>
         <li>The splash reads “HOT Info Orbs by HOT-Team”. The Hands-On Tech logo is in the repo, ready to become the built-in picture.<span class="was">Was: “Info Orbs by brett.tech” and Brett's logo.</span></li>
       </ul>
     </div>
     <div class="group">
       <h3>Quality</h3>
       <ul>
-        <li>Unit tests run on a laptop and in CI for settings validation, weather parsing, the sun and moon, and custom pages: 67 tests, including WiFi roaming and MQTT text fitting.<span class="was">Was: none.</span></li>
+        <li>Unit tests run on a laptop and in CI for settings validation, weather parsing, the sun and moon, and custom pages: 99 tests, including WiFi roaming and MQTT text fitting.<span class="was">Was: none.</span></li>
         <li>The linter reports problems and no longer commits changes back, so the repository only moves when a person moves it.</li>
         <li>An upstream bug is fixed: an uninitialized loop counter in the page rotation.</li>
         <li>A written setup guide goes from an empty laptop to a running orb, and a traps file records every mistake that cost time once.<span class="was">Was: Brett's assembly video and README.</span></li>
@@ -268,7 +276,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <h3>A new carrier board</h3>
       <ul>
         <li>Carrier board by Yang and Scott, KiCad 10: the v1.1 board reworked for the XIAO. The libraries live inside the project, so you clone it and open it; there's nothing to install.<span class="was">Was: upstream's 2-layer board for an ESP32 dev kit.</span></li>
-        <li><span class="st prop">◔ Designed</span> The XIAO ESP32-S3 or S3 Plus goes on 2.54 mm headers (swappable) or solders flat on its castellations. Both share the edge pins, so either fits.<span class="was">Was: a 30/38-pin ESP32 dev kit.</span></li>
+        <li>The XIAO ESP32-S3 or S3 Plus goes on 2.54 mm headers (swappable) or solders flat on its castellations. Both share the edge pins, so either fits.<span class="was">Was: a 30/38-pin ESP32 dev kit.</span></li>
         <li>Fixed in review before fab: the fifth display's DC line connected, a button moved off a strapping pin, and a ground pour added.</li>
       </ul>
     </div>
@@ -283,7 +291,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <h3>Built to be reproducible</h3>
       <ul>
         <li>JLCPCB's design rules are loaded into the design-rule check.<span class="was">Before: the check was running against default rules.</span></li>
-        <li>The exact gerbers sent to the fab are archived and never regenerated. Ten boards were ordered on 29 Aug 2026.</li>
+        <li>The exact gerbers sent to the fab are archived and never regenerated. Ten v1.1 boards were ordered on 29 Aug 2026, and 30 of the XIAO board (rev 2.5) on 25 Oct 2026.</li>
         <li>A 3D assembly model (STEP) is available for enclosure design.</li>
       </ul>
     </div>
@@ -294,24 +302,24 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <div class="head">
     <div class="eyebrow">Two builds, one carrier board</div>
     <h2>Basic and Advanced</h2>
-    <p><b>Basic</b> is the Seeed XIAO ESP32-S3; <b>Advanced</b> is the XIAO ESP32-S3 Plus. Same carrier board, same edge pins, same firmware binary — the Plus only adds flash the build does not yet use. The builder picks either. Neither has been built yet: the board is DRC-clean and the firmware compiles.</p>
+    <p><b>Basic</b> is the Seeed XIAO ESP32-S3; <b>Advanced</b> is the XIAO ESP32-S3 Plus. Same carrier board, same edge pins, same firmware binary — the Plus only adds flash the build does not yet use. The builder picks either. The firmware runs on a XIAO breadboard rig with all five displays; the rev 2.5 carrier boards were ordered 25 Oct 2026.</p>
   </div>
   <div class="tiers">
     <article class="tier">
-      <div class="top"><h3>Basic</h3><span class="st prop">◔ Designed, not built</span></div>
+      <div class="top"><h3>Basic</h3><span class="st ship">✔ Firmware running</span></div>
       <dl>
         <dt>Module</dt><dd>Seeed XIAO ESP32-S3 (plain), on headers or soldered flat on its castellations</dd>
         <dt>Flash</dt><dd><span class="num">8 MB</span>; laid out as two 3.75 MB firmware slots so updates are safe</dd>
-        <dt>Headroom</dt><dd>Firmware fills <span class="num">43.0%</span> of a slot (build of 18 Oct 2026, custom pages included). The stop line is <span class="num">92%</span>.</dd>
+        <dt>Headroom</dt><dd>Firmware fills <span class="num">48.2%</span> of a slot (release 1.4.0, built 11 Nov 2026). The stop line is <span class="num">92%</span>.</dd>
         <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal; the board definition enables it, not yet measured on hardware</dd>
-        <dt>Carrier</dt><dd><span class="num">hardware/hot-info-orbs-xiao</span>: the v1.1 board with the module footprint swapped</dd>
+        <dt>Carrier</dt><dd><span class="num">hardware/hot-info-orbs-xiao-46mm</span>, rev 2.5: the v1.1 board reworked for the XIAO, displays 46 mm apart</dd>
         <dt>Pins</dt><dd>11 GPIO used: 8 for the displays (5 chip selects plus data, clock and DC; reset is an RC circuit) and 3 for the buttons; the busy light is the XIAO's own LED</dd>
         <dt>Module price</dt><dd>not checked</dd>
-        <dt>For</dt><dd>Every build of this board. Everything on this sheet marked ✔ is expected to run on it; none of it has run on a XIAO yet.</dd>
+        <dt>For</dt><dd>Every build of this board. Everything on this sheet marked ✔ is expected to run on it; the XIAO has run it on a breadboard rig.</dd>
       </dl>
     </article>
     <article class="tier adv">
-      <div class="top"><h3>Advanced</h3><span class="st prop">◔ Designed, not built</span></div>
+      <div class="top"><h3>Advanced</h3><span class="st prop">◔ Not yet run on a Plus</span></div>
       <dl>
         <dt>Module</dt><dd>Seeed XIAO ESP32-S3 Plus — drop-in for the plain S3: identical D0–D10 pins, LED and size (Seeed wiki, checked 14 Oct 2026)</dd>
         <dt>Flash</dt><dd><span class="num">16 MB</span>. The shared binary uses 8 MB; a 16 MB build would open the rest for widgets, fonts and pictures but would no longer run on the plain S3</dd>
@@ -333,7 +341,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <p>The orbs rotate through their pages on a timer set from the settings page. Pressing a button restarts the countdown.</p>
   </div>
   <div class="widgets">
-    <div class="w"><h3>Clock</h3><p>Seven-segment, Nixie, or your own JPG digits. 12 or 24 hour, with custom colors and shadow.</p></div>
+    <div class="w"><h3>Clock</h3><p>Seven-segment, Nixie, or your own JPG digits. 12 or 24 hour (no leading zero in 12-hour mode), with custom colors and shadow.</p></div>
     <div class="w"><h3>Weather</h3><p>Current conditions, today's high and low, a 3-day forecast, and sunrise, sunset and the moon. From Visual Crossing, or your own Tempest station.</p></div>
     <div class="w"><h3>Stocks</h3><p>Five tickers, one per orb: stocks, forex or crypto, from Twelve Data.</p></div>
     <div class="w"><h3>Custom pages</h3><p>Your own page in the rotation, set up on the settings page: a JSON file from any web address, or one live value per orb from MQTT (Home Assistant), on up to two pages of five. Long values wrap to fit. No rebuild.</p></div>
@@ -409,7 +417,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <dl>
         <dt>Toolchain</dt><dd>PlatformIO, Arduino core for ESP32</dd>
         <dt>Board files</dt><dd>KiCad 10 with project-local libraries: clone and open</dd>
-        <dt>Prototype run</dt><dd>10 v1.1 boards for an earlier module, ordered 29 Aug 2026. The XIAO board is next.</dd>
+        <dt>Prototype run</dt><dd>10 v1.1 boards for an earlier module, ordered 29 Aug 2026; 30 XIAO boards (rev 2.5), ordered 25 Oct 2026.</dd>
         <dt>License</dt><dd>AGPL-3.0, inherited from upstream. The source is public, so you're entitled to it when someone hands you a board.</dd>
       </dl>
     </div>
@@ -418,7 +426,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 <footer>
   <p><b>Credit:</b> Info Orbs is Brett Turner's project, and the firmware started as his and its contributors'. Buy <a href="https://brett.tech/collections/electronics-projects/products/info-orbs-full-dev-kit">his dev kit</a> if you want the original.</p>
-  <p>Source, setup guide and build notes: <a href="https://github.com/scottdube/hot-info-orbs">github.com/scottdube/hot-info-orbs</a>. Status as of 24 September 2026.</p>
+  <p>Source, setup guide and build notes: <a href="https://github.com/scottdube/hot-info-orbs">github.com/scottdube/hot-info-orbs</a>. Status as of 11 November 2026, firmware 1.4.0.</p>
 </footer>
 
 </div>
