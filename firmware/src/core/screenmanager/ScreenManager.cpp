@@ -242,6 +242,19 @@ void ScreenManager::drawString(const String &text, int x, int y, unsigned int fo
     m_render.drawString(text.c_str(), x, y - box.yMin, fgColor, bgColor);
 }
 
+void ScreenManager::drawClockTime(const String &hour, const String &minute, int x, int y, unsigned int fontSize) {
+    const int gap = 10; // colon center to each half, as the clocks always had
+    const unsigned int scaled = getScaledFontSize(fontSize);
+    int hourW, minuteW, h;
+    measureText(hour, scaled, hourW, h);
+    measureText(minute, scaled, minuteW, h);
+    // Group runs from x-gap-hourW to x+gap+minuteW; this puts its middle on x
+    const int shift = (hourW - minuteW) / 2;
+    drawString(hour, x - gap + shift, y, fontSize, Align::MiddleRight);
+    drawString(":", x + shift, y, fontSize, Align::MiddleCenter);
+    drawString(minute, x + gap + shift, y, fontSize, Align::MiddleLeft);
+}
+
 void ScreenManager::drawCenterString(const String &text, int x, int y, unsigned int fontSize) {
     drawString(text, x, y, fontSize, Align::MiddleCenter);
 }

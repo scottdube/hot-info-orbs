@@ -301,9 +301,7 @@ void ParqetWidget::displayClock(int8_t displayIndex, uint32_t background, uint32
     m_manager.setFontColor(color);
     m_manager.drawString(m_time->getDayAndMonth(), ScreenCenterX, clky + 60, 18, Align::MiddleCenter);
 
-    m_manager.drawString(m_time->getHourPadded(), ScreenCenterX - 10, clky, 66, Align::MiddleRight);
-    m_manager.drawString(m_time->getMinutePadded(), ScreenCenterX + 10, clky, 66, Align::MiddleLeft);
-    m_manager.drawString(":", ScreenCenterX, clky, 66, Align::MiddleCenter);
+    m_manager.drawClockTime(m_time->getHourPadded(), m_time->getMinutePadded(), ScreenCenterX, clky, 66);
 
     m_manager.fillRect(0, 0, 240, 50, extraColor);
     m_manager.setBackgroundColor(extraColor);
