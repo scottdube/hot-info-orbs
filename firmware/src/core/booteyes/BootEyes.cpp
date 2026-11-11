@@ -41,7 +41,7 @@ constexpr float kCrossedDownDeg = 20;
 // And both balls moved toward the nose, source px: Scott saw a sliver of white
 // between the iris and the panel's inner edge at 30 in / 20 down. Simulator:
 // 6 nearly closes it; 12 cuts into the iris and shows a seam at the outer rim.
-constexpr float kCrossedNudge = 6;
+constexpr float kCrossedNudge = 3; // 6 was too much on the rig
 constexpr int16_t kCrossedGazeY = 512;          // level
 // Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
 // on the rig, because the upper lid follows the pupil and the pupil is aside.
