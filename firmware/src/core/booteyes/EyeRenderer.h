@@ -25,6 +25,7 @@ class EyeRenderer {
   private:
     // Source column in the iris map for an unturned column, squeezed toward the iris center
     int32_t turnedIrisX(int32_t irisX) const;
+    uint32_t turnedScleraX(uint32_t scleraX, int32_t irisX, int32_t chord, int32_t irisShift) const;
 
     TFT_eSPI &m_tft;
     uint8_t m_turn16 = 16;

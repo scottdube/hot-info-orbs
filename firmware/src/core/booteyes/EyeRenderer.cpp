@@ -10,7 +10,9 @@ namespace eyedata {
 using namespace eyedata;
 
 namespace {
-constexpr int kOverX = 24;          // how far gaze may push the iris past the sclera window, source px
+constexpr int kOverX = 24;
+constexpr int32_t kDiskR = 44;      // the sclera art's black iris disk, shadow included, source px
+constexpr int32_t kTurnMargin = 24; // sclera band stretched over it when the iris turns          // how far gaze may push the iris past the sclera window, source px
 constexpr int kCrop = 4;             // 128 - 2*4 = 120 source px -> 240 panel px
 constexpr uint32_t kIrisScale = 110; // fixed pupil: midpoint of the example's IRIS_MIN..IRIS_MAX (90..130)
 // Lids, in lid-map units: margin past the closing threshold, small = lid edge.
@@ -56,6 +58,27 @@ void EyeRenderer::setStyle(int index) {
 
 int32_t EyeRenderer::turnedIrisX(int32_t irisX) const {
     return m_turn16 == 16 ? irisX : IRIS_WIDTH / 2 + ((irisX - IRIS_WIDTH / 2) * m_turn16) / 16;
+}
+
+// The sclera art has a black disk, a full iris wide, painted where the iris
+// sits. A turned (narrowed) iris uncovers it, and the oval then reads as the
+// back of a hole: turned AWAY (rig, 2026-11-11). So the sclera turns with the
+// iris: the band beside the oval is stretched out over the disk. chord = the
+// disk's half-width on this row, 0 off it.
+uint32_t EyeRenderer::turnedScleraX(uint32_t scleraX, int32_t irisX, int32_t chord, int32_t irisShift) const {
+    if (m_turn16 == 16 || chord == 0) {
+        return scleraX;
+    }
+    const int32_t u = abs(irisX - IRIS_WIDTH / 2);
+    const int32_t sgn = irisX >= IRIS_WIDTH / 2 ? 1 : -1;
+    const int32_t reach = chord + kTurnMargin;
+    if (u >= reach) {
+        return scleraX;
+    }
+    const int32_t edge = chord * 16 / m_turn16; // the oval's half-width
+    const int32_t us = u <= edge ? u * m_turn16 / 16 : chord + (u - edge) * (reach - chord) / (reach - edge);
+    // At u = reach this lands on the plain sample, irisShift included
+    return uint32_t(SCLERA_WIDTH / 2 + sgn * us - irisShift * u / reach);
 }
 
 bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *abort) {
@@ -111,6 +134,8 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
             finished = false;
             break;
         }
+        const int32_t dy = irisY - IRIS_HEIGHT / 2;
+        const int32_t chord = abs(dy) < kDiskR ? int32_t(sqrtf(float(kDiskR * kDiskR - dy * dy))) : 0;
         uint32_t scleraX = eyeX;
         int32_t irisX = eyeX + irisShift - (SCLERA_WIDTH - IRIS_WIDTH) / 2;
         int16_t lidX = side ? 0 : SCREEN_WIDTH - 1;
@@ -144,7 +169,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                 }
             } else if (const int32_t ix = turnedIrisX(irisX);
                        irisY < 0 || irisY >= IRIS_HEIGHT || ix < 0 || ix >= IRIS_WIDTH) {
-                p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
+                p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + turnedScleraX(scleraX, irisX, chord, irisShift));
             } else {
                 p = pgm_read_word(polar + irisY * IRIS_WIDTH + ix);
                 const uint32_t d = (kIrisScale * (p & 0x7F)) / 128;
@@ -155,7 +180,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                         p = m_irisRamp[iriscolor::luma565(p)];
                     }
                 } else {
-                    p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
+                    p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + turnedScleraX(scleraX, irisX, chord, irisShift));
                 }
             }
             const uint16_t q = uint16_t(p >> 8 | p << 8);
