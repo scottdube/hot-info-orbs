@@ -31,6 +31,7 @@ class EyeRenderer {
     void snapLids() { m_snapLids = 3; }
 
   private:
+    uint16_t nightKingIris(int32_t irisX, int32_t irisY, uint32_t scleraX, uint32_t scleraY) const;
     TFT_eSPI &m_tft;
     bool m_turned = false;
     float m_turnSin = 0, m_turnCos = 1; // of the inward turn
@@ -46,5 +47,10 @@ class EyeRenderer {
     int m_style = -1;
     uint16_t m_irisRamp[256]; // by luma; unused while m_irisNatural
     bool m_irisNatural = true;
+    // Night King iris (IrisPalette.h nightking::): sclera ramp and fixed colors
+    bool m_nightKing = false;
+    uint16_t m_scleraRamp[256]; // by luma; only while m_nightKing
+    uint16_t m_nkPupil = 0, m_nkSpeck = 0, m_nkRing = 0;
     int m_irisLo = 0, m_irisHi = 0; // the iris texture's luma range, measured once
+    int m_scleraLo = 0, m_scleraHi = 0; // the sclera texture's, likewise
 };

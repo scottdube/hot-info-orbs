@@ -509,3 +509,51 @@ other reason read "other" again.
 To test: save a bad password in NVS with a throwaway sketch
 (`WiFi.persistent(true); WiFi.begin(ssid, bad)`), then flash the firmware
 back. A firmware upload does not touch NVS.
+
+## The boot-eye pupil is a hole in the sclera, and the iris box's corners look like its centre (2026-11-11)
+
+The stock "Uncanny Eyes" pupil is not drawn from the iris colors at all.
+Inside the 80x80 iris box the renderer reads the polar map's distance
+(0 at the iris edge, 127 at the centre); past the iris texture's last row it
+falls through to the sclera texture, and the sclera has a black disc baked
+into its middle. That is why the Ice ramp, whose darkest shade is light
+blue, still shows a black pupil. Worse, the polar map gives the box's four
+corners distance 127 too, the same as the centre: the stock eye only gets
+away with it because both fall through to the sclera. Any per-pixel effect
+that treats "distance 127" as "centre" paints the corners. The Night King
+eye decides inside/outside from the pixel's x,y in the box instead
+(`EyeRenderer::nightKingIris`).
+
+Also: the eye is drawn in source pixels, each a 2x2 block on the panel, so
+any detail under ~4 panel px radius renders as a square speck.
+`tools/eye_preview/preview.sh` compiles the real `EyeRenderer.cpp` on the
+host and writes a PPM; judge looks there before flashing.
+
+## `pio test -e native` right after `pio run -e release` can delete the release build (2026-11-11)
+
+Built `release` in a fresh worktree, ran `pio test -e native` in the same
+command line, then `curl -F firmware=@.pio/build/release/firmware.bin` to
+the rig. With `-s`, curl printed nothing and the orb kept its old commit:
+`.pio/build/` held only `native/` and `project.checksum`. PlatformIO clears
+the whole build folder when it decides the project checksum changed, and on
+a worktree's first runs that happened between the two commands. Build the
+image you will flash last, upload straight after, and use `curl -sS -w
+"http=%{http_code} sent=%{size_upload}"` so a missing file (curl error 26,
+`sent=0`) shows instead of a silent nothing. Read the commit back from
+`/update` either way.
+
+## Right after an OTA upload the orb still serves the old firmware (2026-11-11)
+
+`POST /update` answers HTTP 200 once the image is written, but the orb
+does not restart straight away. A read-back fired at once got an answer,
+the right settings and the *old* commit hash (afe5df3 instead of
+fee7fe5): it was the old firmware still running. Then port 80 refused
+connections for several seconds while it rebooted. A read-back counts only
+after the connection has dropped and come back, and only if it shows the
+**new** hash. `curl --retry 15 --retry-connrefused --retry-all-errors
+--retry-delay 4 http://<orb>/settings` waits out the restart; grep the page
+for the expected short hash.
+
+Settings, unlike firmware, can be changed by a partial POST: `POST /settings`
+with only `lids=10&iris=9&lashes=0` changes those three and keeps every
+other saved value (`handlePost` starts from `Settings::get()`).
