@@ -34,14 +34,66 @@ static const char *PAGE_HEAD =
     "<!DOCTYPE html><html><head><meta charset='utf-8'>"
     "<meta name='viewport' content='width=device-width,initial-scale=1'>"
     "<title>Info Orbs settings</title><style>"
-    "body{font-family:sans-serif;max-width:34em;margin:0 auto;padding:0 16px 2em}"
+    "body{background:#fff;font-family:sans-serif;max-width:34em;margin:0 auto;padding:0 16px 2em}"
     "fieldset{border:1px solid #999;margin:1em 0}legend{font-weight:bold}"
     "label{display:block;margin:.7em 0 .2em}label.chk{margin:.3em 0}"
     "input[type=text],input[type=number],select{width:100%;box-sizing:border-box;padding:.3em;font-size:1em}"
     ".hint{color:#555;font-size:.85em}.err{color:#b00;font-weight:bold}"
     ".banner{padding:.5em;border:2px solid;margin:1em 0}"
     "button{font-size:1em;padding:.5em 1.2em;margin:.5em .5em 0 0}"
+    // Navigation (issue #21). The section in view gets a glyph, bold and a bar,
+    // not just a color
+    "nav{position:sticky;top:0;z-index:1;background:#fff;border-bottom:1px solid #999;display:flex;flex-wrap:wrap;"
+    "align-items:center;gap:.2em .9em;padding:.4em 0}"
+    "nav a{text-decoration:none;border-bottom:3px solid transparent}"
+    "nav a[aria-current]{font-weight:bold;border-bottom-color:currentColor}nav a[aria-current]::before{content:'▸ '}"
+    "nav button{margin:0 0 0 auto;padding:.3em .9em}"
+    "h3,fieldset{scroll-margin-top:3.5em}h3{margin:1.5em 0 .2em;border-bottom:2px solid #999}"
+    ".toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(9em,1fr));gap:.5em 1em;border:1px solid #999;padding:.5em}"
+    ".toc a{display:block}"
     "</style></head><body><h2>Info Orbs settings</h2>";
+
+// The sticky bar: one link per group, and Save, so a change made halfway down
+// does not need a scroll to the end. form='sf' ties the button to the main form.
+static const char *NAV = "<nav><a href='#setup'>Setup</a><a href='#display'>Display</a><a href='#advanced'>Advanced</a>"
+                         "<button type='submit' form='sf' title='Save and restart'>Save</button></nav>";
+
+// Marks the group in view in the bar, and puts a cross in the contents beside
+// every section holding an error or a failing status line
+static const char *NAV_JS =
+    "<script>(()=>{"
+    "document.querySelectorAll('fieldset[id]').forEach(f=>{if(f.querySelector('.err'))"
+    "document.querySelectorAll('.toc a[href=\"#'+f.id+'\"]').forEach(a=>a.textContent='✖ '+a.textContent)});"
+    "const l=[...document.querySelectorAll('nav a')],g=l.map(a=>document.querySelector(a.hash));"
+    "const f=()=>{let i=0;g.forEach((e,j)=>{if(e.getBoundingClientRect().top<90)i=j});"
+    "if(innerHeight+scrollY>=document.body.scrollHeight-2)i=g.length-1;"
+    "l.forEach((a,j)=>j==i?a.setAttribute('aria-current','location'):a.removeAttribute('aria-current'))};"
+    "addEventListener('scroll',f,{passive:true});f()})()</script>";
+
+// What is on the page and where; the ifdefs match the sections in renderForm
+static String contents() {
+    String h = "<div class='toc'>";
+    h += "<div><b><a href='#setup'>Setup</a></b><a href='#keys'>API keys</a><a href='#place'>Time zone and location</a>"
+         "<a href='#tempest'>Tempest stations</a><a href='#mount'>Mounting</a></div>";
+    h += "<div><b><a href='#display'>Display</a></b><a href='#rotation'>Rotation</a><a href='#clock'>Clock</a>"
+         "<a href='#weather'>Weather</a>";
+#ifdef STOCK_TICKER_LIST
+    h += "<a href='#stocks'>Stocks</a>";
+#endif
+    h += "<a href='#dimtimes'>Dim times</a><a href='#offtimes'>Screens-off times</a>";
+#ifdef BOOT_EYES
+    h += "<a href='#eyes'>Start-up eyes</a>";
+#endif
+    h += "<a href='#picture'>Start-up picture</a></div>";
+    h += "<div><b><a href='#advanced'>Advanced</a></b><a href='#webdata'>Web Data page</a><a href='#mqtt'>MQTT pages</a>"
+         "<a href='#reset'>Reset to built-in values</a><a href='/update'>Firmware update</a></div>";
+    h += "</div>";
+    return h;
+}
+
+static String groupHeading(const char *id, const char *title, const char *what) {
+    return "<h3 id='" + String(id) + "'>" + title + "</h3><div class='hint'>" + what + "</div>";
+}
 
 static std::string argStr(WebServer &s, const char *name) {
     return std::string(s.arg(name).c_str());
@@ -104,7 +156,7 @@ static String stationRow(int slot, const char *idKey, const char *lblKey, uint32
     String label = "Station " + n + " label (16 characters)";
     h += textField(lblKey, label.c_str(), lbl, defLbl, "", errors);
     if (id && !hasToken) {
-        h += "<div class='err'>&#10006; No page for this station: paste a Tempest token under <b>API keys</b> above.</div>";
+        h += "<div class='err'>&#10006; No page for this station: paste a Tempest token under <a href='#keys'>API keys</a> above.</div>";
     } else if (id) {
         h += tempestStatusLine(slot);
     }
@@ -270,8 +322,12 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     const SettingsValues d = Settings::defaults();
     const SettingsValues &stored = Settings::get(); // differs from `v` only on a rejected save
     String h;
-    h.reserve(25000); // measured page: 21.5 KB on the XIAO rig with both MQTT pages, the time zone list and two Tempest stations (2026-11-09). Below that every append reallocs a big block on a heap with no PSRAM
+    // Measured page: 21.5 KB on the XIAO rig with both MQTT pages, the time zone list and two Tempest stations (2026-11-09).
+    // The navigation (issue #21) added about 2.5 KB, counted from the source, not measured on the rig.
+    // Below the page size every append reallocs a big block on a heap with no PSRAM
+    h.reserve(27000);
     h += PAGE_HEAD;
+    h += NAV;
     h += "<p>Running " FIRMWARE_VERSION ", commit " BUILD_COMMIT ", built " BUILD_TIME "<br>Up " + uptime() + ". ";
     {
         // Glyph as well as the number. Rule-of-thumb bands, not measured on the orb
@@ -290,13 +346,17 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     // token plus a station (with both, both get pages)
     const bool tempestReady = !stored.tsttok.empty() && (stored.tstn1 || stored.tstn2);
     if (stored.wxkey.empty() && !tempestReady) {
-        h += "<div class='banner err'>&#9888; Start here: paste your free weather API key in <b>API keys</b> below, "
-             "pick your time zone under <b>Clock</b>, then press <b>Save and restart</b>.</div>";
+        h += "<div class='banner err'>&#9888; Start here: paste your free weather API key in <a href='#keys'>API keys</a>, "
+             "pick your time zone under <a href='#place'>Time zone and location</a>, then press <b>Save and restart</b>.</div>";
     }
-    h += "<form method='POST' action='/settings'>";
+    h += contents();
+    h += "<form id='sf' method='POST' action='/settings'>";
+
+    // ---- Setup: once per orb ----
+    h += groupHeading("setup", "Setup", "Once per orb: keys, where it is, how it is mounted.");
 
     // First on the page: a downloaded .bin has no key until it is pasted here
-    h += "<fieldset><legend>API keys</legend>";
+    h += "<fieldset id='keys'><legend>API keys</legend>";
     h += hint("Free, about a minute. Sign up for your own; a shared key runs out for everyone using it.");
     h += "<label for='wxkey'>Visual Crossing key (weather) &mdash; <a href='https://www.visualcrossing.com/sign-up'>sign up</a></label>"
          "<input type='password' id='wxkey' name='wxkey' value='' autocomplete='off'>";
@@ -306,33 +366,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += hint(sv::tempestTokenHint(v.tsttok, stored.tsttok, stored.tstn1 || stored.tstn2).c_str()) + errorLine(errors, "tsttok");
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Rotation</legend>";
-    h += "<label for='cycle'>Seconds per page</label><input type='number' id='cycle' name='cycle' min='0' max='3600' value='" + String(v.cycle) + "'>";
-    h += hint("0 = stay on one page. Otherwise 5 to 3600. Default: " + String(d.cycle)) + errorLine(errors, "cycle");
-    if (m_widgets && m_widgets->count() > 0) {
-        h += "<label>Show</label><input type='hidden' name='shwform' value='1'>";
-        for (int8_t i = 0; i < m_widgets->count(); i++) {
-            std::string k = m_widgets->key(i).c_str();
-            h += "<label class='chk'><input type='checkbox' name='shw" + String(i) + "' value='1'" +
-                 (sv::listContains(v.hidden, k) ? "" : " checked") + "> " + sv::htmlEscape(m_widgets->label(i).c_str()).c_str() + "</label>";
-        }
-        h += hint("Tick one to keep it on screen, or several to rotate through them. The buttons move between ticked pages only.") +
-             errorLine(errors, "show");
-    }
-    h += "</fieldset>";
-
-    h += "<fieldset><legend>Clock</legend>";
-    h += "<label for='face'>Clock face at start-up</label><select id='face' name='face'>";
-    for (int f = 0; f <= (int)ClockType::CUSTOM; f++) {
-        if (faceCompiledIn(f)) {
-            h += option(String(f), faceName(f), f == v.face);
-        }
-    }
-    h += "</select>" + hint(String("Default: ") + faceName(d.face) + ". A short press on the middle button still changes it until the next restart; a medium press toggles 12/24-hour the same way.") + errorLine(errors, "face");
-    h += boolSelect("h24", "Hours", v.h24, d.h24, "12-hour", "24-hour", errors);
-    h += boolSelect("ampm", "AM/PM indicator (12-hour, not Nixie)", v.ampm, d.ampm, "Off", "On", errors);
-    h += colorField("clkcol", "Digit color", v.clkcol, d.clkcol, errors);
-    h += colorField("shdcol", "Unlit-segment color", v.shdcol, d.shdcol, errors);
+    h += "<fieldset id='place'><legend>Time zone and location</legend>";
     // A list, not a text box: the firmware knows only the zones in TimeZones.h.
     // A stored name that is not in the table (typed before 2026-11-09) is kept
     // as its own entry so saving other settings does not change it silently.
@@ -353,92 +387,76 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
         h += "</select>" + hint("Daylight saving is automatic. Default: " + defName + ". Missing yours? Ask in the club and it gets added.") +
              errorLine(errors, "tz");
     }
+    h += textField("wxloc", "Weather location", v.wxloc, d.wxloc, ". Not checked until the orb fetches the weather.", errors);
     h += "</fieldset>";
 
-#ifdef STOCK_TICKER_LIST
-    h += "<fieldset><legend>Stocks</legend>";
-    h += textField("tickers", "Tickers, comma-separated (1 to 5, one per orb)", v.tickers, d.tickers,
-                   ". Crypto as BTC/USD; add &amp;country=Canada to pick an exchange.", errors);
-    h += "</fieldset>";
-#endif
-
-    h += "<fieldset><legend>Weather</legend>";
-    h += textField("wxloc", "Location", v.wxloc, d.wxloc, ". Not checked until the orb fetches the weather.", errors);
-    h += boolSelect("wxmetric", "Units", v.wxmetric, d.wxmetric, "&deg;F, mph", "&deg;C, km/h", errors);
-    h += boolSelect("wxdark", "Weather screens", v.wxdark, d.wxdark, "Light", "Dark", errors);
-    h += "</fieldset>";
-
-    h += "<fieldset><legend>Tempest stations</legend>";
+    h += "<fieldset id='tempest'><legend>Tempest stations</legend>";
     h += hint("Only if you have a Tempest weather station: its ID is the number in its tempestwx.com address. "
-              "Each station gets its own weather page. The location above keeps its page too while a Visual Crossing key is set. Units follow the setting above.");
+              "Each station gets its own weather page. The location above keeps its page too while a Visual Crossing key is set. "
+              "Units follow <a href='#weather'>Weather</a> under Display.");
     const bool hasToken = !stored.tsttok.empty();
     h += stationRow(0, "tstn1", "tlbl1", v.tstn1, v.tlbl1, d.tstn1, d.tlbl1, hasToken, errors);
     h += stationRow(1, "tstn2", "tlbl2", v.tstn2, v.tlbl2, d.tstn2, d.tlbl2, hasToken, errors);
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Custom pages</legend>";
-    h += hint("Pages of your own. Web Data appears once its address is set, an MQTT page once its broker and a topic are set; "
-              "saving restarts the orb. Format and Home Assistant recipe: "
-              "<a href='https://github.com/scottdube/hot-info-orbs/blob/main/docs/CUSTOM-PAGES.md'>CUSTOM-PAGES.md</a>.");
-
-    h += "<h4>Web Data</h4>";
-    h += textField("wdname", "Page name (16 characters)", v.wdname, d.wdname,
-                   ". Its tick box above uses this name, so renaming it shows it again if it was unticked.", errors);
-    // A new address from a rejected save is not echoed (its key would show, and the
-    // masked form would resubmit as the OLD address): show the stored one and say so
-    const bool wdurlLost = v.wdurl != stored.wdurl;
-    h += "<label for='wdurl'>JSON address</label><input type='text' id='wdurl' name='wdurl' inputmode='url' value='" +
-         esc(sv::maskUrl(wdurlLost ? stored.wdurl : v.wdurl)) + "'>";
-    h += hint("Blank = no page. http:// or https://. Only the part after ? is hidden here, so put keys there: leave it as shown to keep it. "
-              "A key in the path or as user:pass@ shows in full. "
-              "Default: " + (d.wdurl.empty() ? String("none") : esc(sv::maskUrl(d.wdurl)))) +
-         errorLine(errors, "wdurl");
-    if (wdurlLost && !errors.count("wdurl")) {
-        h += "<div class='err'>&#9888; Not saved: type the address again.</div>";
-    }
-    if (!v.wdurl.empty()) {
-        h += webDataStatusLine();
-    }
-
-    h += "<h4>MQTT</h4>";
-    h += hint("Two pages of five orbs each. Page 2 can use page 1's broker (one connection for both) or a broker of its own.");
-    h += mqttBrokerFields("mq", v.mqhost, v.mqport, v.mquser, v.mqpass, stored.mqpass, d.mqhost, d.mqport, d.mquser,
-                          ". Blank = no page on it.", errors);
-    if (!v.mqhost.empty()) {
-        h += mqttStatusLine(0);
-    }
-
-    h += "<h4>MQTT page 1</h4>";
-    h += textField("mqname", "Page name (16 characters)", v.mqname, d.mqname,
-                   ". Its tick box above reads MQTT 1 (this name); renaming it shows it again if it was unticked.", errors);
-    h += mqttRows("mq", v.mqt, v.mql, v.mqu, errors);
-    h += boolSelect("mqfit", "Text size", v.mqfit, d.mqfit, "Each orb as large as fits", "Same on every orb", errors);
-    h += textField("mqsetup", "Layout topic (advanced)", v.mqsetup, d.mqsetup.empty() ? std::string("none") : d.mqsetup,
-                   ". A JSON layout published here replaces the rows above until the next restart (mqttwidget/README.md).", errors);
-
-    h += "<h4>MQTT page 2</h4>";
-    h += textField("mq2name", "Page name (16 characters)", v.mq2name, d.mq2name,
-                   ". Its tick box above reads MQTT 2 (this name); renaming it shows it again if it was unticked.", errors);
-    h += boolSelect("mq2same", "Broker", v.mq2same, d.mq2same, "Its own broker", "Same as page 1", errors);
-    h += "<div id='mq2own'>";
-    h += mqttBrokerFields("mq2", v.mq2host, v.mq2port, v.mq2user, v.mq2pass, stored.mq2pass, d.mq2host, d.mq2port, d.mq2user,
-                          ". Blank = no page 2.", errors);
-    if (!v.mq2same && !v.mq2host.empty()) {
-        h += mqttStatusLine(1);
-    }
-    h += "</div>" + String(MQ2_JS);
-    h += mqttRows("mq2", v.mq2t, v.mq2l, v.mq2u, errors);
-    h += boolSelect("mq2fit", "Text size", v.mq2fit, d.mq2fit, "Each orb as large as fits", "Same on every orb", errors);
+    h += "<fieldset id='mount'><legend>Mounting</legend>";
+    h += boolSelect("invert", "Orbs", v.invert, d.invert, "Right way up", "Upside down", errors);
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Dim times</legend>";
+    // ---- Display: what the orbs show and when ----
+    h += groupHeading("display", "Display", "What the orbs show, how it looks, and when they dim or go dark.");
+
+    h += "<fieldset id='rotation'><legend>Rotation</legend>";
+    h += "<label for='cycle'>Seconds per page</label><input type='number' id='cycle' name='cycle' min='0' max='3600' value='" + String(v.cycle) + "'>";
+    h += hint("0 = stay on one page. Otherwise 5 to 3600. Default: " + String(d.cycle)) + errorLine(errors, "cycle");
+    if (m_widgets && m_widgets->count() > 0) {
+        h += "<label>Show</label><input type='hidden' name='shwform' value='1'>";
+        for (int8_t i = 0; i < m_widgets->count(); i++) {
+            std::string k = m_widgets->key(i).c_str();
+            h += "<label class='chk'><input type='checkbox' name='shw" + String(i) + "' value='1'" +
+                 (sv::listContains(v.hidden, k) ? "" : " checked") + "> " + sv::htmlEscape(m_widgets->label(i).c_str()).c_str() + "</label>";
+        }
+        h += hint("Tick one to keep it on screen, or several to rotate through them. The buttons move between ticked pages only.") +
+             errorLine(errors, "show");
+    }
+    h += "</fieldset>";
+
+    h += "<fieldset id='clock'><legend>Clock</legend>";
+    h += "<label for='face'>Clock face at start-up</label><select id='face' name='face'>";
+    for (int f = 0; f <= (int)ClockType::CUSTOM; f++) {
+        if (faceCompiledIn(f)) {
+            h += option(String(f), faceName(f), f == v.face);
+        }
+    }
+    h += "</select>" + hint(String("Default: ") + faceName(d.face) + ". A short press on the middle button still changes it until the next restart; a medium press toggles 12/24-hour the same way.") + errorLine(errors, "face");
+    h += boolSelect("h24", "Hours", v.h24, d.h24, "12-hour", "24-hour", errors);
+    h += boolSelect("ampm", "AM/PM indicator (12-hour, not Nixie)", v.ampm, d.ampm, "Off", "On", errors);
+    h += colorField("clkcol", "Digit color", v.clkcol, d.clkcol, errors);
+    h += colorField("shdcol", "Unlit-segment color", v.shdcol, d.shdcol, errors);
+    h += hint("The time zone is under <a href='#place'>Setup</a>.");
+    h += "</fieldset>";
+
+    h += "<fieldset id='weather'><legend>Weather</legend>";
+    h += boolSelect("wxmetric", "Units", v.wxmetric, d.wxmetric, "&deg;F, mph", "&deg;C, km/h", errors);
+    h += boolSelect("wxdark", "Weather screens", v.wxdark, d.wxdark, "Light", "Dark", errors);
+    h += hint("The location is under <a href='#place'>Setup</a>.");
+    h += "</fieldset>";
+
+#ifdef STOCK_TICKER_LIST
+    h += "<fieldset id='stocks'><legend>Stocks</legend>";
+    h += textField("tickers", "Tickers, comma-separated (1 to 5, one per orb)", v.tickers, d.tickers,
+                   ". Crypto as BTC/USD; add &amp;country=Canada to pick an exchange.", errors);
+    h += "</fieldset>";
+#endif
+
+    h += "<fieldset id='dimtimes'><legend>Dim times</legend>";
     h += boolSelect("dim", "Dim", v.dim, d.dim, "Off", "On", errors);
     h += hint("Darkens the colors drawn; the backlight itself stays on.");
     h += timeField("dimstartm", "From", v.dimstartm, d.dimstartm, errors);
     h += timeField("dimendm", "Until", v.dimendm, d.dimendm, errors);
     h += "</fieldset>";
 
-    h += "<fieldset><legend>Screens-off times</legend>";
+    h += "<fieldset id='offtimes'><legend>Screens-off times</legend>";
     h += boolSelect("off", "Screens off", v.off, d.off, "Off", "On", errors);
     h += hint("Blanks the panels; any button wakes them for a minute. Where these times overlap the dim times, off wins.");
     h += timeField("offstartm", "From", v.offstartm, d.offstartm, errors);
@@ -446,7 +464,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += "</fieldset>";
 
 #ifdef BOOT_EYES
-    h += "<fieldset><legend>Start-up</legend>";
+    h += "<fieldset id='eyes'><legend>Start-up eyes</legend>";
     h += boolSelect("booteyes", "Waking eyes", v.booteyes, d.booteyes, "Off", "On", errors);
     h += hint("Eyes on orbs 2 and 4 wake up while the orb joins WiFi.");
     h += "<label for='lids'>Eye lids</label><select id='lids' name='lids'>";
@@ -467,15 +485,80 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
          errorLine(errors, "iris");
     h += "</fieldset>";
 #endif
-    h += "<fieldset><legend>Mounting</legend>";
-    h += boolSelect("invert", "Orbs", v.invert, d.invert, "Right way up", "Upside down", errors);
+
+    // Inside the main form so it sits with the other Display sections: its
+    // inputs have no name, so a save never sends them, and its own two actions
+    // are a fetch and a button tied to the bootrst form below
+    h += renderBootSection();
+
+    // ---- Advanced: pages of your own ----
+    h += groupHeading("advanced", "Advanced", "Pages of your own, from a JSON address or MQTT. Saving restarts the orb.");
+    h += hint("Format and Home Assistant recipe: "
+              "<a href='https://github.com/scottdube/hot-info-orbs/blob/main/docs/CUSTOM-PAGES.md'>CUSTOM-PAGES.md</a>.");
+
+    h += "<fieldset id='webdata'><legend>Web Data page</legend>";
+    h += hint("Appears once its address is set.");
+    h += textField("wdname", "Page name (16 characters)", v.wdname, d.wdname,
+                   ". Its tick box under Rotation uses this name, so renaming it shows it again if it was unticked.", errors);
+    // A new address from a rejected save is not echoed (its key would show, and the
+    // masked form would resubmit as the OLD address): show the stored one and say so
+    const bool wdurlLost = v.wdurl != stored.wdurl;
+    h += "<label for='wdurl'>JSON address</label><input type='text' id='wdurl' name='wdurl' inputmode='url' value='" +
+         esc(sv::maskUrl(wdurlLost ? stored.wdurl : v.wdurl)) + "'>";
+    h += hint("Blank = no page. http:// or https://. Only the part after ? is hidden here, so put keys there: leave it as shown to keep it. "
+              "A key in the path or as user:pass@ shows in full. "
+              "Default: " + (d.wdurl.empty() ? String("none") : esc(sv::maskUrl(d.wdurl)))) +
+         errorLine(errors, "wdurl");
+    if (wdurlLost && !errors.count("wdurl")) {
+        h += "<div class='err'>&#9888; Not saved: type the address again.</div>";
+    }
+    if (!v.wdurl.empty()) {
+        h += webDataStatusLine();
+    }
+    h += "</fieldset>";
+
+    h += "<fieldset id='mqtt'><legend>MQTT pages</legend>";
+    h += hint("A page appears once its broker and a topic are set. Two pages of five orbs each. "
+              "Page 2 can use page 1's broker (one connection for both) or a broker of its own.");
+    h += "<h4>Broker</h4>";
+    h += mqttBrokerFields("mq", v.mqhost, v.mqport, v.mquser, v.mqpass, stored.mqpass, d.mqhost, d.mqport, d.mquser,
+                          ". Blank = no page on it.", errors);
+    if (!v.mqhost.empty()) {
+        h += mqttStatusLine(0);
+    }
+
+    h += "<h4>MQTT page 1</h4>";
+    h += textField("mqname", "Page name (16 characters)", v.mqname, d.mqname,
+                   ". Its tick box under Rotation reads MQTT 1 (this name); renaming it shows it again if it was unticked.", errors);
+    h += mqttRows("mq", v.mqt, v.mql, v.mqu, errors);
+    h += boolSelect("mqfit", "Text size", v.mqfit, d.mqfit, "Each orb as large as fits", "Same on every orb", errors);
+    h += textField("mqsetup", "Layout topic (advanced)", v.mqsetup, d.mqsetup.empty() ? std::string("none") : d.mqsetup,
+                   ". A JSON layout published here replaces the rows above until the next restart (mqttwidget/README.md).", errors);
+
+    h += "<h4>MQTT page 2</h4>";
+    h += textField("mq2name", "Page name (16 characters)", v.mq2name, d.mq2name,
+                   ". Its tick box under Rotation reads MQTT 2 (this name); renaming it shows it again if it was unticked.", errors);
+    h += boolSelect("mq2same", "Broker", v.mq2same, d.mq2same, "Its own broker", "Same as page 1", errors);
+    h += "<div id='mq2own'>";
+    h += mqttBrokerFields("mq2", v.mq2host, v.mq2port, v.mq2user, v.mq2pass, stored.mq2pass, d.mq2host, d.mq2port, d.mq2user,
+                          ". Blank = no page 2.", errors);
+    if (!v.mq2same && !v.mq2host.empty()) {
+        h += mqttStatusLine(1);
+    }
+    h += "</div>" + String(MQ2_JS);
+    h += mqttRows("mq2", v.mq2t, v.mq2l, v.mq2u, errors);
+    h += boolSelect("mq2fit", "Text size", v.mq2fit, d.mq2fit, "Each orb as large as fits", "Same on every orb", errors);
     h += "</fieldset>";
 
     h += "<button type='submit'>Save and restart</button></form>";
-    h += "<form method='POST' action='/settings/reset' onsubmit=\"return confirm('Forget every saved setting and go back to the built-in values?')\">"
+    h += "<form id='reset' method='POST' action='/settings/reset' onsubmit=\"return confirm('Forget every saved setting and go back to the built-in values?')\">"
          "<button type='submit'>Reset to built-in values</button></form>";
-    h += renderBootSection(); // its own forms - HTML forms cannot nest
-    h += "<p><a href='/update'>Firmware update</a></p></body></html>";
+    // Empty: the "Use the built-in logo" button up in Start-up picture submits it
+    // through form='bootrst' (HTML forms cannot nest)
+    h += "<form id='bootrst' method='POST' action='/settings/boot/reset' onsubmit=\"return confirm('Go back to the built-in logo?')\"></form>";
+    h += "<p><a href='/update'>Firmware update</a></p>";
+    h += NAV_JS;
+    h += "</body></html>";
     return h;
 }
 
@@ -746,7 +829,7 @@ static const char *BOOT_JS =
 
 String SettingsPage::renderBootSection() {
     bool stored = s_fsMounted && LittleFS.exists(BOOT_PATH);
-    String h = "<fieldset><legend>Start-up picture</legend>";
+    String h = "<fieldset id='picture'><legend>Start-up picture</legend>";
     h += "<img src='/boot.jpg?t=" + String(millis()) + "' width='120' height='120' style='border-radius:50%;vertical-align:middle' alt='current start-up picture'> ";
     if (!s_fsMounted) {
         h += "<span class='err'>&#10006; The orb's picture storage could not be opened, so only the built-in logo can be shown.</span>";
@@ -762,11 +845,11 @@ String SettingsPage::renderBootSection() {
              "<div><button type='button' id='up' disabled>Upload and restart</button></div><div id='msg' class='hint'></div>";
         h += BOOT_JS;
     }
-    h += "</fieldset>";
     if (stored) {
-        h += "<form method='POST' action='/settings/boot/reset' onsubmit=\"return confirm('Go back to the built-in logo?')\">"
-             "<button type='submit'>Use the built-in logo</button></form>";
+        // Submits the empty bootrst form at the end of the page, not the settings form around it
+        h += "<div><button type='submit' form='bootrst'>Use the built-in logo</button></div>";
     }
+    h += "</fieldset>";
     return h;
 }
 
