@@ -503,3 +503,16 @@ Also: the eye is drawn in source pixels, each a 2x2 block on the panel, so
 any detail under ~4 panel px radius renders as a square speck.
 `tools/eye_preview/preview.sh` compiles the real `EyeRenderer.cpp` on the
 host and writes a PPM; judge looks there before flashing.
+
+## `pio test -e native` right after `pio run -e release` can delete the release build (2026-11-11)
+
+Built `release` in a fresh worktree, ran `pio test -e native` in the same
+command line, then `curl -F firmware=@.pio/build/release/firmware.bin` to
+the rig. With `-s`, curl printed nothing and the orb kept its old commit:
+`.pio/build/` held only `native/` and `project.checksum`. PlatformIO clears
+the whole build folder when it decides the project checksum changed, and on
+a worktree's first runs that happened between the two commands. Build the
+image you will flash last, upload straight after, and use `curl -sS -w
+"http=%{http_code} sent=%{size_upload}"` so a missing file (curl error 26,
+`sent=0`) shows instead of a silent nothing. Read the commit back from
+`/update` either way.
