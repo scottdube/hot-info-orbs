@@ -72,8 +72,8 @@ static const Stop kChrome[] = {{6, {70, 76, 86}},     {12, {250, 252, 255}}, {20
 static const Stop kStainless[] = {{6, {112, 114, 116}},  {14, {214, 216, 217}}, {30, {176, 178, 180}},
                                   {60, {140, 142, 144}}, {130, {186, 188, 190}}, {255, {170, 172, 174}}};
 // Night King sockets: dark at the edge, fading out to Frost's skin
-static const Stop kSocket[] = {{6, {10, 14, 26}},    {34, {20, 28, 48}},    {70, {58, 70, 94}},
-                               {120, {128, 142, 162}}, {255, {165, 178, 192}}};
+static const Stop kSocket[] = {{6, {3, 5, 10}},       {60, {6, 9, 18}},      {110, {16, 22, 38}},
+                               {165, {52, 62, 84}},   {220, {120, 134, 156}}, {255, {165, 178, 192}}};
 // Brushing: each source row gets one of these brightness steps
 constexpr int kBrushLevels = 4;
 static const int8_t kBrush[kBrushLevels] = {-10, -3, 3, 10};
