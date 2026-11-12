@@ -215,7 +215,7 @@ static String mqttBrokerFields(const char *pre, const std::string &host, int por
     h += hint("Default: " + String(defPort)) + errorLine(errors, kp);
     h += textField(ku, "Username", user, defUser.empty() ? std::string("none") : defUser, ". Blank = no login.", errors);
     h += "<label for='" + String(kw) + "'>Password</label><input type='password' id='" + kw + "' name='" + kw +
-         "' value='' autocomplete='new-password'>";
+         "' value='' placeholder='" + sv::secretPlaceholder(storedPass) + "' autocomplete='new-password'>";
     h += hint(sv::passwordHint(pass, storedPass)) + errorLine(errors, kw);
     h += "<label class='chk'><input type='checkbox' name='" + String(kc) + "' value='1'> Clear the stored password</label>";
     return h;
@@ -359,10 +359,12 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += "<fieldset id='keys'><legend>API keys</legend>";
     h += hint("Free, about a minute. Sign up for your own; a shared key runs out for everyone using it.");
     h += "<label for='wxkey'>Visual Crossing key (weather) &mdash; <a href='https://www.visualcrossing.com/sign-up'>sign up</a></label>"
-         "<input type='password' id='wxkey' name='wxkey' value='' autocomplete='off'>";
+         "<input type='password' id='wxkey' name='wxkey' value='' placeholder='" +
+         String(sv::secretPlaceholder(stored.wxkey)) + "' autocomplete='off'>";
     h += hint(sv::apiKeyHint(v.wxkey, stored.wxkey, "Weather").c_str()) + errorLine(errors, "wxkey");
     h += "<label for='tsttok'>Tempest token (your own weather station) &mdash; tempestwx.com &gt; Settings &gt; Data Authorizations &gt; Create Token</label>"
-         "<input type='password' id='tsttok' name='tsttok' value='' autocomplete='off'>";
+         "<input type='password' id='tsttok' name='tsttok' value='' placeholder='" +
+         String(sv::secretPlaceholder(stored.tsttok)) + "' autocomplete='off'>";
     h += hint(sv::tempestTokenHint(v.tsttok, stored.tsttok, stored.tstn1 || stored.tstn2).c_str()) + errorLine(errors, "tsttok");
     h += "</fieldset>";
 

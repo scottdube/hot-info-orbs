@@ -518,11 +518,19 @@ inline bool parseApiKey(const std::string &in, const std::string &stored, std::s
     return true;
 }
 
+// What a key or password field shows while it is empty (issue #28): stars when
+// something is stored, nothing when not. Always nine, so the page does not
+// give away the length. It is the field's placeholder, never its value: the
+// stored secret stays on the orb, and a blank submit still means "keep".
+// Rejected: stars as the value (a half-edited field would be saved as the new
+// password, and password managers pick it up).
+inline const char *secretPlaceholder(const std::string &stored) { return stored.empty() ? "" : "*********"; }
+
 // `what` names what stops working without the key, e.g. "Weather".
 inline std::string apiKeyHint(const std::string &v, const std::string &stored, const char *what) {
     if (v == stored) {
         return stored.empty() ? std::string("&#9888; No key yet. ") + what + " will not work until you paste one here."
-                              : "&#10004; A key is stored. It is never shown; leave this blank to keep it.";
+                              : "&#10004; A key is stored (shown as stars). Paste a new one to replace it.";
     }
     return stored.empty() ? "&#9888; Not saved: paste the key again. No key is stored."
                           : "&#9888; Not saved: paste the key again. The stored one is unchanged.";
@@ -569,7 +577,7 @@ inline bool parsePassword(const std::string &in, bool clear, const std::string &
 // resubmits blank and silently keeps the OLD password. Never echoes either.
 inline const char *passwordHint(const std::string &v, const std::string &stored) {
     if (v == stored) {
-        return stored.empty() ? "No password stored." : "&#10004; A password is stored. It is never shown; leave this blank to keep it.";
+        return stored.empty() ? "No password stored." : "&#10004; A password is stored (shown as stars). Type a new one to replace it.";
     }
     if (v.empty()) {
         return "&#9888; Not saved: tick the box below again to clear the stored password. A password is still stored.";

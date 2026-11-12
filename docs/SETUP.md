@@ -265,7 +265,7 @@ Nothing to build: this works on the ready-made release file too.
 3. Each station now shows ✔ or ✖ for its last fetch, how long ago it was, and
    the error if it failed. A station with no token says so instead.
 
-The page never shows the token once saved; leave the field blank to keep it.
+The page never shows the token once saved: the field shows stars instead. Leave it alone to keep the token, or paste a new one to replace it.
 Building it yourself, you can instead put the token in `secrets.h`
 (`#define TEMPEST_TOKEN "..."`) and the stations in `config.h` (the commented
 `TEMPEST_STATION_1` lines in the template). Those are only defaults: whatever
