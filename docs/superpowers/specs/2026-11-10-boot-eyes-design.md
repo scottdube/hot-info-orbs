@@ -63,6 +63,13 @@ Boot with the setting on (the default):
    or WiFi falls back to the portal, orb 3 shows the picture as before.
    *(Added 2026-11-10, Scott: the hand gets its moment at the end instead of
    being covered by the face.)*
+   *(Amended 2026-11-12, issue #24: the mosaic read as an oversized logo, and
+   a member took it for his uploaded picture drawn wrong. The nose is now
+   drawn in code, alone on a black orb, in the selected eye-lid style
+   (`NoseShape.h`, `NoseRenderer.cpp`); `BootEyes` draws it with the eyes,
+   redraws it per style in the lid demo, and puts it on orb 2 when WiFi
+   fails. `tools/make_nose.py` and its images are gone. The settings page
+   says under Start-up picture when the picture shows.)*
 
 If WiFi fails and the WiFi setup portal starts, the eyes stop at once. Orbs 2
 and 4 are cleared, orb 2 gets its version text back, and the portal screens

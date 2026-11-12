@@ -19,9 +19,6 @@
 #include <LittleFS.h>
 #include "BootEyes.h" // ScreenGuard and end() are no-ops without BOOT_EYES
 #include "LidPalette.h"
-#ifdef BOOT_EYES
-    #include "noseJpg.h"
-#endif
 
 #ifdef STOCK_TICKER_LIST
     #include "stockwidget/StockWidget.h"
@@ -170,19 +167,12 @@ void setup() {
         drawVersionScreen(1, false);
     }
 
-#ifdef BOOT_EYES
-    if (eyesWanted) {
-        // Orb 3 is the bridge of the nose between the eyes; the picture gets
-        // its 2 s once the data has loaded (loop)
-        sm->selectScreen(2);
-        TJpgDec.setJpgScale(1);
-        TJpgDec.drawJpg(0, 0, kNoseJpg, sizeof(kNoseJpg));
-    } else {
+    // With the eyes, orb 3 is the nose between them (BootEyes::start draws
+    // it, in the lid style); the picture gets its 2 s once the data has
+    // loaded (loop)
+    if (!eyesWanted) {
         drawBootPicture();
     }
-#else
-    drawBootPicture();
-#endif
 
     widgetSet = new WidgetSet(sm);
 
@@ -217,12 +207,7 @@ void setup() {
     const bool wifiOk = wifiWidget->connect();
 #ifdef BOOT_EYES
     if (eyesRan) {
-        BootEyes::finish(wifiOk); // on failure: crossed eyes on orbs 1 and 3
-        if (!wifiOk) {
-            sm->selectScreen(1); // the nose between them, on orb 2
-            TJpgDec.setJpgScale(1);
-            TJpgDec.drawJpg(0, 0, kNoseJpg, sizeof(kNoseJpg));
-        }
+        BootEyes::finish(wifiOk); // on failure: crossed eyes on orbs 1 and 3, the nose on orb 2
     }
 #endif
     if (!wifiOk) {

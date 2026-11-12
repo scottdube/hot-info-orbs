@@ -1,8 +1,11 @@
 // Host tests for WakeScript.h:  pio test -e native -f test_booteyes
 #include "IrisPalette.h"
 #include "LidPalette.h"
+#include "NoseShape.h"
 #include "WakeScript.h"
+#include <cstdlib>
 #include <cstring>
+#include <initializer_list>
 #include <unity.h>
 
 void setUp() {}
@@ -358,6 +361,140 @@ void test_night_king_sockets_fade_to_frost() {
     TEST_ASSERT_EQUAL(frost.skin.b, deep.b);
 }
 
+// ---- The nose on orb 3 (issue #24): drawn in the selected lid style ----
+
+static int noseLuma(lids::Rgb c) { return (c.r * 30 + c.g * 59 + c.b * 11) / 100; }
+static bool noseNear(lids::Rgb a, lids::Rgb b, int tol) {
+    return abs(a.r - b.r) <= tol && abs(a.g - b.g) <= tol && abs(a.b - b.b) <= tol;
+}
+static const lids::Style &lidNamed(const char *name) {
+    for (int i = 0; i < lids::kCount; i++) {
+        if (strcmp(lids::kStyles[i].name, name) == 0) return lids::kStyles[i];
+    }
+    TEST_FAIL_MESSAGE(name);
+    return lids::kStyles[0];
+}
+// Deep inside one wing, clear of the nostrils and of both highlights
+static const int kDeepX = 150, kDeepY = 172;
+
+void test_nose_is_black_around_the_outline() {
+    const lids::Style &s = lidNamed("Skin");
+    const int pts[][2] = {{5, 120}, {120, 10}, {120, 232}, {30, 60}, {210, 200}, {119, 40}};
+    for (const auto &p : pts) {
+        TEST_ASSERT_FALSE(nose::inside(p[0], p[1]));
+        TEST_ASSERT_EQUAL(0, noseLuma(nose::pixel(s, p[0], p[1])));
+    }
+    TEST_ASSERT_TRUE(nose::inside(120, 166));
+}
+
+void test_nose_outline_is_symmetric_and_inside_its_box() {
+    int count = 0;
+    for (int y = 0; y < 240; y++) {
+        for (int x = 0; x < 240; x++) {
+            const bool in = nose::inside(x, y);
+            TEST_ASSERT_EQUAL(in, nose::inside(239 - x, y));
+            if (in) {
+                count++;
+                // the renderer skips everything outside this box
+                TEST_ASSERT_TRUE(x >= nose::kLeft && x < nose::kRight && y >= nose::kTop && y < nose::kBottom);
+                // and the box is well clear of the round panel's edge
+                TEST_ASSERT_TRUE((x - 120) * (x - 120) + (y - 120) * (y - 120) < 108 * 108);
+            }
+        }
+    }
+    TEST_ASSERT_TRUE(count > 9000); // a nose, not a dot: about a fifth of the panel
+}
+
+void test_nose_takes_the_lid_skin_and_shadow() {
+    for (const char *name : {"Taupe", "Skin", "Tan", "Robot", "Stone", "Ash", "Frost"}) {
+        const lids::Style &s = lidNamed(name);
+        // deep inside: between shadow and skin, nearer the skin
+        const lids::Rgb deep = nose::pixel(s, kDeepX, kDeepY);
+        TEST_ASSERT_TRUE_MESSAGE(deep.r >= s.shadow.r && deep.r <= s.skin.r, name);
+        TEST_ASSERT_TRUE_MESSAGE(abs(deep.r - s.skin.r) < abs(deep.r - s.shadow.r), name);
+        TEST_ASSERT_TRUE_MESSAGE(abs(deep.b - s.skin.b) < abs(deep.b - s.shadow.b), name);
+        // the first pixel inside the outline is the lid's shadow color
+        int x = 0;
+        while (!nose::inside(x, 180)) x++;
+        TEST_ASSERT_TRUE_MESSAGE(noseNear(nose::pixel(s, x, 180), s.shadow, 4), name);
+    }
+}
+
+void test_nose_nostrils_are_the_lash_color() {
+    const lids::Style &s = lidNamed("Skin");
+    TEST_ASSERT_TRUE(noseNear(nose::pixel(s, 120 - 21, 198), s.lash, 2));
+    TEST_ASSERT_TRUE(noseNear(nose::pixel(s, 119 + 21, 198), s.lash, 2));
+    // and between them it is skin again
+    TEST_ASSERT_TRUE(noseLuma(nose::pixel(s, 120, 196)) > 100);
+}
+
+void test_nose_bridge_fades_into_the_forehead() {
+    const lids::Style &s = lidNamed("Skin");
+    TEST_ASSERT_TRUE(nose::inside(120, 60));
+    TEST_ASSERT_EQUAL(0, noseLuma(nose::pixel(s, 120, 60)));
+    const int a = noseLuma(nose::pixel(s, 120, 75)), b = noseLuma(nose::pixel(s, 120, 92)), c = noseLuma(nose::pixel(s, 120, 114));
+    TEST_ASSERT_TRUE(a > 0 && a < b && b < c);
+}
+
+void test_nose_metal_follows_the_lid_ramp() {
+    const lids::Style &chrome = lidNamed("Chrome"), &steel = lidNamed("Stainless");
+    int chromeMax = 0, chromeMin = 255, steelMax = 0;
+    for (int y = 130; y < 200; y++) { // below the fade
+        for (int x = 0; x < 240; x++) {
+            if (!nose::inside(x, y)) continue;
+            const int c = noseLuma(nose::pixel(chrome, x, y));
+            chromeMax = c > chromeMax ? c : chromeMax;
+            chromeMin = c < chromeMin ? c : chromeMin;
+            const int st = noseLuma(nose::pixel(steel, x, y));
+            steelMax = st > steelMax ? st : steelMax;
+        }
+    }
+    TEST_ASSERT_TRUE(chromeMax >= 240); // the hard highlight band inside the rim
+    TEST_ASSERT_TRUE(chromeMin <= 90);  // the rim, the horizon band or a nostril
+    TEST_ASSERT_TRUE(steelMax >= 190 && steelMax <= 230); // softer, never white
+    // Stainless is brushed: the same depth on two rows is not always the same grey
+    bool brushed = false;
+    for (int y = 150; y < 170 && !brushed; y += 2) {
+        brushed = noseLuma(nose::pixel(steel, 120, y)) != noseLuma(nose::pixel(steel, 120, y + 2));
+    }
+    TEST_ASSERT_TRUE(brushed);
+}
+
+void test_nose_night_king_is_frost_not_socket_dark() {
+    // The socket ramp is near black for a long way in; used as it is on the
+    // eye lids it left the nose invisible (design mock, 2026-11-12)
+    const lids::Rgb deep = nose::pixel(lidNamed("Night King"), kDeepX, kDeepY);
+    TEST_ASSERT_TRUE(noseLuma(deep) > 100);
+    TEST_ASSERT_TRUE(deep.b > deep.r); // blue-grey, like Frost
+}
+
+void test_nose_black_lids_draw_an_outline() {
+    const lids::Style &s = lidNamed("Black");
+    TEST_ASSERT_EQUAL(0, noseLuma(nose::pixel(s, kDeepX, kDeepY))); // black inside, as the lids are
+    int lit = 0;
+    for (int y = 0; y < 240; y++) {
+        for (int x = 0; x < 240; x++) lit += noseLuma(nose::pixel(s, x, y)) >= 30;
+    }
+    TEST_ASSERT_TRUE(lit >= 200); // a ring of rim light, or orb 3 looks dead
+}
+
+void test_nose_shows_in_every_style() {
+    for (int i = 0; i < lids::kCount; i++) {
+        int lit = 0;
+        for (int y = 0; y < 240; y++) {
+            for (int x = 0; x < 240; x++) lit += noseLuma(nose::pixel(lids::kStyles[i], x, y)) >= 30;
+        }
+        TEST_ASSERT_TRUE_MESSAGE(lit >= 200, lids::kStyles[i].name);
+    }
+}
+
+void test_nose_style_index_out_of_range_is_the_default() {
+    TEST_ASSERT_EQUAL_PTR(&lids::kStyles[lids::kDefault], &nose::style(-1));
+    TEST_ASSERT_EQUAL_PTR(&lids::kStyles[lids::kDefault], &nose::style(lids::kCount));
+    TEST_ASSERT_EQUAL_PTR(&lids::kStyles[lids::kDefault], &nose::style(lids::kDemo));
+    TEST_ASSERT_EQUAL_PTR(&lids::kStyles[10], &nose::style(10));
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_intro_starts_shut_and_looking_down);
@@ -387,5 +524,15 @@ int main() {
     RUN_TEST(test_night_king_star_has_seven_points);
     RUN_TEST(test_night_king_specks_in_the_iris);
     RUN_TEST(test_night_king_sockets_fade_to_frost);
+    RUN_TEST(test_nose_is_black_around_the_outline);
+    RUN_TEST(test_nose_outline_is_symmetric_and_inside_its_box);
+    RUN_TEST(test_nose_takes_the_lid_skin_and_shadow);
+    RUN_TEST(test_nose_nostrils_are_the_lash_color);
+    RUN_TEST(test_nose_bridge_fades_into_the_forehead);
+    RUN_TEST(test_nose_metal_follows_the_lid_ramp);
+    RUN_TEST(test_nose_night_king_is_frost_not_socket_dark);
+    RUN_TEST(test_nose_black_lids_draw_an_outline);
+    RUN_TEST(test_nose_shows_in_every_style);
+    RUN_TEST(test_nose_style_index_out_of_range_is_the_default);
     return UNITY_END();
 }

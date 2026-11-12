@@ -53,6 +53,21 @@ static int tod(const char *in) {
     return parseTimeOfDay(in, out, err) ? out : -1;
 }
 
+// Issue #24: a member uploaded a picture, saw the nose on orb 3 and took it for
+// his picture drawn wrong. The Start-up picture section now says when it shows.
+void test_startup_picture_note() {
+    // Eyes off: the picture is up from power-on, nothing to explain
+    TEST_ASSERT_EQUAL_STRING("", startupPictureNote(false, false));
+    const char *eyes = startupPictureNote(true, false);
+    TEST_ASSERT_NOT_NULL(strstr(eyes, "orb 3 shows the nose"));
+    TEST_ASSERT_NOT_NULL(strstr(eyes, "2 seconds"));
+    // The lid demo never hands over to the pages, so the picture never shows
+    const char *demo = startupPictureNote(true, true);
+    TEST_ASSERT_NOT_NULL(strstr(demo, "demo"));
+    TEST_ASSERT_NOT_NULL(strstr(demo, "not shown"));
+    TEST_ASSERT_NULL(strstr(demo, "2 seconds"));
+}
+
 void test_time_of_day() {
     TEST_ASSERT_EQUAL(0, tod("0"));
     TEST_ASSERT_EQUAL(16 * 60, tod("16"));
@@ -470,6 +485,7 @@ void test_tz_dst_switch() {
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_cycle);
+    RUN_TEST(test_startup_picture_note);
     RUN_TEST(test_time_of_day);
     RUN_TEST(test_time_text);
     RUN_TEST(test_time_range);
