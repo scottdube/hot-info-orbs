@@ -167,6 +167,7 @@ void test_lid_indices_are_fixed() {
     TEST_ASSERT_EQUAL(7, styleIndex("Chrome"));
     TEST_ASSERT_EQUAL(8, styleIndex("Stainless"));
     TEST_ASSERT_EQUAL(9, styleIndex("Frost"));
+    TEST_ASSERT_EQUAL(10, styleIndex("Night King"));
     TEST_ASSERT_EQUAL(0, lids::kDefault);
     TEST_ASSERT_TRUE(lids::kDemo >= lids::kCount);
 }
@@ -253,8 +254,8 @@ void test_lid_demo_cycle_is_a_whole_wake() {
 // --- IrisPalette.h --------------------------------------------------------------
 
 void test_iris_indices_are_fixed() {
-    const char *want[] = {"Natural", "Blue", "Brown", "Green", "Grey", "Amber", "Violet", "Red", "Ice"};
-    TEST_ASSERT_EQUAL(9, iriscolor::kCount);
+    const char *want[] = {"Natural", "Blue", "Brown", "Green", "Grey", "Amber", "Violet", "Red", "Ice", "Night King"};
+    TEST_ASSERT_EQUAL(10, iriscolor::kCount);
     for (int i = 0; i < iriscolor::kCount; i++) {
         TEST_ASSERT_EQUAL_STRING(want[i], iriscolor::kIrises[i].name);
     }
@@ -295,6 +296,68 @@ void test_iris_range_trims_two_percent() {
     TEST_ASSERT_EQUAL(180, hi);
 }
 
+// --- Night King ------------------------------------------------------------------
+
+// Only the Night King entries change the eye's shape; every other choice,
+// Ice and Frost included, renders exactly as before
+void test_night_king_is_its_own_choice() {
+    for (int i = 0; i < iriscolor::kCount; i++) {
+        const bool nk = strcmp(iriscolor::kIrises[i].name, "Night King") == 0;
+        TEST_ASSERT_EQUAL(nk, iriscolor::kIrises[i].nightKing);
+    }
+    const lids::Style &frost = lids::kStyles[styleIndex("Frost")];
+    TEST_ASSERT_TRUE(frost.finish == lids::Finish::Flat);
+    TEST_ASSERT_TRUE(lids::kStyles[styleIndex("Night King")].finish == lids::Finish::Socket);
+}
+
+// Walk once around the star just inside its reach: count the runs of pupil
+void test_night_king_star_has_seven_points() {
+    namespace nk = iriscolor::nightking;
+    const uint32_t raw = 127 - (nk::kTip - 6);
+    int runs = 0;
+    bool prev = nk::pupil(raw, 511);
+    for (uint32_t a = 0; a < 512; a++) {
+        const bool cur = nk::pupil(raw, a);
+        if (cur && !prev) {
+            runs++;
+        }
+        prev = cur;
+    }
+    TEST_ASSERT_EQUAL(7, runs);
+    TEST_ASSERT_TRUE(nk::pupil(127 - (nk::kTip - 2), nk::kUp)); // a point straight up
+    TEST_ASSERT_TRUE(nk::pupil(127, 0));                        // the core
+    TEST_ASSERT_FALSE(nk::pupil(127 - nk::kTip, nk::kUp));      // nothing past the tips
+}
+
+// Every speck sits wholly inside the iris and clear of the star's reach
+void test_night_king_specks_in_the_iris() {
+    namespace nk = iriscolor::nightking;
+    const int tipR = 79 * nk::kTip / 127; // the star's reach in half pixels
+    for (int i = 0; i < nk::kSpeckCount; i++) {
+        const nk::Speck &k = nk::kSpecks[i];
+        const int R = k.r + nk::kRing;
+        const int c2 = k.x * k.x + k.y * k.y;
+        TEST_ASSERT_TRUE(c2 < (79 - R) * (79 - R));
+        TEST_ASSERT_TRUE(c2 > (tipR + R) * (tipR + R));
+        TEST_ASSERT_TRUE(k.r >= 4); // smaller comes out square on the panel
+        TEST_ASSERT_EQUAL(2, nk::speck(k.x, k.y));
+        TEST_ASSERT_EQUAL(1, nk::speck(k.x + k.r + 1, k.y));
+    }
+    TEST_ASSERT_EQUAL(0, nk::speck(0, 0));
+}
+
+// The sockets are dark at the lid edge and fade out to Frost's skin
+void test_night_king_sockets_fade_to_frost() {
+    const lids::Style &s = lids::kStyles[styleIndex("Night King")];
+    const lids::Style &frost = lids::kStyles[styleIndex("Frost")];
+    const lids::Rgb edge = lids::body(s, lids::kLashW, 0);
+    const lids::Rgb deep = lids::body(s, 255, 0);
+    TEST_ASSERT_TRUE(edge.r + edge.g + edge.b < 60);
+    TEST_ASSERT_EQUAL(frost.skin.r, deep.r);
+    TEST_ASSERT_EQUAL(frost.skin.g, deep.g);
+    TEST_ASSERT_EQUAL(frost.skin.b, deep.b);
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_intro_starts_shut_and_looking_down);
@@ -320,5 +383,9 @@ int main() {
     RUN_TEST(test_iris_luma);
     RUN_TEST(test_iris_ramp_stretches_the_range);
     RUN_TEST(test_iris_range_trims_two_percent);
+    RUN_TEST(test_night_king_is_its_own_choice);
+    RUN_TEST(test_night_king_star_has_seven_points);
+    RUN_TEST(test_night_king_specks_in_the_iris);
+    RUN_TEST(test_night_king_sockets_fade_to_frost);
     return UNITY_END();
 }

@@ -11,6 +11,9 @@
 // a metal shell. A flat grey read as plastic in the mind's eye, not metal.
 // Frost (added the same evening): pale blue-grey, for a Night King look with
 // the Ice iris and lashes off; Robot is too dark and saturated for that.
+// Night King (2026-11-11): the dark sockets on the EW season 8 cover. Near
+// black at the lid edge, deep blue-grey for a band, then fading out to Frost,
+// so the eye sits in a shadowed hollow. Its own style; Frost is unchanged.
 // Lash strands are their own setting ("Eyelashes", any style), not part of a
 // style: they were asked for as a switch, metal included.
 //
@@ -27,7 +30,7 @@ namespace lids {
 constexpr int32_t kLashW = 6;    // lash line
 constexpr int32_t kShadowW = 14; // flat lids: shadow band after the lash line
 
-enum class Finish : uint8_t { Flat, Chrome, Stainless };
+enum class Finish : uint8_t { Flat, Chrome, Stainless, Socket };
 
 struct Rgb {
     uint8_t r, g, b;
@@ -55,6 +58,7 @@ static const Style kStyles[] = {
     {"Chrome", {0, 0, 0}, {0, 0, 0}, {28, 32, 38}, Finish::Chrome},
     {"Stainless", {0, 0, 0}, {0, 0, 0}, {58, 60, 62}, Finish::Stainless},
     {"Frost", {165, 178, 192}, {118, 132, 150}, {20, 28, 40}, Finish::Flat},
+    {"Night King", {0, 0, 0}, {0, 0, 0}, {6, 10, 20}, Finish::Socket},
 };
 constexpr int kCount = int(sizeof(kStyles) / sizeof(kStyles[0]));
 constexpr int kDefault = 0; // Taupe, as shipped in 1.3.0
@@ -67,6 +71,9 @@ static const Stop kChrome[] = {{6, {70, 76, 86}},     {12, {250, 252, 255}}, {20
                                {52, {108, 118, 134}}, {110, {214, 221, 230}}, {255, {236, 240, 246}}};
 static const Stop kStainless[] = {{6, {112, 114, 116}},  {14, {214, 216, 217}}, {30, {176, 178, 180}},
                                   {60, {140, 142, 144}}, {130, {186, 188, 190}}, {255, {170, 172, 174}}};
+// Night King sockets: dark at the edge, fading out to Frost's skin
+static const Stop kSocket[] = {{6, {3, 5, 10}},       {60, {6, 9, 18}},      {110, {16, 22, 38}},
+                               {165, {52, 62, 84}},   {220, {120, 134, 156}}, {255, {165, 178, 192}}};
 // Brushing: each source row gets one of these brightness steps
 constexpr int kBrushLevels = 4;
 static const int8_t kBrush[kBrushLevels] = {-10, -3, 3, 10};
@@ -108,6 +115,8 @@ inline Rgb body(const Style &s, int32_t m, int level) {
     switch (s.finish) {
     case Finish::Chrome:
         return ramp(kChrome, m);
+    case Finish::Socket:
+        return ramp(kSocket, m);
     case Finish::Stainless: {
         const Rgb c = ramp(kStainless, m);
         const int d = kBrush[level];

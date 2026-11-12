@@ -188,6 +188,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <ul>
         <li>A settings page at <span class="num">http://&lt;orb&gt;/settings</span>. It covers rotation time, tickers, weather town, units and light/dark mode, time zone, 12/24 hour and AM/PM, starting clock face, clock and shadow colors, dim and screens-off hours, which pages to show, and upside-down mounting.<span class="was">Was: edit <span class="num">config.h</span>, rebuild, reflash over USB.</span></li>
         <li>Settings are stored on the orb and survive restarts and firmware updates. <span class="num">config.h</span> supplies the defaults, and one button resets to them.</li>
+        <li>The page is grouped into Setup, Display and Advanced, with a contents list at the top and a bar that stays on screen with the group links and a Save button. The group you are in is marked with a glyph and an underline, not by color alone.<span class="was">Was: one long page, Save at the bottom.</span></li>
         <li>The orb checks every field before it saves. Problems show next to the field, marked ✔ / ✖ / ⚠ as well as by color.</li>
         <li>Upload your own start-up picture. Your browser crops and shrinks it to 240 × 240, and a bad file falls back to the built-in logo.<span class="was">Was: fixed when the firmware was built.</span></li>
       </ul>
@@ -208,6 +209,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <li>Two firmware slots. A new image counts as good only once it reaches WiFi; otherwise the orb rolls back to the previous one.</li>
         <li>The update and settings pages show the running version, commit and build time.</li>
         <li>The boot screen shows how much of the firmware slot is used, so the headroom is visible without a laptop.</li>
+        <li>When WiFi fails, orb 5 says which case it is: never set up, network not found, or wrong password. A wrong password is reported in about 18 seconds and not retried; a missing network is looked for again while the setup portal runs. Joining from the portal restarts the orbs.<span class="was">Was: one generic screen, and about 5 minutes to give up on a wrong password.</span></li>
       </ul>
     </div>
     <div class="group">
@@ -244,8 +246,9 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <h3>Waking eyes</h3>
       <ul>
         <li>At start-up the orbs wake up: eyes on orbs 2 and 4 open while WiFi connects, then look around while the data loads. Orb 3 shows the HOT hand as a nose and orb 5 the start-up progress. A “Waking eyes” setting turns it off; it is on by default.</li>
-        <li>Eye lids in ten styles, picked on the settings page: Taupe (default), Skin, Tan, Robot, Stone, Ash, Black, and the metal finishes Chrome and Stainless, plus Frost. A lid demo cycles through every style so you can choose.</li>
-        <li>Iris color: Natural (default), Blue, Brown, Green, Grey, Amber, Violet, Red or Ice. Eyelashes switch on or off. Both apply to the demo too.</li>
+        <li>If WiFi fails after the waking eyes, the orbs go cross-eyed: eyes on orbs 1 and 3, the nose on orb 2, the message on orbs 4 and 5.</li>
+        <li>Eye lids in eleven styles, picked on the settings page: Taupe (default), Skin, Tan, Robot, Stone, Ash, Black, and the metal finishes Chrome and Stainless, plus Frost and Night King (dark sockets). A lid demo cycles through every style so you can choose.</li>
+        <li>Iris color: Natural (default), Blue, Brown, Green, Grey, Amber, Violet, Red or Ice. Night King is a whole eye rather than a color: a seven-pointed star for a pupil, dark specks in the iris and a glowing blue eyeball; pair it with the Night King lids and eyelashes off. Eyelashes switch on or off. Both apply to the demo too.</li>
       </ul>
     </div>
     <div class="group">
@@ -258,7 +261,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="group">
       <h3>Quality</h3>
       <ul>
-        <li>Unit tests run on a laptop and in CI for settings validation, weather parsing, the sun and moon, and custom pages: 99 tests, including WiFi roaming and MQTT text fitting.<span class="was">Was: none.</span></li>
+        <li>Unit tests run on a laptop and in CI for settings validation, weather parsing, the sun and moon, and custom pages: 108 tests, including WiFi roaming and MQTT text fitting.<span class="was">Was: none.</span></li>
         <li>The linter reports problems and no longer commits changes back, so the repository only moves when a person moves it.</li>
         <li>An upstream bug is fixed: an uninitialized loop counter in the page rotation.</li>
         <li>A written setup guide goes from an empty laptop to a running orb, and a traps file records every mistake that cost time once.<span class="was">Was: Brett's assembly video and README.</span></li>
@@ -311,7 +314,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <dl>
         <dt>Module</dt><dd>Seeed XIAO ESP32-S3 (plain), on headers or soldered flat on its castellations</dd>
         <dt>Flash</dt><dd><span class="num">8 MB</span>; laid out as two 3.75 MB firmware slots so updates are safe</dd>
-        <dt>Headroom</dt><dd>Firmware fills <span class="num">48.2%</span> of a slot (release 1.4.0, built 11 Nov 2026). The stop line is <span class="num">92%</span>.</dd>
+        <dt>Headroom</dt><dd>Firmware fills <span class="num">48.4%</span> of a slot (release 1.5.0, built 12 Nov 2026). The stop line is <span class="num">92%</span>.</dd>
         <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal; the board definition enables it, not yet measured on hardware</dd>
         <dt>Carrier</dt><dd><span class="num">hardware/hot-info-orbs-xiao-46mm</span>, rev 2.5: the v1.1 board reworked for the XIAO, displays 46 mm apart</dd>
         <dt>Pins</dt><dd>11 GPIO used: 8 for the displays (5 chip selects plus data, clock and DC; reset is an RC circuit) and 3 for the buttons; the busy light is the XIAO's own LED</dd>
@@ -427,7 +430,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 <footer>
   <p><b>Credit:</b> Info Orbs is Brett Turner's project, and the firmware started as his and its contributors'. Buy <a href="https://brett.tech/collections/electronics-projects/products/info-orbs-full-dev-kit">his dev kit</a> if you want the original.</p>
-  <p>Source, setup guide and build notes: <a href="https://github.com/scottdube/hot-info-orbs">github.com/scottdube/hot-info-orbs</a>. Status as of 11 November 2026, firmware 1.4.0.</p>
+  <p>Source, setup guide and build notes: <a href="https://github.com/scottdube/hot-info-orbs">github.com/scottdube/hot-info-orbs</a>. Status as of 12 November 2026, firmware 1.5.0.</p>
 </footer>
 
 </div>
