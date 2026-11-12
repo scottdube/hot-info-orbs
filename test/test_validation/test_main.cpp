@@ -365,6 +365,9 @@ void test_password_hint() {
     // Untouched: the old wording
     TEST_ASSERT_EQUAL_STRING("No password stored.", passwordHint("", ""));
     TEST_ASSERT_NOT_NULL(strstr(passwordHint("old", "old"), "A password is stored"));
+    // Issue #28: the field shows stars, so the hint must not call it blank
+    TEST_ASSERT_NOT_NULL(strstr(passwordHint("old", "old"), "shown as stars"));
+    TEST_ASSERT_NULL(strstr(passwordHint("old", "old"), "blank"));
     // Rejected save with a newly typed password: must NOT claim the stored one is kept as typed
     TEST_ASSERT_NOT_NULL(strstr(passwordHint("new", "old"), "Not saved: type the password again"));
     TEST_ASSERT_NOT_NULL(strstr(passwordHint("new", ""), "Not saved: type the password again"));
@@ -374,6 +377,16 @@ void test_password_hint() {
     // Neither text may carry either password
     TEST_ASSERT_NULL(strstr(passwordHint("hunter2", "swordfish"), "hunter2"));
     TEST_ASSERT_NULL(strstr(passwordHint("hunter2", "swordfish"), "swordfish"));
+}
+
+// Issue #28: a stored key or password shows as stars in its (otherwise empty)
+// field. A placeholder, not a value: a blank submit still means "keep".
+void test_secret_placeholder() {
+    TEST_ASSERT_EQUAL_STRING("", secretPlaceholder(""));
+    TEST_ASSERT_EQUAL_STRING("*********", secretPlaceholder("k"));
+    // Always nine stars: the page must not give away how long the secret is
+    TEST_ASSERT_EQUAL_STRING("*********", secretPlaceholder(std::string(64, 'p')));
+    TEST_ASSERT_EQUAL_STRING("*********", secretPlaceholder("hunter2"));
 }
 
 void test_api_key() {
@@ -393,6 +406,9 @@ void test_api_key() {
 void test_api_key_hint() {
     TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("", "", "Weather").c_str(), "Weather will not work"));
     TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("k", "k", "Weather").c_str(), "A key is stored"));
+    // Issue #28: the field shows stars, so the hint must not call it blank
+    TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("k", "k", "Weather").c_str(), "shown as stars"));
+    TEST_ASSERT_NULL(strstr(apiKeyHint("k", "k", "Weather").c_str(), "blank"));
     TEST_ASSERT_NOT_NULL(strstr(apiKeyHint("new", "old", "Weather").c_str(), "paste the key again"));
     TEST_ASSERT_NULL(strstr(apiKeyHint("secretA", "secretB", "Weather").c_str(), "secret"));
 }
@@ -494,6 +510,7 @@ int main() {
     RUN_TEST(test_topic);
     RUN_TEST(test_password);
     RUN_TEST(test_password_hint);
+    RUN_TEST(test_secret_placeholder);
     RUN_TEST(test_api_key);
     RUN_TEST(test_api_key_hint);
     RUN_TEST(test_tempest_token);
