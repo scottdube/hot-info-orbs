@@ -17,11 +17,28 @@ class EyeRenderer {
     // index into iriscolor::kIrises; out of range = natural
     void setIris(int index);
     void setLashes(bool on) { m_strands = on; } // strands on the upper lid
+    // Turn the next draw's eye inward (toward orb 3) by this many degrees,
+    // negative = outward. The eye is drawn as a ball rotated about its
+    // vertical axis: every pixel samples the straight-on art where the turned
+    // ball puts it, so iris, pupil and veins turn together and the iris
+    // squashes toward the far side. The lids stay put. 0 = the waking eyes
+    // (gazeX drives them). The crossed eyes (issue #20) set it.
+    // down = then rolled down about the horizontal axis, degrees; negative = up.
+    // nudge = the whole ball moved toward the nose, source px (panel px / 2).
+    void setTurn(float inward, float down, float nudge = 0);
+    // The next draw of each eye puts the upper lid where it settles instead of
+    // filtering toward it over a few frames: for a single still frame
+    void snapLids() { m_snapLids = 3; }
 
   private:
     uint16_t nightKingIris(int32_t irisX, int32_t irisY, uint32_t scleraX, uint32_t scleraY) const;
     TFT_eSPI &m_tft;
+    bool m_turned = false;
+    float m_turnSin = 0, m_turnCos = 1; // of the inward turn
+    float m_downSin = 0, m_downCos = 1; // of the downward roll
+    float m_nudge = 0;                  // ball center toward the nose, source px
     uint8_t m_uThreshold[2] = {128, 128}; // upper-lid tracking, filtered per eye
+    uint8_t m_snapLids = 0;               // bit per side: skip the filter once
     uint16_t m_line[240];
     // Lid body by [brushing step][margin], RGB565; flat styles fill every step alike
     uint16_t m_body[4][256];

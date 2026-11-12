@@ -10,6 +10,12 @@ namespace eyedata {
 using namespace eyedata;
 
 namespace {
+constexpr int kOverX = 24;          // how far gaze may push the iris past the sclera window, source px
+// Eyeball radius, source px: the round panel's, so the ball's edge is the
+// panel's edge and a turned iris squashes against it. Rejected 80 (a real
+// eye's iris-to-ball ratio): the panel then clips the turned iris instead,
+// which reads as a slide again (simulator, 2026-11-11).
+constexpr float kBallR = 60.0f;
 constexpr int kCrop = 4;             // 128 - 2*4 = 120 source px -> 240 panel px
 constexpr uint32_t kIrisScale = 110; // fixed pupil: midpoint of the example's IRIS_MIN..IRIS_MAX (90..130)
 // Lids, in lid-map units: margin past the closing threshold, small = lid edge.
@@ -66,6 +72,17 @@ void EyeRenderer::setStyle(int index) {
     m_style = index;
 }
 
+void EyeRenderer::setTurn(float inward, float down, float nudge) {
+    const float a = constrain(inward, -60.0f, 60.0f) * float(PI) / 180.0f;
+    const float d = constrain(down, -60.0f, 60.0f) * float(PI) / 180.0f;
+    m_turned = inward != 0 || down != 0 || nudge != 0;
+    m_nudge = constrain(nudge, -20.0f, 20.0f);
+    m_turnSin = sinf(a);
+    m_turnCos = cosf(a);
+    m_downSin = sinf(d);
+    m_downCos = cosf(d);
+}
+
 // One iris-box pixel of the Night King eye. Inside/outside the iris comes from
 // the pixel's position, not the polar map: the map gives the box's corners the
 // same distance as the centre (both 127), and the stock eye only tells them
@@ -95,9 +112,22 @@ uint16_t EyeRenderer::nightKingIris(int32_t irisX, int32_t irisY, uint32_t scler
 
 bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *abort) {
     // Gaze 0..1023 -> window offset into the 200x200 sclera, slightly converged
-    int32_t eyeX = map(pose.gazeX, 0, 1023, 0, SCLERA_WIDTH - SCREEN_WIDTH) + (side ? 4 : -4);
+    const int32_t gazeWindowX = map(pose.gazeX, 0, 1023, 0, SCLERA_WIDTH - SCREEN_WIDTH) + (side ? 4 : -4);
+    int32_t eyeX = gazeWindowX;
     int32_t eyeY = map(pose.gazeY, 0, 1023, 0, SCLERA_HEIGHT - SCREEN_HEIGHT);
     eyeX = constrain(eyeX, 0, SCLERA_WIDTH - SCREEN_WIDTH);
+    // A turned eye keeps its sclera centered and moves only the iris: sliding
+    // the window to the sclera's edge put its red rim on the outer side, which
+    // reads as the nose corner, so the eyes looked turned outward (rig, 2026-11-11).
+    if (m_turned) {
+        eyeX = (SCLERA_WIDTH - SCREEN_WIDTH) / 2;
+    }
+    // Gaze past 0..1023 slides only the iris further: the sclera stays put.
+    // Sliding the window past the sclera smeared its veiny rim across the eye
+    // on the rig (2026-11-11). A turned eye ignores gazeX.
+    const int32_t irisShift = m_turned ? 0 : constrain(gazeWindowX, -kOverX, SCLERA_WIDTH - SCREEN_WIDTH + kOverX) - eyeX;
+    // Inward = toward orb 3: the viewer's right for side 0 (orb 2), left for side 1
+    const float turnSin = side ? -m_turnSin : m_turnSin;
     eyeY = constrain(eyeY, 0, SCLERA_HEIGHT - SCREEN_HEIGHT);
 
     // Upper lid tracks the pupil (sampled just above it); the lower lid follows
@@ -109,13 +139,25 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
              pgm_read_byte(upper + sampleY * SCREEN_WIDTH + (SCREEN_WIDTH - 1 - sampleX))) /
             2;
     }
-    m_uThreshold[side] = (m_uThreshold[side] * 3 + n) / 4;
+    if (m_snapLids & (1 << side)) {
+        m_uThreshold[side] = n;
+        m_snapLids &= ~(1 << side);
+    } else {
+        m_uThreshold[side] = (m_uThreshold[side] * 3 + n) / 4;
+    }
     uint32_t uT = m_uThreshold[side];
     uint32_t lT = 254 - uT;
     // The script closes the lids over the tracking: 254 = shut
     const uint32_t open = pose.open > 256 ? 256 : pose.open;
     uT = (uT * open + 254 * (256 - open)) / 256;
     lT = (lT * open + 254 * (256 - open)) / 256;
+    // Past 256 = wider than tracking (the surprised, crossed eyes): both lids
+    // pull back, up to 256 more = as far as the lid maps go
+    if (pose.open > 256) {
+        const uint32_t wide = pose.open - 256 > 256 ? 256 : pose.open - 256;
+        uT = uT * (256 - wide) / 256;
+        lT = lT * (256 - wide) / 256;
+    }
 
     const bool swap = m_tft.getSwapBytes();
     m_tft.setSwapBytes(false); // bytes are swapped by hand below, as in the example
@@ -135,7 +177,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
             break;
         }
         uint32_t scleraX = eyeX;
-        int32_t irisX = eyeX - (SCLERA_WIDTH - IRIS_WIDTH) / 2;
+        int32_t irisX = eyeX + irisShift - (SCLERA_WIDTH - IRIS_WIDTH) / 2;
         int16_t lidX = side ? 0 : SCREEN_WIDTH - 1;
         uint16_t o = 0;
         const uint16_t *body = m_body[lids::brushLevel(screenY)]; // one brushing step per row
@@ -145,6 +187,25 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
             }
             const uint32_t vLo = pgm_read_byte(lower + screenY * SCREEN_WIDTH + lidX);
             const uint32_t vUp = pgm_read_byte(upper + screenY * SCREEN_WIDTH + lidX);
+            // A turned eye: where on the straight-on art this pixel of the turned
+            // ball lies. Moving the flat iris around the opening read as a
+            // slide, not a turn (rig, 2026-11-11).
+            // Undo the roll down, then the inward turn: the eye turns in, then rolls.
+            int32_t sX = scleraX, iX = irisX, sY = scleraY, iY = irisY;
+            if (m_turned) {
+                const float fx = float(int32_t(scleraX) - SCLERA_WIDTH / 2) - (side ? -m_nudge : m_nudge);
+                const float fy = float(int32_t(scleraY) - SCLERA_HEIGHT / 2);
+                const float z2 = kBallR * kBallR - fx * fx - fy * fy;
+                const float z = z2 > 0 ? sqrtf(z2) : 0;
+                const float v = fy * m_downCos - z * m_downSin; // art row, from center
+                const float w = fy * m_downSin + z * m_downCos; // depth before the roll
+                sX = SCLERA_WIDTH / 2 + lroundf(fx * m_turnCos - w * turnSin);
+                sX = constrain(sX, 0, SCLERA_WIDTH - 1);
+                iX = sX - (SCLERA_WIDTH - IRIS_WIDTH) / 2;
+                sY = SCLERA_HEIGHT / 2 + lroundf(v);
+                sY = constrain(sY, 0, SCLERA_HEIGHT - 1);
+                iY = sY - (SCLERA_HEIGHT - IRIS_HEIGHT) / 2;
+            }
             uint32_t p;
             if (vLo <= lT || vUp <= uT) {
                 const int32_t mU = (vUp <= uT) ? int32_t(uT) - int32_t(vUp) : 9999;
@@ -165,15 +226,15 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                         p = m_lash;
                     }
                 }
-            } else if (irisY < 0 || irisY >= IRIS_HEIGHT || irisX < 0 || irisX >= IRIS_WIDTH) {
-                p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
+            } else if (iY < 0 || iY >= IRIS_HEIGHT || iX < 0 || iX >= IRIS_WIDTH) {
+                p = pgm_read_word(sclera + sY * SCLERA_WIDTH + sX);
                 if (m_nightKing) {
                     p = m_scleraRamp[iriscolor::luma565(p)];
                 }
             } else if (m_nightKing) {
-                p = nightKingIris(irisX, irisY, scleraX, scleraY);
+                p = nightKingIris(iX, iY, sX, sY);
             } else {
-                p = pgm_read_word(polar + irisY * IRIS_WIDTH + irisX);
+                p = pgm_read_word(polar + iY * IRIS_WIDTH + iX);
                 const uint32_t d = (kIrisScale * (p & 0x7F)) / 128;
                 if (d < IRIS_MAP_HEIGHT) {
                     const uint32_t a = (IRIS_MAP_WIDTH * (p >> 7)) / 512;
@@ -182,7 +243,7 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                         p = m_irisRamp[iriscolor::luma565(p)];
                     }
                 } else {
-                    p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
+                    p = pgm_read_word(sclera + sY * SCLERA_WIDTH + sX); // the pupil: the art's disk
                 }
             }
             const uint16_t q = uint16_t(p >> 8 | p << 8);

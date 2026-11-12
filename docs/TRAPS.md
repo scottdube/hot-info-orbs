@@ -485,6 +485,31 @@ fails and the local one passes, compare the `PLATFORM:` and
 `framework-arduinoespressif32 @` lines in both logs first. Moving to core 3.x
 is its own job: port, build, then repeat the on-orb tests.
 
+## WiFiManager doesn't recognize a WPA2 wrong password (2026-11-11)
+
+With a wrong password saved, the orb retried for about 5 minutes and then
+showed the generic "couldn't connect" screen. Two causes:
+
+- No `setConnectTimeout`, so each of WiFiManager's attempts waited the
+  ESP32's 60 s default.
+- WiFiManager maps only reasons 2 (AUTH_EXPIRE) and 202 (AUTH_FAIL) to
+  "wrong password". On WPA2-PSK a wrong password arrives as reason 15
+  (4WAY_HANDSHAKE_TIMEOUT), about every 3 s, because the AP checks the
+  password inside the handshake and stops answering. The codes come from
+  ESP-IDF's `wifi_err_reason_t` and do not depend on the router.
+
+Fix: WifiWidget counts refusals during `connect()` (`passwordRefused()` in
+WifiFailPolicy.h). Two in a row latch "wrong password" and drop the retry
+count to 1. Result: the wrong-password screen at about 18 s.
+
+The latch matters. WiFiManager's own disconnect (reason 8) arrives after the
+refusals and before `autoConnect` returns, so a counter that resets on any
+other reason read "other" again.
+
+To test: save a bad password in NVS with a throwaway sketch
+(`WiFi.persistent(true); WiFi.begin(ssid, bad)`), then flash the firmware
+back. A firmware upload does not touch NVS.
+
 ## The boot-eye pupil is a hole in the sclera, and the iris box's corners look like its centre (2026-11-11)
 
 The stock "Uncanny Eyes" pupil is not drawn from the iris colors at all.
