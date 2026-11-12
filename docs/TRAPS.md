@@ -516,3 +516,19 @@ image you will flash last, upload straight after, and use `curl -sS -w
 "http=%{http_code} sent=%{size_upload}"` so a missing file (curl error 26,
 `sent=0`) shows instead of a silent nothing. Read the commit back from
 `/update` either way.
+
+## Right after an OTA upload the orb still serves the old firmware (2026-11-11)
+
+`POST /update` answers HTTP 200 once the image is written, but the orb
+does not restart straight away. A read-back fired at once got an answer,
+the right settings and the *old* commit hash (afe5df3 instead of
+fee7fe5): it was the old firmware still running. Then port 80 refused
+connections for several seconds while it rebooted. A read-back counts only
+after the connection has dropped and come back, and only if it shows the
+**new** hash. `curl --retry 15 --retry-connrefused --retry-all-errors
+--retry-delay 4 http://<orb>/settings` waits out the restart; grep the page
+for the expected short hash.
+
+Settings, unlike firmware, can be changed by a partial POST: `POST /settings`
+with only `lids=10&iris=9&lashes=0` changes those three and keeps every
+other saved value (`handlePost` starts from `Settings::get()`).
