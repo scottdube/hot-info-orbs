@@ -2,6 +2,7 @@
     #include "BootEyes.h"
     #include "EyeRenderer.h"
     #include "LidPalette.h"
+    #include "NoseRenderer.h"
     #include "Utils.h" // ScreenCenterX/Y
     #include "WakeScript.h"
     #include <Arduino.h>
@@ -11,11 +12,12 @@
 namespace {
 constexpr int kLeftScreen = 1;  // orb 2
 constexpr int kRightScreen = 3; // orb 4
+constexpr int kNoseScreen = 2;  // orb 3, between them (issue #24: drawn in the lid style)
 constexpr int kLabelScreen = 4; // orb 5: the style name in the lid demo
 // The crossed eyes move to orbs 1 and 3 around the nose on orb 2, so the WiFi
-// error text sits together on orbs 4 and 5 (Scott, 2026-11-11). main.cpp
-// draws the nose.
+// error text sits together on orbs 4 and 5 (Scott, 2026-11-11).
 constexpr int kCrossedLeftScreen = 0;  // orb 1
+constexpr int kCrossedNoseScreen = 1;  // orb 2
 constexpr int kCrossedRightScreen = 2; // orb 3
 // Longest wait for the finale in end(): connected at t ~ 0, then 2.6 s to the
 // first crack open plus the 2 s finale
@@ -53,6 +55,8 @@ constexpr int16_t kCrossedGazeY = 512;          // level
 constexpr uint16_t kCrossedOpen = 256 + 160;
 
 ScreenManager *s_sm = nullptr;
+TFT_eSPI *s_tft = nullptr;
+int s_style = lids::kDefault; // the lid style on the eyes now: the nose wears it too
 EyeRenderer *s_renderer = nullptr;
 WakeScript s_script;
 SemaphoreHandle_t s_lock = nullptr;    // guards s_script: the task reads, finish() writes
@@ -64,6 +68,7 @@ bool s_demo = false;
 uint32_t s_demoStart = 0;
 int s_demoShown = -1;      // style whose label is on orb 5
 bool s_demoShownIp = false; // the label has the IP address on it
+bool s_demoNose = false;    // the demo has yet to draw its first nose
 
 EyePose currentPose() {
     xSemaphoreTake(s_lock, portMAX_DELAY);
@@ -79,6 +84,13 @@ bool drawEye(int screen, uint8_t side, const EyePose &pose) {
     const bool ok = s_renderer->draw(side, pose, &s_stop);
     xSemaphoreGive(s_screens);
     return ok;
+}
+
+// The nose in the eyes' lid style. Bus: the caller's business before the
+// task starts and after it has stopped; the task itself takes it.
+void drawNose(int screen) {
+    s_sm->selectScreen(screen);
+    nose::draw(*s_tft, s_style);
 }
 
 // The demo's caption on orb 5, redrawn with each new style
@@ -110,6 +122,13 @@ EyePose demoPose() {
         s_demoShown = style;
         s_demoShownIp = ip;
         s_renderer->setStyle(style);
+        if (style != s_style || s_demoNose) { // not again for the IP address alone
+            s_style = style;
+            s_demoNose = false;
+            xSemaphoreTake(s_screens, portMAX_DELAY);
+            drawNose(kNoseScreen); // the eyes are shut at the top of a cycle
+            xSemaphoreGive(s_screens);
+        }
         drawDemoLabel(style);
     }
     WakeScript w;
@@ -167,6 +186,7 @@ void release() {
 
 bool BootEyes::start(ScreenManager &sm, TFT_eSPI &tft, const Look &look) {
     s_sm = &sm;
+    s_tft = &tft;
     s_lock = xSemaphoreCreateMutex();
     s_screens = xSemaphoreCreateMutex();
     s_renderer = new (std::nothrow) EyeRenderer(tft);
@@ -179,8 +199,11 @@ bool BootEyes::start(ScreenManager &sm, TFT_eSPI &tft, const Look &look) {
         if (s_demo) {
             s_demoStart = millis();
             s_demoShown = -1;
+            s_demoNose = true; // the task draws each style's nose with its eyes
         } else {
             s_renderer->setStyle(look.lids);
+            s_style = look.lids;
+            drawNose(kNoseScreen); // before the task: nothing else is drawing yet
         }
         s_script.begin(millis());
         // Core 1 beside loopTask (blocked in autoConnect); WiFi runs on core 0
@@ -209,6 +232,7 @@ void BootEyes::finish(bool connected) {
     // covered them, four eyes at once (rig, 2026-11-11)
     s_sm->fillAllScreens(TFT_BLACK);
     drawCrossed();
+    drawNose(kCrossedNoseScreen); // the task has stopped: the bus is free
     release();
 }
 

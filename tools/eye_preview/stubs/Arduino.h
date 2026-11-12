@@ -2,6 +2,8 @@
 // Host stub: just enough of Arduino.h for EyeRenderer.cpp (tools/eye_preview)
 #include <cstdint>
 #include <cstring>
+#include <math.h> // sinf, cosf, sqrtf, lroundf in the global namespace, as Arduino has them
+#define PI 3.14159265358979323846
 #define PROGMEM
 #define pgm_read_byte(p) (*(const uint8_t *)(p))
 #define pgm_read_word(p) (*(const uint16_t *)(p))

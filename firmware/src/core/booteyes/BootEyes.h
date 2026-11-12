@@ -1,5 +1,6 @@
 #pragma once
-// Waking eyes on orbs 2 and 4 from WiFi connect until the first page
+// Waking eyes on orbs 2 and 4, and the nose between them on orb 3 in the same
+// lid style (NoseShape.h), from WiFi connect until the first page
 // (docs/superpowers/specs/2026-11-10-boot-eyes-design.md). The eye task and
 // the start-up text on orb 5 share one SPI bus: until end(), anything drawing
 // must hold a ScreenGuard. Before finish() nothing else draws at all.
@@ -13,8 +14,8 @@ struct Look {
     bool lashes; // "lashes" setting: strands on the upper lids
 };
 #ifdef BOOT_EYES
-// Starts the eye task in the given look.
-// false = could not (out of memory); nothing was drawn.
+// Draws the nose on orb 3 and starts the eye task, both in the given look.
+// false = could not (out of memory); the caller redraws orb 3.
 // lids::kDemo plays the lid demo instead: one style per 12 s wake cycle, its
 // name on orb 5, for good. The eyes never hand over to the pages; the
 // settings page (still served in the demo) is how to leave it.
@@ -22,8 +23,8 @@ bool start(ScreenManager &sm, TFT_eSPI &tft, const Look &look);
 bool demo(); // the lid demo is running
 // connected = true: play the finale, then keep looking around until end().
 // Returns at once. connected = false: stop at once and leave the eyes wide
-// and crossed on orbs 1 and 3, a still frame. The caller draws the nose on
-// orb 2 and the WiFi setup screens on orbs 4 and 5.
+// and crossed on orbs 1 and 3 with the nose on orb 2, a still frame. The
+// caller draws the WiFi setup screens on orbs 4 and 5.
 // No-op if not started.
 void finish(bool connected);
 // Stops the eyes for the first page, after the finale has played (gives up

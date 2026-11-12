@@ -571,6 +571,19 @@ inline bool parsePassword(const std::string &in, bool clear, const std::string &
     return true;
 }
 
+// Under Start-up picture (issue #24): when the picture shows. With the eyes
+// on, orb 3 is the nose until the data has loaded, and a member who had just
+// uploaded a picture took the nose for his picture drawn wrong.
+// eyes = the waking eyes will play at start-up; demo = as the lid demo.
+inline const char *startupPictureNote(bool eyes, bool demo) {
+    if (!eyes) {
+        return "";
+    }
+    return demo ? "The Eye lids demo is on, so this picture is not shown: orb 3 shows the nose. Pick a lid style to see it again."
+                : "While the eyes are up, orb 3 shows the nose, in the Eye lids color. This picture then shows alone for 2 seconds "
+                  "before the first page.";
+}
+
 // Hint under the password field. `v` is what the form holds after parsing,
 // `stored` what is saved. They differ only on a rejected save (some other
 // field failed), where the field comes back empty: say so, or the member

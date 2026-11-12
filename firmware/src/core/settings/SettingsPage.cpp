@@ -841,6 +841,16 @@ String SettingsPage::renderBootSection() {
     } else {
         h += stored ? "Your picture." : "Built-in logo.";
     }
+#ifdef BOOT_EYES
+    {
+        const SettingsValues &v = Settings::get();
+        const bool demo = v.lids == lids::kDemo; // plays whatever Waking eyes says
+        const char *note = sv::startupPictureNote(v.booteyes || demo, demo);
+        if (*note) {
+            h += hint(note);
+        }
+    }
+#endif
     if (s_fsMounted) {
         h += "<label for='pic'>New picture (any photo; it is cropped to a centered square)</label>"
              "<input type='file' id='pic' accept='image/*'>"
