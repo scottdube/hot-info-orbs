@@ -27,12 +27,25 @@ EyeRenderer::EyeRenderer(TFT_eSPI &tft) : m_tft(tft) {
         hist[iriscolor::luma565(pgm_read_word(eyedata::iris + i))]++;
     }
     iriscolor::range(hist, m_irisLo, m_irisHi);
+    uint32_t sh[256] = {};
+    for (uint32_t i = 0; i < SCLERA_WIDTH * SCLERA_HEIGHT; i++) {
+        sh[iriscolor::luma565(pgm_read_word(eyedata::sclera + i))]++;
+    }
+    iriscolor::range(sh, m_scleraLo, m_scleraHi);
 }
 
 void EyeRenderer::setIris(int index) {
     m_irisNatural = !iriscolor::valid(index) || index == iriscolor::kNatural;
     if (!m_irisNatural) {
         iriscolor::buildRamp(iriscolor::kIrises[index], m_irisLo, m_irisHi, m_irisRamp);
+    }
+    m_nightKing = !m_irisNatural && iriscolor::kIrises[index].nightKing;
+    if (m_nightKing) {
+        namespace nk = iriscolor::nightking;
+        iriscolor::buildRamp({"", nk::kScleraDark, nk::kScleraLight, false}, m_scleraLo, m_scleraHi, m_scleraRamp);
+        m_nkPupil = lids::to565(nk::kPupil);
+        m_nkSpeck = lids::to565(nk::kSpeck);
+        m_nkRing = lids::to565(nk::kSpeckRing);
     }
 }
 
@@ -51,6 +64,33 @@ void EyeRenderer::setStyle(int index) {
     }
     m_lash = lids::to565(s.lash);
     m_style = index;
+}
+
+// One iris-box pixel of the Night King eye. Inside/outside the iris comes from
+// the pixel's position, not the polar map: the map gives the box's corners the
+// same distance as the centre (both 127), and the stock eye only tells them
+// apart because both fall through to the sclera, whose centre is a black hole.
+uint16_t EyeRenderer::nightKingIris(int32_t irisX, int32_t irisY, uint32_t scleraX, uint32_t scleraY) const {
+    namespace nk = iriscolor::nightking;
+    const int32_t x = 2 * irisX - (IRIS_WIDTH - 1), y = 2 * irisY - (IRIS_HEIGHT - 1); // half px from centre
+    if (x * x + y * y >= (IRIS_WIDTH - 1) * (IRIS_WIDTH - 1)) {
+        return m_scleraRamp[iriscolor::luma565(pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX))];
+    }
+    const uint32_t p = pgm_read_word(polar + irisY * IRIS_WIDTH + irisX);
+    const uint32_t raw = p & 0x7F, angle = p >> 7;
+    if (nk::pupil(raw, angle)) {
+        return m_nkPupil;
+    }
+    const int s = nk::speck(x, y);
+    if (s) {
+        return s == 2 ? m_nkSpeck : m_nkRing;
+    }
+    uint32_t d = (nk::kIrisScale * raw) / 128;
+    if (d >= IRIS_MAP_HEIGHT) {
+        d = IRIS_MAP_HEIGHT - 1;
+    }
+    const uint32_t a = (IRIS_MAP_WIDTH * angle) / 512;
+    return m_irisRamp[iriscolor::luma565(pgm_read_word(iris + d * IRIS_MAP_WIDTH + a))];
 }
 
 bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *abort) {
@@ -127,6 +167,11 @@ bool EyeRenderer::draw(uint8_t side, const EyePose &pose, const volatile bool *a
                 }
             } else if (irisY < 0 || irisY >= IRIS_HEIGHT || irisX < 0 || irisX >= IRIS_WIDTH) {
                 p = pgm_read_word(sclera + scleraY * SCLERA_WIDTH + scleraX);
+                if (m_nightKing) {
+                    p = m_scleraRamp[iriscolor::luma565(p)];
+                }
+            } else if (m_nightKing) {
+                p = nightKingIris(irisX, irisY, scleraX, scleraY);
             } else {
                 p = pgm_read_word(polar + irisY * IRIS_WIDTH + irisX);
                 const uint32_t d = (kIrisScale * (p & 0x7F)) / 128;

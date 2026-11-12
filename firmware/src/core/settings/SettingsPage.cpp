@@ -463,7 +463,8 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     for (int i = 0; i < iriscolor::kCount; i++) {
         h += option(String(i), iriscolor::kIrises[i].name, v.iris == i);
     }
-    h += "</select>" + hint(String("Default: ") + iriscolor::kIrises[iriscolor::kDefault].name + ". Eyelashes and iris apply to the demo too.") +
+    h += "</select>" + hint(String("Default: ") + iriscolor::kIrises[iriscolor::kDefault].name + ". Eyelashes and iris apply to the demo too. "
+                                     "Night King: pick it for both lids and iris, eyelashes off.") +
          errorLine(errors, "iris");
     h += "</fieldset>";
 #endif
