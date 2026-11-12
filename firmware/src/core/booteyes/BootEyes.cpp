@@ -12,9 +12,45 @@ namespace {
 constexpr int kLeftScreen = 1;  // orb 2
 constexpr int kRightScreen = 3; // orb 4
 constexpr int kLabelScreen = 4; // orb 5: the style name in the lid demo
+// The crossed eyes move to orbs 1 and 3 around the nose on orb 2, so the WiFi
+// error text sits together on orbs 4 and 5 (Scott, 2026-11-11). main.cpp
+// draws the nose.
+constexpr int kCrossedLeftScreen = 0;  // orb 1
+constexpr int kCrossedRightScreen = 2; // orb 3
 // Longest wait for the finale in end(): connected at t ~ 0, then 2.6 s to the
 // first crack open plus the 2 s finale
 constexpr uint32_t kFinaleTimeoutMs = 6000;
+// WiFi didn't connect (issue #20): wide open, looking at the tip of the nose,
+// so the irises sit in the lower inner corners (as cross-eyed cartoons and
+// photos draw it). Side 0 (orb 2) looks to the viewer's right, side 1 (orb 4)
+// to the left. Rig history 2026-11-11: {150, 873} at y 470 read as barely
+// crossed; 48 px in at y 470 read as a sideways glance, not crossed.
+// Scott's reference photo: the eye turns, so the iris is an upright oval
+// tucked into the inner corner, only a little below level. Sliding the full
+// circle in (5f7886d) had the wrong perspective. The turned oval at the
+// window's edge (abda328) read as looking OUTWARD: the sclera's red rim sat on
+// the outer side, where the eye expects the nose corner. The renderer now
+// keeps a turned eye's sclera centered.
+// Scott, 2026-11-11: a line straight out of each pupil must cross the other's;
+// the angle sets the severity. Both cues (position, narrowing) come from it.
+// Simulator sheet: 20 mild, 35 clear, 48 iris at the ball's edge.
+// Per eye, from straight on (55 both went the wrong way on the rig). Scott,
+// 2026-11-11: -25 read as outward, as it should; but moving the flat iris
+// around the opening read as a slide, not a turn, so the renderer now turns
+// a ball. Negative = outward.
+constexpr float kCrossedDeg[2] = {30, 30}; // side 0 = orb 2, side 1 = orb 4
+// Then both roll down until the iris is near the display's bottom edge (Scott,
+// 2026-11-11; simulator: 20 leaves a small gap, 25 touches). The lids stay put,
+// so the iris tucks under the lower lid.
+constexpr float kCrossedDownDeg = 20;
+// And both balls moved toward the nose, source px: Scott saw a sliver of white
+// between the iris and the panel's inner edge at 30 in / 20 down. Simulator:
+// 6 nearly closes it; 12 cuts into the iris and shows a seam at the outer rim.
+constexpr float kCrossedNudge = 3; // 6 was too much on the rig
+constexpr int16_t kCrossedGazeY = 512;          // level
+// Lids wider than tracking: surprised. At 256 (tracking) they read as a squint
+// on the rig, because the upper lid follows the pupil and the pupil is aside.
+constexpr uint16_t kCrossedOpen = 256 + 160;
 
 ScreenManager *s_sm = nullptr;
 EyeRenderer *s_renderer = nullptr;
@@ -94,6 +130,19 @@ void eyeTask(void *) {
     vTaskDelete(nullptr);
 }
 
+// One still frame per eye, drawn once after the task has stopped. Drawing six
+// frames each while the lid filter settled showed on the rig as the lids
+// moving, part of an unclean change-over (Scott, 2026-11-11).
+void drawCrossed() {
+    static const volatile bool kNever = false;
+    s_renderer->snapLids();
+    for (uint8_t side = 0; side < 2; side++) {
+        s_renderer->setTurn(kCrossedDeg[side], kCrossedDownDeg, kCrossedNudge);
+        s_sm->selectScreen(side ? kCrossedRightScreen : kCrossedLeftScreen);
+        s_renderer->draw(side, {kCrossedOpen, 512, kCrossedGazeY, false}, &kNever);
+    }
+}
+
 void stopTask() {
     s_stop = true; // checked between lines, never mid-transaction
     while (!s_exited) {
@@ -155,8 +204,11 @@ void BootEyes::finish(bool connected) {
         return; // the task plays the finale, then the awake loop, until end()
     }
     stopTask();
-    s_sm->clearScreen(kLeftScreen);
-    s_sm->clearScreen(kRightScreen);
+    // Blank every orb first: the waking eyes froze on orbs 2 and 4 and stayed
+    // there beside the crossed ones on 1 and 3 until the nose and the text
+    // covered them, four eyes at once (rig, 2026-11-11)
+    s_sm->fillAllScreens(TFT_BLACK);
+    drawCrossed();
     release();
 }
 
