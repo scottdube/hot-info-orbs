@@ -196,6 +196,11 @@ firmware commit, and whether the R1/C2 reset network was on the breadboard.
 
 ## Not done
 
+**Out of date (2026-11-11):** this list was written before the board was
+built. Rev 2.5 boards were ordered 25 Oct 2026 (`hardware/hot-info-orbs-xiao-46mm/fab/README.md`),
+and the test rig has run on an assembled rev 2.5 carrier for weeks, not on
+the breadboard. Items below are kept as written; check each before relying on it.
+
 - No board ordered. The XIAO has run five displays on the breadboard (above).
   The RC reset timing and the active-low LED are reasoned, not measured.
   Boot time is not measured either.
