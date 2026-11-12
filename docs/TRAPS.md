@@ -484,3 +484,22 @@ Fix: `platform = espressif32@7.0.1` in every espressif32 env. When a CI build
 fails and the local one passes, compare the `PLATFORM:` and
 `framework-arduinoespressif32 @` lines in both logs first. Moving to core 3.x
 is its own job: port, build, then repeat the on-orb tests.
+
+## The boot-eye pupil is a hole in the sclera, and the iris box's corners look like its centre (2026-11-11)
+
+The stock "Uncanny Eyes" pupil is not drawn from the iris colors at all.
+Inside the 80x80 iris box the renderer reads the polar map's distance
+(0 at the iris edge, 127 at the centre); past the iris texture's last row it
+falls through to the sclera texture, and the sclera has a black disc baked
+into its middle. That is why the Ice ramp, whose darkest shade is light
+blue, still shows a black pupil. Worse, the polar map gives the box's four
+corners distance 127 too, the same as the centre: the stock eye only gets
+away with it because both fall through to the sclera. Any per-pixel effect
+that treats "distance 127" as "centre" paints the corners. The Night King
+eye decides inside/outside from the pixel's x,y in the box instead
+(`EyeRenderer::nightKingIris`).
+
+Also: the eye is drawn in source pixels, each a 2x2 block on the panel, so
+any detail under ~4 panel px radius renders as a square speck.
+`tools/eye_preview/preview.sh` compiles the real `EyeRenderer.cpp` on the
+host and writes a PPM; judge looks there before flashing.
