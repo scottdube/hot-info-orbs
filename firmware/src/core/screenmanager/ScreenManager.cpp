@@ -100,6 +100,7 @@ void ScreenManager::selectScreen(int screen) {
         int currentDisplay = Settings::get().invert ? NUM_SCREENS - i - 1 : i;
         digitalWrite(m_screen_cs[currentDisplay], i == screen ? LOW : HIGH);
     }
+    m_selected = (screen >= 0 && screen < NUM_SCREENS) ? (uint8_t)(1u << screen) : 0;
 }
 
 // Fills all screens with a color
@@ -126,6 +127,22 @@ void ScreenManager::fillScreen(uint32_t color) {
     m_tft.fillScreen(dim(color));
     // Set background for aliasing as well
     m_render.setBackgroundColor(dim(color));
+    m_filled |= m_selected;
+    for (int i = 0; i < NUM_SCREENS; i++) {
+        if (m_selected & (1u << i)) {
+            m_lastFill[i] = (uint16_t)color;
+        }
+    }
+}
+
+uint8_t ScreenManager::takeFilled() {
+    const uint8_t filled = m_filled;
+    m_filled = 0;
+    return filled;
+}
+
+uint32_t ScreenManager::lastFill(int screen) const {
+    return (screen >= 0 && screen < NUM_SCREENS) ? m_lastFill[screen] : 0;
 }
 
 bool ScreenManager::setBrightness(uint8_t brightness) {
@@ -187,6 +204,7 @@ void ScreenManager::selectAllScreens() {
     for (int i = 0; i < NUM_SCREENS; i++) {
         digitalWrite(m_screen_cs[i], LOW);
     }
+    m_selected = (1u << NUM_SCREENS) - 1;
 }
 
 // Unselect all screens
@@ -194,6 +212,7 @@ void ScreenManager::reset() {
     for (int i = 0; i < NUM_SCREENS; i++) {
         digitalWrite(m_screen_cs[i], HIGH);
     }
+    m_selected = 0;
 }
 
 unsigned int ScreenManager::calculateFitFontSize(uint32_t limit_width, uint32_t limit_height, Layout layout, const String &text) {
@@ -274,6 +293,27 @@ void ScreenManager::drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_
 
 void ScreenManager::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color) {
     m_tft.fillRect(x, y, w, h, dim(color));
+}
+
+void ScreenManager::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color) {
+    m_tft.fillRoundRect(x, y, w, h, radius, dim(color));
+}
+
+void ScreenManager::drawPlate(const String &text, int cx, int y, int w, int h, int radius, unsigned int fontSize, uint32_t plateColor, uint32_t textColor) {
+    const TTF_Font font = m_curFont;
+    const unsigned int size = m_render.getFontSize();
+    const uint16_t fg = m_render.getFontColor();
+    const uint16_t bg = m_render.getBackgroundColor();
+    const Align align = m_render.getAlignment();
+
+    fillRoundRect(cx - w / 2, y, w, h, radius, plateColor);
+    setFont(DEFAULT_FONT);
+    drawString(text, cx, y + h / 2, fontSize, Align::MiddleCenter, textColor, plateColor);
+
+    setFont(font);
+    m_render.setFontSize(size);
+    m_render.setFontColor(fg, bg);
+    m_render.setAlignment(align);
 }
 
 void ScreenManager::drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye, uint32_t color) {

@@ -391,6 +391,7 @@ void loop() {
 
         checkButtons();
 
+        widgetSet->setLinkUp(wifiWidget->linkUp());
         widgetSet->updateCurrent();
         for (MqttFeed *feed : mqttFeeds) {
             if (feed && feed->wanted()) {

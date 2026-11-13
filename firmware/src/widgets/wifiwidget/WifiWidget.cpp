@@ -299,6 +299,10 @@ const unsigned long roamCheckMs = 120000;
 // If the chosen AP hasn't taken us within this long, rejoin by name only
 const unsigned long roamJoinTimeoutMs = 20000;
 
+bool WifiWidget::linkUp() {
+    return WiFi.status() == WL_CONNECTED;
+}
+
 void WifiWidget::roamIfWeak() {
     const unsigned long now = millis();
 

@@ -74,10 +74,12 @@ void WebDataWidget::update(bool force) {
     if (!force && m_lastUpdate != 0 && (millis() - m_lastUpdate) < m_updateDelay) {
         return;
     }
-    fetch();
+    const uint32_t period = m_updateDelay; // fetch() may change it
+    const bool ok = fetch();
     // Also after a failure: upstream left m_lastUpdate alone on error, so a
     // dead URL was retried on every pass of loop()
     m_lastUpdate = millis();
+    m_fresh.attempt(m_lastUpdate, ok, period);
     if (m_lastUpdate == 0) {
         m_lastUpdate = 1; // 0 means "never fetched"
     }

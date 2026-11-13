@@ -25,6 +25,9 @@ public:
     String getName() override;
 
     bool isConnected() { return m_isConnected; }
+    // The link right now. isConnected() only says start-up joined once and
+    // must stay that way: false there sends loop() back to the connect screen.
+    bool linkUp();
     // Call from the main loop once connected; see RoamPolicy.h for why
     void roamIfWeak();
 

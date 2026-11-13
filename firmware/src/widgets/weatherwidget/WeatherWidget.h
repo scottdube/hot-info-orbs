@@ -2,6 +2,7 @@
 #define WEATHERWIDGET_H
 
 #include "GlobalTime.h"
+#include "StalePolicy.h"
 #include "Utils.h"
 #include "WeatherDataModel.h"
 #include "WeatherSource.h"
@@ -21,6 +22,8 @@ public:
     void draw(bool force = false) override;
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
     String getName() override;
+    bool dataStale() override { return m_fresh.stale(); }
+    uint8_t dataOrbs() override { return 0x1E; } // orb 1 is the clock
 
 private:
     void displayClock(int displayIndex);
@@ -47,6 +50,7 @@ private:
 
     const long m_weatherDelay = 600000; // Weather refresh rate
     unsigned long m_weatherDelayPrev = 0;
+    stale::Tracker m_fresh;
 
     const int center = 120; // Center location of the screen(240x240)
 
