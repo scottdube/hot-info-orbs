@@ -243,6 +243,13 @@ phone or computer on the same network. It uses the same optional `admin` /
   data loads (orb 5 names what is loading). Then the start-up picture shows
   alone for 2 seconds, and the first page comes up. Off gives the plain
   start-up text, with the picture on the middle orb from the start.
+- **Log** (in the status lines at the top): **view** shows what the orb has
+  recorded, **download** saves it as `info-orbs-log.txt` to send to whoever
+  is helping you. It lists events with their date and time: each start and
+  why (power, restart, crash), WiFi going down and coming back, a page that
+  stops refreshing and when it recovers. It never holds your network name,
+  passwords, API keys or station IDs. It keeps roughly the last few hundred
+  events and survives restarts and firmware updates.
 
 Settings survive restarts and firmware updates. A USB flash with **Erase
 Flash** first clears them.
