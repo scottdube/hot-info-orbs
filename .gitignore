@@ -44,3 +44,4 @@ package-lock.json
 
 # make_release_bins.py output; the files go to a GitHub release, not git
 release/
+*.bak
