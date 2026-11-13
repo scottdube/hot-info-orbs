@@ -51,6 +51,7 @@ struct SettingsValues {
     std::string mqu[5]; // per-orb unit
     std::string mqsetup; // advanced layout topic, "" = none
     bool mqfit; // true = every orb's value at one font size; false = each orb as large as fits
+    int mqsize; // 0 = automatic (mqfit decides); 12..60 = every value at this size, cut to fit
     // Second MQTT page: its own five rows, on page 1's broker or one of its own
     std::string mq2name; // 1..16
     bool mq2same; // true = page 1's broker and connection; false = mq2host etc.
@@ -62,6 +63,7 @@ struct SettingsValues {
     std::string mq2l[5];
     std::string mq2u[5];
     bool mq2fit; // as mqfit, for page 2
+    int mq2size; // as mqsize, for page 2
     // API keys, write-only on the page. Default = secrets.h, which is "" in the
     // release build (env:release), so a downloaded .bin gets its keys here
     std::string wxkey; // Visual Crossing

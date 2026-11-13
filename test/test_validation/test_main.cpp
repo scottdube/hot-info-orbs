@@ -343,6 +343,24 @@ void test_port() {
     TEST_ASSERT_FALSE(parsePort("18a3", out, err));
 }
 
+void test_fixed_text_size() {
+    int out = -1;
+    std::string err;
+    TEST_ASSERT_TRUE(parseFixedTextSize("0", out, err)); // automatic
+    TEST_ASSERT_EQUAL(0, out);
+    TEST_ASSERT_TRUE(parseFixedTextSize("", out, err)); // a cleared box is automatic too
+    TEST_ASSERT_EQUAL(0, out);
+    TEST_ASSERT_TRUE(parseFixedTextSize("12", out, err));
+    TEST_ASSERT_EQUAL(12, out);
+    TEST_ASSERT_TRUE(parseFixedTextSize(" 60 ", out, err));
+    TEST_ASSERT_EQUAL(60, out);
+    TEST_ASSERT_FALSE(parseFixedTextSize("11", out, err));
+    TEST_ASSERT_FALSE(parseFixedTextSize("61", out, err));
+    TEST_ASSERT_FALSE(parseFixedTextSize("-5", out, err));
+    TEST_ASSERT_FALSE(parseFixedTextSize("2x", out, err));
+    TEST_ASSERT_EQUAL(60, out); // a refused value leaves the old one
+}
+
 void test_optional_text() {
     std::string out, err;
     TEST_ASSERT_TRUE(parseOptionalText("   ", 8, out, err));
@@ -522,6 +540,7 @@ int main() {
     RUN_TEST(test_web_url);
     RUN_TEST(test_host);
     RUN_TEST(test_port);
+    RUN_TEST(test_fixed_text_size);
     RUN_TEST(test_optional_text);
     RUN_TEST(test_topic);
     RUN_TEST(test_password);

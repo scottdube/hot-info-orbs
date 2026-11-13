@@ -128,6 +128,9 @@ SettingsValues Settings::defaults() {
     // town-square acts jumped from 10 px to 40 px between neighbours)
     d.mqfit = true;
     d.mq2fit = true;
+    // Automatic: the size follows the text, as before the setting existed
+    d.mqsize = 0;
+    d.mq2size = 0;
     d.mq2name = "MQTT 2";
     d.mq2same = true;
     d.mq2host = "";
@@ -199,6 +202,8 @@ void Settings::load() {
             // New keys: an orb saved before them gets the default
             v.mqfit = p.getBool("mqfit", v.mqfit);
             v.mq2fit = p.getBool("mq2fit", v.mq2fit);
+            v.mqsize = p.getInt("mqsize", v.mqsize);
+            v.mq2size = p.getInt("mq2size", v.mq2size);
             // API keys: added after schema 1 without a bump, like tstn1. An orb
             // that saved before this firmware keeps its secrets.h keys
             v.wxkey = p.getString("wxkey", v.wxkey.c_str()).c_str();
@@ -282,7 +287,7 @@ bool Settings::save(const SettingsValues &v) {
     ok = ok && putStr("wdname", v.wdname) && putStr("wdurl", v.wdurl) && putStr("mqname", v.mqname) &&
          putStr("mqhost", v.mqhost) && p.putInt("mqport", v.mqport) && putStr("mquser", v.mquser) &&
          putStr("mqpass", v.mqpass) && putStr("mqsetup", v.mqsetup) && p.putBool("mqfit", v.mqfit) == 1 &&
-         p.putBool("mq2fit", v.mq2fit) == 1 &&
+         p.putBool("mq2fit", v.mq2fit) == 1 && p.putInt("mqsize", v.mqsize) && p.putInt("mq2size", v.mq2size) &&
          putStr("wxkey", v.wxkey) && putStr("tsttok", v.tsttok);
     for (int i = 0; ok && i < 5; i++) {
         char k[8];

@@ -82,7 +82,7 @@ template <class Measure>
 bool mqttFits(const std::string &text, int size, int maxW, int maxH, Measure measure,
               std::vector<std::string> *out = nullptr) {
     std::vector<std::string> lines = mqttWrap(text, size, maxW, measure);
-    if ((int)lines.size() > MQTT_TEXT_MAX_LINES) {
+    if ((int) lines.size() > MQTT_TEXT_MAX_LINES) {
         return false;
     }
     int inkH = 0;
@@ -95,13 +95,73 @@ bool mqttFits(const std::string &text, int size, int maxW, int maxH, Measure mea
             inkH = e.h;
         }
     }
-    if (mqttBlockHeight((int)lines.size(), size, inkH) > maxH) {
+    if (mqttBlockHeight((int) lines.size(), size, inkH) > maxH) {
         return false;
     }
     if (out) {
         *out = lines;
     }
     return true;
+}
+
+// The fixed-size setting: the text drawn at exactly this size, whatever its
+// length. Lines that do not fit (more than MQTT_TEXT_MAX_LINES, or taller than
+// maxH) are dropped and the last one kept ends in "..."; a word wider than maxW
+// is cut the same way and ends the text. Three full stops, because the font has
+// no ellipsis glyph. A single line taller than maxH is returned as it is: there
+// is nothing left to cut.
+//
+// REJECTED: a character limit (2026-11-13). The font is proportional and the
+// text wraps at spaces, so no one count keeps every act name at one size.
+constexpr const char *MQTT_TEXT_CUT_MARK = "...";
+
+// Shortens line until line + "..." is no wider than maxW; whole UTF-8 characters
+// only, and no space left in front of the dots
+template <class Measure>
+std::string mqttCutLine(std::string line, int size, int maxW, Measure measure) {
+    while (true) {
+        while (!line.empty() && line.back() == ' ') {
+            line.pop_back();
+        }
+        if (line.empty() || measure(line + MQTT_TEXT_CUT_MARK, size).w <= maxW) {
+            return line + MQTT_TEXT_CUT_MARK;
+        }
+        // Drop one character: its continuation bytes (10xxxxxx), then its first byte
+        while (line.size() > 1 && ((unsigned char) line.back() & 0xC0) == 0x80) {
+            line.pop_back();
+        }
+        line.pop_back();
+    }
+}
+
+template <class Measure>
+std::vector<std::string> mqttCutToFit(const std::string &text, int size, int maxW, int maxH, Measure measure) {
+    std::vector<std::string> lines = mqttWrap(text, size, maxW, measure);
+    bool cut = false;
+    // A word wider than the orb ends the text there
+    for (size_t i = 0; i < lines.size(); i++) {
+        if (measure(lines[i], size).w > maxW) {
+            lines.resize(i + 1);
+            cut = true;
+            break;
+        }
+    }
+    auto tooTall = [&]() {
+        int inkH = 0;
+        for (const auto &l : lines) {
+            TextExtent e = measure(l.empty() ? std::string("X") : l, size);
+            inkH = e.h > inkH ? e.h : inkH;
+        }
+        return mqttBlockHeight((int) lines.size(), size, inkH) > maxH;
+    };
+    while (lines.size() > 1 && ((int) lines.size() > MQTT_TEXT_MAX_LINES || tooTall())) {
+        lines.pop_back();
+        cut = true;
+    }
+    if (cut) {
+        lines.back() = mqttCutLine(lines.back(), size, maxW, measure);
+    }
+    return lines;
 }
 
 // Largest font size at which the text fits; MQTT_TEXT_MIN_SIZE when none does.

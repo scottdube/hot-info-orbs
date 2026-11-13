@@ -144,6 +144,13 @@ three lines. A line break in the payload starts a new line where you want it:
 - **Each orb as large as fits**: every orb sizes its own value, so a short
   value is drawn much larger than a long one beside it.
 
+**Fixed text size**, also one per page. Both choices above let the size follow
+the text, so a page of names changes size from day to day. Enter a size from
+12 to 60 and every value on the page is drawn at that size, whatever its
+length. Text that is too long for three lines at that size is cut and ends in
+three dots. 0 (the default) leaves the size automatic. Start near 28 for
+names and adjust by eye.
+
 **It never blocks the orb.** Each connection makes one attempt that gives
 up after a few seconds, then at most one more every 30 seconds, while the buttons and
 the settings page keep working. The settings page says why it is not connected:
@@ -279,7 +286,9 @@ once by hand (⋮ → *Run actions*) instead of waiting 5 minutes.
 | 5 | `orbs/villages/eastport` | Eastport | (blank) |
 
 Leave **Text size** on *Same on every orb*, so the five acts are drawn at one
-size. Name the page what you like, for example `Town Squares`.
+size. One long act name then makes all five small for the day; to keep the page
+the same every day, set **Fixed text size** (28 is a good start), and a long
+name is cut short. Name the page what you like, for example `Town Squares`.
 
 ## Tested
 

@@ -152,7 +152,7 @@ static TextExtent fakeMeasure(const std::string &t, int size) {
 
 void test_wrap_newline_forces_a_break() {
     auto l = mqttWrap("5pm\nThe Rundown Band", 20, 1000, fakeMeasure);
-    TEST_ASSERT_EQUAL(2, (int)l.size());
+    TEST_ASSERT_EQUAL(2, (int) l.size());
     TEST_ASSERT_EQUAL_STRING("5pm", l[0].c_str());
     TEST_ASSERT_EQUAL_STRING("The Rundown Band", l[1].c_str());
 }
@@ -160,7 +160,7 @@ void test_wrap_newline_forces_a_break() {
 void test_wrap_greedy_at_width() {
     // size 20: 10 px a character, 120 px = 12 characters a line
     auto l = mqttWrap("Bobby Blackmon & The B3 Band", 20, 120, fakeMeasure);
-    TEST_ASSERT_EQUAL(3, (int)l.size());
+    TEST_ASSERT_EQUAL(3, (int) l.size());
     TEST_ASSERT_EQUAL_STRING("Bobby", l[0].c_str());
     TEST_ASSERT_EQUAL_STRING("Blackmon &", l[1].c_str());
     TEST_ASSERT_EQUAL_STRING("The B3 Band", l[2].c_str());
@@ -168,7 +168,7 @@ void test_wrap_greedy_at_width() {
 
 void test_wrap_trailing_newline_and_spaces_add_nothing() {
     auto l = mqttWrap("  78.2  \n", 20, 1000, fakeMeasure);
-    TEST_ASSERT_EQUAL(1, (int)l.size());
+    TEST_ASSERT_EQUAL(1, (int) l.size());
     TEST_ASSERT_EQUAL_STRING("78.2", l[0].c_str());
 }
 
@@ -178,7 +178,7 @@ void test_best_size_short_value_one_line() {
     TEST_ASSERT_EQUAL(MQTT_TEXT_MAX_SIZE, s);
     std::vector<std::string> l;
     TEST_ASSERT_TRUE(mqttFits("78", s, 190, 90, fakeMeasure, &l));
-    TEST_ASSERT_EQUAL(1, (int)l.size());
+    TEST_ASSERT_EQUAL(1, (int) l.size());
 }
 
 void test_best_size_wrapping_beats_one_line() {
@@ -198,6 +198,74 @@ void test_shared_size_is_smallest_ignoring_empty() {
     TEST_ASSERT_EQUAL(27, mqttSharedSize({40, 0, 27, 33}));
     TEST_ASSERT_EQUAL(0, mqttSharedSize({0, 0}));
     TEST_ASSERT_EQUAL(0, mqttSharedSize({}));
+}
+
+// mqttCutToFit: the fixed-size setting. The text is drawn at the size given and
+// what does not fit is cut, ending in "..." (fake font: size 20 = 10 px a character)
+static bool allWithin(const std::vector<std::string> &lines, int size, int maxW) {
+    for (const auto &l : lines) {
+        if (fakeMeasure(l, size).w > maxW) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void test_cut_text_that_fits_is_left_alone() {
+    auto l = mqttCutToFit("5pm\nThe Rundown Band", 20, 190, 90, fakeMeasure);
+    TEST_ASSERT_EQUAL(2, (int) l.size());
+    TEST_ASSERT_EQUAL_STRING("5pm", l[0].c_str());
+    TEST_ASSERT_EQUAL_STRING("The Rundown Band", l[1].c_str());
+}
+
+void test_cut_fourth_line_is_dropped_and_marked() {
+    // 12 characters a line at 120 px: four lines of words, three allowed
+    auto l = mqttCutToFit("Bobby Blackmon and The B3 Band from Memphis", 20, 120, 200, fakeMeasure);
+    TEST_ASSERT_EQUAL(3, (int) l.size());
+    TEST_ASSERT_EQUAL_STRING("Bobby", l[0].c_str());
+    TEST_ASSERT_EQUAL_STRING("Blackmon and", l[1].c_str());
+    TEST_ASSERT_EQUAL_STRING("The B3 Ba...", l[2].c_str()); // "The B3 Band..." is 14 > 12
+    TEST_ASSERT_TRUE(allWithin(l, 20, 120));
+}
+
+void test_cut_height_limits_the_lines() {
+    // Size 40: two lines are 46 + 28 = 74 px, three are 120 px; the box is 90
+    auto l = mqttCutToFit("aaaa bbbb cccc dddd eeee", 40, 190, 90, fakeMeasure);
+    TEST_ASSERT_EQUAL(2, (int) l.size());
+    TEST_ASSERT_EQUAL_STRING("aaaa bbbb", l[0].c_str());
+    TEST_ASSERT_EQUAL_STRING("cccc d...", l[1].c_str()); // nine characters a line
+    TEST_ASSERT_TRUE(allWithin(l, 40, 190));
+}
+
+void test_cut_word_too_wide_ends_the_text() {
+    // 10 characters a line; the first word alone is 20
+    auto l = mqttCutToFit("Supercalifragilistic band", 20, 100, 200, fakeMeasure);
+    TEST_ASSERT_EQUAL(1, (int) l.size());
+    TEST_ASSERT_EQUAL_STRING("Superca...", l[0].c_str());
+}
+
+void test_cut_never_splits_a_utf8_character() {
+    // Eleven two-byte characters, room for ten bytes: three whole ones and the dots
+    std::string t;
+    for (int i = 0; i < 11; i++) {
+        t += "\xC3\xA9";
+    }
+    auto l = mqttCutToFit(t, 20, 100, 200, fakeMeasure);
+    TEST_ASSERT_EQUAL(1, (int) l.size());
+    TEST_ASSERT_EQUAL_STRING("\xC3\xA9\xC3\xA9\xC3\xA9...", l[0].c_str());
+}
+
+void test_cut_no_space_before_the_dots() {
+    // "cccccc dd..." is 12 > 10; seven characters fit and the seventh is the space
+    auto l = mqttCutToFit("aaaaaaaaaa bbbbbbbbbb cccccc dd eeeeeeeeee", 20, 100, 200, fakeMeasure);
+    TEST_ASSERT_EQUAL(3, (int) l.size());
+    TEST_ASSERT_EQUAL_STRING("cccccc...", l[2].c_str());
+}
+
+void test_cut_single_line_too_tall_is_still_drawn() {
+    auto l = mqttCutToFit("78", 60, 190, 30, fakeMeasure); // ink 42 > 30: nothing to cut
+    TEST_ASSERT_EQUAL(1, (int) l.size());
+    TEST_ASSERT_EQUAL_STRING("78", l[0].c_str());
 }
 
 int main() {
@@ -228,5 +296,12 @@ int main() {
     RUN_TEST(test_best_size_wrapping_beats_one_line);
     RUN_TEST(test_best_size_word_too_wide_gives_minimum);
     RUN_TEST(test_shared_size_is_smallest_ignoring_empty);
+    RUN_TEST(test_cut_text_that_fits_is_left_alone);
+    RUN_TEST(test_cut_fourth_line_is_dropped_and_marked);
+    RUN_TEST(test_cut_height_limits_the_lines);
+    RUN_TEST(test_cut_word_too_wide_ends_the_text);
+    RUN_TEST(test_cut_never_splits_a_utf8_character);
+    RUN_TEST(test_cut_no_space_before_the_dots);
+    RUN_TEST(test_cut_single_line_too_tall_is_still_drawn);
     return UNITY_END();
 }

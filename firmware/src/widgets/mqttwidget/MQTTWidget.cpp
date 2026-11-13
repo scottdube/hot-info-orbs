@@ -4,8 +4,9 @@ static constexpr int MQTT_VALUE_MAX_W = 190; // px, the width the one-line value
 
 MQTTWidget::MQTTWidget(ScreenManager &manager, MqttFeed &feed, int page, const std::string &name, const std::string (&topics)[5],
                        const std::string (&labels)[5], const std::string (&units)[5], const std::string &setupTopic,
-                       bool sameSize)
-    : Widget(manager), m_feed(feed), m_page(page), m_sameSize(sameSize), m_name(name.c_str()), m_setupTopic(setupTopic.c_str()) {
+                       bool sameSize, int fixedSize)
+    : Widget(manager), m_feed(feed), m_page(page), m_sameSize(sameSize), m_fixedSize(fixedSize), m_name(name.c_str()),
+      m_setupTopic(setupTopic.c_str()) {
     // One orb per settings row with a topic; the others stay blank
     for (int i = 0; i < 5; i++) {
         if (topics[i].empty()) {
@@ -111,7 +112,7 @@ void MQTTWidget::subscribeAll() {
 // Draw method: only the current page's draw() is called, so this is the only place orbs are painted
 void MQTTWidget::draw(bool force) {
     m_manager.setFont(DEFAULT_FONT);
-    if (m_sameSize) {
+    if (m_sameSize && m_fixedSize == 0) {
         // One size for the page: when a new value changes it, every orb redraws
         std::vector<int> sizes;
         for (auto &o : orbConfigs) {
@@ -307,10 +308,6 @@ void MQTTWidget::drawOrb(int orbid) {
             m_manager.drawString(orb->orbdesc, ScreenCenterX, 62, 22, Align::MiddleCenter);
         }
         String v = valueText(*orb);
-        int size = bestSize(*orb);
-        if (m_sameSize && orb->value.length() && m_sharedSize > 0) {
-            size = m_sharedSize; // never larger than this orb's own best, so it fits
-        }
         int top, bottom;
         valueBox(*orb, top, bottom);
         auto measure = [this](const std::string &t, int fs) {
@@ -318,7 +315,19 @@ void MQTTWidget::drawOrb(int orbid) {
             m_manager.measureText(String(t.c_str()), fs, e.w, e.h);
             return e;
         };
-        std::vector<std::string> lines = mqttWrap(std::string(v.c_str()), size, MQTT_VALUE_MAX_W, measure);
+        int size;
+        std::vector<std::string> lines;
+        if (m_fixedSize > 0) {
+            // The page's fixed size: the same every day, a long value is cut
+            size = m_fixedSize;
+            lines = mqttCutToFit(std::string(v.c_str()), size, MQTT_VALUE_MAX_W, bottom - top, measure);
+        } else {
+            size = bestSize(*orb);
+            if (m_sameSize && orb->value.length() && m_sharedSize > 0) {
+                size = m_sharedSize; // never larger than this orb's own best, so it fits
+            }
+            lines = mqttWrap(std::string(v.c_str()), size, MQTT_VALUE_MAX_W, measure);
+        }
         int inkH = 0;
         for (const auto &l : lines) {
             TextExtent e = measure(l.empty() ? std::string("X") : l, size);

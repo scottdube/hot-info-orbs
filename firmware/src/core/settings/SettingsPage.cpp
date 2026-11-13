@@ -199,6 +199,17 @@ static String plainInput(const char *key, const std::string &value, const char *
     return "<input type='text' id='" + String(key) + "' name='" + key + "' value='" + esc(value) + "' placeholder='" + placeholder + "'>";
 }
 
+// An MQTT page's fixed text size (0 = automatic). It sits under "Text size",
+// which it overrides when it is not 0.
+static String fixedSizeField(const char *key, int value, const std::map<std::string, std::string> &errors) {
+    String h = "<label for='" + String(key) + "'>Fixed text size</label><input type='number' id='" + key + "' name='" + key +
+               "' min='0' max='" + String(sv::FIXED_TEXT_MAX) + "' value='" + String(value) + "'>";
+    h += hint("Default: 0 = automatic, the choice above decides. " + String(sv::FIXED_TEXT_MIN) + " to " + String(sv::FIXED_TEXT_MAX) +
+              " = every value on this page at that size, whatever its length; text too long for three lines is cut and ends in "
+              "three dots. Start near 28 for names, larger for numbers.");
+    return h + errorLine(errors, key);
+}
+
 // An MQTT broker's fields. pre is "mq" (page 1's broker) or "mq2" (page 2's own),
 // so the keys are mqhost / mq2host and so on.
 static String mqttBrokerFields(const char *pre, const std::string &host, int port, const std::string &user, const std::string &pass,
@@ -540,6 +551,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
                    ". Its tick box under Rotation reads MQTT 1 (this name); renaming it shows it again if it was unticked.", errors);
     h += mqttRows("mq", v.mqt, v.mql, v.mqu, errors);
     h += boolSelect("mqfit", "Text size", v.mqfit, d.mqfit, "Each orb as large as fits", "Same on every orb", errors);
+    h += fixedSizeField("mqsize", v.mqsize, errors);
     h += textField("mqsetup", "Layout topic (advanced)", v.mqsetup, d.mqsetup.empty() ? std::string("none") : d.mqsetup,
                    ". A JSON layout published here replaces the rows above until the next restart (mqttwidget/README.md).", errors);
 
@@ -556,6 +568,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += "</div>" + String(MQ2_JS);
     h += mqttRows("mq2", v.mq2t, v.mq2l, v.mq2u, errors);
     h += boolSelect("mq2fit", "Text size", v.mq2fit, d.mq2fit, "Each orb as large as fits", "Same on every orb", errors);
+    h += fixedSizeField("mq2size", v.mq2size, errors);
     h += "</fieldset>";
 
     h += "<button type='submit'>Save and restart</button></form>";
@@ -768,6 +781,9 @@ void SettingsPage::handlePost() {
     }
     readRows("mq", v.mqt, v.mql, v.mqu);
     readBool("mqfit", v.mqfit);
+    if (has("mqsize") && !sv::parseFixedTextSize(argStr(s, "mqsize"), v.mqsize, err)) {
+        errors["mqsize"] = err;
+    }
     if (has("mqsetup") && !sv::parseTopic(argStr(s, "mqsetup"), v.mqsetup, err)) {
         errors["mqsetup"] = err;
     }
@@ -778,6 +794,9 @@ void SettingsPage::handlePost() {
     readBroker("mq2", v.mq2host, v.mq2port, v.mq2user, v.mq2pass);
     readRows("mq2", v.mq2t, v.mq2l, v.mq2u);
     readBool("mq2fit", v.mq2fit);
+    if (has("mq2size") && !sv::parseFixedTextSize(argStr(s, "mq2size"), v.mq2size, err)) {
+        errors["mq2size"] = err;
+    }
     // Equal times are an empty range to sv::inTimeRange, which reads as "never
     // dims" when the box says On; refuse it rather than save a silent no-op
     if (v.dim && v.dimstartm == v.dimendm && !errors.count("dimstartm") && !errors.count("dimendm")) {
