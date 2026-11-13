@@ -255,7 +255,8 @@ continue without re-deriving anything. Newest at the bottom.
 
 This folder is a copy of `hardware/hot-info-orbs-xiao/` (files renamed
 `hot_info_orbs_xiao_46mm.*`, `meta.filename` and the tools' `PCB =` updated,
-`3d-assembly/` regenerated rather than copied). Reason: the Fusion enclosure
+`3d-pcb-assembly/`, then named `3d-assembly/`, regenerated rather than
+copied). Reason: the Fusion enclosure
 front (`main_body_front`, R-pattern uDistance 92 over four gaps) has the
 bezels 46.0 mm apart and the carrier had them ~38.98 mm apart; Scott wants
 the board off to the fab with the enclosure growing from it.
