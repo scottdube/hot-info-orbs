@@ -42,18 +42,41 @@ inline uint32_t limitMs(uint32_t refreshMs) {
     return two > kFloorMs ? two : kFloorMs;
 }
 
+// Weather and stocks ring at the same age (Scott, 2026-11-13). Weather
+// refreshes every 10 min and gets here by the rule above; stocks refresh
+// every 15, where two misses came to 30.
+constexpr uint32_t kFetchLimitMs = 1200000;
+
+// How long a page waits before its next refresh, for one that rings at
+// `limit` whatever its refresh time. Its own time as a rule. After the first
+// miss, only as long as it takes for the second to land on the limit: stocks
+// try again after 5 min, not 15. One early try per outage and then the
+// normal wait again.
+// Rejected: refreshing stocks every 10 min like weather. The price service's
+// key is shared by every Info Orbs builder, and that is half as many calls
+// again from every orb, all day, to move a mark that shows on a bad day.
+inline uint32_t nextWaitMs(uint32_t refreshMs, uint32_t limit, uint32_t misses) {
+    if (misses == 1 && limit > refreshMs && limit - refreshMs < refreshMs) {
+        return limit - refreshMs;
+    }
+    return refreshMs;
+}
+
 // One page's data. Call attempt() after every refresh, good or bad. A feed
 // with no refresh time (an MQTT connection) calls it on every pass with
 // refreshMs 0: stale once it has been down for the floor.
 class Tracker {
 public:
-    void attempt(uint32_t now, bool ok, uint32_t refreshMs) {
+    void attempt(uint32_t now, bool ok, uint32_t refreshMs) { attemptWithin(now, ok, limitMs(refreshMs)); }
+    // The same with the limit given, for a page that does not ring at two of
+    // its own refreshes (stocks: kFetchLimitMs)
+    void attemptWithin(uint32_t now, bool ok, uint32_t limit) {
         if (ok || !m_started) {
             // No data since power-on: the clock starts at the first try
             m_started = true;
             m_since = now;
         }
-        m_stale = !ok && (now - m_since) >= limitMs(refreshMs); // unsigned: right across the millis() wrap
+        m_stale = !ok && (now - m_since) >= limit; // unsigned: right across the millis() wrap
     }
     bool stale() const { return m_stale; }
 

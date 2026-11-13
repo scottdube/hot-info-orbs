@@ -34,6 +34,7 @@ private:
     unsigned long m_stockDelay = 900000; // default to 15m between updates
     unsigned long m_stockDelayPrev = 0;
     stale::Tracker m_fresh;
+    uint8_t m_misses = 0; // failed refreshes in a row
 
     StockDataModel m_stocks[MAX_STOCKS];
     int8_t m_stockCount;

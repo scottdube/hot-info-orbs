@@ -98,9 +98,54 @@ void test_age_is_right_across_the_millis_wrap() {
 
 void test_the_limit_is_two_refreshes_with_a_three_minute_floor() {
     TEST_ASSERT_EQUAL_UINT32(20 * MIN, stale::limitMs(WEATHER));
-    TEST_ASSERT_EQUAL_UINT32(30 * MIN, stale::limitMs(15 * MIN)); // stocks
+    TEST_ASSERT_EQUAL_UINT32(30 * MIN, stale::limitMs(15 * MIN));
     TEST_ASSERT_EQUAL_UINT32(3 * MIN, stale::limitMs(10000));
     TEST_ASSERT_EQUAL_UINT32(3 * MIN, stale::limitMs(0));
+}
+
+// Scott, 2026-11-13: weather and stocks ring at the same age. Stocks refresh
+// every 15 min, so two misses came to 30.
+static const uint32_t STOCKS = 15 * MIN; // StockWidget's refresh
+
+void test_the_fetch_limit_is_the_weather_pages_two_refreshes() {
+    TEST_ASSERT_EQUAL_UINT32(20 * MIN, stale::kFetchLimitMs);
+    TEST_ASSERT_EQUAL_UINT32(stale::limitMs(WEATHER), stale::kFetchLimitMs);
+}
+
+void test_a_good_refresh_is_followed_by_the_normal_wait() {
+    TEST_ASSERT_EQUAL_UINT32(STOCKS, stale::nextWaitMs(STOCKS, stale::kFetchLimitMs, 0));
+    TEST_ASSERT_EQUAL_UINT32(WEATHER, stale::nextWaitMs(WEATHER, stale::kFetchLimitMs, 0));
+}
+
+void test_stocks_try_again_early_after_the_first_miss() {
+    TEST_ASSERT_EQUAL_UINT32(5 * MIN, stale::nextWaitMs(STOCKS, stale::kFetchLimitMs, 1));
+}
+
+// One early try per outage: the price service's key is shared by every builder
+void test_stocks_go_back_to_the_normal_wait_after_the_second_miss() {
+    TEST_ASSERT_EQUAL_UINT32(STOCKS, stale::nextWaitMs(STOCKS, stale::kFetchLimitMs, 2));
+    TEST_ASSERT_EQUAL_UINT32(STOCKS, stale::nextWaitMs(STOCKS, stale::kFetchLimitMs, 9));
+}
+
+void test_a_page_whose_second_refresh_already_lands_on_the_limit_waits_as_usual() {
+    TEST_ASSERT_EQUAL_UINT32(WEATHER, stale::nextWaitMs(WEATHER, stale::kFetchLimitMs, 1));
+    TEST_ASSERT_EQUAL_UINT32(30 * MIN, stale::nextWaitMs(30 * MIN, stale::kFetchLimitMs, 1)); // one miss is past the limit
+    TEST_ASSERT_EQUAL_UINT32(5 * MIN, stale::nextWaitMs(5 * MIN, stale::kFetchLimitMs, 1)); // never longer than normal
+}
+
+void test_stocks_ring_at_twenty_minutes_like_weather() {
+    stale::Tracker t;
+    uint32_t now = 1000;
+    t.attemptWithin(now, true, stale::kFetchLimitMs);
+    now += stale::nextWaitMs(STOCKS, stale::kFetchLimitMs, 0) + 2000; // a try starts a little late
+    t.attemptWithin(now, false, stale::kFetchLimitMs); // 15 min: first miss
+    TEST_ASSERT_FALSE(t.stale());
+    now += stale::nextWaitMs(STOCKS, stale::kFetchLimitMs, 1) + 2000;
+    t.attemptWithin(now, false, stale::kFetchLimitMs); // 20 min: second miss
+    TEST_ASSERT_TRUE(t.stale());
+    now += stale::nextWaitMs(STOCKS, stale::kFetchLimitMs, 2) + 2000;
+    t.attemptWithin(now, true, stale::kFetchLimitMs);
+    TEST_ASSERT_FALSE(t.stale());
 }
 
 // mark(page stale, WiFi out, page fetches data). "WiFi out" = down for longer
@@ -347,6 +392,12 @@ int main() {
     RUN_TEST(test_a_connection_down_three_minutes_is_stale);
     RUN_TEST(test_age_is_right_across_the_millis_wrap);
     RUN_TEST(test_the_limit_is_two_refreshes_with_a_three_minute_floor);
+    RUN_TEST(test_the_fetch_limit_is_the_weather_pages_two_refreshes);
+    RUN_TEST(test_a_good_refresh_is_followed_by_the_normal_wait);
+    RUN_TEST(test_stocks_try_again_early_after_the_first_miss);
+    RUN_TEST(test_stocks_go_back_to_the_normal_wait_after_the_second_miss);
+    RUN_TEST(test_a_page_whose_second_refresh_already_lands_on_the_limit_waits_as_usual);
+    RUN_TEST(test_stocks_ring_at_twenty_minutes_like_weather);
     RUN_TEST(test_fresh_page_with_wifi_up_gets_no_mark);
     RUN_TEST(test_wifi_out_says_so_before_the_data_is_old);
     RUN_TEST(test_stale_page_without_wifi_gets_the_broken_ring);

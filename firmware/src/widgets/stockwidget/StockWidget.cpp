@@ -51,7 +51,10 @@ void StockWidget::draw(bool force) {
 }
 
 void StockWidget::update(bool force) {
-    if (force || m_stockDelayPrev == 0 || (millis() - m_stockDelayPrev) >= m_stockDelay) {
+    // 5 min after the first miss, so the ring lands at 20 min as on the
+    // weather page (StalePolicy.h); 15 min otherwise
+    const unsigned long wait = stale::nextWaitMs(m_stockDelay, stale::kFetchLimitMs, m_misses);
+    if (force || m_stockDelayPrev == 0 || (millis() - m_stockDelayPrev) >= wait) {
         setBusy(true);
         // One good price means the service answered. A ticker it does not
         // know fails every time and must not mark the whole page.
@@ -61,7 +64,8 @@ void StockWidget::update(bool force) {
         }
         setBusy(false);
         m_stockDelayPrev = millis();
-        m_fresh.attempt(m_stockDelayPrev, any, m_stockDelay);
+        m_misses = any ? 0 : (m_misses < 255 ? m_misses + 1 : 255);
+        m_fresh.attemptWithin(m_stockDelayPrev, any, stale::kFetchLimitMs);
     }
 }
 
