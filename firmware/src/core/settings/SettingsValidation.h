@@ -462,6 +462,28 @@ inline bool parsePort(const std::string &in, int &out, std::string &err) {
     return true;
 }
 
+// An MQTT page's fixed text size: 0 or blank = automatic, otherwise 12..60.
+// Below 12 nothing is readable on a 240 px orb; above 60 not even one line of
+// two digits fits between a label and a unit.
+constexpr int FIXED_TEXT_MIN = 12;
+constexpr int FIXED_TEXT_MAX = 60;
+inline bool parseFixedTextSize(const std::string &in, int &out, std::string &err) {
+    size_t a = in.find_first_not_of(" \t");
+    size_t b = in.find_last_not_of(" \t");
+    const std::string t = a == std::string::npos ? std::string() : in.substr(a, b - a + 1);
+    if (t.empty()) {
+        out = 0;
+        return true;
+    }
+    int v;
+    if (!parseInt(t, v) || (v != 0 && (v < FIXED_TEXT_MIN || v > FIXED_TEXT_MAX))) {
+        err = "Enter 0 for automatic, or a size from 12 to 60";
+        return false;
+    }
+    out = v;
+    return true;
+}
+
 // Blank allowed; otherwise normalizeText's rules
 inline bool parseOptionalText(const std::string &in, size_t maxLen, std::string &out, std::string &err) {
     if (trim(in).empty()) {

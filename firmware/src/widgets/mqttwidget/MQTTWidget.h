@@ -38,10 +38,11 @@ class MQTTWidget : public Widget {
 public:
     // topics/labels/units: the page's five settings rows. setupTopic is the
     // advanced layout topic ("" = none), page 1 only. sameSize: every orb's value
-    // at one font size, the largest that fits all five.
+    // at one font size, the largest that fits all five. fixedSize: 0 = automatic
+    // (sameSize decides), otherwise every value at that size, cut to fit.
     MQTTWidget(ScreenManager &manager, MqttFeed &feed, int page, const std::string &name, const std::string (&topics)[5],
                const std::string (&labels)[5], const std::string (&units)[5], const std::string &setupTopic,
-               bool sameSize);
+               bool sameSize, int fixedSize);
     void setup() override;
     void update(bool force = false) override;
     void draw(bool force = false) override;
@@ -68,6 +69,7 @@ private:
 
     int m_page; // 1 or 2, for its Show label
     bool m_sameSize;
+    int m_fixedSize; // 0 = automatic; otherwise the size of every value on the page (mqttCutToFit)
     int m_sharedSize = 0; // the size every orb's value is drawn at when m_sameSize; 0 = none yet
     String valueText(const OrbConfig &orb); // the value, or a hyphen until one arrives
     int bestSize(OrbConfig &orb); // cached in orb.fitFor / fitSize
