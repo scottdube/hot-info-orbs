@@ -66,6 +66,11 @@ public:
         return s;
     }
 
+    // While it is down, for the device log's "still down" lines
+    bool down() const { return m_down; }
+    uint32_t downMs(uint32_t now) const { return m_down ? now - m_downAt : 0; }
+    uint16_t tries() const { return m_tries; }
+
 private:
     bool m_down{false};
     uint32_t m_downAt{0};

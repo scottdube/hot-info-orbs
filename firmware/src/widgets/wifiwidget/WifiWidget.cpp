@@ -1,4 +1,5 @@
 #include "WifiWidget.h"
+#include "DeviceLogStore.h"
 #include "RoamPolicy.h"
 #include "StalePolicy.h"
 #include "Utils.h"
@@ -29,6 +30,8 @@ static volatile uint8_t s_lastDisconnectReason = 0;
 // the link is back.
 static volatile uint8_t s_outageFirstReason = 0;
 static volatile uint32_t s_outageDrops = 0;
+// Reasons already in the device log for this outage. Event task only.
+static devlog::ReasonsSeen s_reasonsLogged;
 // The last outage long enough to put "No WiFi" on the orb. Loop task only.
 struct OutageNote {
     bool any{false};
@@ -86,8 +89,12 @@ void WifiWidget::begin(bool showConnecting) {
                 s_lastDisconnectReason = reason;
                 if (s_outageDrops == 0) {
                     s_outageFirstReason = reason;
+                    s_reasonsLogged.reset();
                 }
                 s_outageDrops = s_outageDrops + 1;
+                if (s_reasonsLogged.firstTime(reason)) {
+                    DeviceLog::note("wifi down, reason %u", reason);
+                }
                 Serial.printf("[%lu] WiFi disconnected, reason %u\n", millis(), reason);
                 if (!s_connecting) {
                     return;
@@ -102,6 +109,18 @@ void WifiWidget::begin(bool showConnecting) {
                 }
             },
             ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+        // The steps of a join, for the device log. The last byte of the access
+        // point's address tells two access points apart; never the network name.
+        WiFi.onEvent(
+            [](arduino_event_id_t, arduino_event_info_t info) {
+                DeviceLog::note("wifi joined, channel %u, access point ..:%02x", info.wifi_sta_connected.channel,
+                                info.wifi_sta_connected.bssid[5]);
+            },
+            ARDUINO_EVENT_WIFI_STA_CONNECTED);
+        WiFi.onEvent([](arduino_event_id_t, arduino_event_info_t) { DeviceLog::note("wifi got an address"); },
+                     ARDUINO_EVENT_WIFI_STA_GOT_IP);
+        WiFi.onEvent([](arduino_event_id_t, arduino_event_info_t) { DeviceLog::note("wifi lost its address"); },
+                     ARDUINO_EVENT_WIFI_STA_LOST_IP);
     }
     WiFi.setHostname(OTA_HOSTNAME);
     WiFi.mode(WIFI_STA); // For WiFiManager explicitly set mode to station, ESP defaults to STA+AP
@@ -208,6 +227,8 @@ void WifiWidget::showPortal(bool eyesShown) {
     m_failCase = wififail::classify(saved, result);
     Serial.printf("[%lu] Configuration portal running. Saved network \"%s\", last result %d, reason %u, case %d\n",
                   millis(), m_savedSsid.c_str(), result, s_lastDisconnectReason, (int)m_failCase);
+    static const char *const caseText[] = {"no network saved yet", "saved network not found", "password refused", "join failed"};
+    DeviceLog::note("setup portal opened: %s", caseText[static_cast<int>(m_failCase)]);
     const wififail::Screens text = wififail::screens(m_failCase, m_savedSsid.c_str(), m_apssid.c_str());
 
     m_manager.setFont(DEFAULT_FONT);
@@ -258,6 +279,7 @@ void WifiWidget::lookForSavedNetwork() {
         Serial.printf("Setup: %s %s\n", m_savedSsid.c_str(), heard ? "heard, restarting to join it" : "still not heard");
         if (heard && WiFi.softAPgetStationNum() == 0) {
             delay(100);
+            DeviceLog::beforeRestart("saved network heard again, joining it");
             ESP.restart();
         }
         return;
@@ -290,6 +312,7 @@ void WifiWidget::update(bool force) {
         if (m_configPortalRunning && m_portalOverEyes) {
             Serial.println("Joined from the setup portal, restarting");
             delay(1000); // let the portal's reply reach the phone
+            DeviceLog::beforeRestart("joined from the setup portal");
             ESP.restart();
         }
         if (wifimgr.getConfigPortalActive()) {
@@ -410,9 +433,20 @@ void WifiWidget::rejoinIfDown() {
             s_outageNote.drops = s_outageDrops;
             s_outageNote.tries = s.tries;
             Serial.printf("[%lu] WiFi back after %lu s, %u rejoin tries\n", now, (unsigned long)(s.outMs / 1000), s.tries);
+            DeviceLog::note("wifi back after %lu s: %lu disconnects, %u join tries", (unsigned long) (s.outMs / 1000),
+                            (unsigned long) s_outageDrops, s.tries);
         }
         s_outageDrops = 0;
+        m_downSteps.reset();
         return;
+    }
+    // After 1, 5, 15 and 60 minutes, then hourly: an orb restarted before
+    // WiFi is back still leaves how long it was out and in what state.
+    // State 0 = joined to the access point with no address from the router.
+    if (m_rejoin.down() && m_downSteps.due(m_rejoin.downMs(now) / 1000)) {
+        DeviceLog::note("wifi still down after %lu s: state %d, %lu disconnects, %u join tries, last reason %u",
+                        (unsigned long) (m_rejoin.downMs(now) / 1000), (int) WiFi.status(), (unsigned long) s_outageDrops,
+                        m_rejoin.tries(), s_lastDisconnectReason);
     }
     if (!s.join) {
         return;

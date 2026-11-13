@@ -1,4 +1,5 @@
 #include "MqttFeed.h"
+#include "DeviceLogStore.h"
 #include "MQTTWidget.h"
 
 MqttStatus MqttFeed::s_status[2];
@@ -36,6 +37,11 @@ bool MqttFeed::subscribe(const String &topic) {
 void MqttFeed::service() {
     const bool up = m_client.connected();
     m_fresh.attempt(millis(), up, 0); // values stop arriving when the connection drops
+    if (up || m_attempted) { // not the pass before the first connect at start-up
+        char name[12];
+        snprintf(name, sizeof(name), "mqtt %d", m_slot + 1);
+        DeviceLog::page(name, m_logWatch, up, m_fresh.stale());
+    }
     if (up) {
         m_client.loop();
         return;

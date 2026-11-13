@@ -1,4 +1,5 @@
 #include "StockWidget.h"
+#include "DeviceLogStore.h"
 
 #include "Settings.h"
 #include "config_helper.h"
@@ -66,6 +67,7 @@ void StockWidget::update(bool force) {
         m_stockDelayPrev = millis();
         m_misses = any ? 0 : (m_misses < 255 ? m_misses + 1 : 255);
         m_fresh.attemptWithin(m_stockDelayPrev, any, stale::kFetchLimitMs);
+        DeviceLog::page("stocks", m_logWatch, any, m_fresh.stale());
     }
 }
 

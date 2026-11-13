@@ -2,6 +2,7 @@
 #define MQTT_FEED_H
 
 #include "MqttPolicy.h"
+#include "DeviceLog.h"
 #include "StalePolicy.h"
 #include <Arduino.h>
 #include <PubSubClient.h>
@@ -53,6 +54,7 @@ private:
     bool m_wasConnected = false;
     bool m_wanted = false;
     stale::Tracker m_fresh;
+    devlog::PageWatch m_logWatch; // the device log gets the changes, not every refresh
     static MqttStatus s_status[2];
 };
 

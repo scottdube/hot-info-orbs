@@ -2,7 +2,7 @@
 // The text side of the device log: what one line looks like, when a repeat
 // is counted instead of written, how many lines an hour may take, and when a
 // file rolls over. std only, so it is covered by `pio test -e native`
-// (test/test_devicelog). Storage and the web page are in DeviceLog.cpp.
+// (test/test_devicelog). Storage and the web page are in DeviceLogStore.cpp.
 //
 // The log is for helping a builder whose orb misbehaves: they download it
 // from the settings page and send it. So it records events, not values:
@@ -16,6 +16,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <ctime>
 #include <string>
 
@@ -24,6 +25,12 @@ namespace devlog {
 // Per file; the orb keeps the current file and the one before it. About 230
 // lines each at a typical 70 bytes.
 constexpr size_t kFileCap = 16384;
+
+// The same on a small filesystem (128 KB on a 4 MB board against 384 KB):
+// half, so the start-up picture keeps its room.
+inline size_t fileCap(size_t filesystemBytes) {
+    return filesystemBytes >= 256 * 1024 ? kFileCap : kFileCap / 2;
+}
 
 // Longest event text; longer is cut and ends in "..."
 constexpr size_t kMsgMax = 80;
@@ -80,9 +87,74 @@ inline std::string line(int64_t localEpoch, uint32_t upSeconds, const std::strin
 // True when the current file should be set aside before `addSize` more bytes
 // go in. An empty file never rolls over, or one oversized text would rotate
 // on every write and wipe both files.
-inline bool needsRotate(size_t fileSize, size_t addSize) {
-    return fileSize > 0 && fileSize + addSize > kFileCap;
+inline bool needsRotate(size_t fileSize, size_t addSize, size_t cap = kFileCap) {
+    return fileSize > 0 && fileSize + addSize > cap;
 }
+
+// False until the first time sync: the clock library counts up from zero
+// until then, plus or minus the time zone. Any date after 2023 is a real one.
+inline bool clockSet(int64_t localEpoch) {
+    return localEpoch > 1700000000;
+}
+
+// The date of an event at `up` seconds of uptime, from one clock reading
+// (refEpoch at refUp). Events wait in the Inbox before they are written, and
+// the line before a restart is written after the last reading. 0 = no clock.
+inline int64_t epochAt(int64_t refEpoch, uint32_t refUp, uint32_t up) {
+    if (!clockSet(refEpoch)) {
+        return 0;
+    }
+    return refEpoch + static_cast<int64_t>(up) - static_cast<int64_t>(refUp);
+}
+
+// Events waiting for the main loop to write them. The WiFi task reports
+// events too, and it must never touch the flash. Not locked: the caller
+// holds a lock around push(), pop() and takeLost().
+constexpr int kInboxSize = 16;
+struct Entry {
+    uint32_t up;
+    char msg[kMsgMax + 1];
+};
+class Inbox {
+public:
+    // False when full: the event is dropped and counted. The oldest are
+    // kept, since what came first says how the trouble began.
+    bool push(uint32_t upSeconds, const char *msg) {
+        if (m_count == kInboxSize) {
+            m_lost++;
+            return false;
+        }
+        Entry &e = m_entries[(m_head + m_count) % kInboxSize];
+        e.up = upSeconds;
+        strncpy(e.msg, msg, kMsgMax);
+        e.msg[kMsgMax] = 0;
+        m_count++;
+        return true;
+    }
+
+    bool pop(Entry &out) {
+        if (!m_count) {
+            return false;
+        }
+        out = m_entries[m_head];
+        m_head = (m_head + 1) % kInboxSize;
+        m_count--;
+        return true;
+    }
+
+    // Events dropped since the last call
+    uint16_t takeLost() {
+        const uint16_t n = m_lost;
+        m_lost = 0;
+        return n;
+    }
+
+private:
+    Entry m_entries[kInboxSize];
+    int m_head{0};
+    int m_count{0};
+    uint16_t m_lost{0};
+};
 
 // Turns events into the text to append to the file
 class Writer {
@@ -185,6 +257,57 @@ public:
 
 private:
     uint32_t m_next{60};
+};
+
+// WiFi disconnect reasons (0-255) already reported in this outage. A join
+// every 30 s can fail with two reasons in turn for hours: each is news once,
+// and the "still down" lines carry the counts.
+class ReasonsSeen {
+public:
+    bool firstTime(uint8_t reason) {
+        uint32_t &word = m_bits[reason / 32];
+        const uint32_t bit = 1u << (reason % 32);
+        const bool first = !(word & bit);
+        word |= bit;
+        return first;
+    }
+
+    void reset() { memset(m_bits, 0, sizeof(m_bits)); }
+
+private:
+    uint32_t m_bits[8] = {};
+};
+
+// One page's refreshes as events: the first that fails, the data going
+// stale, and the first good one after that. Never one line per refresh.
+class PageWatch {
+public:
+    // Call after every refresh. The event text, "" when it is not news.
+    std::string step(uint32_t upSeconds, bool ok, bool stale) {
+        if (ok) {
+            if (!m_failing) {
+                return "";
+            }
+            m_failing = false;
+            return "ok again after " + std::to_string(upSeconds - m_failedAt) + " s"; // since the first failure
+        }
+        if (!m_failing) {
+            m_failing = true;
+            m_failedAt = upSeconds;
+            m_staleSaid = stale;
+            return stale ? "refresh failed, data now stale" : "refresh failed";
+        }
+        if (stale && !m_staleSaid) {
+            m_staleSaid = true;
+            return "data now stale";
+        }
+        return "";
+    }
+
+private:
+    bool m_failing{false};
+    bool m_staleSaid{false};
+    uint32_t m_failedAt{0};
 };
 
 } // namespace devlog

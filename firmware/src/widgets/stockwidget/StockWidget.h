@@ -5,6 +5,7 @@
 #include <HTTPClient.h>
 #include <TFT_eSPI.h>
 
+#include "DeviceLog.h"
 #include "StalePolicy.h"
 #include "StockDataModel.h"
 #include "Widget.h"
@@ -34,6 +35,7 @@ private:
     unsigned long m_stockDelay = 900000; // default to 15m between updates
     unsigned long m_stockDelayPrev = 0;
     stale::Tracker m_fresh;
+    devlog::PageWatch m_logWatch; // the device log gets the changes, not every refresh
     uint8_t m_misses = 0; // failed refreshes in a row
 
     StockDataModel m_stocks[MAX_STOCKS];

@@ -158,6 +158,150 @@ void test_milestones_start_over_for_the_next_outage() {
     TEST_ASSERT_TRUE(m.due(60));
 }
 
+// --- events waiting to be written ---------------------------------------------
+
+void test_the_inbox_hands_events_back_in_order() {
+    devlog::Inbox in;
+    TEST_ASSERT_TRUE(in.push(10, "first"));
+    TEST_ASSERT_TRUE(in.push(11, "second"));
+    devlog::Entry e;
+    TEST_ASSERT_TRUE(in.pop(e));
+    TEST_ASSERT_EQUAL(10, e.up);
+    TEST_ASSERT_EQUAL_STRING("first", e.msg);
+    TEST_ASSERT_TRUE(in.pop(e));
+    TEST_ASSERT_EQUAL_STRING("second", e.msg);
+    TEST_ASSERT_FALSE(in.pop(e));
+}
+
+void test_a_full_inbox_keeps_the_oldest_and_counts_the_rest() {
+    // The WiFi task can post faster than the main loop writes: what came
+    // first says how the trouble began
+    devlog::Inbox in;
+    for (int i = 0; i < devlog::kInboxSize; i++) {
+        TEST_ASSERT_TRUE(in.push(i, msgN(i).c_str()));
+    }
+    TEST_ASSERT_FALSE(in.push(99, "no room"));
+    TEST_ASSERT_FALSE(in.push(99, "no room"));
+    TEST_ASSERT_EQUAL(2, in.takeLost());
+    TEST_ASSERT_EQUAL(0, in.takeLost()); // reported once
+    devlog::Entry e;
+    TEST_ASSERT_TRUE(in.pop(e));
+    TEST_ASSERT_EQUAL_STRING("event 0", e.msg);
+}
+
+void test_the_inbox_cuts_a_long_event_to_fit() {
+    devlog::Inbox in;
+    in.push(1, std::string(300, 'x').c_str());
+    devlog::Entry e;
+    in.pop(e);
+    TEST_ASSERT_EQUAL(kMsgMax, std::string(e.msg).size());
+}
+
+void test_the_inbox_is_reusable_past_its_size() {
+    devlog::Inbox in;
+    devlog::Entry e;
+    for (int i = 0; i < devlog::kInboxSize * 3; i++) {
+        TEST_ASSERT_TRUE(in.push(i, msgN(i).c_str()));
+        TEST_ASSERT_TRUE(in.pop(e));
+        TEST_ASSERT_EQUAL_STRING(msgN(i).c_str(), e.msg);
+    }
+    TEST_ASSERT_EQUAL(0, in.takeLost());
+}
+
+// --- the time of an event that waited -----------------------------------------
+
+void test_an_event_is_dated_when_it_happened_not_when_it_was_written() {
+    // clock read at 500 s of uptime; the event was at 490 s
+    TEST_ASSERT_EQUAL(kMorning - 10, devlog::epochAt(kMorning, 500, 490));
+    // and one after the last clock reading (the line before a restart)
+    TEST_ASSERT_EQUAL(kMorning + 7, devlog::epochAt(kMorning, 500, 507));
+}
+
+void test_without_a_clock_an_event_has_no_date() {
+    TEST_ASSERT_EQUAL(0, devlog::epochAt(kNoClock, 500, 490));
+}
+
+void test_the_clock_counts_as_set_only_with_a_real_date() {
+    // Before the first time sync the clock library counts up from zero, plus
+    // or minus the time zone
+    TEST_ASSERT_FALSE(devlog::clockSet(0));
+    TEST_ASSERT_FALSE(devlog::clockSet(42));
+    TEST_ASSERT_FALSE(devlog::clockSet(-18000 + 42));
+    TEST_ASSERT_TRUE(devlog::clockSet(kMorning));
+}
+
+// --- room on the filesystem ----------------------------------------------------
+
+void test_a_small_filesystem_gets_smaller_files() {
+    // 384 KB on the 8 MB board, 128 KB on a 4 MB one: the start-up picture
+    // lives there too
+    TEST_ASSERT_EQUAL(16384, devlog::fileCap(384 * 1024));
+    TEST_ASSERT_EQUAL(8192, devlog::fileCap(128 * 1024));
+    TEST_ASSERT_FALSE(devlog::needsRotate(8000, 80, devlog::fileCap(128 * 1024)));
+    TEST_ASSERT_TRUE(devlog::needsRotate(8150, 80, devlog::fileCap(128 * 1024)));
+}
+
+// --- WiFi disconnect reasons ---------------------------------------------------
+
+void test_each_disconnect_reason_is_news_once_per_outage() {
+    // A join every 30 s can fail with two reasons in turn for hours
+    devlog::ReasonsSeen seen;
+    TEST_ASSERT_TRUE(seen.firstTime(8));
+    TEST_ASSERT_TRUE(seen.firstTime(201));
+    TEST_ASSERT_FALSE(seen.firstTime(8));
+    TEST_ASSERT_FALSE(seen.firstTime(201));
+    TEST_ASSERT_TRUE(seen.firstTime(0));
+    TEST_ASSERT_TRUE(seen.firstTime(255));
+    TEST_ASSERT_FALSE(seen.firstTime(255));
+}
+
+void test_the_next_outage_reports_its_reasons_again() {
+    devlog::ReasonsSeen seen;
+    seen.firstTime(8);
+    seen.reset();
+    TEST_ASSERT_TRUE(seen.firstTime(8));
+}
+
+// --- a page's refreshes ---------------------------------------------------------
+
+void test_good_refreshes_are_not_news() {
+    devlog::PageWatch w;
+    TEST_ASSERT_EQUAL_STRING("", w.step(100, true, false).c_str());
+    TEST_ASSERT_EQUAL_STRING("", w.step(700, true, false).c_str());
+}
+
+void test_the_first_failed_refresh_is_news_the_next_is_not() {
+    devlog::PageWatch w;
+    w.step(100, true, false);
+    TEST_ASSERT_EQUAL_STRING("refresh failed", w.step(700, false, false).c_str());
+    TEST_ASSERT_EQUAL_STRING("", w.step(1300, false, false).c_str());
+}
+
+void test_going_stale_is_news_once() {
+    devlog::PageWatch w;
+    w.step(700, false, false);
+    TEST_ASSERT_EQUAL_STRING("data now stale", w.step(1300, false, true).c_str());
+    TEST_ASSERT_EQUAL_STRING("", w.step(1900, false, true).c_str());
+}
+
+void test_a_first_miss_that_is_already_stale_says_both() {
+    // a page that was off screen for an hour
+    devlog::PageWatch w;
+    w.step(100, true, false);
+    TEST_ASSERT_EQUAL_STRING("refresh failed, data now stale", w.step(4000, false, true).c_str());
+}
+
+void test_recovery_says_how_long_the_trouble_lasted() {
+    devlog::PageWatch w;
+    w.step(100, true, false);
+    w.step(700, false, false);
+    w.step(1300, false, true);
+    TEST_ASSERT_EQUAL_STRING("ok again after 1200 s", w.step(1900, true, false).c_str()); // first failure at 700
+    TEST_ASSERT_EQUAL_STRING("", w.step(2500, true, false).c_str());
+    // and the next trouble is news again
+    TEST_ASSERT_EQUAL_STRING("refresh failed", w.step(3100, false, false).c_str());
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_a_line_carries_the_clock_the_uptime_and_the_event);
@@ -178,5 +322,20 @@ int main() {
     RUN_TEST(test_a_long_outage_reports_at_widening_intervals);
     RUN_TEST(test_a_late_first_look_reports_once_not_once_per_missed_step);
     RUN_TEST(test_milestones_start_over_for_the_next_outage);
+    RUN_TEST(test_the_inbox_hands_events_back_in_order);
+    RUN_TEST(test_a_full_inbox_keeps_the_oldest_and_counts_the_rest);
+    RUN_TEST(test_the_inbox_cuts_a_long_event_to_fit);
+    RUN_TEST(test_the_inbox_is_reusable_past_its_size);
+    RUN_TEST(test_an_event_is_dated_when_it_happened_not_when_it_was_written);
+    RUN_TEST(test_without_a_clock_an_event_has_no_date);
+    RUN_TEST(test_the_clock_counts_as_set_only_with_a_real_date);
+    RUN_TEST(test_a_small_filesystem_gets_smaller_files);
+    RUN_TEST(test_each_disconnect_reason_is_news_once_per_outage);
+    RUN_TEST(test_the_next_outage_reports_its_reasons_again);
+    RUN_TEST(test_good_refreshes_are_not_news);
+    RUN_TEST(test_the_first_failed_refresh_is_news_the_next_is_not);
+    RUN_TEST(test_going_stale_is_news_once);
+    RUN_TEST(test_a_first_miss_that_is_already_stale_says_both);
+    RUN_TEST(test_recovery_says_how_long_the_trouble_lasted);
     return UNITY_END();
 }

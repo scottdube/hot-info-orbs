@@ -89,6 +89,21 @@ void test_start_up_with_the_link_up_reports_no_outage() {
     TEST_ASSERT_FALSE(w.step(12345, true).ended);
 }
 
+void test_while_down_it_says_for_how_long_and_how_many_tries() {
+    // for the "still down" lines in the device log
+    rejoin::Watch w;
+    w.step(1000, true);
+    TEST_ASSERT_FALSE(w.down());
+    w.step(2000, false);
+    w.step(2000 + kEveryMs, false);
+    w.step(2000 + 2 * kEveryMs + 500, false);
+    TEST_ASSERT_TRUE(w.down());
+    TEST_ASSERT_EQUAL(2 * kEveryMs + 500, w.downMs(2000 + 2 * kEveryMs + 500));
+    TEST_ASSERT_EQUAL(2, w.tries());
+    w.step(2000 + 3 * kEveryMs, true);
+    TEST_ASSERT_FALSE(w.down());
+}
+
 void test_the_core_gives_up_on_a_refusal_but_retries_a_lost_beacon() {
     // Read from arduino-esp32 2.0.17 WiFiGeneric.cpp, _isReconnectableReason()
     TEST_ASSERT_TRUE(rejoin::coreRetries(200)); // BEACON_TIMEOUT
@@ -112,6 +127,7 @@ int main() {
     RUN_TEST(test_reports_the_outage_once_when_the_link_returns);
     RUN_TEST(test_a_short_blip_ends_with_no_tries);
     RUN_TEST(test_start_up_with_the_link_up_reports_no_outage);
+    RUN_TEST(test_while_down_it_says_for_how_long_and_how_many_tries);
     RUN_TEST(test_the_core_gives_up_on_a_refusal_but_retries_a_lost_beacon);
     return UNITY_END();
 }

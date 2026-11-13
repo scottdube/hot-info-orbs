@@ -2,6 +2,7 @@
 #ifndef WIFIWIDGET_H
     #define WIFIWIDGET_H
 
+    #include "DeviceLog.h"
     #include "RejoinPolicy.h"
     #include "Widget.h"
     #include "WifiFailPolicy.h"
@@ -64,6 +65,7 @@ private:
     String m_roamSsid{""};
 
     rejoin::Watch m_rejoin;
+    devlog::Milestones m_downSteps; // "still down" lines in the device log
     bool m_rejoinPrimed{false};
 
     // Portal running because the saved network wasn't heard: look for it

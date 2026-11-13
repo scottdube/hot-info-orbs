@@ -1,4 +1,5 @@
 #include "Button.h"
+#include "DeviceLogStore.h"
 #include "GlobalTime.h"
 #include "OtaUpdater.h"
 #include "ScreenManager.h"
@@ -138,6 +139,7 @@ void setup() {
     // new board's partition has never been formatted (a few seconds, once)
     s_fsMounted = LittleFS.begin(true);
     Serial.printf("LittleFS %s\n", s_fsMounted ? "mounted" : "FAILED - built-in logo only");
+    DeviceLog::begin(s_fsMounted);
 
     TJpgDec.setSwapBytes(true); // JPEG rendering setup
     TJpgDec.setCallback(tft_output);
@@ -345,6 +347,7 @@ void checkButtons() {
 }
 
 void loop() {
+    DeviceLog::tick(); // writes the events waiting; first, so every path below gets it
     if (wifiWidget->isConnected() == false) {
         wifiWidget->update();
         {
@@ -389,6 +392,7 @@ void loop() {
         wifiWidget->roamIfWeak();
         wifiWidget->rejoinIfDown();
         globalTime->updateTime();
+        DeviceLog::clock(globalTime->getUnixEpoch());
 
         checkButtons();
 

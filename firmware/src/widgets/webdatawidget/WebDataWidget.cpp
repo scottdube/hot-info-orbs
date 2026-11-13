@@ -1,5 +1,6 @@
 
 #include "WebDataWidget.h"
+#include "DeviceLogStore.h"
 
 WebDataStatus WebDataWidget::s_status;
 
@@ -80,6 +81,7 @@ void WebDataWidget::update(bool force) {
     // dead URL was retried on every pass of loop()
     m_lastUpdate = millis();
     m_fresh.attempt(m_lastUpdate, ok, period);
+    DeviceLog::page("web data", m_logWatch, ok, m_fresh.stale());
     if (m_lastUpdate == 0) {
         m_lastUpdate = 1; // 0 means "never fetched"
     }

@@ -10,6 +10,7 @@
 // 4
 // factor out the text wrapping (there's a utils for that already, if that doesn't work, why not?)
 
+#include "DeviceLogStore.h"
 #include "SunMoon.h"
 #include "WeatherWidget.h"
 #include "icons.h"
@@ -83,6 +84,7 @@ void WeatherWidget::update(bool force) {
         setBusy(false);
         m_weatherDelayPrev = millis();
         m_fresh.attempt(m_weatherDelayPrev, ok, m_weatherDelay); // a failed fetch keeps the old data on screen
+        DeviceLog::page("weather", m_logWatch, ok, m_fresh.stale());
     }
 }
 

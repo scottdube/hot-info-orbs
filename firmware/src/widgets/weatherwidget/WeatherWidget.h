@@ -2,6 +2,7 @@
 #define WEATHERWIDGET_H
 
 #include "GlobalTime.h"
+#include "DeviceLog.h"
 #include "StalePolicy.h"
 #include "Utils.h"
 #include "WeatherDataModel.h"
@@ -51,6 +52,7 @@ private:
     const long m_weatherDelay = 600000; // Weather refresh rate
     unsigned long m_weatherDelayPrev = 0;
     stale::Tracker m_fresh;
+    devlog::PageWatch m_logWatch; // the device log gets the changes, not every refresh
 
     const int center = 120; // Center location of the screen(240x240)
 
