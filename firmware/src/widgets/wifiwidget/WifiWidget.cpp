@@ -487,9 +487,9 @@ void WifiWidget::rejoinIfDown() {
     // WiFi is back still leaves how long it was out and in what state.
     // State 0 = joined to the access point with no address from the router.
     if (m_rejoin.down() && m_downSteps.due(m_rejoin.downMs(now) / 1000)) {
-        DeviceLog::note("wifi still down after %lu s: state %d, %lu disconnects, %u join tries, last reason %u",
-                        (unsigned long) (m_rejoin.downMs(now) / 1000), (int) WiFi.status(), (unsigned long) s_outageDrops,
-                        m_rejoin.tries(), s_lastDisconnectReason);
+        DeviceLog::note("%s", rejoin::stillDownLine(m_rejoin.downMs(now) / 1000, (int) WiFi.status(), s_outageDrops,
+                                                    m_rejoin.tries(), s_lastDisconnectReason)
+                                  .c_str());
     }
     if (!s.join) {
         return;
@@ -510,7 +510,13 @@ void WifiWidget::rejoinIfDown() {
     // still the right thing (RejoinPolicy.h, the ladder)
     const uint8_t reason = s_lastDisconnectReason;
     const bool heardIt = rejoin::heard(reason);
-    switch (m_ladder.afterTry(now, heardIt)) {
+    const bool wasHearing = m_ladder.hearing();
+    const rejoin::Action action = m_ladder.afterTry(now, heardIt);
+    if (m_ladder.hearing() != wasHearing) {
+        // The 5 minutes to a restart start (or are called off) here
+        DeviceLog::note("wifi: network %s, last reason %u", m_ladder.hearing() ? "heard, join failing" : "no longer heard", reason);
+    }
+    switch (action) {
     case rejoin::Action::Restart:
         Serial.printf("[%lu] WiFi: network heard, join failing for 5 min, last reason %u: restarting\n", now, reason);
         DeviceLog::note("wifi: network heard, join failing for 5 min, last reason %u", reason);

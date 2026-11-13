@@ -16,6 +16,8 @@
 // it starts a join by network name, whatever the core is doing.
 
 #include <cstdint>
+#include <cstdio>
+#include <string>
 
 namespace rejoin {
 
@@ -150,6 +152,20 @@ constexpr uint8_t kMissesToUnhear = 2;
 // 201; a refused orb never logged 201 (three starts only).
 inline bool heard(uint8_t lastReason) { return lastReason != 201; }
 
+// The device log's line while the link stays down. Worded short on purpose:
+// the log cuts an event at 80 characters (devlog::kMsgMax), and the longer
+// "wifi still down after N s: ... disconnects, ... join tries, last reason N"
+// lost its reason, the one number wanted, once the outage passed 300 s
+// (rig, 2026-11-13). Rejected: a longer log line, which costs every event
+// its share of the 32 KB the log may use. The reason (the last disconnect
+// reason, legend on the log page) comes early so no cut can take it.
+inline std::string stillDownLine(uint32_t seconds, int state, uint32_t drops, uint32_t tries, unsigned reason) {
+    char buf[96];
+    snprintf(buf, sizeof(buf), "wifi down %lu s, reason %u: state %d, %lu drops, %lu tries", (unsigned long) seconds, reason, state,
+             (unsigned long) drops, (unsigned long) tries);
+    return std::string(buf);
+}
+
 enum class Action {
     None,
     ResetRadio, // WiFi off and on, then join
@@ -195,6 +211,10 @@ public:
 
     // The link is back: the next drop starts from the bottom
     void linkUp() { *this = Ladder(); }
+
+    // Whether the network counts as heard right now. The device log gets a
+    // line when this changes: without USB the single tries are not visible.
+    bool hearing() const { return m_heard; }
 
 private:
     bool m_started{false};

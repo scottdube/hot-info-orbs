@@ -1,5 +1,7 @@
 // Host tests for RejoinPolicy.h:  pio test -e native
+#include "DeviceLog.h"
 #include "RejoinPolicy.h"
+#include <string>
 #include <unity.h>
 #include <vector>
 
@@ -236,6 +238,33 @@ void test_the_ladder_works_across_the_millis_wrap() {
     TEST_ASSERT_EQUAL(Action::Restart, l.afterTry(first + kHeardRestartMs, true));
 }
 
+void test_the_ladder_says_whether_it_counts_the_network_as_heard() {
+    // The device log gets a line when this changes: without USB the tries are not visible
+    rejoin::Ladder l;
+    TEST_ASSERT_FALSE(l.hearing());
+    l.afterTry(30000, true);
+    TEST_ASSERT_TRUE(l.hearing());
+    l.afterTry(60000, false); // one miss: still counted as heard
+    TEST_ASSERT_TRUE(l.hearing());
+    l.afterTry(90000, false); // two in a row
+    TEST_ASSERT_FALSE(l.hearing());
+    l.afterTry(120000, true);
+    l.linkUp();
+    TEST_ASSERT_FALSE(l.hearing());
+}
+
+void test_the_still_down_line_reads_in_plain_words() {
+    TEST_ASSERT_EQUAL_STRING("wifi down 300 s, reason 201: state 1, 118 drops, 9 tries", rejoin::stillDownLine(300, 1, 118, 9, 201).c_str());
+}
+
+void test_the_still_down_line_keeps_its_reason_with_the_largest_numbers() {
+    // Seen 2026-11-13 on the rig: the longer wording lost "last reason N" to the log's cut at 300 s
+    const std::string line = rejoin::stillDownLine(0xFFFFFFFFu / 1000, 255, 0xFFFFFFFFu, 0xFFFFFFFFu, 255);
+    TEST_ASSERT_TRUE(line.size() <= devlog::kMsgMax); // nothing is cut
+    TEST_ASSERT_TRUE(line.find(", reason 255:") != std::string::npos);
+    TEST_ASSERT_EQUAL_STRING("4294967295 tries", line.substr(line.size() - 16).c_str());
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_no_join_while_the_link_is_up);
@@ -259,5 +288,8 @@ int main() {
     RUN_TEST(test_two_misses_in_a_row_start_the_five_minutes_over);
     RUN_TEST(test_the_link_coming_back_clears_the_ladder);
     RUN_TEST(test_the_ladder_works_across_the_millis_wrap);
+    RUN_TEST(test_the_ladder_says_whether_it_counts_the_network_as_heard);
+    RUN_TEST(test_the_still_down_line_reads_in_plain_words);
+    RUN_TEST(test_the_still_down_line_keeps_its_reason_with_the_largest_numbers);
     return UNITY_END();
 }
