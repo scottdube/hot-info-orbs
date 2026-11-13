@@ -51,13 +51,21 @@ void StockWidget::draw(bool force) {
 }
 
 void StockWidget::update(bool force) {
-    if (force || m_stockDelayPrev == 0 || (millis() - m_stockDelayPrev) >= m_stockDelay) {
+    // 5 min after the first miss, so the ring lands at 20 min as on the
+    // weather page (StalePolicy.h); 15 min otherwise
+    const unsigned long wait = stale::nextWaitMs(m_stockDelay, stale::kFetchLimitMs, m_misses);
+    if (force || m_stockDelayPrev == 0 || (millis() - m_stockDelayPrev) >= wait) {
         setBusy(true);
+        // One good price means the service answered. A ticker it does not
+        // know fails every time and must not mark the whole page.
+        bool any = false;
         for (int8_t i = 0; i < m_stockCount; i++) {
-            getStockData(m_stocks[i]);
+            any = getStockData(m_stocks[i]) || any;
         }
         setBusy(false);
         m_stockDelayPrev = millis();
+        m_misses = any ? 0 : (m_misses < 255 ? m_misses + 1 : 255);
+        m_fresh.attemptWithin(m_stockDelayPrev, any, stale::kFetchLimitMs);
     }
 }
 
@@ -70,12 +78,13 @@ void StockWidget::buttonPressed(uint8_t buttonId, ButtonState state) {
         changeMode();
 }
 
-void StockWidget::getStockData(StockDataModel &stock) {
+bool StockWidget::getStockData(StockDataModel &stock) {
     String httpRequestAddress = "https://api.twelvedata.com/quote?apikey=e03fc53524454ab8b65d91b23c669cc5&symbol=" + stock.getSymbol();
 
     HTTPClient http;
     http.begin(httpRequestAddress);
     int httpCode = http.GET();
+    bool applied = false;
 
     if (httpCode > 0) { // Check for the returning code
         String payload = http.getString();
@@ -93,6 +102,7 @@ void StockWidget::getStockData(StockDataModel &stock) {
                 stock.setCompany(doc["name"].as<String>());
                 stock.setTicker(doc["symbol"].as<String>());
                 stock.setCurrencySymbol(doc["currency"].as<String>());
+                applied = true;
             } else {
                 Serial.println("skipping invalid data for: " + stock.getSymbol());
             }
@@ -106,6 +116,7 @@ void StockWidget::getStockData(StockDataModel &stock) {
     }
 
     http.end();
+    return applied;
 }
 
 void StockWidget::displayStock(int8_t displayIndex, StockDataModel &stock, uint32_t backgroundColor, uint32_t textColor) {

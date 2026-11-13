@@ -387,10 +387,12 @@ void loop() {
             return; // leave the CPU and screen 2 to the upload
         }
         wifiWidget->roamIfWeak();
+        wifiWidget->rejoinIfDown();
         globalTime->updateTime();
 
         checkButtons();
 
+        widgetSet->setLinkUp(wifiWidget->linkUp());
         widgetSet->updateCurrent();
         for (MqttFeed *feed : mqttFeeds) {
             if (feed && feed->wanted()) {

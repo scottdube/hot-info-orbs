@@ -83,6 +83,7 @@ public:
     void draw(bool force = false) override;
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
     String getName() override;
+    uint8_t dataOrbs() override { return 0; } // keeps time without WiFi: never marked
 
 private:
     void change24hMode();

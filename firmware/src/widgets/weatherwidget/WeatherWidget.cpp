@@ -73,15 +73,16 @@ void WeatherWidget::draw(bool force) {
 void WeatherWidget::update(bool force) {
     if (force || m_weatherDelayPrev == 0 || (millis() - m_weatherDelayPrev) >= m_weatherDelay) {
         setBusy(true);
+        bool ok = m_source->fetch(model);
         if (force) {
             int retry = 0;
-            while (!m_source->fetch(model) && retry++ < MAX_RETRIES)
-                ;
-        } else {
-            m_source->fetch(model);
+            while (!ok && retry++ < MAX_RETRIES) {
+                ok = m_source->fetch(model);
+            }
         }
         setBusy(false);
         m_weatherDelayPrev = millis();
+        m_fresh.attempt(m_weatherDelayPrev, ok, m_weatherDelay); // a failed fetch keeps the old data on screen
     }
 }
 

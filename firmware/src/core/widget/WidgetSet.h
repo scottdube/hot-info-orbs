@@ -2,6 +2,7 @@
 #define WIDGET_SET_H
 
 #include "ScreenManager.h"
+#include "StalePolicy.h"
 #include "Utils.h"
 #include "Widget.h"
 
@@ -17,6 +18,10 @@ public:
     void add(Widget *widget);
     void drawCurrent(bool force = false);
     void updateCurrent();
+    // Every pass of loop(), before updateCurrent(): is WiFi up right now?
+    // Picks the stale mark's shape, and gets stale pages a refresh the
+    // moment WiFi is back (issue #32, StalePolicy.h)
+    void setLinkUp(bool up);
     Widget *getCurrent();
     void next();
     void prev();
@@ -60,5 +65,12 @@ private:
     bool m_woken = false; // a button woke the panels; m_wokenAt says when
 
     void switchWidget();
+
+    void drawStaleMark(); // over the page, after every draw of it
+    bool m_wifiOut = false; // down for longer than a roam takes (stale::LinkGrace)
+    stale::LinkGrace m_linkGrace;
+    stale::LinkWatch m_linkWatch;
+    stale::Overlay m_staleOverlay;
+    bool m_refreshOwed[MAX_WIDGETS] = {};
 };
 #endif // WIDGET_SET_H

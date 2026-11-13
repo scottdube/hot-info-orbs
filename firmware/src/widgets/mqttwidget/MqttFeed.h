@@ -2,6 +2,7 @@
 #define MQTT_FEED_H
 
 #include "MqttPolicy.h"
+#include "StalePolicy.h"
 #include <Arduino.h>
 #include <PubSubClient.h>
 #include <WiFiClient.h>
@@ -33,6 +34,7 @@ public:
     bool subscribe(const String &topic);
     void setWanted(bool wanted); // one of its pages is in the rotation
     bool wanted() const;
+    bool stale() const { return m_fresh.stale(); } // the broker has been out of reach for three minutes (StalePolicy.h)
     static const MqttStatus &status(int slot);
 
 private:
@@ -50,6 +52,7 @@ private:
     uint32_t m_lastAttempt = 0;
     bool m_wasConnected = false;
     bool m_wanted = false;
+    stale::Tracker m_fresh;
     static MqttStatus s_status[2];
 };
 

@@ -28,6 +28,16 @@ MqttFeed &MQTTWidget::feed() {
     return m_feed;
 }
 
+uint8_t MQTTWidget::dataOrbs() {
+    uint8_t orbs = 0;
+    for (const auto &o : orbConfigs) {
+        if (o.orbid >= 0 && o.orbid < 5) {
+            orbs |= 1u << o.orbid;
+        }
+    }
+    return orbs;
+}
+
 // Helper function to map color strings to uint16_t color values
 uint16_t MQTTWidget::getColorFromString(const String &colorStr) {
     if (colorStr.equalsIgnoreCase("TFT_BLACK")) {

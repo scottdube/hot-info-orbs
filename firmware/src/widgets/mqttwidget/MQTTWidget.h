@@ -50,6 +50,8 @@ public:
     String getName() override;
     String showLabel() override;
     MqttFeed &feed();
+    bool dataStale() override { return m_feed.stale(); }
+    uint8_t dataOrbs() override; // the orbs with a topic
 
     // Called by the feed
     void subscribeAll(); // layout topic and every orb topic, after each connect

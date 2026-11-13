@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 
+#include "StalePolicy.h"
 #include "Utils.h"
 #include "WebDataModel.h"
 #include "WebDataPolicy.h"
@@ -29,6 +30,7 @@ public:
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
     String getName() override;
     static const WebDataStatus &status();
+    bool dataStale() override { return m_fresh.stale(); }
 
 private:
     bool fetch(); // one bounded GET; true when the data was applied
@@ -36,6 +38,7 @@ private:
 
     unsigned long m_lastUpdate = 0;
     unsigned long m_updateDelay = WEBDATA_DEFAULT_INTERVAL_MS;
+    stale::Tracker m_fresh;
     String httpRequestAddress;
     String m_name;
     bool m_hasData = false;

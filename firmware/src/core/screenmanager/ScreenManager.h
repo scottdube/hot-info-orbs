@@ -31,6 +31,13 @@ public:
     void fillScreen(uint32_t color);
     void clearScreen(int screen = -1);
 
+    // The screens fillScreen() has wiped since the last call, bit 0 = screen
+    // 0, and the color each was last wiped to. For the stale-data ring
+    // (issue #32): it is drawn over a page, so it has to go back on whenever
+    // the page wipes an orb to redraw it.
+    uint8_t takeFilled();
+    uint32_t lastFill(int screen) const;
+
     bool setBrightness(uint8_t brightness);
     void setPanelsAsleep(bool asleep);
     uint8_t getBrightness();
@@ -67,6 +74,11 @@ public:
     // Drawing stuff
     void drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
     void fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
+    void fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color);
+    // A word on a filled plate, centered on cx, top edge at y. Leaves the
+    // font, its size, colors and alignment as it found them: it is drawn
+    // between a page's own draws, and pages keep that state across passes.
+    void drawPlate(const String &text, int cx, int y, int w, int h, int radius, unsigned int fontSize, uint32_t plateColor, uint32_t textColor);
     void drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye, uint32_t color);
     void drawArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32_t startAngle, uint32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool smoothArc = true);
     void drawSmoothArc(int32_t x, int32_t y, int32_t r, int32_t ir, uint32_t startAngle, uint32_t endAngle, uint32_t fg_color, uint32_t bg_color, bool roundEnds = false);
@@ -92,6 +104,9 @@ private:
     OpenFontRender m_render;
     TTF_Font m_curFont = TTF_Font::NONE;
     uint8_t m_brightness = TFT_BRIGHTNESS;
+    uint8_t m_selected = 0; // screens the next draw goes to, bit 0 = screen 0
+    uint8_t m_filled = 0;
+    uint16_t m_lastFill[NUM_SCREENS] = {};
 
     TFT_eSPI &getDisplay();
     OpenFontRender &getRender();

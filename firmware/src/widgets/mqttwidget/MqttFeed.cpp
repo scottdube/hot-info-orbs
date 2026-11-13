@@ -34,7 +34,9 @@ bool MqttFeed::subscribe(const String &topic) {
 }
 
 void MqttFeed::service() {
-    if (m_client.connected()) {
+    const bool up = m_client.connected();
+    m_fresh.attempt(millis(), up, 0); // values stop arriving when the connection drops
+    if (up) {
         m_client.loop();
         return;
     }

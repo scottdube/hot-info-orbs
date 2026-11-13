@@ -72,10 +72,69 @@ void WidgetSet::drawCurrent(bool force) {
     } else {
         m_widgets[m_currentWidget]->draw(force);
     }
+    drawStaleMark();
 }
 
 void WidgetSet::updateCurrent() {
-    m_widgets[m_currentWidget]->update();
+    // WiFi came back while this page was stale: refresh now, not at its
+    // next 10 or 15 minute turn. A page off screen gets it when it comes up.
+    const bool owed = m_refreshOwed[m_currentWidget];
+    m_refreshOwed[m_currentWidget] = false;
+    m_widgets[m_currentWidget]->update(owed);
+}
+
+void WidgetSet::setLinkUp(bool up) {
+    if (m_linkWatch.cameBack(up)) {
+        for (int8_t i = 0; i < m_widgetCount; i++) {
+            m_refreshOwed[i] = m_widgets[i]->dataStale();
+        }
+    }
+    m_wifiOut = m_linkGrace.out(millis(), up);
+}
+
+// Issue #32. "No WiFi" on orb 2 as soon as WiFi is out, and a red ring on
+// each orb holding stale data: broken when the orb has no WiFi, solid when
+// WiFi is up and the data is old all the same. Drawn here and not in each
+// page so every page gets the same mark and none has to leave room for it.
+void WidgetSet::drawStaleMark() {
+    Widget *w = getCurrent();
+    const uint8_t dataOrbs = w->dataOrbs() & 0x1F;
+    const stale::Mark want = stale::mark(w->dataStale(), m_wifiOut, dataOrbs != 0);
+    const stale::Paint paint = m_staleOverlay.step(m_screenManager->takeFilled(), want, dataOrbs);
+    if (paint.repaint) {
+        m_screenManager->clearAllScreens();
+        w->draw(true);
+        m_screenManager->takeFilled(); // the overlay already counts these as wiped
+    }
+    if (!paint.orbs) {
+        return;
+    }
+    for (int i = 0; i < NUM_SCREENS; i++) {
+        if (!(paint.orbs & (1u << i))) {
+            continue;
+        }
+        m_screenManager->selectScreen(i);
+        if (stale::hasRing(want) && (dataOrbs & (1u << i))) {
+            const uint32_t bg = m_screenManager->lastFill(i); // for the ring's smoothed edge
+            if (want == stale::Mark::Old) {
+                m_screenManager->drawArc(ScreenCenterX, ScreenCenterY, stale::kRingOuter, stale::kRingInner, 0, 360, TFT_RED, bg);
+            } else {
+                // The gaps are the message, so wipe the band first: the stock
+                // page has its own thin ring out here, and red showed through
+                // the gaps of a falling stock.
+                m_screenManager->drawArc(ScreenCenterX, ScreenCenterY, stale::kRingOuter, stale::kRingInner, 0, 360, bg, bg);
+                for (int d = 0; d < stale::kDashes; d++) {
+                    const stale::Arc a = stale::dash(d);
+                    m_screenManager->drawArc(ScreenCenterX, ScreenCenterY, stale::kRingOuter, stale::kRingInner, a.start, a.end, TFT_RED, bg);
+                }
+            }
+        }
+        if (stale::hasWords(want) && i == stale::kPlateOrb) {
+            const stale::Plate plate = w->stalePlate();
+            m_screenManager->drawPlate("No WiFi", ScreenCenterX, plate.y, plate.w, stale::kPlateH, stale::kPlateRadius, stale::kPlateTextSize, TFT_RED, TFT_BLACK);
+        }
+    }
+    m_screenManager->reset();
 }
 
 Widget *WidgetSet::getCurrent() {
@@ -127,6 +186,7 @@ void WidgetSet::switchWidget() {
     getCurrent()->draw(true);
     uint32_t end = millis();
     Serial.printf("Drawing of %s took %d ms\n", getCurrent()->getName().c_str(), (end - start));
+    drawStaleMark();
 }
 
 void WidgetSet::showCenteredLine(int screen, const String &text) {
