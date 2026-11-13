@@ -71,7 +71,7 @@ project's files. Pick the link that matches what you want:
 | get a built one running, nothing to install | the [Quick start](#quick-start-no-software-to-install-on-your-pc) above: download one file, flash it from Chrome |
 | build the software yourself, or change it | the [setup guide](docs/SETUP.md), written for someone who has never done this |
 | order a bare board | the [board rev 2.5 release](https://github.com/scottdube/hot-info-orbs/releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
-| print the enclosure | not ready yet: the enclosure is still being designed. [hardware/enclosure/print/](hardware/enclosure/print/) lists the parts and where each one stands |
+| print the enclosure | [hardware/enclosures/](hardware/enclosures/): the Winged Speedster enclosure, one `.3mf` per part (they open in Bambu Studio, PrusaSlicer and Orca Slicer), with [how many of each to print](hardware/enclosures/winged-speedster/3mf/README.md), two Bambu Studio projects and the Fusion source |
 | get all the source | the green **Code** button above, then **Download ZIP** |
 
 ## What it shows
@@ -207,7 +207,7 @@ skip this section.*
   libraries are inside the project, so you can open it without installing
   anything. Its README has the board's history, the pin map and the BOM; the
   files sent to the fab are in its `fab/`.
-- **Enclosure:** 3D-printed, in [hardware/enclosure/](hardware/enclosure/);
+- **Enclosure:** 3D-printed, in [hardware/enclosures/](hardware/enclosures/);
   design notes in [docs/ENCLOSURE.md](docs/ENCLOSURE.md).
 - **Power:** a USB-C cable into the XIAO. The displays run from 5 V and each
   one lowers it to 3.3 V on its own little regulator chip, so the XIAO stays

@@ -1,5 +1,14 @@
 # Enclosure
 
+**The finished enclosure is in [hardware/enclosures/](../hardware/enclosures/README.md)**
+(2026-11-12): a print file for each part, the quantities, two Bambu Studio
+projects and the Fusion source. Print from there.
+
+The rest of this page is the design history that led to it. It names folders
+under `hardware/enclosure/` (the front mock-up, the decals, the earlier Fusion
+files): those were removed on 2026-11-13 when the finished files went in, and
+are in the git history at commit `6a8c0fb`.
+
 ## Chosen style: Concept 3, "Winged Speedster" (2026-10-17)
 
 ![Concept 3 – Winged Speedster](assets/enclosure-concept-3-winged-speedster.png)
@@ -53,15 +62,16 @@ A bezel opening wider than ~32.5 mm shows the black band inside the brass ring.
 
 A printable front that drops over the real board: a face plate plus five
 separate bezel rings (37 mm OD, 32.5 mm window). Its top and bottom margins are
-equal, 29.135 mm. The interference check against the board STEP is clean. See
-[hardware/enclosure/front-mockup-v1/](../hardware/enclosure/front-mockup-v1/README.md).
+equal, 29.135 mm. The interference check against the board STEP is clean. Its
+files were in `hardware/enclosure/front-mockup-v1/` (removed, see the top of
+this page).
 
 ## The board in the enclosure (2026-10-19)
 
 ![overall assembly v7, board rev 2.3 from the back](images/overall_assembly_board_2.3_back.png)
 
 `overall assembly` **v8** holds the rev 2.4 board STEP
-(`hardware/hot-info-orbs-xiao-46mm/3d-assembly/`) on `main_body_front` **v4**
+(`hardware/hot-info-orbs-xiao-46mm/3d-pcb-assembly/`) on `main_body_front` **v4**
 (v4 to v6 carried rev 2.1, v7 rev 2.3). Both are Fusion cloud versions; the STEP is the
 source of the board.
 
@@ -130,7 +140,8 @@ Decal placement: origin at the disc center, `x_direction` world +x, scale
 the 32 mm lit circle that just fills the 32.5 mm bezel window). 0.29 mm of
 air stays between plate and glass; the discs sit inside it, touching nothing.
 
-**Sources.** `hardware/enclosure/decals/ds{N}_*.png`, 240 × 240 crops of
+**Sources.** `hardware/enclosure/decals/ds{N}_*.png` (removed, see the top of
+this page), 240 × 240 crops of
 `references/weather.png`, a photo of the **upstream (brett.tech) orbs**, not
 Scott's unit. Left to right: DS5 date/time, DS1 location, DS2 weather icon,
 DS4 temperature, DS3 forecast. To replace one, `design_edit_reference_image`
