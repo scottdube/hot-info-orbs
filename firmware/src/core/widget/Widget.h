@@ -20,7 +20,8 @@ public:
     // failing and what it shows is old. A page that fetches nothing (the
     // clock) never is.
     virtual bool dataStale() { return false; }
-    // The orbs that show that data, bit 0 = orb 1. Those get the ring.
+    // The orbs that show that data, bit 0 = orb 1. Those get the ring. 0 =
+    // the page fetches nothing, and is not told about WiFi either.
     virtual uint8_t dataOrbs() { return 0x1F; }
     // Where "No WiFi" goes on orb 2 of this page
     virtual stale::Plate stalePlate() { return stale::kPlate; }

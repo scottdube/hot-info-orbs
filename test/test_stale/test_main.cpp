@@ -103,20 +103,72 @@ void test_the_limit_is_two_refreshes_with_a_three_minute_floor() {
     TEST_ASSERT_EQUAL_UINT32(3 * MIN, stale::limitMs(0));
 }
 
-void test_fresh_page_gets_no_mark_whatever_the_wifi_does() {
-    TEST_ASSERT_TRUE(stale::Mark::None == stale::mark(false, true));
-    TEST_ASSERT_TRUE(stale::Mark::None == stale::mark(false, false));
+// mark(page stale, WiFi out, page fetches data). "WiFi out" = down for longer
+// than the grace below.
+void test_fresh_page_with_wifi_up_gets_no_mark() {
+    TEST_ASSERT_TRUE(stale::Mark::None == stale::mark(false, false, true));
+}
+
+// Scott on the rig, 2026-11-12: the orb knows at once that WiFi is gone, so it
+// should say so at once, not three minutes later when the data is old
+void test_wifi_out_says_so_before_the_data_is_old() {
+    TEST_ASSERT_TRUE(stale::Mark::LinkDown == stale::mark(false, true, true));
 }
 
 void test_stale_page_without_wifi_gets_the_broken_ring() {
-    TEST_ASSERT_TRUE(stale::Mark::NoWifi == stale::mark(true, false));
+    TEST_ASSERT_TRUE(stale::Mark::NoWifi == stale::mark(true, true, true));
 }
 
 void test_stale_page_with_wifi_up_gets_the_solid_ring() {
-    TEST_ASSERT_TRUE(stale::Mark::Old == stale::mark(true, true));
+    TEST_ASSERT_TRUE(stale::Mark::Old == stale::mark(true, false, true));
 }
 
-// The broken ring: 12 dashes, in TFT_eSPI's degrees (0 at 6 o'clock, clockwise)
+// The clock keeps time without WiFi
+void test_a_page_that_fetches_nothing_is_never_marked() {
+    TEST_ASSERT_TRUE(stale::Mark::None == stale::mark(false, true, false));
+    TEST_ASSERT_TRUE(stale::Mark::None == stale::mark(true, true, false));
+}
+
+// ---- LinkGrace: WiFi counts as out once it has been down ten seconds
+void test_a_short_drop_is_not_wifi_out() {
+    stale::LinkGrace g;
+    TEST_ASSERT_FALSE(g.out(1000, true));
+    TEST_ASSERT_FALSE(g.out(2000, false)); // a roam between access points
+    TEST_ASSERT_FALSE(g.out(2000 + stale::kLinkGraceMs - 1, false));
+}
+
+void test_wifi_is_out_after_ten_seconds_down() {
+    stale::LinkGrace g;
+    g.out(2000, false);
+    TEST_ASSERT_TRUE(g.out(2000 + stale::kLinkGraceMs, false));
+    TEST_ASSERT_TRUE(g.out(2000 + 5 * stale::kLinkGraceMs, false));
+}
+
+void test_wifi_is_back_at_once() {
+    stale::LinkGrace g;
+    g.out(2000, false);
+    g.out(60000, false);
+    TEST_ASSERT_FALSE(g.out(60001, true));
+}
+
+void test_a_second_drop_gets_its_own_ten_seconds() {
+    stale::LinkGrace g;
+    g.out(2000, false);
+    g.out(60000, false);
+    g.out(61000, true);
+    TEST_ASSERT_FALSE(g.out(62000, false));
+    TEST_ASSERT_FALSE(g.out(62000 + stale::kLinkGraceMs - 1, false));
+    TEST_ASSERT_TRUE(g.out(62000 + stale::kLinkGraceMs, false));
+}
+
+void test_the_grace_is_right_across_the_millis_wrap() {
+    stale::LinkGrace g;
+    const uint32_t start = 0xFFFFFFFFu - 3000;
+    g.out(start, false);
+    TEST_ASSERT_FALSE(g.out(start + 5000, false)); // wrapped, 5 s down
+    TEST_ASSERT_TRUE(g.out(start + stale::kLinkGraceMs, false));
+}
+
 void test_dashes_stay_in_one_turn_and_never_touch() {
     int prevEnd = -1;
     for (int i = 0; i < stale::kDashes; i++) {
@@ -246,6 +298,43 @@ void test_an_orb_that_stops_holding_data_loses_its_ring() {
     TEST_ASSERT_EQUAL_HEX8(0x0F, p.orbs);
 }
 
+// "No WiFi" alone: the words on orb 2, no ring, the data is still good
+void test_wifi_out_puts_only_the_words_on_orb_2() {
+    stale::Overlay o;
+    const stale::Paint p = o.step(0, stale::Mark::LinkDown, 0x1E);
+    TEST_ASSERT_FALSE(p.repaint);
+    TEST_ASSERT_EQUAL_HEX8(0x02, p.orbs);
+}
+
+// Minutes later the data is old: the rings go on over the page, and orb 2 is
+// painted again because it now needs a ring under its words
+void test_the_ring_joins_the_words_without_a_repaint() {
+    stale::Overlay o;
+    o.step(0, stale::Mark::LinkDown, 0x1E);
+    const stale::Paint p = o.step(0, stale::Mark::NoWifi, 0x1E);
+    TEST_ASSERT_FALSE(p.repaint);
+    TEST_ASSERT_EQUAL_HEX8(0x1E, p.orbs);
+    const stale::Paint next = o.step(0, stale::Mark::NoWifi, 0x1E);
+    TEST_ASSERT_EQUAL_HEX8(0, next.orbs); // and then it is left alone
+}
+
+void test_the_words_come_off_when_wifi_is_back() {
+    stale::Overlay o;
+    o.step(0, stale::Mark::LinkDown, 0x1E);
+    const stale::Paint p = o.step(0, stale::Mark::None, 0x1E);
+    TEST_ASSERT_TRUE(p.repaint);
+    TEST_ASSERT_EQUAL_HEX8(0, p.orbs);
+}
+
+// Rings cannot be taken off without a repaint; the words then go back on
+void test_rings_that_go_while_wifi_is_still_out_repaint_and_keep_the_words() {
+    stale::Overlay o;
+    o.step(0, stale::Mark::NoWifi, 0x1E);
+    const stale::Paint p = o.step(0, stale::Mark::LinkDown, 0x1E);
+    TEST_ASSERT_TRUE(p.repaint);
+    TEST_ASSERT_EQUAL_HEX8(0x02, p.orbs);
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_page_is_fresh_after_a_good_refresh);
@@ -258,9 +347,16 @@ int main() {
     RUN_TEST(test_a_connection_down_three_minutes_is_stale);
     RUN_TEST(test_age_is_right_across_the_millis_wrap);
     RUN_TEST(test_the_limit_is_two_refreshes_with_a_three_minute_floor);
-    RUN_TEST(test_fresh_page_gets_no_mark_whatever_the_wifi_does);
+    RUN_TEST(test_fresh_page_with_wifi_up_gets_no_mark);
+    RUN_TEST(test_wifi_out_says_so_before_the_data_is_old);
     RUN_TEST(test_stale_page_without_wifi_gets_the_broken_ring);
     RUN_TEST(test_stale_page_with_wifi_up_gets_the_solid_ring);
+    RUN_TEST(test_a_page_that_fetches_nothing_is_never_marked);
+    RUN_TEST(test_a_short_drop_is_not_wifi_out);
+    RUN_TEST(test_wifi_is_out_after_ten_seconds_down);
+    RUN_TEST(test_wifi_is_back_at_once);
+    RUN_TEST(test_a_second_drop_gets_its_own_ten_seconds);
+    RUN_TEST(test_the_grace_is_right_across_the_millis_wrap);
     RUN_TEST(test_dashes_stay_in_one_turn_and_never_touch);
     RUN_TEST(test_dashes_and_gaps_are_near_equal);
     RUN_TEST(test_dashes_mirror_left_to_right);
@@ -275,5 +371,9 @@ int main() {
     RUN_TEST(test_a_page_switch_needs_no_extra_repaint);
     RUN_TEST(test_a_switch_to_another_stale_page_marks_its_orbs);
     RUN_TEST(test_an_orb_that_stops_holding_data_loses_its_ring);
+    RUN_TEST(test_wifi_out_puts_only_the_words_on_orb_2);
+    RUN_TEST(test_the_ring_joins_the_words_without_a_repaint);
+    RUN_TEST(test_the_words_come_off_when_wifi_is_back);
+    RUN_TEST(test_rings_that_go_while_wifi_is_still_out_repaint_and_keep_the_words);
     return UNITY_END();
 }

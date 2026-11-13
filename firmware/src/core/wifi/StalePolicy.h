@@ -8,7 +8,8 @@
 //
 // The mark (picked by Scott from a sheet of four, 2026-11-12): a red ring
 // around every orb that holds the old data, and no words in the ring.
-//   broken ring, and "No WiFi" on orb 2 = the orb has no WiFi
+//   "No WiFi" on orb 2, no ring yet     = WiFi is out, the data is still good
+//   broken ring, and "No WiFi" on orb 2 = WiFi is out and the data is old
 //   solid ring                          = WiFi is up, the data is still old
 //                                         (internet or the service is down)
 // The two causes differ by shape and by the words, never by color alone. A
@@ -64,16 +65,52 @@ private:
 
 enum class Mark : uint8_t {
     None,
-    NoWifi, // broken ring, "No WiFi" on orb 2
-    Old, // solid ring
+    LinkDown, // "No WiFi" on orb 2, no ring: WiFi is out, the data is still good
+    NoWifi, // broken ring, "No WiFi" on orb 2: WiFi is out and the data is old
+    Old, // solid ring: WiFi is up, the data is old
 };
 
-inline Mark mark(bool pageStale, bool linkUp) {
-    if (!pageStale) {
+// wifiOut: see LinkGrace. fetches: the page shows data it gets over WiFi.
+// The words go up as soon as WiFi is out (Scott on the rig, 2026-11-12: "it
+// should know right away"); the first build held them back with the ring
+// until the data was old, three minutes or more. The ring still waits:
+// weather fetched two minutes ago is good weather, and a ring on it would
+// stop meaning "this is old".
+inline Mark mark(bool pageStale, bool wifiOut, bool fetches) {
+    if (!fetches) {
         return Mark::None;
     }
-    return linkUp ? Mark::Old : Mark::NoWifi;
+    if (wifiOut) {
+        return pageStale ? Mark::NoWifi : Mark::LinkDown;
+    }
+    return pageStale ? Mark::Old : Mark::None;
 }
+
+inline bool hasRing(Mark m) { return m == Mark::NoWifi || m == Mark::Old; }
+inline bool hasWords(Mark m) { return m == Mark::NoWifi || m == Mark::LinkDown; }
+
+// WiFi counts as out once it has been down this long. Not at once: a roam
+// between access points drops the link for a second or two, and the words
+// would flash up on every one.
+constexpr uint32_t kLinkGraceMs = 10000;
+class LinkGrace {
+public:
+    bool out(uint32_t now, bool up) {
+        if (up) {
+            m_down = false;
+            return false;
+        }
+        if (!m_down) {
+            m_down = true;
+            m_since = now;
+        }
+        return (now - m_since) >= kLinkGraceMs; // unsigned: right across the millis() wrap
+    }
+
+private:
+    bool m_down = false;
+    uint32_t m_since = 0;
+};
 
 // The ring, panel px from the orb's center. 7 px: the 4 px ring on the sheet
 // read as a bezel. The stock page's own up/down ring is 2 px, at 118..120.
@@ -131,17 +168,20 @@ public:
     Paint step(uint8_t wiped, Mark want, uint8_t dataOrbs) {
         m_on &= ~wiped; // a wipe takes the mark with it
         uint8_t orbs = 0;
-        if (want != Mark::None) {
+        if (hasRing(want)) {
             orbs = dataOrbs & 0x1F;
-            if (want == Mark::NoWifi) {
-                orbs |= 1u << kPlateOrb; // the words, whether or not orb 2 holds data
-            }
         }
-        // Old paint that is the wrong shape, or on an orb that should have
-        // none, is still on the glass. Going from no mark to a mark never
-        // gets here: it goes on over the page with no flicker.
-        const bool repaint = m_on && (want != m_shown || (m_on & ~orbs));
-        if (repaint) {
+        if (hasWords(want)) {
+            orbs |= 1u << kPlateOrb; // whether or not orb 2 holds data
+        }
+        // The rings joining the words (WiFi out, and now the data is old too)
+        // go on over what is there. Orb 2 is painted again: it needs a ring.
+        const bool adds = m_shown == Mark::LinkDown && want == Mark::NoWifi;
+        // Otherwise old paint that is the wrong shape, or on an orb that
+        // should have none, is still on the glass. Going from no mark to a
+        // mark never gets here: it goes on over the page with no flicker.
+        const bool repaint = m_on && !adds && (want != m_shown || (m_on & ~orbs));
+        if (repaint || adds) {
             m_on = 0;
         }
         m_shown = want;

@@ -67,7 +67,8 @@ private:
     void switchWidget();
 
     void drawStaleMark(); // over the page, after every draw of it
-    bool m_linkUp = true;
+    bool m_wifiOut = false; // down for longer than a roam takes (stale::LinkGrace)
+    stale::LinkGrace m_linkGrace;
     stale::LinkWatch m_linkWatch;
     stale::Overlay m_staleOverlay;
     bool m_refreshOwed[MAX_WIDGETS] = {};
