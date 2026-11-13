@@ -217,7 +217,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <ul>
         <li>API keys live in your own <span class="num">secrets.h</span>, which git ignores.<span class="was">Was: keys compiled into <span class="num">config.h</span>, and the template shipped with live keys.</span></li>
         <li>The build stops if a key is missing or empty. You get a compile error at your desk instead of a blank orb on the bench.</li>
-        <li>An <strong>optional</strong> password protects both the settings and update pages. Without one, anyone on your network can use them, and both pages show a ⚠ warning. The page never shows a stored key.</li>
+        <li>An <strong>optional</strong> password protects both the settings and update pages. Without one, anyone on your network can use them, and both pages show a ⚠ warning. The page never shows a stored key or password; a field that has one shows stars.</li>
       </ul>
     </div>
     <div class="group">
@@ -261,7 +261,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="group">
       <h3>Quality</h3>
       <ul>
-        <li>Unit tests run on a laptop and in CI for settings validation, weather parsing, the sun and moon, and custom pages: 112 tests, including WiFi roaming and MQTT text fitting.<span class="was">Was: none.</span></li>
+        <li>Unit tests run on a laptop and in CI for settings validation, weather parsing, the sun and moon, and custom pages: 124 tests, including WiFi roaming and MQTT text fitting.<span class="was">Was: none.</span></li>
         <li>The linter reports problems and no longer commits changes back, so the repository only moves when a person moves it.</li>
         <li>An upstream bug is fixed: an uninitialized loop counter in the page rotation.</li>
         <li>A written setup guide goes from an empty laptop to a running orb, and a traps file records every mistake that cost time once.<span class="was">Was: Brett's assembly video and README.</span></li>
@@ -314,7 +314,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <dl>
         <dt>Module</dt><dd>Seeed XIAO ESP32-S3 (plain), on headers or soldered flat on its castellations</dd>
         <dt>Flash</dt><dd><span class="num">8 MB</span>; laid out as two 3.75 MB firmware slots so updates are safe</dd>
-        <dt>Headroom</dt><dd>Firmware fills <span class="num">48.4%</span> of a slot (release 1.6.0, built 12 Nov 2026). The stop line is <span class="num">92%</span>.</dd>
+        <dt>Headroom</dt><dd>Firmware fills <span class="num">48.4%</span> of a slot (release 1.6.1, built 12 Nov 2026). The stop line is <span class="num">92%</span>.</dd>
         <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal; the board definition enables it, not yet measured on hardware</dd>
         <dt>Carrier</dt><dd><span class="num">hardware/hot-info-orbs-xiao-46mm</span>, rev 2.5: the v1.1 board reworked for the XIAO, displays 46 mm apart</dd>
         <dt>Pins</dt><dd>11 GPIO used: 8 for the displays (5 chip selects plus data, clock and DC; reset is an RC circuit) and 3 for the buttons; the busy light is the XIAO's own LED</dd>
@@ -430,7 +430,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 <footer>
   <p><b>Credit:</b> Info Orbs is Brett Turner's project, and the firmware started as his and its contributors'. Buy <a href="https://brett.tech/collections/electronics-projects/products/info-orbs-full-dev-kit">his dev kit</a> if you want the original.</p>
-  <p>Source, setup guide and build notes: <a href="https://github.com/scottdube/hot-info-orbs">github.com/scottdube/hot-info-orbs</a>. Status as of 12 November 2026, firmware 1.6.0.</p>
+  <p>Source, setup guide and build notes: <a href="https://github.com/scottdube/hot-info-orbs">github.com/scottdube/hot-info-orbs</a>. Status as of 12 November 2026, firmware 1.6.1.</p>
 </footer>
 
 </div>
