@@ -1,8 +1,10 @@
 #include "WifiWidget.h"
 #include "RoamPolicy.h"
+#include "StalePolicy.h"
 #include "Utils.h"
 #include <WiFi.h>
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <esp_wifi.h>
 
 const int lineHeight = 40;
 const int statusScreenIndex = 3;
@@ -22,6 +24,22 @@ WiFiManager wifimgr;
 
 // The station's last disconnect reason (wifi_err_reason_t), from the event task
 static volatile uint8_t s_lastDisconnectReason = 0;
+// The outage in progress, also from the event task: the reason it began with
+// and the disconnects counted since. rejoinIfDown() zeroes the count when
+// the link is back.
+static volatile uint8_t s_outageFirstReason = 0;
+static volatile uint32_t s_outageDrops = 0;
+// The last outage long enough to put "No WiFi" on the orb. Loop task only.
+struct OutageNote {
+    bool any{false};
+    uint32_t outMs{0};
+    uint32_t endedAt{0};
+    uint8_t firstReason{0};
+    uint8_t lastReason{0};
+    uint32_t drops{0};
+    uint16_t tries{0};
+};
+static OutageNote s_outageNote;
 static_assert(wififail::reason::AuthExpire == WIFI_REASON_AUTH_EXPIRE &&
                   wififail::reason::AssocLeave == WIFI_REASON_ASSOC_LEAVE &&
                   wififail::reason::FourWayHandshakeTimeout == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT &&
@@ -66,6 +84,10 @@ void WifiWidget::begin(bool showConnecting) {
             [](arduino_event_id_t, arduino_event_info_t info) {
                 const uint8_t reason = info.wifi_sta_disconnected.reason;
                 s_lastDisconnectReason = reason;
+                if (s_outageDrops == 0) {
+                    s_outageFirstReason = reason;
+                }
+                s_outageDrops = s_outageDrops + 1;
                 Serial.printf("[%lu] WiFi disconnected, reason %u\n", millis(), reason);
                 if (!s_connecting) {
                     return;
@@ -366,6 +388,74 @@ void WifiWidget::roamIfWeak() {
     if (WiFi.scanNetworks(true) == WIFI_SCAN_RUNNING) {
         m_roamScanning = true;
     }
+}
+
+// See RejoinPolicy.h. The core's own retry stops for good on some disconnect
+// reasons, so every 30 s the link stays down the orb starts a join itself.
+void WifiWidget::rejoinIfDown() {
+    const unsigned long now = millis();
+    if (!m_rejoinPrimed) {
+        m_rejoinPrimed = true;
+        s_outageDrops = 0; // start-up's own disconnects are not an outage
+    }
+    const rejoin::Step s = m_rejoin.step(now, WiFi.status() == WL_CONNECTED);
+    if (s.ended) {
+        // A roam is out for a second or two: not worth a line on the page
+        if (s.outMs >= stale::kLinkGraceMs) {
+            s_outageNote.any = true;
+            s_outageNote.outMs = s.outMs;
+            s_outageNote.endedAt = now;
+            s_outageNote.firstReason = s_outageFirstReason;
+            s_outageNote.lastReason = s_lastDisconnectReason;
+            s_outageNote.drops = s_outageDrops;
+            s_outageNote.tries = s.tries;
+            Serial.printf("[%lu] WiFi back after %lu s, %u rejoin tries\n", now, (unsigned long)(s.outMs / 1000), s.tries);
+        }
+        s_outageDrops = 0;
+        return;
+    }
+    if (!s.join) {
+        return;
+    }
+    // By name and password from the station's stored settings, the same call
+    // the roam falls back to. Not WiFi.begin() with no arguments and not
+    // WiFi.reconnect(): both keep the stored settings as they are, and after
+    // a roam those name one access point, which may be the one refusing us.
+    wifi_config_t conf;
+    if (esp_wifi_get_config(WIFI_IF_STA, &conf) != ESP_OK || conf.sta.ssid[0] == 0) {
+        return;
+    }
+    char ssid[sizeof(conf.sta.ssid) + 1] = {};
+    char pass[sizeof(conf.sta.password) + 1] = {};
+    memcpy(ssid, conf.sta.ssid, sizeof(conf.sta.ssid));
+    memcpy(pass, conf.sta.password, sizeof(conf.sta.password));
+    Serial.printf("[%lu] WiFi still down, last reason %u: joining again\n", now, s_lastDisconnectReason);
+    WiFi.begin(ssid, pass);
+}
+
+static String spanText(uint32_t ms) {
+    const uint32_t sec = ms / 1000;
+    if (sec < 60) {
+        return String(sec) + " s";
+    }
+    if (sec < 3600) {
+        return String(sec / 60) + " min " + String(sec % 60) + " s";
+    }
+    return String(sec / 3600) + " h " + String(sec % 3600 / 60) + " min";
+}
+
+String WifiWidget::lastOutageNote() {
+    const OutageNote &n = s_outageNote;
+    if (!n.any) {
+        return "";
+    }
+    String t = "Last WiFi outage: " + spanText(n.outMs) + ", back " + spanText(millis() - n.endedAt) + " ago. Disconnect reason " +
+               String(n.firstReason) + " first, " + String(n.lastReason) + " last";
+    if (!rejoin::coreRetries(n.lastReason)) {
+        t += " (one the ESP32 core does not retry)";
+    }
+    t += ", " + String(n.drops) + " disconnects, " + String(n.tries) + " rejoin tries by the orb.";
+    return t;
 }
 
 void WifiWidget::draw(bool force) {

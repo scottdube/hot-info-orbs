@@ -7,6 +7,7 @@
 #include "weatherwidget/TempestSource.h"
 #include "mqttwidget/MqttFeed.h"
 #include "webdatawidget/WebDataWidget.h"
+#include "wifiwidget/WifiWidget.h"
 #include "Utils.h"
 #include "build_id.h"
 #include "clockwidget/ClockWidget.h"
@@ -334,6 +335,10 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
         const int rssi = WiFi.RSSI();
         h += String(rssi >= -65 ? "&#10004;" : rssi >= -75 ? "&#9888;" : "&#10006;") + " WiFi " + String(rssi) + " dBm on access point " +
              WiFi.BSSIDstr() + ", channel " + String(WiFi.channel()) + ".<br>";
+        const String outage = WifiWidget::lastOutageNote();
+        if (outage.length()) {
+            h += outage + "<br>";
+        }
     }
     h += Settings::hasStored() ? "Using settings saved from this page." : "Nothing saved yet &mdash; using the values built into the firmware.";
     h += "</p>";

@@ -2,6 +2,7 @@
 #ifndef WIFIWIDGET_H
     #define WIFIWIDGET_H
 
+    #include "RejoinPolicy.h"
     #include "Widget.h"
     #include "WifiFailPolicy.h"
 
@@ -30,6 +31,11 @@ public:
     bool linkUp();
     // Call from the main loop once connected; see RoamPolicy.h for why
     void roamIfWeak();
+    // Call from the main loop once connected; see RejoinPolicy.h for why
+    void rejoinIfDown();
+    // One line for the settings page about the last outage of 10 s or more
+    // since start-up, "" when there was none
+    static String lastOutageNote();
 
 private:
     void connectionTimedOut();
@@ -56,6 +62,9 @@ private:
     bool m_roamScanning{false};
     unsigned long m_roamJoinStarted{0};
     String m_roamSsid{""};
+
+    rejoin::Watch m_rejoin;
+    bool m_rejoinPrimed{false};
 
     // Portal running because the saved network wasn't heard: look for it
     wififail::Case m_failCase{wififail::Case::NeverSetUp};

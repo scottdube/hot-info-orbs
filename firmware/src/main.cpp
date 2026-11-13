@@ -387,6 +387,7 @@ void loop() {
             return; // leave the CPU and screen 2 to the upload
         }
         wifiWidget->roamIfWeak();
+        wifiWidget->rejoinIfDown();
         globalTime->updateTime();
 
         checkButtons();
