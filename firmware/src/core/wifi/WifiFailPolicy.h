@@ -7,6 +7,7 @@
 // been set up. WiFiManager records why the saved network failed; this turns
 // that into one of four cases and the text for orb 1 and orb 5.
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -72,6 +73,56 @@ constexpr int kRefusalsForWrongPassword = 2;
 // restart when it is heard. Only when it was not heard: retrying a refused
 // password, or a fault we can't name, would restart the orb forever.
 inline bool keepsLooking(Case c) { return c == Case::NotFound; }
+
+// The setup portal for a network that was heard but did not join (Case::Other)
+// used to wait for a person: WiFiManager turns the station off and never
+// tries again. An orb that starts faster than its router after a power cut
+// can land there, and so does the restart in RejoinPolicy.h's ladder. So the
+// orb restarts to try the join again, after 5, 10, 20, then every 30 minutes,
+// with no end (Scott, 2026-11-13), and never while a phone is on the portal.
+// REJECTED: stop after three tries. An orb that gives up at 35 minutes needs
+// a power cycle again, which is what this removes. The price is an orb the
+// network really refuses restarting every half hour until someone fixes that.
+// Not for a refused password: the same password gets the same answer.
+inline bool retriesByRestart(Case c) { return c == Case::Other; }
+
+inline uint32_t retryAfterMs(uint32_t retriesDone) {
+    constexpr uint32_t minute = 60000;
+    switch (retriesDone) {
+    case 0:
+        return 5 * minute;
+    case 1:
+        return 10 * minute;
+    case 2:
+        return 20 * minute;
+    default:
+        return 30 * minute;
+    }
+}
+
+// How many of those restarts have happened. Kept in memory that a restart
+// leaves alone and a power cycle scrambles (RTC_NOINIT on the ESP32), so a
+// power cycle starts from 5 minutes again; cleared when the orb joins. The
+// check word tells a real count from whatever was there at power-on.
+// REJECTED: flash (Preferences). A write every half hour for as long as the
+// fault lasts, and a count that a power cycle would not clear.
+struct RetryMemory {
+    uint32_t count;
+    uint32_t check;
+};
+constexpr uint32_t kRetryCheck = 0x52455452; // "RETR"
+
+inline uint32_t retriesDone(const RetryMemory &m) { return m.check == (m.count ^ kRetryCheck) ? m.count : 0; }
+
+inline void noteRetry(RetryMemory &m) {
+    m.count = retriesDone(m) + 1;
+    m.check = m.count ^ kRetryCheck;
+}
+
+inline void clearRetries(RetryMemory &m) {
+    m.count = 0;
+    m.check = kRetryCheck;
+}
 
 enum class Kind {
     Plain,   // white

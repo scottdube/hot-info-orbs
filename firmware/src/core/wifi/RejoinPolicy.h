@@ -111,4 +111,98 @@ inline bool coreRetries(uint8_t reason) {
     }
 }
 
+// ---- The ladder: what else to do when the joins keep failing ----
+//
+// Joining every 30 s was enough for a network that went away and came back:
+// two outages on a test rig 2026-11-13, back within one try both times, no
+// restart. What it does not cover is an orb whose own radio or WiFi stack is
+// the thing that is stuck. Two steps for that, by what the last try found:
+//
+//  - Network not heard (the outage case): nothing the orb can do brings a
+//    router back, so it keeps the clock and "No WiFi" on screen and never
+//    restarts. Every kUnheardResetMs it turns the radio off and on, which
+//    shows nothing on screen and covers a radio that has gone deaf.
+//  - Network heard and the join still fails: the radio off and on after
+//    kHeardResetMs, a restart after kHeardRestartMs. Both count from the
+//    first try that heard the network, not from when the link dropped, so a
+//    long outage does not use the time up.
+//
+// REJECTED: a restart after a plain time without WiFi (Scott's first idea,
+// then his call 2026-11-13). A restart with no network lands on the setup
+// screen, so a long outage would lose the clock and restart over and over.
+// REJECTED: 10 minutes before the restart: stale twice as long for nothing.
+constexpr uint32_t kHeardResetMs = 150000;   // 2.5 min
+constexpr uint32_t kHeardRestartMs = 300000; // 5 min
+constexpr uint32_t kUnheardResetMs = 600000; // 10 min
+// Tries in a row that must miss the network before "heard" is taken back.
+// One scan can miss an access point that is there, and that must not start
+// the five minutes over.
+constexpr uint8_t kMissesToUnhear = 2;
+
+// Was the network on the air at the last join try? By the station's last
+// disconnect reason when the next try is due: the join scans first, and 201
+// NO_AP_FOUND is that scan finding nothing. Any other reason means the join
+// got as far as an access point; 8, our own leave before the join, means no
+// failure has come back yet, which is also not "nothing there".
+// REJECTED for now: a scan of our own between tries. It is the direct
+// measurement, but it cannot run while the station is joining and the reason
+// is already there. Rig logs 2026-11-13: every try of both outages ended on
+// 201; a refused orb never logged 201 (three starts only).
+inline bool heard(uint8_t lastReason) { return lastReason != 201; }
+
+enum class Action {
+    None,
+    ResetRadio, // WiFi off and on, then join
+    Restart,    // restart the orb
+};
+
+class Ladder {
+public:
+    // Call when a try is due, before starting it, with what the one before
+    // found (for the first try: what followed the drop)
+    Action afterTry(uint32_t now, bool heardIt) {
+        if (!m_started) {
+            m_started = true;
+            m_lastReset = now;
+        }
+        if (heardIt) {
+            m_misses = 0;
+            if (!m_heard) {
+                m_heard = true;
+                m_heardAt = now;
+                m_heardReset = false;
+            }
+            // Unsigned differences: right across the millis() wrap
+            if (now - m_heardAt >= kHeardRestartMs) {
+                return Action::Restart;
+            }
+            if (!m_heardReset && now - m_heardAt >= kHeardResetMs) {
+                m_heardReset = true;
+                m_lastReset = now;
+                return Action::ResetRadio;
+            }
+            return Action::None;
+        }
+        if (m_heard && ++m_misses >= kMissesToUnhear) {
+            m_heard = false;
+        }
+        if (!m_heard && now - m_lastReset >= kUnheardResetMs) {
+            m_lastReset = now;
+            return Action::ResetRadio;
+        }
+        return Action::None;
+    }
+
+    // The link is back: the next drop starts from the bottom
+    void linkUp() { *this = Ladder(); }
+
+private:
+    bool m_started{false};
+    bool m_heard{false};
+    bool m_heardReset{false};
+    uint8_t m_misses{0};
+    uint32_t m_heardAt{0};
+    uint32_t m_lastReset{0};
+};
+
 } // namespace rejoin

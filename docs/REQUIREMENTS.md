@@ -203,6 +203,30 @@ setting someone has to know to change, and not every owner runs UniFi), and
 802.11k/v/r roaming (it needs router support and ESP-IDF config this build
 doesn't expose).
 
+**WiFi recovery (added 2026-11-13).** What the orb does by itself when WiFi
+fails, so nobody has to power-cycle it. A running orb that loses the link
+starts a join every 30 seconds. What happens beyond that depends on whether
+the last join found the network on the air:
+
+| Situation | What the orb does |
+|---|---|
+| Running, network not heard (an outage) | Keeps the clock and "No WiFi", never restarts; radio off and on every 10 minutes |
+| Running, network heard, join keeps failing | Radio off and on after 2.5 minutes, restart after 5 |
+| Setup screen, network not heard | Scans, and restarts when it hears the network |
+| Setup screen, network heard, join failed | Restarts to try again after 5, 10, 20, then every 30 minutes; not while a phone is on the setup network |
+| Setup screen, password refused | Stays there: the same password gets the same answer |
+
+The 5 minutes count from the first join that heard the network, not from when
+the link dropped. The count of setup-screen retries survives a restart and
+clears on a join or a power cycle. Every step writes a line to the device log.
+Decision logic: `firmware/src/core/wifi/RejoinPolicy.h` and
+`WifiFailPolicy.h`, tested on the host. Rejected: a restart after a plain time
+without WiFi (with no network a restart lands on the setup screen, so a long
+outage would lose the clock and restart over and over), and giving up after
+three setup-screen retries (the orb would need a power cycle again). Not
+covered: a network that refuses one device stays refused whatever the orb
+does; the orb then retries every half hour until the network is fixed.
+
 ## R2 — Over-the-air firmware updates
 
 **Firmware updates must not require a USB cable.**

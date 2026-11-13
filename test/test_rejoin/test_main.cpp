@@ -1,6 +1,7 @@
 // Host tests for RejoinPolicy.h:  pio test -e native
 #include "RejoinPolicy.h"
 #include <unity.h>
+#include <vector>
 
 void setUp() {}
 void tearDown() {}
@@ -116,6 +117,125 @@ void test_the_core_gives_up_on_a_refusal_but_retries_a_lost_beacon() {
     TEST_ASSERT_FALSE(rejoin::coreRetries(30)); // NOT_AUTHORIZED_THIS_LOCATION
 }
 
+// ---- The ladder: what to do after each failed join (rejoin::Ladder) ----
+
+using rejoin::Action;
+using rejoin::kHeardResetMs;
+using rejoin::kHeardRestartMs;
+using rejoin::kUnheardResetMs;
+
+void test_a_reason_other_than_no_access_point_means_the_network_was_heard() {
+    TEST_ASSERT_FALSE(rejoin::heard(201)); // NO_AP_FOUND: the scan before the join found nothing
+    TEST_ASSERT_TRUE(rejoin::heard(2)); // AUTH_EXPIRE
+    TEST_ASSERT_TRUE(rejoin::heard(8)); // our own leave, and no failure since: the join is in progress
+    TEST_ASSERT_TRUE(rejoin::heard(15)); // 4WAY_HANDSHAKE_TIMEOUT
+    TEST_ASSERT_TRUE(rejoin::heard(202)); // AUTH_FAIL
+}
+
+// One failed try every kEveryMs from `from`, all with the same answer; the actions asked for
+static std::vector<Action> tries(rejoin::Ladder &l, uint32_t from, uint32_t forMs, bool heardIt) {
+    std::vector<Action> out;
+    for (uint32_t t = from; t - from <= forMs; t += kEveryMs) {
+        out.push_back(l.afterTry(t, heardIt));
+    }
+    return out;
+}
+
+static int count(const std::vector<Action> &a, Action what) {
+    int n = 0;
+    for (Action x : a) {
+        n += x == what ? 1 : 0;
+    }
+    return n;
+}
+
+void test_an_outage_never_restarts_the_orb() {
+    // The network is off the air: the clock and "No WiFi" stay up (Scott, 2026-11-13)
+    rejoin::Ladder l;
+    const std::vector<Action> a = tries(l, 30000, 6UL * 3600 * 1000, false); // six hours
+    TEST_ASSERT_EQUAL(0, count(a, Action::Restart));
+}
+
+void test_an_outage_resets_the_radio_every_ten_minutes() {
+    // A radio gone deaf never "hears" the network; off-and-on costs nothing on screen
+    rejoin::Ladder l;
+    TEST_ASSERT_EQUAL(0, count(tries(l, 30000, kUnheardResetMs - kEveryMs, false), Action::ResetRadio));
+    TEST_ASSERT_EQUAL(Action::ResetRadio, l.afterTry(30000 + kUnheardResetMs, false));
+    TEST_ASSERT_EQUAL(Action::None, l.afterTry(30000 + kUnheardResetMs + kEveryMs, false));
+    rejoin::Ladder hour;
+    TEST_ASSERT_EQUAL(6, count(tries(hour, 30000, 3600000, false), Action::ResetRadio));
+}
+
+void test_heard_but_not_joining_resets_the_radio_half_way() {
+    rejoin::Ladder l;
+    const uint32_t first = 30000;
+    TEST_ASSERT_EQUAL(Action::None, l.afterTry(first, true));
+    TEST_ASSERT_EQUAL(0, count(tries(l, first + kEveryMs, kHeardResetMs - 2 * kEveryMs, true), Action::ResetRadio));
+    TEST_ASSERT_EQUAL(Action::ResetRadio, l.afterTry(first + kHeardResetMs, true));
+    TEST_ASSERT_EQUAL(Action::None, l.afterTry(first + kHeardResetMs + kEveryMs, true)); // once, not on every try
+}
+
+void test_heard_but_not_joining_restarts_after_five_minutes() {
+    rejoin::Ladder l;
+    const uint32_t first = 30000;
+    const std::vector<Action> before = tries(l, first, kHeardRestartMs - kEveryMs, true);
+    TEST_ASSERT_EQUAL(0, count(before, Action::Restart));
+    TEST_ASSERT_EQUAL(1, count(before, Action::ResetRadio));
+    TEST_ASSERT_EQUAL(Action::Restart, l.afterTry(first + kHeardRestartMs, true));
+}
+
+void test_the_five_minutes_count_from_when_the_network_is_first_heard() {
+    // Two hours off the air, then on the air and refusing: not an instant restart
+    rejoin::Ladder l;
+    const uint32_t outage = 2UL * 3600 * 1000;
+    tries(l, 30000, outage, false);
+    const uint32_t first = 30000 + outage + kEveryMs;
+    TEST_ASSERT_EQUAL(Action::None, l.afterTry(first, true));
+    TEST_ASSERT_EQUAL(0, count(tries(l, first + kEveryMs, kHeardRestartMs - 2 * kEveryMs, true), Action::Restart));
+    TEST_ASSERT_EQUAL(Action::Restart, l.afterTry(first + kHeardRestartMs, true));
+}
+
+void test_one_missed_scan_does_not_start_the_five_minutes_over() {
+    // A scan can miss an access point that is there
+    rejoin::Ladder l;
+    const uint32_t first = 30000;
+    tries(l, first, 4 * kEveryMs, true); // heard for 2 minutes
+    TEST_ASSERT_EQUAL(Action::None, l.afterTry(first + 5 * kEveryMs, false)); // one miss; 2.5 min mark passes unheard
+    const std::vector<Action> rest = tries(l, first + 6 * kEveryMs, kHeardRestartMs - 6 * kEveryMs, true);
+    TEST_ASSERT_EQUAL(Action::Restart, rest.back());
+    TEST_ASSERT_EQUAL(1, count(rest, Action::Restart));
+}
+
+void test_two_misses_in_a_row_start_the_five_minutes_over() {
+    rejoin::Ladder l;
+    const uint32_t first = 30000;
+    tries(l, first, 8 * kEveryMs, true); // heard for 4 minutes
+    l.afterTry(first + 9 * kEveryMs, false);
+    l.afterTry(first + 10 * kEveryMs, false); // off the air after all
+    const uint32_t again = first + 11 * kEveryMs;
+    const std::vector<Action> a = tries(l, again, kHeardRestartMs - kEveryMs, true);
+    TEST_ASSERT_EQUAL(0, count(a, Action::Restart));
+    TEST_ASSERT_EQUAL(Action::Restart, l.afterTry(again + kHeardRestartMs, true));
+}
+
+void test_the_link_coming_back_clears_the_ladder() {
+    rejoin::Ladder l;
+    const uint32_t first = 30000;
+    tries(l, first, kHeardRestartMs - kEveryMs, true); // one try short of a restart
+    l.linkUp();
+    const uint32_t later = first + kHeardRestartMs + 3600000;
+    TEST_ASSERT_EQUAL(Action::None, l.afterTry(later, true));
+    TEST_ASSERT_EQUAL(0, count(tries(l, later + kEveryMs, kHeardRestartMs - 2 * kEveryMs, true), Action::Restart));
+}
+
+void test_the_ladder_works_across_the_millis_wrap() {
+    rejoin::Ladder l;
+    const uint32_t first = 0xFFFFFFFFu - 60000; // a minute before millis() wraps
+    const std::vector<Action> a = tries(l, first, kHeardRestartMs - kEveryMs, true);
+    TEST_ASSERT_EQUAL(0, count(a, Action::Restart));
+    TEST_ASSERT_EQUAL(Action::Restart, l.afterTry(first + kHeardRestartMs, true));
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_no_join_while_the_link_is_up);
@@ -129,5 +249,15 @@ int main() {
     RUN_TEST(test_start_up_with_the_link_up_reports_no_outage);
     RUN_TEST(test_while_down_it_says_for_how_long_and_how_many_tries);
     RUN_TEST(test_the_core_gives_up_on_a_refusal_but_retries_a_lost_beacon);
+    RUN_TEST(test_a_reason_other_than_no_access_point_means_the_network_was_heard);
+    RUN_TEST(test_an_outage_never_restarts_the_orb);
+    RUN_TEST(test_an_outage_resets_the_radio_every_ten_minutes);
+    RUN_TEST(test_heard_but_not_joining_resets_the_radio_half_way);
+    RUN_TEST(test_heard_but_not_joining_restarts_after_five_minutes);
+    RUN_TEST(test_the_five_minutes_count_from_when_the_network_is_first_heard);
+    RUN_TEST(test_one_missed_scan_does_not_start_the_five_minutes_over);
+    RUN_TEST(test_two_misses_in_a_row_start_the_five_minutes_over);
+    RUN_TEST(test_the_link_coming_back_clears_the_ladder);
+    RUN_TEST(test_the_ladder_works_across_the_millis_wrap);
     return UNITY_END();
 }

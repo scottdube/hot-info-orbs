@@ -5,6 +5,7 @@
 #include "Utils.h"
 #include <WiFi.h>
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <esp_system.h>
 #include <esp_wifi.h>
 
 const int lineHeight = 40;
@@ -57,6 +58,9 @@ static volatile int s_refusals = 0;
 // WiFiManager's own disconnect (reason 8) lands after the refusals, before
 // autoConnect returns, and reset the count on the rig (2026-11-11).
 static volatile bool s_passwordRefused = false;
+// Restarts made from the setup portal to retry a join (WifiFailPolicy.h).
+// RTC_NOINIT: a restart keeps it, a power cycle does not.
+static RTC_NOINIT_ATTR wififail::RetryMemory s_setupRetries;
 
 void WifiWidget::setup() {
     begin(true);
@@ -255,6 +259,42 @@ void WifiWidget::showPortal(bool eyesShown) {
     if (wififail::keepsLooking(m_failCase)) {
         m_nextLook = millis() + lookFirstMs;
     }
+    if (wififail::retriesByRestart(m_failCase)) {
+        // Only a restart of our own carries the count on: a power cycle, the
+        // reset button or a crash starts again from the shortest wait
+        if (esp_reset_reason() != ESP_RST_SW) {
+            wififail::clearRetries(s_setupRetries);
+        }
+        const uint32_t done = wififail::retriesDone(s_setupRetries);
+        const uint32_t wait = wififail::retryAfterMs(done);
+        m_retryAt = millis() + wait;
+        m_retryArmed = true;
+        Serial.printf("[%lu] Setup: restart to retry the join in %lu min (%lu so far)\n", millis(), (unsigned long) (wait / 60000),
+                      (unsigned long) done);
+        DeviceLog::note("setup: restart to retry the join in %lu min, %lu retries so far", (unsigned long) (wait / 60000),
+                        (unsigned long) done);
+    }
+}
+
+// See WifiFailPolicy.h, retriesByRestart(): the saved network was heard and
+// the join failed, so restart and let autoConnect() try again.
+void WifiWidget::retryFromSetup() {
+    if (!m_configPortalRunning || !m_retryArmed || (long) (millis() - m_retryAt) < 0) {
+        return;
+    }
+    // Someone is on the portal, perhaps part-way through typing a password:
+    // leave them to it and look again in a minute
+    if (WiFi.softAPgetStationNum() > 0) {
+        m_retryAt = millis() + 60000;
+        return;
+    }
+    wififail::noteRetry(s_setupRetries);
+    char why[64];
+    snprintf(why, sizeof(why), "setup retry %lu: join failed, trying again", (unsigned long) wififail::retriesDone(s_setupRetries));
+    Serial.printf("[%lu] %s\n", millis(), why);
+    DeviceLog::beforeRestart(why);
+    delay(100);
+    ESP.restart();
 }
 
 // The setup portal turns the station off, so WiFiManager never tries the saved
@@ -303,6 +343,7 @@ void WifiWidget::update(bool force) {
     // If WiFiManager is non-blocking, this keeps the configuration portal running
     wifimgr.process();
     lookForSavedNetwork();
+    retryFromSetup();
 
     if (WiFi.status() == WL_CONNECTED) {
         // Joined from the setup portal over the crossed eyes: start again, so
@@ -319,6 +360,7 @@ void WifiWidget::update(bool force) {
             wifimgr.stopConfigPortal(); // frees port 80 for the OTA update page
         }
         m_isConnected = true;
+        wififail::clearRetries(s_setupRetries); // joined: the next failure starts from the shortest wait
         m_connectionString = "Connected";
         m_ipaddress = WiFi.localIP().toString();
         Serial.print("IP address: ");
@@ -438,6 +480,7 @@ void WifiWidget::rejoinIfDown() {
         }
         s_outageDrops = 0;
         m_downSteps.reset();
+        m_ladder.linkUp();
         return;
     }
     // After 1, 5, 15 and 60 minutes, then hourly: an orb restarted before
@@ -463,7 +506,33 @@ void WifiWidget::rejoinIfDown() {
     char pass[sizeof(conf.sta.password) + 1] = {};
     memcpy(ssid, conf.sta.ssid, sizeof(conf.sta.ssid));
     memcpy(pass, conf.sta.password, sizeof(conf.sta.password));
-    Serial.printf("[%lu] WiFi still down, last reason %u: joining again\n", now, s_lastDisconnectReason);
+    // What the try before this one found decides whether a plain join is
+    // still the right thing (RejoinPolicy.h, the ladder)
+    const uint8_t reason = s_lastDisconnectReason;
+    const bool heardIt = rejoin::heard(reason);
+    switch (m_ladder.afterTry(now, heardIt)) {
+    case rejoin::Action::Restart:
+        Serial.printf("[%lu] WiFi: network heard, join failing for 5 min, last reason %u: restarting\n", now, reason);
+        DeviceLog::note("wifi: network heard, join failing for 5 min, last reason %u", reason);
+        DeviceLog::beforeRestart("network heard but the join keeps failing");
+        delay(100);
+        ESP.restart();
+        return;
+    case rejoin::Action::ResetRadio:
+        // Off takes the WiFi driver down and frees it, STA brings up a new
+        // one (arduino-esp32 2.0.17, WiFiGeneric.cpp espWiFiStop()). The name
+        // and password were read above, before the driver went away.
+        Serial.printf("[%lu] WiFi: network %s, last reason %u: radio off and on\n", now, heardIt ? "heard, join failing" : "not heard",
+                      reason);
+        DeviceLog::note("wifi radio off and on: network %s, last reason %u", heardIt ? "heard, join failing" : "not heard", reason);
+        WiFi.mode(WIFI_OFF);
+        delay(100);
+        WiFi.mode(WIFI_STA);
+        break;
+    case rejoin::Action::None:
+        break;
+    }
+    Serial.printf("[%lu] WiFi still down, last reason %u: joining again\n", now, reason);
     WiFi.begin(ssid, pass);
 }
 

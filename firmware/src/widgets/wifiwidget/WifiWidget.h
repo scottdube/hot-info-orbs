@@ -42,6 +42,7 @@ private:
     void connectionTimedOut();
     void drawLines(const std::vector<wififail::Line> &lines, int centerY);
     void lookForSavedNetwork();
+    void retryFromSetup();
 
     bool m_isConnected{false};
     bool m_connectionFailed{false};
@@ -65,6 +66,7 @@ private:
     String m_roamSsid{""};
 
     rejoin::Watch m_rejoin;
+    rejoin::Ladder m_ladder; // radio reset and restart when the joins keep failing
     devlog::Milestones m_downSteps; // "still down" lines in the device log
     bool m_rejoinPrimed{false};
 
@@ -73,6 +75,10 @@ private:
     String m_savedSsid{""};
     unsigned long m_nextLook{0};
     bool m_lookScanning{false};
+    // Portal running because the saved network was heard and did not join:
+    // restart to try again
+    bool m_retryArmed{false};
+    unsigned long m_retryAt{0};
 };
 
 #endif // WIFIWIDGET_H

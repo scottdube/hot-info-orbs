@@ -84,6 +84,45 @@ void test_headlines_say_what_went_wrong() {
     TEST_ASSERT_FALSE(has(screens(Case::NotFound, "h", "a").steps, "Will retry.", Kind::Plain));
 }
 
+// ---- Setup screen, network heard but the join failed: retry by restarting ----
+
+void test_only_a_heard_network_that_did_not_join_is_retried_by_restart() {
+    TEST_ASSERT_TRUE(wififail::retriesByRestart(wififail::Case::Other));
+    TEST_ASSERT_FALSE(wififail::retriesByRestart(wififail::Case::NotFound)); // keepsLooking() scans for that one
+    TEST_ASSERT_FALSE(wififail::retriesByRestart(wififail::Case::WrongPassword)); // the same password gets the same answer
+    TEST_ASSERT_FALSE(wififail::retriesByRestart(wififail::Case::NeverSetUp));
+}
+
+void test_retries_wait_5_10_20_then_30_minutes() {
+    const uint32_t minute = 60000;
+    TEST_ASSERT_EQUAL_UINT32(5 * minute, wififail::retryAfterMs(0));
+    TEST_ASSERT_EQUAL_UINT32(10 * minute, wififail::retryAfterMs(1));
+    TEST_ASSERT_EQUAL_UINT32(20 * minute, wififail::retryAfterMs(2));
+    TEST_ASSERT_EQUAL_UINT32(30 * minute, wififail::retryAfterMs(3));
+    TEST_ASSERT_EQUAL_UINT32(30 * minute, wififail::retryAfterMs(4));
+    TEST_ASSERT_EQUAL_UINT32(30 * minute, wififail::retryAfterMs(100000)); // no end (Scott, 2026-11-13)
+}
+
+void test_the_retry_count_survives_a_restart_but_not_a_power_cycle() {
+    // The count lives in memory a restart keeps and a power cycle scrambles
+    wififail::RetryMemory fresh{0xDEADBEEF, 0x12345678}; // whatever was there at power-on
+    TEST_ASSERT_EQUAL_UINT32(0, wififail::retriesDone(fresh));
+    wififail::noteRetry(fresh);
+    TEST_ASSERT_EQUAL_UINT32(1, wififail::retriesDone(fresh));
+    wififail::noteRetry(fresh);
+    wififail::noteRetry(fresh);
+    TEST_ASSERT_EQUAL_UINT32(3, wififail::retriesDone(fresh));
+    wififail::clearRetries(fresh); // joined
+    TEST_ASSERT_EQUAL_UINT32(0, wififail::retriesDone(fresh));
+}
+
+void test_a_scrambled_count_reads_as_none() {
+    wififail::RetryMemory m{0, 0};
+    wififail::noteRetry(m);
+    m.check ^= 1; // one bit off
+    TEST_ASSERT_EQUAL_UINT32(0, wififail::retriesDone(m));
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_no_saved_network_is_first_setup);
@@ -95,5 +134,9 @@ int main() {
     RUN_TEST(test_first_setup_screens_unchanged);
     RUN_TEST(test_failure_screens_name_the_saved_network);
     RUN_TEST(test_headlines_say_what_went_wrong);
+    RUN_TEST(test_only_a_heard_network_that_did_not_join_is_retried_by_restart);
+    RUN_TEST(test_retries_wait_5_10_20_then_30_minutes);
+    RUN_TEST(test_the_retry_count_survives_a_restart_but_not_a_power_cycle);
+    RUN_TEST(test_a_scrambled_count_reads_as_none);
     return UNITY_END();
 }
