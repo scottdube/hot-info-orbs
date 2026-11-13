@@ -83,8 +83,45 @@ inline bool keepsLooking(Case c) { return c == Case::NotFound; }
 // REJECTED: stop after three tries. An orb that gives up at 35 minutes needs
 // a power cycle again, which is what this removes. The price is an orb the
 // network really refuses restarting every half hour until someone fixes that.
-// Not for a refused password: the same password gets the same answer.
-inline bool retriesByRestart(Case c) { return c == Case::Other; }
+//
+// A refused password is retried the same way, but only when this name and
+// password have joined before. Rig, 2026-11-13: a device blocked at the access
+// point is refused with reason 202 on every try, the same as a wrong
+// password, so after the ladder's restart the orb opened the "wrong password"
+// screen and stayed there after the block was lifted, until a power cycle.
+// The orb cannot tell the two apart; what it can know is that a password
+// which worked yesterday was not mistyped. A password that never joined
+// (freshly typed on the setup page) still stays put: the same password gets
+// the same answer. REJECTED: retry every refused password, which restarts an
+// orb with a typo every half hour for good. The price of this rule: after a
+// real password change at the router the orb restarts every half hour on the
+// setup screen until the new one is entered there.
+//
+// The mark kept in NVS when a join succeeds: FNV-1a over the name, a zero
+// byte and the password. Not a secret store and not meant as one: the
+// password itself is in NVS already, put there by the WiFi stack.
+constexpr uint32_t kNoMark = 0; // nothing stored yet
+inline uint32_t credentialsMark(const char *ssid, const char *pass) {
+    uint32_t h = 2166136261u;
+    auto mix = [&h](unsigned char c) {
+        h ^= c;
+        h *= 16777619u;
+    };
+    for (const char *p = ssid; *p; p++) {
+        mix(static_cast<unsigned char>(*p));
+    }
+    mix(0); // where the name ends counts: "ab" + "c" is not "a" + "bc"
+    for (const char *p = pass; *p; p++) {
+        mix(static_cast<unsigned char>(*p));
+    }
+    return h == kNoMark ? 1 : h;
+}
+inline bool joinedBefore(uint32_t storedMark, const char *ssid, const char *pass) {
+    return storedMark != kNoMark && storedMark == credentialsMark(ssid, pass);
+}
+inline bool retriesByRestart(Case c, bool joinedBefore) {
+    return c == Case::Other || (c == Case::WrongPassword && joinedBefore);
+}
 
 inline uint32_t retryAfterMs(uint32_t retriesDone) {
     constexpr uint32_t minute = 60000;

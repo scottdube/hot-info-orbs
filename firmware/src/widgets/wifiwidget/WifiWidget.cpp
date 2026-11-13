@@ -3,6 +3,7 @@
 #include "RoamPolicy.h"
 #include "StalePolicy.h"
 #include "Utils.h"
+#include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <esp_system.h>
@@ -220,6 +221,53 @@ void WifiWidget::drawLines(const std::vector<wififail::Line> &lines, int centerY
     m_manager.setFontColor(TFT_WHITE);
 }
 
+// The mark of the name and password that last joined, see WifiFailPolicy.h
+// (credentialsMark). Its own NVS namespace: it is not a setting, and the
+// settings page lists every key of "orbs".
+static const char *const kMarkSpace = "orbswifi";
+static const char *const kMarkKey = "joined";
+
+static uint32_t storedMark() {
+    Preferences p;
+    if (!p.begin(kMarkSpace, true)) {
+        return wififail::kNoMark; // never written
+    }
+    const uint32_t m = p.getUInt(kMarkKey, wififail::kNoMark);
+    p.end();
+    return m;
+}
+
+// The saved network's name and password, from the WiFi stack's own copy
+struct SavedNetwork {
+    // Neither field is certain to end in a zero when it is full
+    char ssid[sizeof(((wifi_sta_config_t *) nullptr)->ssid) + 1] = {0};
+    char pass[sizeof(((wifi_sta_config_t *) nullptr)->password) + 1] = {0};
+    bool known = false;
+};
+
+static SavedNetwork savedNetwork() {
+    SavedNetwork n;
+    wifi_config_t conf;
+    if (esp_wifi_get_config(WIFI_IF_STA, &conf) == ESP_OK) {
+        memcpy(n.ssid, conf.sta.ssid, sizeof(conf.sta.ssid));
+        memcpy(n.pass, conf.sta.password, sizeof(conf.sta.password));
+        n.known = n.ssid[0] != 0;
+    }
+    return n;
+}
+
+static void rememberJoinedCredentials() {
+    const SavedNetwork n = savedNetwork();
+    if (!n.known || wififail::joinedBefore(storedMark(), n.ssid, n.pass)) {
+        return; // flash is written only when the name or password changed
+    }
+    Preferences p;
+    if (p.begin(kMarkSpace, false)) {
+        p.putUInt(kMarkKey, wififail::credentialsMark(n.ssid, n.pass));
+        p.end();
+    }
+}
+
 void WifiWidget::showPortal(bool eyesShown) {
     m_configPortalRunning = true;
     m_portalOverEyes = eyesShown;
@@ -259,7 +307,12 @@ void WifiWidget::showPortal(bool eyesShown) {
     if (wififail::keepsLooking(m_failCase)) {
         m_nextLook = millis() + lookFirstMs;
     }
-    if (wififail::retriesByRestart(m_failCase)) {
+    const SavedNetwork net = savedNetwork();
+    const bool joinedBefore = saved && net.known && wififail::joinedBefore(storedMark(), net.ssid, net.pass);
+    if (m_failCase == wififail::Case::WrongPassword) {
+        DeviceLog::note("setup: this password has %s", joinedBefore ? "joined before" : "never joined, no retry");
+    }
+    if (wififail::retriesByRestart(m_failCase, joinedBefore)) {
         // Only a restart of our own carries the count on: a power cycle, the
         // reset button or a crash starts again from the shortest wait
         if (esp_reset_reason() != ESP_RST_SW) {
@@ -361,6 +414,7 @@ void WifiWidget::update(bool force) {
         }
         m_isConnected = true;
         wififail::clearRetries(s_setupRetries); // joined: the next failure starts from the shortest wait
+        rememberJoinedCredentials(); // a later refusal of these is not a typo (WifiFailPolicy.h)
         m_connectionString = "Connected";
         m_ipaddress = WiFi.localIP().toString();
         Serial.print("IP address: ");

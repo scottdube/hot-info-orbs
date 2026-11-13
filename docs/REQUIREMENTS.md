@@ -214,7 +214,8 @@ the last join found the network on the air:
 | Running, network heard, join keeps failing | Radio off and on after 2.5 minutes, restart after 5 |
 | Setup screen, network not heard | Scans, and restarts when it hears the network |
 | Setup screen, network heard, join failed | Restarts to try again after 5, 10, 20, then every 30 minutes; not while a phone is on the setup network |
-| Setup screen, password refused | Stays there: the same password gets the same answer |
+| Setup screen, password refused, and that name and password have joined before | Treated like a failed join: restarts to try again after 5, 10, 20, then every 30 minutes. A device blocked at the access point is refused exactly like a wrong password (rig, 2026-11-13), and a password that worked before was not mistyped |
+| Setup screen, password refused, never joined with it | Stays there: the same password gets the same answer |
 
 The 5 minutes count from the first join that heard the network, not from when
 the link dropped. The count of setup-screen retries survives a restart and
