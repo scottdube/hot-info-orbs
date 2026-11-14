@@ -228,6 +228,31 @@ three setup-screen retries (the orb would need a power cycle again). Not
 covered: a network that refuses one device stays refused whatever the orb
 does; the orb then retries every half hour until the network is fixed.
 
+**Info page on the orbs (added 2026-11-14).** What a member is asked for when
+their orb misbehaves, readable without a computer. Hold the middle button
+2 seconds and let go, from any page:
+
+| Orb | Shows |
+|---|---|
+| 1 Firmware | Version, commit, build date |
+| 2 WiFi | Network name, signal as a word and in dBm, channel; or "No WiFi" |
+| 3 Address | IP address and the `.local` name |
+| 4 Health | Time since start, why it last started, free memory |
+| 5 Data | Each MQTT broker in use: connected or not, how long since data last arrived |
+
+Any button closes it, and so does a minute without one; the closing press
+does nothing else, and the page that was on show draws again. While it is open
+the values are read once a second and the page rotation waits. It opens
+during an outage too. Not on the setup screen (the buttons are not read
+there); with the panels off, the first press only wakes them. It takes the
+2 second middle hold away from every page; only the Parqet page used it, and
+that page is not in the release build. The network name and the address go to
+the orbs only, never to the device log. Rules and wording:
+`firmware/src/core/infopage/InfoPagePolicy.h`, tested on the host; drawing:
+`InfoPage.cpp`. Rejected: a sixth page in the rotation (it would come around
+on its own on every orb), and closing with the same 2 second hold (any button
+is what a hand tries first).
+
 ## R2 — Over-the-air firmware updates
 
 **Firmware updates must not require a USB cable.**

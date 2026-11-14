@@ -1,6 +1,7 @@
 #include "Button.h"
 #include "DeviceLogStore.h"
 #include "GlobalTime.h"
+#include "InfoPage.h"
 #include "OtaUpdater.h"
 #include "ScreenManager.h"
 #include "Settings.h"
@@ -44,6 +45,7 @@ String connectingString{""};
 WifiWidget *wifiWidget{nullptr};
 OtaUpdater *otaUpdater{nullptr};
 SettingsPage *settingsPage{nullptr};
+InfoPage *infoPage{nullptr}; // on the orbs: hold the middle button 2 seconds
 
 int connectionTimer{0};
 const int connectionTimeout{10000};
@@ -191,6 +193,7 @@ void setup() {
     wifiWidget = new WifiWidget(*sm);
     otaUpdater = new OtaUpdater(*sm);
     settingsPage = new SettingsPage(*otaUpdater);
+    infoPage = new InfoPage(*sm);
     // Every splash screen is drawn before the eyes start: from here until
     // BootEyes::finish the eye task is the only thing drawing
     wifiWidget->begin(!eyesWanted);
@@ -300,6 +303,14 @@ void checkCycleWidgets() {
     }
 }
 
+// The info page is off the orbs again: the page that was on show draws itself
+// whole, and gets its full turn before the rotation moves on.
+void leaveInfoPage() {
+    infoPage->close();
+    widgetSet->setClearScreensOnDrawCurrent();
+    m_widgetCycleDelayPrev = millis();
+}
+
 void checkButtons() {
     // While the panels are off, a press only wakes them; it does not also act
     if (widgetSet->panelsAsleep()) {
@@ -310,6 +321,17 @@ void checkButtons() {
             Serial.println("Button pressed -> wake panels for a minute");
             m_widgetCycleDelayPrev = millis();
             widgetSet->wakeForAMinute();
+        }
+        return;
+    }
+    // While the info page is open, any press closes it and does nothing else
+    if (infoPage->isOpen()) {
+        bool pressed = buttonLeft.getState() != BTN_NOTHING;
+        pressed = buttonOK.getState() != BTN_NOTHING || pressed;
+        pressed = buttonRight.getState() != BTN_NOTHING || pressed;
+        if (pressed && infoPage->press(false) == infopage::Press::Closed) {
+            Serial.println("Button pressed -> info page closed");
+            leaveInfoPage();
         }
         return;
     }
@@ -337,7 +359,11 @@ void checkButtons() {
         } else if (middleState != BTN_NOTHING) {
             Serial.printf("Middle button pressed, state=%d\n", middleState);
             m_widgetCycleDelayPrev = millis();
-            widgetSet->buttonPressed(BUTTON_OK, middleState);
+            // Held 2 seconds: the info page, from any page. The page on show
+            // does not get that hold.
+            if (infoPage->press(middleState == BTN_LONG) == infopage::Press::PassOn) {
+                widgetSet->buttonPressed(BUTTON_OK, middleState);
+            }
         } else if (rightState != BTN_NOTHING) {
             Serial.printf("Right button pressed, state=%d\n", rightState);
             m_widgetCycleDelayPrev = millis();
@@ -397,14 +423,23 @@ void loop() {
         checkButtons();
 
         widgetSet->setLinkUp(wifiWidget->linkUp());
-        widgetSet->updateCurrent();
+        if (!infoPage->isOpen()) {
+            widgetSet->updateCurrent(); // waits: nothing else draws under the info page
+        }
         for (MqttFeed *feed : mqttFeeds) {
             if (feed && feed->wanted()) {
                 feed->service(); // values current when a page comes up
             }
         }
         widgetSet->updateBrightnessByTime(globalTime->getHour24() * 60 + globalTime->getMinute());
-        if (!widgetSet->panelsAsleep()) {
+        if (infoPage->isOpen()) {
+            // The info page has the orbs: the rotation waits. It closes on any
+            // button (checkButtons), after a minute, or when the panels go off.
+            const bool mqttInUse[2] = {mqttFeeds[0] && mqttFeeds[0]->wanted(), mqttFeeds[1] && mqttFeeds[1]->wanted()};
+            if (widgetSet->panelsAsleep() || !infoPage->show(wifiWidget->linkUp(), mqttInUse)) {
+                leaveInfoPage();
+            }
+        } else if (!widgetSet->panelsAsleep()) {
             widgetSet->drawCurrent();
             checkCycleWidgets(); // a switch redraws all five screens
         }
