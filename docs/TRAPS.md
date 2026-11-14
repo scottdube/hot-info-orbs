@@ -609,3 +609,12 @@ Starting a serial reader on the XIAO resets it, which wipes the very state
 a WiFi test is trying to observe. Since the device log exists, read
 `http://<orb>/log` instead: it survives a restart and a power-off, and it
 was the only evidence for everything above.
+
+## The host tests compile newer C++ than the firmware
+
+The ESP32 toolchain builds C++11; `pio test -e native` uses the computer's
+compiler and a newer standard. A struct with default member values
+(`bool any = false;`) cannot be brace-initialized (`{true, now}`) in C++11,
+so code like that passed all host tests and failed the release build
+(2026-11-14, `stale::LastGood`). Passing host tests say nothing about
+whether the firmware compiles: always run `pio run -e release` too.
