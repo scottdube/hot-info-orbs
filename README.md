@@ -77,7 +77,7 @@ project's files. Pick the link that matches what you want:
 | fix something that looks wrong | [Troubleshooting](docs/TROUBLESHOOTING.md), organized by what you see |
 | build the software yourself, or change it | the [build guide](docs/SETUP.md), written for someone who has never done this |
 | order a bare board | the [board rev 2.5 release](https://github.com/scottdube/hot-info-orbs/releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
-| print the enclosure | [hardware/enclosures/](hardware/enclosures/): the Winged Speedster enclosure, one `.3mf` per part (they open in Bambu Studio, PrusaSlicer and Orca Slicer), with [how many of each to print](hardware/enclosures/winged-speedster/3mf/README.md), two Bambu Studio projects and the Fusion source |
+| print the enclosure | [hardware/enclosures/](hardware/enclosures/): the Winged Speedster enclosure, one `.3mf` per part (they open in Bambu Studio, PrusaSlicer and Orca Slicer), with [how many of each to print](hardware/enclosures/winged-speedster/README.md#required-components), two Bambu Studio projects and the Fusion source |
 | get all the source | the green **Code** button above, then **Download ZIP** |
 
 ## What it shows
