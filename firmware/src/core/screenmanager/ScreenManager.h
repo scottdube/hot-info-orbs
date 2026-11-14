@@ -36,6 +36,10 @@ public:
     // (issue #32): it is drawn over a page, so it has to go back on whenever
     // the page wipes an orb to redraw it.
     uint8_t takeFilled();
+    // For a page that repaints an orb some other way than fillScreen(), on
+    // the selected screens: the clock draws a digit, or a whole picture,
+    // straight over the last one
+    void notePainted(uint32_t color);
     uint32_t lastFill(int screen) const;
 
     bool setBrightness(uint8_t brightness);

@@ -6,14 +6,23 @@
 // weather or prices it had, for hours, with nothing to say they were old: a
 // failed refresh kept the previous data and recorded nothing.
 //
-// The mark (picked by Scott from a sheet of four, 2026-11-12): a red ring
-// around every orb that holds the old data, and no words in the ring.
+// The mark (picked by Scott from a sheet of four, 2026-11-12): a ring around
+// every orb that holds the old data, and no words in the ring.
 //   "No WiFi" on orb 2, no ring yet     = WiFi is out, the data is still good
 //   broken ring, and "No WiFi" on orb 2 = WiFi is out and the data is old
 //   solid ring                          = WiFi is up, the data is still old
 //                                         (internet or the service is down)
-// The two causes differ by shape and by the words, never by color alone. A
-// clock orb is never marked: it keeps time without WiFi.
+// The two causes differ by shape and by the words, never by color alone.
+//
+// Amber, not red, since 2026-11-14 (Scott): red is kept for the one mark
+// below, so red is only ever on the clock and amber only on data pages.
+//
+// "Clock only when WiFi is out" (a setting, off by default; Yang asked for
+// it, 2026-11-14): once WiFi counts as out, the orbs go to the clock, with a
+// broken red ring on its orbs and no words ("No WiFi" would cover a digit).
+// The page that was up comes back with the WiFi. See ClockOnly below.
+// Without that setting a clock orb is never marked: it keeps time without
+// WiFi.
 // Rejected on that sheet: a thin ring alone (says nothing about the cause),
 // and the cause written around or across the bottom of every orb (the
 // weather page uses the bottom 20 px of three orbs; the words covered them).
@@ -105,6 +114,7 @@ enum class Mark : uint8_t {
     LinkDown, // "No WiFi" on orb 2, no ring: WiFi is out, the data is still good
     NoWifi, // broken ring, "No WiFi" on orb 2: WiFi is out and the data is old
     Old, // solid ring: WiFi is up, the data is old
+    ClockOnly, // broken red ring on the clock, no words: see ClockOnly below
 };
 
 // wifiOut: see LinkGrace. fetches: the page shows data it gets over WiFi.
@@ -123,8 +133,58 @@ inline Mark mark(bool pageStale, bool wifiOut, bool fetches) {
     return pageStale ? Mark::Old : Mark::None;
 }
 
-inline bool hasRing(Mark m) { return m == Mark::NoWifi || m == Mark::Old; }
+inline bool hasRing(Mark m) { return m == Mark::NoWifi || m == Mark::Old || m == Mark::ClockOnly; }
 inline bool hasWords(Mark m) { return m == Mark::NoWifi || m == Mark::LinkDown; }
+// Broken = this orb has no WiFi. Solid = WiFi is up and the service is not
+// answering.
+inline bool broken(Mark m) { return m == Mark::NoWifi || m == Mark::ClockOnly; }
+
+// RGB565. Amber and not yellow: a light page (weather by day) is near white,
+// where yellow all but disappears. Darker than signal amber for the same
+// reason. Not checked on the panels in daylight yet.
+constexpr uint16_t kRed = 0xF800; // TFT_RED
+constexpr uint16_t kAmber = 0xF4A0; // 240, 150, 0
+inline uint16_t ringColor(Mark m) { return m == Mark::ClockOnly ? kRed : kAmber; }
+
+// The "Clock only when WiFi is out" setting. Call step() on every pass that
+// a page is on show; it answers with the page to switch to, or kStay.
+// - In: once, when WiFi counts as out (LinkGrace, the same 10 s as "No
+//   WiFi"). Not on every pass: a button still moves to another page, with
+//   that page's usual marks. The rotation turn brings the clock back
+//   (WidgetSet::rotate), so with rotation off a page picked by button stays.
+// - Out: back to the page that was up, unless a button has moved off the
+//   clock since; whoever did that is reading the page they picked.
+// - The clock page shows even when its Show box is unticked.
+// Rejected: making this the only behavior. Scott prefers the page staying
+// up with its marks, so it is a setting and off unless switched on, and no
+// orb changes what it does on an update.
+constexpr int8_t kStay = -1;
+class ClockOnly {
+public:
+    // on: the setting. clock: the clock page's number, -1 if there is none.
+    int8_t step(bool on, bool wifiOut, int8_t current, int8_t clock) {
+        const bool want = on && wifiOut && clock >= 0;
+        if (want == m_active) {
+            return kStay;
+        }
+        m_active = want;
+        if (want) {
+            m_clock = clock;
+            m_returnTo = current;
+            return current == clock ? kStay : clock;
+        }
+        return (current == m_clock && m_returnTo != m_clock) ? m_returnTo : kStay;
+    }
+    bool active() const { return m_active; }
+    // What goes on the page on show: the clock's own ring, or whatever mark
+    // the page would have anyway
+    Mark mark(int8_t current, Mark page) const { return (m_active && current == m_clock) ? Mark::ClockOnly : page; }
+
+private:
+    bool m_active = false;
+    int8_t m_clock = -1;
+    int8_t m_returnTo = -1;
+};
 
 // WiFi counts as out once it has been down this long. Not at once: a roam
 // between access points drops the link for a second or two, and the words
@@ -162,12 +222,13 @@ struct Arc {
 };
 inline Arc dash(int i) { return {30 * i + 7, 30 * i + 23}; }
 
-// "No WiFi" on orb 2: black words on a red plate near the top, like a lit
-// annunciator. A plate, not bare red words, because the page under it may be
+// "No WiFi" on orb 2: black words on an amber plate near the top, like a lit
+// annunciator (red until 2026-11-14, see the top of this file). A plate, not bare red words, because the page under it may be
 // light or dark and may have its own text there (the stock page does).
 constexpr int kPlateOrb = 1; // screen index
 constexpr int kPlateH = 28, kPlateRadius = 6;
 constexpr int kPlateTextSize = 20;
+constexpr uint16_t kPlateColor = kAmber;
 // Where the plate goes: top edge and width, centered left to right. The
 // default is clear of the weather and MQTT pages' own text. A page with
 // something there says where instead (Widget::stalePlate): half-covered
@@ -201,7 +262,8 @@ struct Paint {
 class Overlay {
 public:
     // wiped: the orbs the page has filled since the last call.
-    // dataOrbs: the orbs holding the page's data (they get the ring).
+    // dataOrbs: the orbs holding the page's data (they get the ring). For
+    // the clock's ring: the clock's orbs (Widget::clockOnlyOrbs).
     Paint step(uint8_t wiped, Mark want, uint8_t dataOrbs) {
         m_on &= ~wiped; // a wipe takes the mark with it
         uint8_t orbs = 0;

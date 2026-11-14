@@ -127,6 +127,10 @@ void ScreenManager::fillScreen(uint32_t color) {
     m_tft.fillScreen(dim(color));
     // Set background for aliasing as well
     m_render.setBackgroundColor(dim(color));
+    notePainted(color);
+}
+
+void ScreenManager::notePainted(uint32_t color) {
     m_filled |= m_selected;
     for (int i = 0; i < NUM_SCREENS; i++) {
         if (m_selected & (1u << i)) {

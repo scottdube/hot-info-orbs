@@ -414,6 +414,167 @@ void test_a_good_refresh_after_a_failed_first_try_counts() {
     TEST_ASSERT_EQUAL_UINT32(1000 + 10 * MIN, t.lastGood().at);
 }
 
+// ---- Clock only when WiFi is out (the setting; Yang's request, 2026-11-14) ----
+static const int8_t CLOCK = 0, WEATHER_PAGE = 3, STOCKS_PAGE = 2;
+
+void test_clock_only_does_nothing_while_the_setting_is_off() {
+    stale::ClockOnly c;
+    TEST_ASSERT_EQUAL_INT8(stale::kStay, c.step(false, true, WEATHER_PAGE, CLOCK));
+    TEST_ASSERT_FALSE(c.active());
+}
+
+void test_clock_only_does_nothing_while_wifi_is_up() {
+    stale::ClockOnly c;
+    TEST_ASSERT_EQUAL_INT8(stale::kStay, c.step(true, false, WEATHER_PAGE, CLOCK));
+    TEST_ASSERT_FALSE(c.active());
+}
+
+void test_wifi_out_switches_to_the_clock() {
+    stale::ClockOnly c;
+    TEST_ASSERT_EQUAL_INT8(CLOCK, c.step(true, true, WEATHER_PAGE, CLOCK));
+    TEST_ASSERT_TRUE(c.active());
+}
+
+void test_an_outage_that_starts_on_the_clock_stays_there() {
+    stale::ClockOnly c;
+    TEST_ASSERT_EQUAL_INT8(stale::kStay, c.step(true, true, CLOCK, CLOCK));
+    TEST_ASSERT_TRUE(c.active());
+}
+
+// One switch, not one on every pass: a button may move off the clock
+void test_the_switch_to_the_clock_happens_once() {
+    stale::ClockOnly c;
+    c.step(true, true, WEATHER_PAGE, CLOCK);
+    TEST_ASSERT_EQUAL_INT8(stale::kStay, c.step(true, true, CLOCK, CLOCK));
+    TEST_ASSERT_EQUAL_INT8(stale::kStay, c.step(true, true, STOCKS_PAGE, CLOCK));
+    TEST_ASSERT_TRUE(c.active());
+}
+
+void test_wifi_back_returns_to_the_page_that_was_up() {
+    stale::ClockOnly c;
+    c.step(true, true, WEATHER_PAGE, CLOCK);
+    c.step(true, true, CLOCK, CLOCK);
+    TEST_ASSERT_EQUAL_INT8(WEATHER_PAGE, c.step(true, false, CLOCK, CLOCK));
+    TEST_ASSERT_FALSE(c.active());
+}
+
+void test_wifi_back_after_an_outage_that_began_on_the_clock_stays() {
+    stale::ClockOnly c;
+    c.step(true, true, CLOCK, CLOCK);
+    TEST_ASSERT_EQUAL_INT8(stale::kStay, c.step(true, false, CLOCK, CLOCK));
+    TEST_ASSERT_FALSE(c.active());
+}
+
+// Someone pressed a button during the outage and is reading that page
+void test_wifi_back_leaves_a_page_picked_by_button_alone() {
+    stale::ClockOnly c;
+    c.step(true, true, WEATHER_PAGE, CLOCK);
+    TEST_ASSERT_EQUAL_INT8(stale::kStay, c.step(true, false, STOCKS_PAGE, CLOCK));
+    TEST_ASSERT_FALSE(c.active());
+}
+
+void test_switching_the_setting_off_in_an_outage_returns_too() {
+    stale::ClockOnly c;
+    c.step(true, true, WEATHER_PAGE, CLOCK);
+    TEST_ASSERT_EQUAL_INT8(WEATHER_PAGE, c.step(false, true, CLOCK, CLOCK));
+    TEST_ASSERT_FALSE(c.active());
+}
+
+void test_a_second_outage_remembers_its_own_page() {
+    stale::ClockOnly c;
+    c.step(true, true, WEATHER_PAGE, CLOCK);
+    c.step(true, false, CLOCK, CLOCK);
+    c.step(true, true, STOCKS_PAGE, CLOCK);
+    TEST_ASSERT_EQUAL_INT8(STOCKS_PAGE, c.step(true, false, CLOCK, CLOCK));
+}
+
+void test_clock_only_needs_a_clock_page() {
+    stale::ClockOnly c;
+    TEST_ASSERT_EQUAL_INT8(stale::kStay, c.step(true, true, WEATHER_PAGE, -1));
+    TEST_ASSERT_FALSE(c.active());
+}
+
+void test_the_clock_gets_its_own_mark_in_clock_only() {
+    stale::ClockOnly c;
+    c.step(true, true, WEATHER_PAGE, CLOCK);
+    TEST_ASSERT_TRUE(stale::Mark::ClockOnly == c.mark(CLOCK, stale::Mark::None));
+}
+
+// A page reached by button in the outage keeps the marks it has today
+void test_other_pages_keep_their_own_mark_in_clock_only() {
+    stale::ClockOnly c;
+    c.step(true, true, WEATHER_PAGE, CLOCK);
+    TEST_ASSERT_TRUE(stale::Mark::NoWifi == c.mark(WEATHER_PAGE, stale::Mark::NoWifi));
+    TEST_ASSERT_TRUE(stale::Mark::LinkDown == c.mark(STOCKS_PAGE, stale::Mark::LinkDown));
+}
+
+void test_the_clock_is_not_marked_outside_clock_only() {
+    stale::ClockOnly c;
+    TEST_ASSERT_TRUE(stale::Mark::None == c.mark(CLOCK, stale::Mark::None));
+}
+
+void test_the_clock_mark_is_a_broken_ring_with_no_words() {
+    TEST_ASSERT_TRUE(stale::hasRing(stale::Mark::ClockOnly));
+    TEST_ASSERT_FALSE(stale::hasWords(stale::Mark::ClockOnly)); // "No WiFi" would cover a digit
+    TEST_ASSERT_TRUE(stale::broken(stale::Mark::ClockOnly));
+}
+
+// Broken = no WiFi, solid = WiFi up and the service is not answering
+void test_the_shape_says_whether_wifi_is_out() {
+    TEST_ASSERT_TRUE(stale::broken(stale::Mark::NoWifi));
+    TEST_ASSERT_FALSE(stale::broken(stale::Mark::Old));
+}
+
+// Red only ever on the clock, amber only on data pages
+void test_the_clock_ring_is_red_and_data_rings_are_amber() {
+    TEST_ASSERT_EQUAL_HEX16(0xF800, stale::kRed);
+    TEST_ASSERT_TRUE(stale::kAmber != stale::kRed);
+    TEST_ASSERT_TRUE(stale::kAmber != 0);
+    TEST_ASSERT_EQUAL_HEX16(stale::kRed, stale::ringColor(stale::Mark::ClockOnly));
+    TEST_ASSERT_EQUAL_HEX16(stale::kAmber, stale::ringColor(stale::Mark::NoWifi));
+    TEST_ASSERT_EQUAL_HEX16(stale::kAmber, stale::ringColor(stale::Mark::Old));
+    TEST_ASSERT_EQUAL_HEX16(stale::kAmber, stale::kPlateColor);
+}
+
+void test_the_clock_ring_goes_on_every_clock_orb_without_a_repaint() {
+    stale::Overlay o;
+    const stale::Paint p = o.step(0, stale::Mark::ClockOnly, 0x1F);
+    TEST_ASSERT_FALSE(p.repaint);
+    TEST_ASSERT_EQUAL_HEX8(0x1F, p.orbs);
+}
+
+// The picture clock repaints its colon orb every second: no ring there
+void test_the_clock_ring_skips_an_orb_the_clock_leaves_out() {
+    stale::Overlay o;
+    const stale::Paint p = o.step(0, stale::Mark::ClockOnly, 0x1B);
+    TEST_ASSERT_EQUAL_HEX8(0x1B, p.orbs);
+}
+
+void test_a_clock_orb_that_was_repainted_gets_its_ring_back() {
+    stale::Overlay o;
+    o.step(0, stale::Mark::ClockOnly, 0x1F);
+    const stale::Paint p = o.step(0x10, stale::Mark::ClockOnly, 0x1F); // the minute changed on orb 5
+    TEST_ASSERT_FALSE(p.repaint);
+    TEST_ASSERT_EQUAL_HEX8(0x10, p.orbs);
+}
+
+void test_the_clock_ring_comes_off_by_repainting_the_clock() {
+    stale::Overlay o;
+    o.step(0, stale::Mark::ClockOnly, 0x1F);
+    const stale::Paint p = o.step(0, stale::Mark::None, 0);
+    TEST_ASSERT_TRUE(p.repaint);
+    TEST_ASSERT_EQUAL_HEX8(0, p.orbs);
+}
+
+// Weather with "No WiFi" and rings up, then the switch (which wipes all five)
+void test_a_switch_from_a_marked_page_to_the_clock_needs_no_extra_repaint() {
+    stale::Overlay o;
+    o.step(0, stale::Mark::NoWifi, 0x1E);
+    const stale::Paint p = o.step(0x1F, stale::Mark::ClockOnly, 0x1F);
+    TEST_ASSERT_FALSE(p.repaint);
+    TEST_ASSERT_EQUAL_HEX8(0x1F, p.orbs);
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_page_is_fresh_after_a_good_refresh);
@@ -464,5 +625,27 @@ int main() {
     RUN_TEST(test_a_failed_first_try_is_not_a_good_refresh);
     RUN_TEST(test_the_last_good_refresh_is_remembered_through_failures);
     RUN_TEST(test_a_good_refresh_after_a_failed_first_try_counts);
+    RUN_TEST(test_clock_only_does_nothing_while_the_setting_is_off);
+    RUN_TEST(test_clock_only_does_nothing_while_wifi_is_up);
+    RUN_TEST(test_wifi_out_switches_to_the_clock);
+    RUN_TEST(test_an_outage_that_starts_on_the_clock_stays_there);
+    RUN_TEST(test_the_switch_to_the_clock_happens_once);
+    RUN_TEST(test_wifi_back_returns_to_the_page_that_was_up);
+    RUN_TEST(test_wifi_back_after_an_outage_that_began_on_the_clock_stays);
+    RUN_TEST(test_wifi_back_leaves_a_page_picked_by_button_alone);
+    RUN_TEST(test_switching_the_setting_off_in_an_outage_returns_too);
+    RUN_TEST(test_a_second_outage_remembers_its_own_page);
+    RUN_TEST(test_clock_only_needs_a_clock_page);
+    RUN_TEST(test_the_clock_gets_its_own_mark_in_clock_only);
+    RUN_TEST(test_other_pages_keep_their_own_mark_in_clock_only);
+    RUN_TEST(test_the_clock_is_not_marked_outside_clock_only);
+    RUN_TEST(test_the_clock_mark_is_a_broken_ring_with_no_words);
+    RUN_TEST(test_the_shape_says_whether_wifi_is_out);
+    RUN_TEST(test_the_clock_ring_is_red_and_data_rings_are_amber);
+    RUN_TEST(test_the_clock_ring_goes_on_every_clock_orb_without_a_repaint);
+    RUN_TEST(test_the_clock_ring_skips_an_orb_the_clock_leaves_out);
+    RUN_TEST(test_a_clock_orb_that_was_repainted_gets_its_ring_back);
+    RUN_TEST(test_the_clock_ring_comes_off_by_repainting_the_clock);
+    RUN_TEST(test_a_switch_from_a_marked_page_to_the_clock_needs_no_extra_repaint);
     return UNITY_END();
 }

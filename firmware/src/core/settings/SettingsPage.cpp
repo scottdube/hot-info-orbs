@@ -445,6 +445,9 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
         h += hint("Tick one to keep it on screen, or several to rotate through them. The buttons move between ticked pages only.") +
              errorLine(errors, "show");
     }
+    h += boolSelect("wificlock", "Clock only when WiFi is out", v.wificlock, d.wificlock, "Off", "On", errors);
+    h += hint("Off: the page stays up, with \"No WiFi\" on orb 2 and an amber ring on data that has gone old. "
+              "On: after 10 seconds without WiFi the orbs show the clock with a broken red ring, and the page that was up comes back with the WiFi.");
     h += "</fieldset>";
 
     h += "<fieldset id='clock'><legend>Clock</legend>";
@@ -676,6 +679,7 @@ void SettingsPage::handlePost() {
     readBool("off", v.off);
     readBool("invert", v.invert);
     readBool("booteyes", v.booteyes);
+    readBool("wificlock", v.wificlock);
     readBool("lashes", v.lashes);
     if (has("lids")) {
         const std::string a = argStr(s, "lids");
