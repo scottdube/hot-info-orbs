@@ -540,7 +540,12 @@ void test_the_shape_says_whether_wifi_is_out() {
 
 // Red only ever on the clock, amber only on data pages
 void test_the_clock_ring_is_red_and_data_rings_are_amber() {
-    TEST_ASSERT_EQUAL_HEX16(0xF800, stale::kRed);
+    // Full red with a little blue and no green. Pure red (0xF800) read as
+    // orange on the panels, next to the amber (Scott, on the rig, 2026-11-14)
+    TEST_ASSERT_EQUAL(31, stale::kRed >> 11);
+    TEST_ASSERT_EQUAL(0, (stale::kRed >> 5) & 0x3F);
+    TEST_ASSERT_TRUE((stale::kRed & 0x1F) >= 4);
+    TEST_ASSERT_TRUE((stale::kRed & 0x1F) <= 10);
     TEST_ASSERT_TRUE(stale::kAmber != stale::kRed);
     TEST_ASSERT_TRUE(stale::kAmber != 0);
     TEST_ASSERT_EQUAL_HEX16(stale::kRed, stale::ringColor(stale::Mark::ClockOnly));

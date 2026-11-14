@@ -142,7 +142,9 @@ inline bool broken(Mark m) { return m == Mark::NoWifi || m == Mark::ClockOnly; }
 // RGB565. Amber and not yellow: a light page (weather by day) is near white,
 // where yellow all but disappears. Darker than signal amber for the same
 // reason. Not checked on the panels in daylight yet.
-constexpr uint16_t kRed = 0xF800; // TFT_RED
+// Not TFT_RED (0xF800): on these panels pure red read as orange beside the
+// amber. A little blue pulls it away from orange (255, 0, 49).
+constexpr uint16_t kRed = 0xF806;
 constexpr uint16_t kAmber = 0xF4A0; // 240, 150, 0
 inline uint16_t ringColor(Mark m) { return m == Mark::ClockOnly ? kRed : kAmber; }
 
