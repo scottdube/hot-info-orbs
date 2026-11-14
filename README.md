@@ -31,15 +31,19 @@ network.
    address** when they join your WiFi. On a phone or computer on the same
    WiFi, browse to `http://<that address>/settings`. The page starts with
    **API keys**: paste a [Visual Crossing](https://www.visualcrossing.com/sign-up)
-   key, free and about a minute to get. Under **Clock**, pick your time zone
-   from the list (it starts on New York; daylight saving is automatic). Set
-   your weather town, then press **Save and restart**. Until the key is in,
-   the weather page stays empty; the clock works without it. Own a Tempest
-   weather station? Its token goes under **API keys** too
-   ([details](docs/SETUP.md#10-optional-weather-from-your-own-tempest-stations)).
+   key, free and about a minute to get. Under **Time zone and location**,
+   pick your time zone from the list (it starts on New York; daylight saving
+   is automatic) and set your weather town, then press **Save and restart**.
+   Until the key is in, the weather page stays empty; the clock works without
+   it. Own a Tempest weather station? Its token goes under **API keys** too
+   ([details](docs/USER-GUIDE.md#weather-from-your-own-tempest-stations)).
 
 **Connect finds no port?** Put the XIAO in download mode: unplug, hold the
 **B** button on the XIAO, plug back in, let go, and click **Connect** again.
+Anything else: [Troubleshooting](docs/TROUBLESHOOTING.md).
+
+**Running? Next:** the [user guide](docs/USER-GUIDE.md) covers the buttons,
+the pages, the settings page and what the orbs do when WiFi drops.
 
 ## Updating later: over WiFi, no cable
 
@@ -57,7 +61,7 @@ settings and start-up picture.
 [Quick start](#quick-start-no-software-to-install-on-your-pc) again. It wipes
 the board, so WiFi and the weather key go back in at steps 6 and 7.
 
-Want to change the code, or build it yourself? The [setup guide](docs/SETUP.md)
+Want to change the code, or build it yourself? The [build guide](docs/SETUP.md)
 covers that.
 
 ## Want a more hands-on install? Start here
@@ -69,7 +73,9 @@ project's files. Pick the link that matches what you want:
 |---|---|
 | see what it is and what it does | the [feature sheet](https://scottdube.github.io/hot-info-orbs/features.html), an ordinary web page |
 | get a built one running, nothing to install | the [Quick start](#quick-start-no-software-to-install-on-your-pc) above: download one file, flash it from Chrome |
-| build the software yourself, or change it | the [setup guide](docs/SETUP.md), written for someone who has never done this |
+| learn the buttons, the pages and the settings | the [user guide](docs/USER-GUIDE.md) |
+| fix something that looks wrong | [Troubleshooting](docs/TROUBLESHOOTING.md), organized by what you see |
+| build the software yourself, or change it | the [build guide](docs/SETUP.md), written for someone who has never done this |
 | order a bare board | the [board rev 2.5 release](https://github.com/scottdube/hot-info-orbs/releases/tag/board-rev2.5): gerber zip for the fab, parts list, schematic and board PDFs, 3D model |
 | print the enclosure | [hardware/enclosures/](hardware/enclosures/): the Winged Speedster enclosure, one `.3mf` per part (they open in Bambu Studio, PrusaSlicer and Orca Slicer), with [how many of each to print](hardware/enclosures/winged-speedster/3mf/README.md), two Bambu Studio projects and the Fusion source |
 | get all the source | the green **Code** button above, then **Download ZIP** |
@@ -82,7 +88,7 @@ their own. The left and right buttons step back and forward by hand.
 Hold the middle button for 2 seconds to see the orb's own info page:
 firmware version, WiFi, address, health and data feeds. It appears while
 you are still holding. Any button closes it, or it closes by itself after
-2 minutes.
+2 minutes. The [user guide](docs/USER-GUIDE.md) explains every line on it.
 
 - **Clock**: normal, Nixie-tube, or custom faces, in your choice of colors.
 - **Weather** for a town (Visual Crossing), from your own
@@ -99,15 +105,17 @@ you are still holding. Any button closes it, or it closes by itself after
 
 ## What you need
 
+**To run it** (the [Quick start](#quick-start-no-software-to-install-on-your-pc)):
+
 - The assembled orbs: carrier board, a XIAO ESP32-S3 or S3 Plus, five GC9A01
   round displays, three buttons.
   **S3 or S3 Plus makes no difference to the software.** Both use the same
-  file and the same Upload button; there is nothing to change. The Plus has
-  more memory, which the software does not use yet.
+  file; there is nothing to change. The Plus has more memory, which the
+  software does not use yet.
 - A **USB data cable**. Many cheap cables carry power only.
 - A **2.4 GHz** WiFi network. The ESP32 cannot see 5 GHz.
-- A computer with [VS Code](https://code.visualstudio.com) and the
-  [PlatformIO](https://platformio.org) extension.
+- A computer with **Google Chrome or Microsoft Edge**, for the first install
+  only. After that a phone is enough.
 - One free **API key**. An API key is a code a website gives you when you
   sign up, so the orbs can ask it for data. It takes about a minute:
   [Visual Crossing](https://www.visualcrossing.com/sign-up), for weather.
@@ -115,90 +123,37 @@ you are still holding. Any button closes it, or it closes by itself after
   cancelled it stops working for everyone using it. The time zone needs no
   key: the firmware carries the daylight-saving rules itself.
 
-## Getting it running
+**To build the software yourself**, also:
 
-[docs/SETUP.md](docs/SETUP.md) is the full walk-through, about 45 minutes the
-first time, and ends with a troubleshooting table organized by what you
-actually see. In short:
+- [VS Code](https://code.visualstudio.com) with the
+  [PlatformIO](https://platformio.org) extension, and about 1 GB of free
+  disk. Most people never need this.
 
-1. **Make your two settings files.** In VS Code, open the `firmware/config`
-   folder. Copy `config.h.template` and paste it into the same folder, then
-   rename the copy to `config.h` (delete `.template` from the name). Do the
-   same to make `secrets.h` from `secrets.h.template`. Then open each new file
-   and fill it in: `config.h` holds your preferences (timezone, units, stock
-   tickers), `secrets.h` your API keys. [SETUP step 3](docs/SETUP.md#3-create-your-two-config-files)
-   has the details.
-   Your copies are never uploaded to GitHub, so your keys stay private.
-   **The build stops with an error if either file is missing or a key is
-   empty.** That is on purpose: otherwise you get a blank orb and no clue why.
-2. **Install the software over USB, once.** Installing the orbs' software is
-   called *flashing*. Plug the orbs into your computer, then in VS Code click
-   the PlatformIO icon (the alien head) on the left, and under *Project Tasks →
-   xiao-esp32s3 → General* click **Upload**. The first time has to be over USB;
-   after that, updates go over WiFi.
-3. **Connect it to WiFi.** The orbs start their own WiFi network, named
-   `Info-Orbs_` plus two characters shown on the screens. Join that network
-   from a phone, and a page opens where you pick your home network and type its
-   password. When the orbs join your network, **they show their IP address
-   on screen** (four numbers with dots, like `192.168.1.57`). Write it down:
-   it is how you reach them from a browser.
+## Using it
 
-After that, you can do everything from a web browser on a phone or computer
-connected to the same WiFi. Type the address with the orbs' IP address in
-place of `<IP>`, for example `http://192.168.1.57/settings`.
-`http://info-orbs.local/settings` often works too, without the number. (If
-you have more than one set, see [Building more than one
-set](#building-more-than-one-set).)
+Once the orbs are on your WiFi, everything is done from a web browser on a
+phone or computer on the same WiFi. The orbs show their **IP address** on
+orb 5 when they join (four numbers with dots, like `192.168.1.57`).
 
 | Address | What it does |
 |---|---|
-| `http://<IP>/settings` | rotation time, tickers, weather location and units, timezone, clock face and colors, night dimming, upside-down mounting, the waking eyes at start-up, custom pages, your own start-up picture. What you typed in `config.h` is only the starting point. |
-| `http://<IP>/update` | install a new version of the software without a cable: choose the file `.pio/build/xiao-esp32s3/firmware.bin` from the project folder and upload it. The page also shows which version is running. |
+| `http://<IP>/settings` | rotation time, which pages show, tickers, weather location and units, time zone, clock face and colors, night dimming, upside-down mounting, the waking eyes at start-up, custom pages, your own start-up picture |
+| `http://<IP>/update` | install a new version of the software without a cable. The page also shows which version is running. |
 
-**Set a password.** Without one, anyone on your WiFi can change your orbs'
-settings or install software on them. In `secrets.h`, find the line
-`//#define OTA_PASSWORD ""`, delete the `//` at its start, type a password
-between the quotes, save, and upload again (step 2). The browser then asks
-for user name `admin` and that password.
+The [user guide](docs/USER-GUIDE.md) has the rest: the buttons, each page,
+every section of the settings page, the info page, what the red marks mean,
+changing WiFi, running from a phone hotspot, and the log.
+[Troubleshooting](docs/TROUBLESHOOTING.md) is organized by what you see.
 
-## Building more than one set
+## Building it yourself
 
-Many members build several. Each set keeps its own WiFi network, settings-page
-choices and start-up picture inside itself, so you set each one up on its own.
-You can use the same API keys and the same `config.h` and `secrets.h` for all
-of your own sets. Each set uses the keys' free daily allowance separately.
-
-**WiFi: one at a time, or not at all.** Each new set starts its own setup
-network, `Info-Orbs_` plus two characters. Two sets can end up with the same
-two characters, so set them up one at a time. To skip the setup network
-altogether, put your WiFi name and password in `secrets.h` before you flash:
-find `//#define WIFI_SSID` and `//#define WIFI_PASS`, delete the `//` from
-both, and fill them in. Every set you flash then joins that network by itself.
-
-**Names: give each set its own.** Every set is called `info-orbs` unless you
-change it, and only one of them can answer to `info-orbs.local`. Before you
-flash a set, open `config.h`, find `//#define OTA_HOSTNAME "info-orbs"`,
-delete the `//`, and change the name, for example to `"orb-office"`. That set
-is then at `http://orb-office.local/settings`, and your router lists it under
-that name. The IP address shown on its screen always works too.
-
-**The name is built into the software file, so watch it when updating.** The
-name in `config.h` when you build is the name the set gets. If you build once
-and upload the same file to two sets, they both end up with the same name.
-To update several sets, change the name in `config.h`, build, upload to that
-set, and repeat for the next one.
-
-**Optional: update from PlatformIO by name.** Settings that belong to your
-computer, such as which USB port to upload to or which set to update over
-WiFi, go in a file named `platformio_local.ini` next to `platformio.ini`.
-Create it only if you need it; it stays on your computer and is never uploaded
-to GitHub. For example, so that *Upload* in the `ota` task updates
-`orb-office`:
-
-```ini
-[env:ota]
-upload_port = orb-office.local
-```
+[docs/SETUP.md](docs/SETUP.md) is the full walk-through, about 45 minutes the
+first time, written for someone who has never used PlatformIO. You make two
+settings files (`config.h` for preferences, `secrets.h` for your keys, neither
+ever uploaded to GitHub), install over USB once, and update over WiFi after
+that. Building it yourself is also how you set a password on the settings and
+update pages, and how you
+[give each of several sets its own name](docs/SETUP.md#building-more-than-one-set).
 
 ## Hardware
 
@@ -235,7 +190,9 @@ a tag (`git checkout <tag> -- <folder>` brings a folder back):
 
 | | |
 |---|---|
-| [docs/SETUP.md](docs/SETUP.md) | from an empty computer to running orbs |
+| [docs/USER-GUIDE.md](docs/USER-GUIDE.md) | using the orbs: buttons, pages, the settings page, the info page, what the orbs do when WiFi drops |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | what to do, organized by what you see |
+| [docs/SETUP.md](docs/SETUP.md) | building the software yourself, from an empty computer |
 | [docs/CUSTOM-PAGES.md](docs/CUSTOM-PAGES.md) | Web Data and MQTT pages, with Home Assistant recipes (The Villages town squares among them) |
 | [docs/TRAPS.md](docs/TRAPS.md) | problems that each cost time once, written down so they don't again |
 | [docs/ENCLOSURE.md](docs/ENCLOSURE.md) | the enclosure design and why it looks the way it does |
@@ -278,7 +235,7 @@ repository is public.
 
 ## Contributing
 
-**Found a problem? Tell us.** If a step in the setup guide is wrong or
+**Found a problem? Tell us.** If a step in one of the guides is wrong or
 unclear, or something went wrong in your build, [open an issue](https://github.com/scottdube/hot-info-orbs/issues)
 (a GitHub account is needed; it's free). You can also just tell someone at
 the club.
