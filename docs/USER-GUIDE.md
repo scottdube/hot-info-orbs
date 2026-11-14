@@ -8,9 +8,9 @@ first. If something looks wrong, go to
 In this guide the five displays are **orb 1 to orb 5, left to right**, and
 "the orbs" means the whole set.
 
-> **Parts marked (1.7.0)** are in the next firmware release. Firmware 1.6.1
-> does not have them. The settings page shows which version you are running
-> on its first line.
+> **Parts marked (1.7.0)** need firmware 1.7.0 or later. The settings page
+> shows which version you are running on its first line. To get the newest,
+> see [Updating later](../README.md#updating-later-over-wifi-no-cable).
 
 **Contents**
 

@@ -37,6 +37,7 @@ struct SettingsValues {
     uint32_t tstn2;
     std::string tlbl2;
     std::string hidden; // widget names left out of the rotation, '\n'-separated; "" = show all
+    bool wificlock; // WiFi out: all five orbs go to the clock (stale::ClockOnly). Off = the page stays, marked
     // Custom pages (docs/superpowers/specs/2026-10-17-custom-pages-design.md).
     // A page is registered at boot only when its URL / host is set.
     std::string wdname; // Web Data page name, 1..16

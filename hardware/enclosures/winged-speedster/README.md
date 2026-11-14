@@ -54,7 +54,7 @@ The body was printed using a matte finish filament to contrast against the silk 
 
 The exact filaments used:
 * Polymaker Panchroma Matte PLA Army Blue (CA04008)
-* Polymaker Panchroma Silk PLA Gold (CA03006)
+* Polymaker Panchroma Silk PLA Gold (CA03006) - gold tint is more orange than the rendering at the top of the page
 
 Polymaker filament presets for your printer can be downloaded from https://presets.polymaker.com/
 

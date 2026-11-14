@@ -8,8 +8,9 @@ fix: do the
 [Quick start](../README.md#quick-start-no-software-to-install-on-your-pc)
 again.
 
-> **Parts marked (1.7.0)** are in the next firmware release. Firmware 1.6.1
-> does not have them.
+> **Parts marked (1.7.0)** need firmware 1.7.0 or later. The settings page
+> shows which version you are running on its first line. To get the newest,
+> see [Updating later](../README.md#updating-later-over-wifi-no-cable).
 
 - [Installing](#installing)
 - [WiFi setup](#wifi-setup)
@@ -153,8 +154,8 @@ GitHub account is needed). Three things make it quick to help you:
 1. **What you see, and on which orb.** A phone photo of the five orbs is
    best.
 2. **The version.** Hold the middle button 2 seconds and read orb 1: the
-   version and the commit (1.7.0). On 1.6.1, it is the first line of the
-   settings page.
+   version and the commit (1.7.0). On older firmware, it is the first line
+   of the settings page.
 3. **The log** (1.7.0). On the settings page, **Log: download** saves
    `info-orbs-log.txt`. Attach it. It holds events only: no network name, no
    passwords, no keys, no station IDs.

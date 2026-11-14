@@ -30,6 +30,11 @@ public:
     virtual uint8_t dataOrbs() { return 0x1F; }
     // Where "No WiFi" goes on orb 2 of this page
     virtual stale::Plate stalePlate() { return stale::kPlate; }
+    // "Clock only when WiFi is out" (stale::ClockOnly). Only the clock page
+    // is asked: the orbs that take its red ring, and being told when the
+    // ring goes on and comes off.
+    virtual uint8_t clockOnlyOrbs() { return 0x1F; }
+    virtual void setClockOnly(bool on) { (void) on; }
     void setBusy(bool busy);
 
 protected:

@@ -25,6 +25,14 @@ public:
     Widget *getCurrent();
     void next();
     void prev();
+    // "Clock only when WiFi is out" (stale::ClockOnly in StalePolicy.h).
+    // setClockPage: once, after add(). followOutage: every pass that a page
+    // is on show, before drawCurrent(); true = it began or ended, so the
+    // rotation timer starts again. rotate: the rotation's turn, which in an
+    // outage with the setting on goes back to the clock instead of on.
+    void setClockPage(Widget *clock);
+    bool followOutage();
+    void rotate();
     void buttonPressed(uint8_t buttonId, ButtonState state);
     void showLoading();
     // true = the boot eyes are still on orbs 2 and 4: the start-up "Loading"
@@ -73,5 +81,7 @@ private:
     stale::LinkWatch m_linkWatch;
     stale::Overlay m_staleOverlay;
     bool m_refreshOwed[MAX_WIDGETS] = {};
+    stale::ClockOnly m_clockOnly;
+    int8_t m_clockPage = -1;
 };
 #endif // WIDGET_SET_H

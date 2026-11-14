@@ -96,14 +96,50 @@ void WidgetSet::setLinkUp(bool up) {
     m_wifiOut = m_linkGrace.out(millis(), up);
 }
 
-// Issue #32. "No WiFi" on orb 2 as soon as WiFi is out, and a red ring on
+void WidgetSet::setClockPage(Widget *clock) {
+    m_clockPage = indexOf(clock);
+}
+
+bool WidgetSet::followOutage() {
+    const bool was = m_clockOnly.active();
+    const int8_t to = m_clockOnly.step(Settings::get().wificlock, m_wifiOut, m_currentWidget, m_clockPage);
+    if (m_clockOnly.active() == was) {
+        return false;
+    }
+    m_widgets[m_clockPage]->setClockOnly(m_clockOnly.active());
+    if (to != stale::kStay) {
+        m_currentWidget = to;
+        switchWidget();
+    } else if (m_clockOnly.active()) {
+        // Already on the clock: its seconds tick has to come off before the
+        // ring goes on over it. Coming off needs nothing here: the overlay
+        // repaints the page to take a ring away.
+        drawCurrent(true);
+    }
+    return true;
+}
+
+void WidgetSet::rotate() {
+    if (!m_clockOnly.active()) {
+        next();
+    } else if (m_currentWidget != m_clockPage) {
+        m_currentWidget = m_clockPage; // a button had moved off it
+        switchWidget();
+    }
+}
+
+// Issue #32. "No WiFi" on orb 2 as soon as WiFi is out, and an amber ring on
 // each orb holding stale data: broken when the orb has no WiFi, solid when
 // WiFi is up and the data is old all the same. Drawn here and not in each
 // page so every page gets the same mark and none has to leave room for it.
+// With "Clock only when WiFi is out" the clock gets a broken red ring, and
+// "No WiFi" in red on its center orb.
 void WidgetSet::drawStaleMark() {
     Widget *w = getCurrent();
-    const uint8_t dataOrbs = w->dataOrbs() & 0x1F;
-    const stale::Mark want = stale::mark(w->dataStale(), m_wifiOut, dataOrbs != 0);
+    const uint8_t pageOrbs = w->dataOrbs() & 0x1F;
+    const stale::Mark want = m_clockOnly.mark(m_currentWidget, stale::mark(w->dataStale(), m_wifiOut, pageOrbs != 0));
+    const uint8_t dataOrbs = want == stale::Mark::ClockOnly ? (w->clockOnlyOrbs() & 0x1F) : pageOrbs;
+    const uint16_t color = stale::ringColor(want);
     const stale::Paint paint = m_staleOverlay.step(m_screenManager->takeFilled(), want, dataOrbs);
     if (paint.repaint) {
         m_screenManager->clearAllScreens();
@@ -120,8 +156,8 @@ void WidgetSet::drawStaleMark() {
         m_screenManager->selectScreen(i);
         if (stale::hasRing(want) && (dataOrbs & (1u << i))) {
             const uint32_t bg = m_screenManager->lastFill(i); // for the ring's smoothed edge
-            if (want == stale::Mark::Old) {
-                m_screenManager->drawArc(ScreenCenterX, ScreenCenterY, stale::kRingOuter, stale::kRingInner, 0, 360, TFT_RED, bg);
+            if (!stale::broken(want)) {
+                m_screenManager->drawArc(ScreenCenterX, ScreenCenterY, stale::kRingOuter, stale::kRingInner, 0, 360, color, bg);
             } else {
                 // The gaps are the message, so wipe the band first: the stock
                 // page has its own thin ring out here, and red showed through
@@ -129,13 +165,13 @@ void WidgetSet::drawStaleMark() {
                 m_screenManager->drawArc(ScreenCenterX, ScreenCenterY, stale::kRingOuter, stale::kRingInner, 0, 360, bg, bg);
                 for (int d = 0; d < stale::kDashes; d++) {
                     const stale::Arc a = stale::dash(d);
-                    m_screenManager->drawArc(ScreenCenterX, ScreenCenterY, stale::kRingOuter, stale::kRingInner, a.start, a.end, TFT_RED, bg);
+                    m_screenManager->drawArc(ScreenCenterX, ScreenCenterY, stale::kRingOuter, stale::kRingInner, a.start, a.end, color, bg);
                 }
             }
         }
-        if (stale::hasWords(want) && i == stale::kPlateOrb) {
+        if (stale::hasWords(want) && i == stale::plateOrb(want)) {
             const stale::Plate plate = w->stalePlate();
-            m_screenManager->drawPlate("No WiFi", ScreenCenterX, plate.y, plate.w, stale::kPlateH, stale::kPlateRadius, stale::kPlateTextSize, TFT_RED, TFT_BLACK);
+            m_screenManager->drawPlate("No WiFi", ScreenCenterX, plate.y, plate.w, stale::kPlateH, stale::kPlateRadius, stale::kPlateTextSize, stale::plateColor(want), TFT_BLACK);
         }
     }
     m_screenManager->reset();
