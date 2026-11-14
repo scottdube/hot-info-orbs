@@ -166,7 +166,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="fig"><b>5 × 240²</b><span>round GC9A01 displays on one SPI bus</span></div>
     <div class="fig"><b>1.71 W</b><span>typical draw at 5 V, measured</span></div>
     <div class="fig"><b>0 cables</b><span>to update the firmware or change a setting after the first flash</span></div>
-    <div class="fig"><b>48%</b><span>of a firmware slot used; the stop line is 92%</span></div>
+    <div class="fig"><b>49%</b><span>of a firmware slot used; the stop line is 92%</span></div>
   </div>
 </section>
 
@@ -209,7 +209,16 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <li>Two firmware slots. A new image counts as good only once it reaches WiFi; otherwise the orb rolls back to the previous one.</li>
         <li>The update and settings pages show the running version, commit and build time.</li>
         <li>The boot screen shows how much of the firmware slot is used, so the headroom is visible without a laptop.</li>
-        <li>When WiFi fails, orb 5 says which case it is: never set up, network not found, or wrong password. A wrong password is reported in about 18 seconds and not retried; a missing network is looked for again while the setup portal runs. Joining from the portal restarts the orbs.<span class="was">Was: one generic screen, and about 5 minutes to give up on a wrong password.</span></li>
+        <li>When WiFi fails at start-up, orb 5 says which case it is: never set up, network not found, or wrong password. A wrong password is reported in about 18 seconds, and one that has never worked is not retried; a missing network is looked for again while the setup portal runs. Joining from the portal restarts the orbs.<span class="was">Was: one generic screen, and about 5 minutes to give up on a wrong password.</span></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>When WiFi or the data goes away</h3>
+      <ul>
+        <li>Old data is marked. With WiFi out for 10 seconds, orb 2 reads “No WiFi”. An orb whose data has gone old gets a red ring: broken when WiFi is out, solid when WiFi is up and the service is not answering. Weather and stocks ring after 20 minutes, MQTT and web data after 3 or more. The clock is never marked.<span class="was">Was: the last weather or prices stayed up for hours with nothing to say they were old.</span></li>
+        <li>The orb gets back on WiFi by itself. It tries to join every 30 seconds. In an outage it keeps the clock and never restarts. If it can hear the network and still cannot join, it resets the radio after 2.5 minutes and restarts after 5. From the setup screen it tries again after 5, 10 and 20 minutes, then every 30.<span class="was">Was: some dropouts needed a power cycle.</span></li>
+        <li>A log on the orb at <span class="num">/log</span>: starts, WiFi drops and joins, and each recovery step, about 460 lines across two files. It never holds a network name, password, key or address.</li>
+        <li>An info page on the orbs themselves: hold the middle button 2 seconds. It shows the firmware version, WiFi name and signal, address, time since start with free memory, and how long since each kind of data last refreshed. Any button closes it, or it closes by itself after 2 minutes.</li>
       </ul>
     </div>
     <div class="group">
@@ -239,6 +248,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <li>A JSON page that reads any web address, set up the same way.</li>
         <li>Long values wrap onto up to three lines, and a line break in the message starts a new line, so <span class="num">5pm</span> can sit above the act's name. The orb measures the text to find the largest size that fits, instead of estimating it.<span class="was">Was: one line, sized by an estimate. Long text came out as small as 10 px and could still run off the screen.</span></li>
         <li>One text size for the whole page by default, so five orbs side by side match. A per-page setting lets each orb be as large as fits instead.<span class="was">Was: each orb sized on its own, from 10 px to 40 px across one page.</span></li>
+        <li>A fixed text size can be set for an MQTT page, from 12 to 60. Text that is too long is then cut and ends in three dots, so one long name no longer shrinks all five orbs.</li>
         <li>Ready-made Home Assistant recipes in CUSTOM-PAGES.md, including tonight's act at each of The Villages' five town squares.</li>
       </ul>
     </div>
@@ -261,7 +271,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="group">
       <h3>Quality</h3>
       <ul>
-        <li>Unit tests run on a laptop and in CI for settings validation, weather parsing, the sun and moon, and custom pages: 124 tests, including WiFi roaming and MQTT text fitting.<span class="was">Was: none.</span></li>
+        <li>Unit tests run on a laptop and in CI for settings validation, weather parsing, the sun and moon, and custom pages: 288 tests, including WiFi roaming and recovery, MQTT text fitting, the device log and the info page.<span class="was">Was: none.</span></li>
         <li>The linter reports problems and no longer commits changes back, so the repository only moves when a person moves it.</li>
         <li>An upstream bug is fixed: an uninitialized loop counter in the page rotation.</li>
         <li>A written setup guide goes from an empty laptop to a running orb, and a traps file records every mistake that cost time once.<span class="was">Was: Brett's assembly video and README.</span></li>
@@ -314,7 +324,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <dl>
         <dt>Module</dt><dd>Seeed XIAO ESP32-S3 (plain), on headers or soldered flat on its castellations</dd>
         <dt>Flash</dt><dd><span class="num">8 MB</span>; laid out as two 3.75 MB firmware slots so updates are safe</dd>
-        <dt>Headroom</dt><dd>Firmware fills <span class="num">48.4%</span> of a slot (release 1.6.1, built 12 Nov 2026). The stop line is <span class="num">92%</span>.</dd>
+        <dt>Headroom</dt><dd>Firmware fills <span class="num">49.2%</span> of a slot (release 1.7.0, built 14 Nov 2026). The stop line is <span class="num">92%</span>.</dd>
         <dt>PSRAM</dt><dd><span class="num">8 MB</span> octal; the board definition enables it, not yet measured on hardware</dd>
         <dt>Carrier</dt><dd><span class="num">hardware/hot-info-orbs-xiao-46mm</span>, rev 2.5: the v1.1 board reworked for the XIAO, displays 46 mm apart</dd>
         <dt>Pins</dt><dd>11 GPIO used: 8 for the displays (5 chip selects plus data, clock and DC; reset is an RC circuit) and 3 for the buttons; the busy light is the XIAO's own LED</dd>
@@ -430,7 +440,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 <footer>
   <p><b>Credit:</b> Info Orbs is Brett Turner's project, and the firmware started as his and its contributors'. Buy <a href="https://brett.tech/collections/electronics-projects/products/info-orbs-full-dev-kit">his dev kit</a> if you want the original.</p>
-  <p>Source, setup guide and build notes: <a href="https://github.com/scottdube/hot-info-orbs">github.com/scottdube/hot-info-orbs</a>. Status as of 12 November 2026, firmware 1.6.1.</p>
+  <p>Source, setup guide and build notes: <a href="https://github.com/scottdube/hot-info-orbs">github.com/scottdube/hot-info-orbs</a>. Status as of 14 November 2026, firmware 1.7.0.</p>
 </footer>
 
 </div>
