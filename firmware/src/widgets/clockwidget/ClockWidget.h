@@ -83,7 +83,12 @@ public:
     void draw(bool force = false) override;
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
     String getName() override;
-    uint8_t dataOrbs() override { return 0; } // keeps time without WiFi: never marked
+    uint8_t dataOrbs() override { return 0; } // keeps time without WiFi: no data to mark
+    // The red ring and "No WiFi" of "Clock only when WiFi is out". The
+    // center orb carries both, so while they are on nothing may repaint
+    // that orb whole or draw in the ring's band: see draw().
+    uint8_t clockOnlyOrbs() override { return 0x1F; }
+    void setClockOnly(bool on) override { m_ringed = on; }
 
 private:
     void change24hMode();
@@ -98,6 +103,9 @@ private:
     void changeClockType();
 
     ClockType m_type = DEFAULT_CLOCK; // replaced from Settings in the constructor
+    bool m_ringed = false; // the red ring is on (setClockOnly)
+    bool pictureFace() const { return m_type != ClockType::NORMAL; }
+    bool m_tickDrawn = false;
     uint32_t m_color = CLOCK_COLOR;
     uint32_t m_shadow = CLOCK_SHADOW_COLOR;
 

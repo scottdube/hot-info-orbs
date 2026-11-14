@@ -228,7 +228,9 @@ void setup() {
 
     globalTime = GlobalTime::getInstance();
 
-    widgetSet->add(new ClockWidget(*sm));
+    ClockWidget *clock = new ClockWidget(*sm);
+    widgetSet->add(clock);
+    widgetSet->setClockPage(clock); // for "Clock only when WiFi is out"
 #ifdef PARQET_PORTFOLIO_ID
     widgetSet->add(new ParqetWidget(*sm));
 #endif
@@ -298,7 +300,7 @@ void setup() {
 
 void checkCycleWidgets() {
     if (m_widgetCycleDelay > 0 && (m_widgetCycleDelayPrev == 0 || (millis() - m_widgetCycleDelayPrev) >= m_widgetCycleDelay)) {
-        widgetSet->next();
+        widgetSet->rotate();
         m_widgetCycleDelayPrev = millis();
     }
 }
@@ -452,6 +454,9 @@ void loop() {
                 leaveInfoPage();
             }
         } else if (!widgetSet->panelsAsleep()) {
+            if (widgetSet->followOutage()) {
+                m_widgetCycleDelayPrev = millis(); // to the clock, or back from it
+            }
             widgetSet->drawCurrent();
             checkCycleWidgets(); // a switch redraws all five screens
         }

@@ -48,14 +48,31 @@ void ClockWidget::draw(bool force) {
     }
 
     if (m_secondSingle != m_lastSecondSingle || force) {
-        if (m_secondSingle % 2 == 0) {
+        if (m_ringed && pictureFace()) {
+            // A picture face blinks its colon by painting the whole orb,
+            // which would take the red ring and "No WiFi" off once a second.
+            // While they are on, the colon stays lit.
+            if (force) {
+                displayDigit(2, "", ":", m_color, false);
+            }
+        } else if (m_secondSingle % 2 == 0) {
             displayDigit(2, "", ":", m_color, false);
         } else {
             displayDigit(2, "", ":", m_shadow, false);
         }
 #if SHOW_SECOND_TICKS == true
-        displaySeconds(2, m_lastSecondSingle, TFT_BLACK);
-        displaySeconds(2, m_secondSingle, m_color);
+        // The tick runs in the same band as the red ring of "Clock only when
+        // WiFi is out" (110..120 against 113..120), and wiping the old tick
+        // would cut a notch in the ring every second. While the ring is on
+        // the tick stays off.
+        if (m_tickDrawn) {
+            displaySeconds(2, m_lastSecondSingle, TFT_BLACK);
+            m_tickDrawn = false;
+        }
+        if (!m_ringed) {
+            displaySeconds(2, m_secondSingle, m_color);
+            m_tickDrawn = true;
+        }
 #endif
         m_lastSecondSingle = m_secondSingle;
         if (!time->getFormat24Hour() && Settings::get().ampm && m_type != ClockType::NIXIE) {
@@ -211,6 +228,17 @@ void ClockWidget::displayDigit(int displayIndex, const String &lastDigit, const 
         }
         m_manager.setFontColor(color, TFT_BLACK);
         m_manager.drawString(digit, defaultX + digitOffset.x, defaultY + digitOffset.y, fontSize, Align::MiddleCenter);
+    }
+    if (displayIndex != 2 || pictureFace()) {
+        // An orb was painted over, with no fillScreen to say so. A picture
+        // covers the whole orb, and the corners of a 200 px digit reach 2 or
+        // 3 px into the ring's band (measured from the font: 124 x 200 px,
+        // drawn 10 px left of center). Either way a mark on this orb has to
+        // be drawn again. Not the drawn colon: it is painted every second,
+        // and it reaches neither the band nor "No WiFi" above it (the colon
+        // is 107 px tall, so its top is 18 px below the label).
+        m_manager.selectScreen(displayIndex); // a picture face may have drawn nothing
+        m_manager.notePainted(TFT_BLACK);
     }
 }
 

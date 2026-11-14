@@ -618,3 +618,28 @@ compiler and a newer standard. A struct with default member values
 so code like that passed all host tests and failed the release build
 (2026-11-14, `stale::LastGood`). Passing host tests say nothing about
 whether the firmware compiles: always run `pio run -e release` too.
+
+## The clock paints into the stale ring's band, and never said so (2026-11-14)
+
+The stale mark's ring sits at radius 113 to 120 px. The overlay that draws it
+only learns that an orb was repainted from `ScreenManager::fillScreen`. The
+clock repaints without it, three ways:
+
+- **Seconds tick** (middle orb, `SHOW_SECOND_TICKS`): a 6 degree arc at radius
+  110 to 120, wiped in black and redrawn every second. Under a ring it would
+  cut a notch each second. The clock now leaves the tick off while its ring
+  is on.
+- **Digits** (normal face): a digit at size 200 is 124 x 200 px, drawn 10 px
+  left of center (read from the font file: 1000 units per em, digit box 99 to
+  717 wide). Its left corners reach radius 112 to 117, into the band. The old
+  digit is painted over in black first, which takes ring with it.
+- **Picture faces** (Nixie, custom): a whole-orb JPG per digit change, and on
+  the colon orb every second.
+
+A page that repaints an orb any way other than `fillScreen` has to call
+`ScreenManager::notePainted`, or a mark on that orb is lost until the next
+full redraw. The clock does, for its digit orbs and for every orb of a
+picture face. While its ring is on, a picture face also stops blinking its
+colon, since each blink is a whole-orb repaint under the ring and "No WiFi". The ring wipes its band
+before it draws, so a digit's corners lose their last 2 or 3 px under it.
+Worked out from the code and the font; not yet looked at on the panels.
