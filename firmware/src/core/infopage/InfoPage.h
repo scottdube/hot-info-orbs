@@ -14,8 +14,11 @@ public:
 
     bool isOpen() const { return m_session.isOpen(); }
 
+    // The middle button is down and has been for 2 seconds. True when that
+    // opened the page.
+    bool hold();
     // Every finished button press goes through here first, see infopage::Press
-    infopage::Press press(bool okHeldLong);
+    infopage::Press press(bool middle, bool heldLong);
     void close();
 
     // Every loop pass while the page is open. Draws when a second has gone by.
@@ -26,6 +29,7 @@ public:
 private:
     infopage::Facts facts(bool linkUp, const bool mqttInUse[2]) const;
     void drawLine(const infopage::Page &page, int index);
+    void opened();
 
     ScreenManager &m_manager;
     WidgetSet &m_pages; // for orb 5: when each data page last refreshed

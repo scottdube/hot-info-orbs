@@ -324,12 +324,23 @@ void checkButtons() {
         }
         return;
     }
-    // While the info page is open, any press closes it and does nothing else
+    // The middle button down for 2 seconds: the info page, from any page, while
+    // the finger is still on the button
+    if (buttonOK.heldFor(Button::LONG_PRESS_TIME) && infoPage->hold()) {
+        Serial.println("Middle button held -> info page");
+        m_widgetCycleDelayPrev = millis();
+    }
+    // While the info page is open, any press closes it and does nothing else.
+    // The hold that opened it being let go is not a press (Ignored).
     if (infoPage->isOpen()) {
-        bool pressed = buttonLeft.getState() != BTN_NOTHING;
-        pressed = buttonOK.getState() != BTN_NOTHING || pressed;
-        pressed = buttonRight.getState() != BTN_NOTHING || pressed;
-        if (pressed && infoPage->press(false) == infopage::Press::Closed) {
+        const ButtonState middleState = buttonOK.getState();
+        bool closed = middleState != BTN_NOTHING && infoPage->press(true, middleState == BTN_LONG) == infopage::Press::Closed;
+        bool side = buttonLeft.getState() != BTN_NOTHING;
+        side = buttonRight.getState() != BTN_NOTHING || side;
+        if (!closed && side && infoPage->isOpen()) {
+            closed = infoPage->press(false, false) == infopage::Press::Closed;
+        }
+        if (closed) {
             Serial.println("Button pressed -> info page closed");
             leaveInfoPage();
         }
@@ -359,9 +370,10 @@ void checkButtons() {
         } else if (middleState != BTN_NOTHING) {
             Serial.printf("Middle button pressed, state=%d\n", middleState);
             m_widgetCycleDelayPrev = millis();
-            // Held 2 seconds: the info page, from any page. The page on show
+            // A 2 second hold is the info page's (opened above while it was
+            // still down, or here if the loop was busy then). The page on show
             // does not get that hold.
-            if (infoPage->press(middleState == BTN_LONG) == infopage::Press::PassOn) {
+            if (infoPage->press(true, middleState == BTN_LONG) == infopage::Press::PassOn) {
                 widgetSet->buttonPressed(BUTTON_OK, middleState);
             }
         } else if (rightState != BTN_NOTHING) {

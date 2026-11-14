@@ -55,12 +55,24 @@ uint32_t colorOf(infopage::Kind kind) {
 
 InfoPage::InfoPage(ScreenManager &manager, WidgetSet &pages) : m_manager(manager), m_pages(pages) {}
 
-infopage::Press InfoPage::press(bool okHeldLong) {
-    const infopage::Press result = m_session.press(okHeldLong, millis());
+void InfoPage::opened() {
+    for (infopage::Page &shown : m_shown) {
+        shown.clear(); // nothing of ours is on the orbs: the first pass draws them whole
+    }
+}
+
+bool InfoPage::hold() {
+    if (!m_session.hold(millis())) {
+        return false;
+    }
+    opened();
+    return true;
+}
+
+infopage::Press InfoPage::press(bool middle, bool heldLong) {
+    const infopage::Press result = m_session.press(middle, heldLong, millis());
     if (result == infopage::Press::Opened) {
-        for (infopage::Page &shown : m_shown) {
-            shown.clear(); // nothing of ours is on the orbs: the first pass draws them whole
-        }
+        opened();
     }
     return result;
 }

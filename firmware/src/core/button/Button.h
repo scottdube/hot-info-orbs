@@ -17,6 +17,9 @@ public:
     bool pressedMedium();
     bool pressedLong();
     ButtonState getState();
+    // Down right now, and for at least this long. The others only speak once
+    // the button is let go.
+    bool heldFor(unsigned long ms);
     void isrButtonChange();
 
 #if BUTTON_MODE == INPUT_PULLDOWN

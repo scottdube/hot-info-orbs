@@ -19,7 +19,7 @@
 
 namespace infopage {
 
-constexpr uint32_t kTimeoutMs = 60000; // closes by itself after this
+constexpr uint32_t kTimeoutMs = 120000; // closes by itself after this (one minute at first; Scott, 2026-11-14: two)
 constexpr uint32_t kRefreshMs = 1000;  // the values are read again this often
 constexpr int kOrbs = 5;
 constexpr int kWholeOrb = -1; // linesToRedraw: clear the orb and draw every line
@@ -27,29 +27,47 @@ constexpr int kWholeOrb = -1; // linesToRedraw: clear the orb and draw every lin
 enum class Press {
     Opened, // the page was asked for
     Closed, // the page was open: the press closed it and does nothing else
-    PassOn  // not ours: the page on show gets the press
+    PassOn, // not ours: the page on show gets the press
+    Ignored // the hold that opened the page being let go: nothing happens
 };
 
 class Session {
 public:
     bool isOpen() const { return m_open; }
 
-    // Every finished button press goes through here first.
-    Press press(bool okHeldLong, uint32_t now) {
+    // The middle button has been down for 2 seconds and still is. True on the
+    // pass where that opens the page: it appears under the finger (Scott,
+    // 2026-11-14: waiting for the release felt like nothing had happened).
+    // With the page open already a hold does nothing; its release closes.
+    bool hold(uint32_t now) {
+        if (m_open || m_ignoreRelease) {
+            return false;
+        }
+        open(now);
+        m_ignoreRelease = true; // the finger still has to come off
+        return true;
+    }
+
+    // Every finished button press (a button let go) goes through here first.
+    // middle: it was the middle button. heldLong: it was down 2 seconds.
+    Press press(bool middle, bool heldLong, uint32_t now) {
+        if (middle && m_ignoreRelease) {
+            m_ignoreRelease = false;
+            return Press::Ignored;
+        }
         if (m_open) {
             m_open = false;
             return Press::Closed;
         }
-        if (!okHeldLong) {
+        if (!(middle && heldLong)) {
             return Press::PassOn;
         }
-        m_open = true;
-        m_drawn = false;
-        m_openedAt = now;
+        // A long hold that hold() never saw: the loop was busy fetching
+        open(now);
         return Press::Opened;
     }
 
-    // True once, on the pass where the minute runs out. Subtraction, so it holds
+    // True once, on the pass where the time runs out. Subtraction, so it holds
     // across the millisecond counter wrapping.
     bool timedOut(uint32_t now) {
         if (!m_open || now - m_openedAt < kTimeoutMs) {
@@ -76,7 +94,14 @@ public:
     }
 
 private:
+    void open(uint32_t now) {
+        m_open = true;
+        m_drawn = false;
+        m_openedAt = now;
+    }
+
     bool m_open = false;
+    bool m_ignoreRelease = false; // the hold that opened the page has not been let go yet
     bool m_drawn = false;
     uint32_t m_openedAt = 0;
     uint32_t m_lastDraw = 0;
@@ -120,7 +145,7 @@ inline const char *signalWord(int rssiDbm) {
 
 inline std::string memoryText(uint32_t freeBytes) {
     char buf[24];
-    snprintf(buf, sizeof(buf), "%lu KB free", static_cast<unsigned long>(freeBytes / 1024));
+    snprintf(buf, sizeof(buf), "memory %lu KB free", static_cast<unsigned long>(freeBytes / 1024));
     return buf;
 }
 

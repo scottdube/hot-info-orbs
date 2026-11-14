@@ -15,6 +15,8 @@ using infopage::Press;
 using infopage::Session;
 
 // --- opening and closing ------------------------------------------------------
+// hold(now): the middle button has been down 2 seconds and still is.
+// press(middle, heldLong, now): a button was let go.
 
 void test_the_page_is_closed_until_asked_for() {
     Session s;
@@ -23,30 +25,88 @@ void test_the_page_is_closed_until_asked_for() {
     TEST_ASSERT_FALSE(s.isOpen());
 }
 
-void test_the_middle_button_held_opens_it() {
+void test_it_opens_at_two_seconds_with_the_button_still_down() {
     Session s;
-    TEST_ASSERT_TRUE(s.press(true, 1000) == Press::Opened);
+    TEST_ASSERT_TRUE(s.hold(1000));
     TEST_ASSERT_TRUE(s.isOpen());
+}
+
+void test_letting_go_after_it_opened_does_not_close_it() {
+    Session s;
+    s.hold(1000);
+    TEST_ASSERT_TRUE(s.press(true, true, 1400) == Press::Ignored);
+    TEST_ASSERT_TRUE(s.isOpen());
+}
+
+void test_holding_on_says_opened_only_once() {
+    Session s;
+    TEST_ASSERT_TRUE(s.hold(1000));
+    TEST_ASSERT_FALSE(s.hold(1010));
+    TEST_ASSERT_FALSE(s.hold(5000));
+    TEST_ASSERT_TRUE(s.isOpen());
+}
+
+void test_any_press_closes_it_and_does_nothing_else() {
+    for (bool middle : {false, true}) {
+        for (bool heldLong : {false, true}) {
+            Session s;
+            s.hold(1000);
+            s.press(true, true, 1400); // the opening hold let go
+            TEST_ASSERT_TRUE(s.press(middle, heldLong, 5000) == Press::Closed);
+            TEST_ASSERT_FALSE(s.isOpen());
+        }
+    }
+}
+
+void test_a_second_long_hold_closes_it_on_the_release_not_at_two_seconds() {
+    Session s;
+    s.hold(1000);
+    s.press(true, true, 1400);
+    TEST_ASSERT_FALSE(s.hold(9000)); // open already: the hold itself does nothing
+    TEST_ASSERT_TRUE(s.isOpen());
+    TEST_ASSERT_TRUE(s.press(true, true, 9300) == Press::Closed);
+}
+
+void test_another_button_closes_it_while_the_middle_one_is_still_down() {
+    Session s;
+    s.hold(1000);
+    TEST_ASSERT_TRUE(s.press(false, false, 1500) == Press::Closed);
+    TEST_ASSERT_FALSE(s.hold(1600)); // the same hold does not open it again
+    TEST_ASSERT_TRUE(s.press(true, true, 2000) == Press::Ignored); // and its release does nothing
+    TEST_ASSERT_FALSE(s.isOpen());
+    TEST_ASSERT_TRUE(s.hold(9000)); // a new hold does
+}
+
+void test_a_button_held_past_the_time_limit_leaves_it_closed() {
+    Session s;
+    s.hold(1000);
+    TEST_ASSERT_TRUE(s.timedOut(1000 + kTimeoutMs));
+    TEST_ASSERT_FALSE(s.hold(1000 + kTimeoutMs + 10));
+    TEST_ASSERT_TRUE(s.press(true, true, 1000 + kTimeoutMs + 500) == Press::Ignored);
+    TEST_ASSERT_FALSE(s.isOpen());
+}
+
+// A weather fetch can keep the loop busy for seconds. A hold that began and
+// ended inside one is only seen as a finished long press: that opens it too.
+void test_a_long_hold_the_loop_never_saw_opens_it_on_the_release() {
+    Session s;
+    TEST_ASSERT_TRUE(s.press(true, true, 1000) == Press::Opened);
+    TEST_ASSERT_TRUE(s.isOpen());
+    TEST_ASSERT_TRUE(s.press(true, false, 3000) == Press::Closed); // nothing to ignore: it closes
 }
 
 void test_any_other_press_goes_on_to_the_page_while_it_is_closed() {
     Session s;
-    TEST_ASSERT_TRUE(s.press(false, 1000) == Press::PassOn);
+    TEST_ASSERT_TRUE(s.press(false, false, 1000) == Press::PassOn);
+    TEST_ASSERT_TRUE(s.press(true, false, 1000) == Press::PassOn);
+    TEST_ASSERT_TRUE(s.press(false, true, 1000) == Press::PassOn); // a long hold of a side button
     TEST_ASSERT_FALSE(s.isOpen());
 }
 
-void test_any_press_closes_it_and_does_nothing_else() {
-    for (bool okLong : {false, true}) {
-        Session s;
-        s.press(true, 1000);
-        TEST_ASSERT_TRUE(s.press(okLong, 5000) == Press::Closed);
-        TEST_ASSERT_FALSE(s.isOpen());
-    }
-}
-
-void test_it_closes_by_itself_after_a_minute() {
+void test_it_stays_up_two_minutes() {
+    TEST_ASSERT_EQUAL_UINT32(120000, kTimeoutMs);
     Session s;
-    s.press(true, 1000);
+    s.hold(1000);
     TEST_ASSERT_FALSE(s.timedOut(1000 + kTimeoutMs - 1));
     TEST_ASSERT_TRUE(s.isOpen());
     TEST_ASSERT_TRUE(s.timedOut(1000 + kTimeoutMs));
@@ -54,34 +114,36 @@ void test_it_closes_by_itself_after_a_minute() {
     TEST_ASSERT_FALSE(s.timedOut(1000 + 2 * kTimeoutMs)); // said once, not on every pass
 }
 
-void test_the_minute_survives_the_millisecond_counter_wrapping() {
+void test_the_time_limit_survives_the_millisecond_counter_wrapping() {
     Session s;
     const uint32_t opened = 0xFFFFFF00u;
-    s.press(true, opened);
+    s.hold(opened);
     TEST_ASSERT_FALSE(s.timedOut(opened + kTimeoutMs - 1)); // past the wrap
     TEST_ASSERT_TRUE(s.timedOut(opened + kTimeoutMs));
 }
 
-void test_it_can_be_opened_again_with_a_fresh_minute() {
+void test_it_can_be_opened_again_with_a_fresh_time_limit() {
     Session s;
-    s.press(true, 1000);
-    s.press(false, 2000); // closed
-    TEST_ASSERT_TRUE(s.press(true, 50000) == Press::Opened);
-    TEST_ASSERT_FALSE(s.timedOut(1000 + kTimeoutMs)); // the first opening's minute is gone
+    s.hold(1000);
+    s.press(true, true, 1400);
+    s.press(false, false, 2000); // closed
+    TEST_ASSERT_TRUE(s.hold(50000));
+    TEST_ASSERT_FALSE(s.timedOut(1000 + kTimeoutMs)); // the first opening's limit is gone
     TEST_ASSERT_TRUE(s.timedOut(50000 + kTimeoutMs));
 }
 
 void test_it_is_drawn_at_once_and_then_once_a_second() {
     Session s;
     TEST_ASSERT_FALSE(s.refreshDue(500)); // closed: never
-    s.press(true, 1000);
+    s.hold(1000);
     TEST_ASSERT_TRUE(s.refreshDue(1000));
     TEST_ASSERT_FALSE(s.refreshDue(1500));
     TEST_ASSERT_TRUE(s.refreshDue(2000));
     TEST_ASSERT_FALSE(s.refreshDue(2100));
     s.close();
     TEST_ASSERT_FALSE(s.refreshDue(9000));
-    s.press(true, 9500);
+    s.press(true, true, 9100); // the opening hold let go
+    s.hold(9500);
     TEST_ASSERT_TRUE(s.refreshDue(9500)); // a new opening draws at once
 }
 
@@ -110,8 +172,8 @@ void test_signal_strength_is_a_word() {
 }
 
 void test_free_memory_reads_in_kilobytes() {
-    TEST_ASSERT_EQUAL_STRING("0 KB free", infopage::memoryText(1023).c_str());
-    TEST_ASSERT_EQUAL_STRING("182 KB free", infopage::memoryText(182 * 1024 + 500).c_str());
+    TEST_ASSERT_EQUAL_STRING("memory 0 KB free", infopage::memoryText(1023).c_str());
+    TEST_ASSERT_EQUAL_STRING("memory 182 KB free", infopage::memoryText(182 * 1024 + 500).c_str());
 }
 
 void test_every_start_reason_has_a_short_word() {
@@ -188,7 +250,7 @@ void test_orb_3_has_no_address_without_wifi() {
 
 void test_orb_4_is_the_health() {
     expectPage(infopage::page(3, facts()),
-               {{"Health", Kind::Title}, {"up 2 d 04 h", Kind::Plain}, {"last start: power on", Kind::Plain}, {"182 KB free", Kind::Plain}});
+               {{"Health", Kind::Title}, {"up 2 d 04 h", Kind::Plain}, {"last start: power on", Kind::Plain}, {"memory 182 KB free", Kind::Plain}});
 }
 
 // Orb 5: one line for each kind of data page in the rotation, then MQTT.
@@ -347,12 +409,18 @@ void test_a_line_is_narrower_the_further_it_is_from_the_middle() {
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_the_page_is_closed_until_asked_for);
-    RUN_TEST(test_the_middle_button_held_opens_it);
-    RUN_TEST(test_any_other_press_goes_on_to_the_page_while_it_is_closed);
+    RUN_TEST(test_it_opens_at_two_seconds_with_the_button_still_down);
+    RUN_TEST(test_letting_go_after_it_opened_does_not_close_it);
+    RUN_TEST(test_holding_on_says_opened_only_once);
     RUN_TEST(test_any_press_closes_it_and_does_nothing_else);
-    RUN_TEST(test_it_closes_by_itself_after_a_minute);
-    RUN_TEST(test_the_minute_survives_the_millisecond_counter_wrapping);
-    RUN_TEST(test_it_can_be_opened_again_with_a_fresh_minute);
+    RUN_TEST(test_a_second_long_hold_closes_it_on_the_release_not_at_two_seconds);
+    RUN_TEST(test_another_button_closes_it_while_the_middle_one_is_still_down);
+    RUN_TEST(test_a_button_held_past_the_time_limit_leaves_it_closed);
+    RUN_TEST(test_a_long_hold_the_loop_never_saw_opens_it_on_the_release);
+    RUN_TEST(test_any_other_press_goes_on_to_the_page_while_it_is_closed);
+    RUN_TEST(test_it_stays_up_two_minutes);
+    RUN_TEST(test_the_time_limit_survives_the_millisecond_counter_wrapping);
+    RUN_TEST(test_it_can_be_opened_again_with_a_fresh_time_limit);
     RUN_TEST(test_it_is_drawn_at_once_and_then_once_a_second);
     RUN_TEST(test_a_time_span_reads_in_its_two_largest_units);
     RUN_TEST(test_signal_strength_is_a_word);

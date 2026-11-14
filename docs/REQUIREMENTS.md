@@ -230,8 +230,12 @@ does; the orb then retries every half hour until the network is fixed.
 
 **Info page on the orbs (added 2026-11-14).** What a member is asked for when
 their orb misbehaves, readable without a computer. Hold the middle button
-2 seconds and let go, from any page. It opens on the release, not while
-the button is still down (a press is only measured when it ends):
+2 seconds, from any page. It opens at the 2 second mark with the button
+still down; letting go then does nothing. (The first build opened on the
+release, because the button code only measures a press when it ends. Scott
+on the rig, 2026-11-14: that felt like nothing had happened. `Button::heldFor`
+now reads a hold in progress. If the loop was busy fetching for the whole
+hold, the page still opens on the release.)
 
 | Orb | Shows |
 |---|---|
@@ -241,11 +245,13 @@ the button is still down (a press is only measured when it ends):
 | 4 Health | Time since start, why it last started, free memory |
 | 5 Data | One line for each kind of data page in the rotation (weather, stocks, web data): how long since it last refreshed well. Then one MQTT line: not connected, or how long since data last arrived |
 
-Any button closes it, and so does a minute without one; the closing press
+Any button closes it, and so do 2 minutes without one (1 minute at first;
+changed at Scott's word, 2026-11-14); the closing press
 does nothing else, and the page that was on show draws again. While it is open
 the values are read once a second and the page rotation waits. It opens
 during an outage too. Not on the setup screen (the buttons are not read
-there); with the panels off, the first press only wakes them. It takes the
+there); with the panels off, the first press only wakes them, and in those
+hours the page closes when the panels go off again a minute later. It takes the
 2 second middle hold away from every page; only the Parqet page used it, and
 that page is not in the release build. The network name and the address go to
 the orbs only, never to the device log. Rules and wording:

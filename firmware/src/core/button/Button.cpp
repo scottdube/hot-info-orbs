@@ -68,3 +68,9 @@ ButtonState Button::getState() {
         return BTN_NOTHING;
     }
 }
+
+bool Button::heldFor(unsigned long ms) {
+    // The pin itself as well as what the interrupt last saw: a release edge
+    // lost to the debounce window must not read as a finger still down
+    return m_pinLevel == PRESSED_LEVEL && digitalRead(m_pin) == PRESSED_LEVEL && millis() - m_pressedSince >= ms;
+}
