@@ -150,8 +150,8 @@ void test_it_is_drawn_at_once_and_then_once_a_second() {
 // --- wording ------------------------------------------------------------------
 
 void test_a_time_span_reads_in_its_two_largest_units() {
-    TEST_ASSERT_EQUAL_STRING("0 s", infopage::spanText(0).c_str());
-    TEST_ASSERT_EQUAL_STRING("59 s", infopage::spanText(59).c_str());
+    TEST_ASSERT_EQUAL_STRING("<1 min", infopage::spanText(0).c_str());
+    TEST_ASSERT_EQUAL_STRING("<1 min", infopage::spanText(59).c_str());
     TEST_ASSERT_EQUAL_STRING("1 min", infopage::spanText(60).c_str());
     TEST_ASSERT_EQUAL_STRING("59 min", infopage::spanText(3599).c_str());
     TEST_ASSERT_EQUAL_STRING("1 h 00 min", infopage::spanText(3600).c_str());
@@ -259,7 +259,7 @@ void test_orb_5_lists_each_kind_of_data_and_when_it_last_refreshed() {
     expectPage(infopage::page(4, facts()), {{"Data", Kind::Title},
                                             {"weather 3 min ago", Kind::Plain},
                                             {"stocks 12 min ago", Kind::Plain},
-                                            {"MQTT 12 s ago", Kind::Plain}});
+                                            {"MQTT <1 min ago", Kind::Plain}});
 }
 
 void test_orb_5_without_mqtt_still_shows_the_other_data() {
@@ -281,7 +281,7 @@ void test_orb_5_a_page_with_nothing_fetched_yet_says_so() {
     expectPage(infopage::page(4, f), {{"Data", Kind::Title},
                                       {"weather 3 min ago", Kind::Plain},
                                       {"stocks no data yet", Kind::Plain},
-                                      {"MQTT 12 s ago", Kind::Plain}});
+                                      {"MQTT <1 min ago", Kind::Plain}});
 }
 
 void test_orb_5_two_pages_of_one_kind_share_a_line_with_the_oldest_age() {
@@ -291,8 +291,8 @@ void test_orb_5_two_pages_of_one_kind_share_a_line_with_the_oldest_age() {
     expectPage(infopage::page(4, f), {{"Data", Kind::Title},
                                       {"weather 25 min ago", Kind::Plain},
                                       {"stocks 12 min ago", Kind::Plain},
-                                      {"web data 40 s ago", Kind::Plain},
-                                      {"MQTT 12 s ago", Kind::Plain}});
+                                      {"web data <1 min ago", Kind::Plain},
+                                      {"MQTT <1 min ago", Kind::Plain}});
 }
 
 void test_orb_5_one_page_of_a_kind_without_data_wins_over_its_age() {
@@ -336,7 +336,7 @@ void test_orb_5_only_the_second_broker_in_use() {
     Facts f = facts();
     f.mqtt[0] = infopage::Mqtt{};
     f.mqtt[1] = {true, true, true, 7};
-    TEST_ASSERT_EQUAL_STRING("MQTT 7 s ago", infopage::page(4, f).back().text.c_str());
+    TEST_ASSERT_EQUAL_STRING("MQTT <1 min ago", infopage::page(4, f).back().text.c_str());
 }
 
 void test_every_orb_has_a_title_and_at_most_five_lines() {
@@ -352,6 +352,25 @@ void test_every_orb_has_a_title_and_at_most_five_lines() {
     }
     // MQTT keeps its line when the kinds run over: it is the last one
     TEST_ASSERT_EQUAL_STRING("MQTT 2 not connected", infopage::page(4, f).back().text.c_str());
+}
+
+// A line whose words change is blanked and drawn again, which shows as a flash.
+// With ages in seconds, orb 5 flashed once a second (Scott on the rig,
+// 2026-11-14). No line may change from one second to the next.
+void test_no_line_changes_from_one_second_to_the_next() {
+    Facts a = facts();
+    a.upS = 20;
+    a.sources = {{"weather", true, 5}, {"stocks", true, 31}};
+    a.mqtt[0].dataAgeS = 0;
+    Facts b = a;
+    b.upS += 1;
+    for (auto &source : b.sources) {
+        source.ageS += 1;
+    }
+    b.mqtt[0].dataAgeS += 1;
+    for (int orb = 0; orb < infopage::kOrbs; orb++) {
+        TEST_ASSERT_TRUE(infopage::linesToRedraw(infopage::page(orb, a), infopage::page(orb, b)).empty());
+    }
 }
 
 // --- drawing only what changed ------------------------------------------------
@@ -444,6 +463,7 @@ int main() {
     RUN_TEST(test_orb_5_names_the_broker_that_is_not_connected);
     RUN_TEST(test_orb_5_only_the_second_broker_in_use);
     RUN_TEST(test_every_orb_has_a_title_and_at_most_five_lines);
+    RUN_TEST(test_no_line_changes_from_one_second_to_the_next);
     RUN_TEST(test_nothing_is_redrawn_when_nothing_changed);
     RUN_TEST(test_only_the_changed_line_is_redrawn);
     RUN_TEST(test_the_whole_orb_is_redrawn_when_the_line_count_changes);

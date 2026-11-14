@@ -109,12 +109,13 @@ private:
 
 // --- wording --------------------------------------------------------------------
 
-// A span in its two largest units. Seconds stop showing after a minute so a line
-// does not change every second for as long as the page is open.
+// A span in its two largest units, never in seconds: under a minute is "<1 min".
 inline std::string spanText(uint32_t seconds) {
     char buf[24];
     if (seconds < 60) {
-        snprintf(buf, sizeof(buf), "%lu s", static_cast<unsigned long>(seconds));
+        // No seconds: a line that changes is blanked and drawn again, and once
+        // a second that is a flashing line (seen on the rig, 2026-11-14)
+        snprintf(buf, sizeof(buf), "<1 min");
     } else if (seconds < 3600) {
         snprintf(buf, sizeof(buf), "%lu min", static_cast<unsigned long>(seconds / 60));
     } else if (seconds < 86400) {

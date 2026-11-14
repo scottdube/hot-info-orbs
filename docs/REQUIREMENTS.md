@@ -248,7 +248,11 @@ hold, the page still opens on the release.)
 Any button closes it, and so do 2 minutes without one (1 minute at first;
 changed at Scott's word, 2026-11-14); the closing press
 does nothing else, and the page that was on show draws again. While it is open
-the values are read once a second and the page rotation waits. It opens
+the values are read once a second and the page rotation waits. No time is
+shown in seconds (under a minute reads "<1 min"): a line whose words change is
+blanked and drawn again, and at once a second that was a flashing line (seen
+on the rig, 2026-11-14). The signal and memory lines still redraw, once, each
+time their number changes. It opens
 during an outage too. Not on the setup screen (the buttons are not read
 there); with the panels off, the first press only wakes them, and in those
 hours the page closes when the panels go off again a minute later. It takes the
