@@ -1,10 +1,13 @@
-# Setting Up Info Orbs From Scratch
+# Building the Info Orbs Software Yourself
 
 > **Just want it running?** You do not need anything on this page. The
 > [Quick start](../README.md#quick-start-no-software-to-install-on-your-pc) flashes a
 > ready-made file from Chrome or Edge in about 10 minutes, and you paste your
 > free weather API key on the settings page afterwards. This guide is for building the
 > software yourself.
+>
+> **Already running?** Using the orbs is in the [user guide](USER-GUIDE.md).
+> When something goes wrong, see [Troubleshooting](TROUBLESHOOTING.md).
 
 Written for someone who has never used PlatformIO. If you have, skip to
 [step 3](#3-create-your-two-config-files) — the only thing that has changed from
@@ -35,7 +38,7 @@ Budget about 45 minutes the first time. Most of that is downloads.
 
 > PlatformIO redoes this bootstrap after some VS Code updates. If builds
 > suddenly break on a machine that used to work, that is usually why — see
-> [Troubleshooting](#troubleshooting).
+> [Troubleshooting](TROUBLESHOOTING.md#building-from-source).
 
 ## 2. Get the code
 
@@ -163,6 +166,10 @@ WiFi later: hold the **right** button while plugging in power. The orbs show
 `Wifi Settings reset`, forget the network, and open the setup network again.
 The orbs remember only one network at a time.
 
+If the orbs cannot join, orbs 4 and 5 say why. The user guide covers
+[what they do by themselves when WiFi fails](USER-GUIDE.md#when-wifi-goes-down),
+and Troubleshooting has [each screen and its fix](TROUBLESHOOTING.md#wifi-setup).
+
 ## 8. Later updates: no cable needed
 
 Once the orbs are on your WiFi, new firmware goes over the network. The **first**
@@ -178,10 +185,13 @@ that makes network updates possible.
   and a failed attempt restarts the orb. If it says `No response from device`,
   wait until the update page loads again and use the browser.
 
-**The password is optional.** Set `OTA_PASSWORD` in `secrets.h` and the browser
-asks for user `admin` and that password on both the update and settings pages.
-Without one, anyone on your network can flash the orbs or change their
-settings, and both pages show a ⚠ warning saying so.
+**The password is optional.** Without one, anyone on your network can flash
+the orbs or change their settings, and the settings and update pages show a
+⚠ warning saying so. To set one: in `secrets.h`, find the line
+`//#define OTA_PASSWORD ""`, delete the `//` at its start, type a password
+between the quotes, save, and upload again (step 6). The browser then asks
+for user `admin` and that password on the update, settings and log pages.
+A password is part of the build, so the ready-made release file has none.
 
 A failed or interrupted update keeps the old firmware. A new firmware that
 installs but cannot get back on WiFi is rolled back when it next restarts.
@@ -222,58 +232,71 @@ by hand instead, know the layout (`partitions.csv`):
   with every upload. The orbs' `/update` page never hits it either, which is
   why the Quick start uses it.
 
+## Building more than one set
+
+Many members build several. Each set keeps its own WiFi network, settings-page
+choices and start-up picture inside itself, so you set each one up on its own.
+You can use the same API keys and the same `config.h` and `secrets.h` for all
+of your own sets. Each set uses the keys' free daily allowance separately.
+
+**WiFi: one at a time, or not at all.** Each new set starts its own setup
+network, `Info-Orbs_` plus two characters. Two sets can end up with the same
+two characters, so set them up one at a time. To skip the setup network
+altogether, put your WiFi name and password in `secrets.h` before you flash:
+find `//#define WIFI_SSID` and `//#define WIFI_PASS`, delete the `//` from
+both, and fill them in. Every set you flash then joins that network by itself.
+
+**Names: give each set its own.** Every set is called `info-orbs` unless you
+change it, and only one of them can answer to `info-orbs.local`. Before you
+flash a set, open `config.h`, find `//#define OTA_HOSTNAME "info-orbs"`,
+delete the `//`, and change the name, for example to `"orb-office"`. That set
+is then at `http://orb-office.local/settings`, and your router lists it under
+that name. The IP address shown on its screen always works too.
+
+**The name is built into the software file, so watch it when updating.** The
+name in `config.h` when you build is the name the set gets. If you build once
+and upload the same file to two sets, they both end up with the same name.
+To update several sets, change the name in `config.h`, build, upload to that
+set, and repeat for the next one. Sets installed from the ready-made release
+file are all called `info-orbs`; reach those by IP address.
+
+**Optional: update from PlatformIO by name.** Settings that belong to your
+computer, such as which USB port to upload to or which set to update over
+WiFi, go in a file named `platformio_local.ini` next to `platformio.ini`.
+Create it only if you need it; it stays on your computer and is never uploaded
+to GitHub. For example, so that *Upload* in the `ota` task updates
+`orb-office`:
+
+```ini
+[env:ota]
+upload_port = orb-office.local
+```
+
+---
+
+*Sections 9 to 11 and the troubleshooting table moved out of this guide in
+November 2026. The headings stay so that older links still land.*
+
 ## 9. Change settings from a browser
 
-Open `http://<orb's IP>/settings` (or `http://info-orbs.local/settings`) on a
-phone or computer on the same network. It uses the same optional `admin` /
-`OTA_PASSWORD` login as the update page. The page never shows your API keys.
+Moved to the user guide: [The settings page](USER-GUIDE.md#the-settings-page),
+[The log](USER-GUIDE.md#the-log-170) and
+[What you see at start-up](USER-GUIDE.md#what-you-see-at-start-up).
 
-- **Save and restart** stores the changes and restarts the orbs, about 15 s.
-  The page reloads by itself. A value that fails its check is shown beside
-  that field, and nothing is saved.
-- **Reset to built-in values** forgets everything saved from the page and goes
-  back to what `config.h` says.
-- **Start-up picture:** pick any photo. The page crops it to a centered square
-  and shows the circle the orb will display. **Upload and restart** puts it on the
-  middle orb at start-up (after the eyes, if Waking eyes is on: see below).
-  **Use the built-in logo** takes it off again.
-- **Waking eyes** (Start-up): on by default. While the orb joins WiFi, orbs 2
-  and 4 show a pair of eyes waking up, with a nose on the middle orb in the
-  same color as the eye lids; once it connects they open fully and look around while the
-  data loads (orb 5 names what is loading). Then the start-up picture shows
-  alone for 2 seconds, and the first page comes up. Off gives the plain
-  start-up text, with the picture on the middle orb from the start.
-- **Log** (in the status lines at the top): **view** shows what the orb has
-  recorded, **download** saves it as `info-orbs-log.txt` to send to whoever
-  is helping you. It lists events with their date and time: each start and
-  why (power, restart, crash), WiFi going down and coming back, a page that
-  stops refreshing and when it recovers. It never holds your network name,
-  passwords, API keys or station IDs. It keeps roughly the last few hundred
-  events and survives restarts and firmware updates.
+For a build of your own, two things differ from the ready-made file:
 
-Settings survive restarts and firmware updates. A USB flash with **Erase
-Flash** first clears them.
-Timezone and weather location cannot be checked until the orb uses them. If
-you mistype one, the clock or weather orb shows the error.
+- The built-in values are the ones in your `config.h`. They are only the
+  starting point: whatever the settings page saves wins, and **Reset to
+  built-in values** goes back to what `config.h` says.
+- Settings survive restarts and firmware updates. A USB flash with **Erase
+  Flash** first clears them.
 
 ## 10. Optional: weather from your own Tempest stations
 
-If you own a WeatherFlow Tempest station, the orbs can show its weather, with
-one weather page per station (up to two). If a Visual Crossing key is also
-set, the location under **Weather** keeps its page as well, so you can follow
-a third place; without that key only the Tempest pages show.
+Moved to the user guide:
+[Weather from your own Tempest stations](USER-GUIDE.md#weather-from-your-own-tempest-stations).
+Nothing to build: it works on the ready-made release file too.
 
-Nothing to build: this works on the ready-made release file too.
-
-1. Get a token: tempestwx.com > Settings > Data Authorizations > Create Token.
-   Paste it on the settings page under **API keys** > **Tempest token**.
-2. Find each station's ID: the number in the station's tempestwx.com address.
-   Enter it under **Tempest stations** with a short label (16 characters at
-   most, shown in place of the town name), then press **Save and restart**.
-3. Each station now shows ✔ or ✖ for its last fetch, how long ago it was, and
-   the error if it failed. A station with no token says so instead.
-
-The page never shows the token once saved: the field shows stars instead. Leave it alone to keep the token, or paste a new one to replace it.
 Building it yourself, you can instead put the token in `secrets.h`
 (`#define TEMPEST_TOKEN "..."`) and the stations in `config.h` (the commented
 `TEMPEST_STATION_1` lines in the template). Those are only defaults: whatever
@@ -282,45 +305,11 @@ the page saves wins. In firmware 1.2.0 and earlier the token could only come fro
 
 ## 11. Optional: run it from a phone hotspot
 
-For a demo away from home. The orbs remember only **one** WiFi network, so
-joining the hotspot replaces your home network. Try it at home before the day.
-
-1. **Turn on the hotspot, on 2.4 GHz.** The ESP32 cannot see 5 GHz.
-   - iPhone: Settings > Personal Hotspot, turn on **Maximize Compatibility**.
-     Without it, recent iPhones use 5 GHz and the orbs never find the hotspot.
-     Stay on that screen until the orbs join: an iPhone stops advertising its
-     hotspot when nothing has connected for a while.
-   - Android: in the hotspot settings, set the band to 2.4 GHz.
-2. **Hold the right button while plugging in power.** The orbs show
-   `Wifi Settings reset`, then `Connect phone or PC to WiFi network:`, a name
-   like `Info-Orbs_84` (your two characters differ; see step 7), and
-   `192.168.4.1`.
-3. **From a second device** (a laptop or another phone), join that
-   `Info-Orbs_..` network. A second device keeps the hotspot phone a hotspot
-   the whole time. The setup page opens by itself; if it does not, browse to
-   `http://192.168.4.1`. Choose **Configure WiFi**, pick the hotspot, enter its
-   password, **Save**.
-4. The orbs show `Success`, then their IP address, and start fetching over the
-   phone's mobile data. The settings page is `http://<that IP>/settings` from a
-   device joined to the hotspot.
-5. **Back home**, repeat steps 2 and 3 with your home network.
-
-Custom pages that read from a server or MQTT broker on your home network show
-no data while the orbs are on the hotspot. Untick them on the settings page
-for the demo, or point them at something reachable from the internet.
-
----
+Moved to the user guide:
+[Running from a phone hotspot](USER-GUIDE.md#running-from-a-phone-hotspot).
 
 ## Troubleshooting
 
-| Symptom                                           | Cause and fix                                                                                                                                                                                |
-|---------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Copy firmware/config/secrets.h.template…`        | You missed step 3. Copy both templates.                                                                                                                                                      |
-| `WEATHER_API_KEY is empty…`                       | `secrets.h` exists but a key is still `""`. See step 4.                                                                                                                                      |
-| `ModuleNotFoundError: No module named 'intelhex'` | PlatformIO bootstrapped a fresh Python environment (often after a VS Code update) and missed a dependency of its flashing tool. Fix: `~/.platformio/penv/bin/python -m pip install intelhex` |
-| No serial port listed                             | Suspect the USB cable first — many are charge-only. The XIAO uses the ESP32-S3's own USB, so no CP2102/CH340 driver is needed. If the orbs still answer on WiFi, they are fine: enter download mode (step 6) and reflash. |
-| Upload starts then fails                          | Enter download mode by hand: hold **B** while plugging the cable in, then Upload (step 6).                                                                                                |
-| Clock right, weather orb blank                    | The weather key is wrong or its quota is spent. A bad key fails silently at runtime — it cannot be caught at build time.                                                                     |
-| Never finds your WiFi                             | The network is 5 GHz. The ESP32 only sees 2.4 GHz.                                                                                                                                           |
-| Builds broke on a machine that worked before      | A VS Code update replaced PlatformIO's Python environment. Reopen the project folder in VS Code and let the bootstrap finish, then see the `intelhex` row above.                             |
-| Time is an hour off after a DST change            | The timezone key is wrong or out of quota — that is the service that supplies the changeover.                                                                                                |
+Moved to [TROUBLESHOOTING.md](TROUBLESHOOTING.md), organized by what you see.
+Build errors are under
+[Building from source](TROUBLESHOOTING.md#building-from-source).
