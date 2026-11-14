@@ -230,7 +230,8 @@ does; the orb then retries every half hour until the network is fixed.
 
 **Info page on the orbs (added 2026-11-14).** What a member is asked for when
 their orb misbehaves, readable without a computer. Hold the middle button
-2 seconds and let go, from any page:
+2 seconds and let go, from any page. It opens on the release, not while
+the button is still down (a press is only measured when it ends):
 
 | Orb | Shows |
 |---|---|
