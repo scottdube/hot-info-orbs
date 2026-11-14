@@ -137,12 +137,12 @@ orb 5 when they join (four numbers with dots, like `192.168.1.57`).
 
 | Address | What it does |
 |---|---|
-| `http://<IP>/settings` | rotation time, which pages show, tickers, weather location and units, time zone, clock face and colors, night dimming, upside-down mounting, the waking eyes at start-up, custom pages, your own start-up picture |
+| `http://<IP>/settings` | rotation time, which pages show, tickers, weather location and units, time zone, clock face and colors, night dimming, upside-down mounting, the waking eyes at start-up, what to show when WiFi is out, custom pages, your own start-up picture |
 | `http://<IP>/update` | install a new version of the software without a cable. The page also shows which version is running. |
 
 The [user guide](docs/USER-GUIDE.md) has the rest: the buttons, each page,
-every section of the settings page, the info page, what the red marks mean,
-changing WiFi, running from a phone hotspot, and the log.
+every section of the settings page, the info page, what the amber and red
+marks mean, changing WiFi, running from a phone hotspot, and the log.
 [Troubleshooting](docs/TROUBLESHOOTING.md) is organized by what you see.
 
 ## Building it yourself

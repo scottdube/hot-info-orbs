@@ -20,7 +20,7 @@ In this guide the five displays are **orb 1 to orb 5, left to right**, and
 - [Finding the orbs' address](#finding-the-orbs-address)
 - [The settings page](#the-settings-page)
 - [The info page](#the-info-page-170)
-- [What the red marks mean](#what-the-red-marks-mean-170)
+- [What the amber and red marks mean](#what-the-amber-and-red-marks-mean-170)
 - [When WiFi goes down](#when-wifi-goes-down)
 - [Changing the WiFi network](#changing-the-wifi-network)
 - [Running from a phone hotspot](#running-from-a-phone-hotspot)
@@ -163,7 +163,7 @@ Your settings stay through restarts, power cuts and
 
 | Section | What is in it |
 |---|---|
-| **Rotation** | **Seconds per page**: 0 stays on one page; 5 to 3600 moves to the next page after that many seconds. **Show**: tick the pages you want. Tick one to keep it on screen, or several to rotate through them. |
+| **Rotation** | **Seconds per page**: 0 stays on one page; 5 to 3600 moves to the next page after that many seconds. **Show**: tick the pages you want. Tick one to keep it on screen, or several to rotate through them. **Clock only when WiFi is out** (1.7.0): Off keeps the page up with its marks; On switches to the clock while WiFi is down. See [the marks](#what-the-amber-and-red-marks-mean-170). |
 | **Clock** | The clock face at start-up, 12-hour or 24-hour, the AM/PM mark, the digit color and the color of the unlit segments. |
 | **Weather** | °F and mph, or °C and km/h. Light or dark screens. |
 | **Stocks** | One to five tickers, with commas between them, one per orb. Crypto is written `BTC/USD`. To pick an exchange, add the country: `APC&country=Germany`. |
@@ -221,23 +221,53 @@ settings page. It is the first thing to read when something looks wrong.
 Times here are never in seconds: `<1 min`, `12 min`, `2 h 05 min`,
 `3 d 04 h`.
 
-## What the red marks mean (1.7.0)
+## What the amber and red marks mean (1.7.0)
 
 The orbs keep showing the last data they got when they cannot get new data.
-The red marks tell you when what you are looking at is old.
+The marks tell you when what you are looking at is old.
+
+The words and the shape of the ring say what is wrong. The color only says
+which kind of page is marked: **amber** on the pages that show data, **red**
+on the clock.
+
+### On the weather, stocks and other data pages: amber
 
 | You see | It means |
 |---|---|
-| **No WiFi** in black on a red plate, near the top of orb 2, and no ring | WiFi is down. The data on screen is still recent. |
-| **No WiFi** on orb 2, and a **broken** (dashed) red ring around the orbs | WiFi is down, and the data inside the ring is old. |
-| A **solid** red ring, and no **No WiFi** | WiFi is fine, but new data is not arriving: the internet is down, or the weather or stock service is. |
+| **No WiFi** in black on an amber plate, near the top of orb 2, and no ring | WiFi is down. The data on screen is still recent. |
+| **No WiFi** on orb 2, and a **broken** (dashed) amber ring around the orbs | WiFi is down, and the data inside the ring is old. |
+| A **solid** amber ring, and no **No WiFi** | WiFi is fine, but new data is not arriving: the internet is down, or the weather or stock service is. |
 
 - **No WiFi** appears once WiFi has been down for 10 seconds.
 - The ring goes around the orbs holding old data. Weather and stocks count as
   old after 20 minutes without a refresh. An MQTT page counts as old once its
   broker has been out of reach for 3 minutes.
-- The clock never gets a mark. It keeps time without WiFi.
+- The clock gets none of these marks. It keeps time without WiFi.
 - When WiFi comes back, the pages refresh at once and the marks go away.
+
+### On the clock: red, with "Clock only when WiFi is out"
+
+Some people would rather see a clock they can trust than weather that is
+getting old. The settings page has a switch for that:
+**Rotation > Clock only when WiFi is out**. It is **Off** on new orbs, and
+then everything above is all you will see.
+
+With it **On**, once WiFi has been down for 10 seconds:
+
+| You see | It means |
+|---|---|
+| All five orbs show the clock, each with a **broken** (dashed) red ring, and **No WiFi** in black on a red plate on orb 3 | WiFi is down. The time is right; the orbs have put the other pages away until WiFi is back. |
+
+- The clock comes up even if it is not ticked under **Rotation > Show**.
+- The page rotation waits.
+- The seconds tick around the middle orb stops, and on the Nixie face the
+  colon stays lit instead of blinking. The time itself is not affected.
+- A button still moves to another page. That page carries the amber marks
+  above. The next rotation turn goes back to the clock; with
+  **Seconds per page** at 0, the page you picked stays.
+- When WiFi comes back, the rings come off and the page that was up before
+  the outage returns, refreshed at once if its data is old. If you moved to
+  another page by button in the meantime, that page stays.
 
 ## When WiFi goes down
 
@@ -248,11 +278,11 @@ You do not need to do anything. The orbs get themselves back on.
 | When | What the orbs do |
 |---|---|
 | WiFi drops | Keep showing the last data. The clock keeps running. |
-| 10 seconds | Show **No WiFi** on orb 2. |
+| 10 seconds | Show **No WiFi** on orb 2. With **Clock only when WiFi is out** On, switch to the clock with its red rings instead. |
 | every 30 seconds | Try to rejoin. |
 | the router is off or out of range | Keep trying for as long as it takes, and never restart. Every 10 minutes they switch their radio off and on. |
 | the router is there but will not let them in | Switch their radio off and on after 2½ minutes, and restart after 5 minutes. |
-| WiFi returns | Rejoin, refresh every page, and clear the marks. |
+| WiFi returns | Rejoin, refresh every page, and clear the marks. If they had switched to the clock, go back to the page that was up. |
 
 So after a power cut or a router restart, give the orbs a few minutes after
 the router is back.

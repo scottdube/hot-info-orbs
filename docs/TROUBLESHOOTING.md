@@ -54,15 +54,24 @@ failed.
 
 ## Running
 
-### Red marks (1.7.0)
+### Amber and red marks (1.7.0)
+
+Amber marks are on the pages that show data. Red marks are only on the
+clock, and only with **Clock only when WiFi is out** switched on. The words
+and the ring's shape mean the same in either color.
+[What the amber and red marks mean](USER-GUIDE.md#what-the-amber-and-red-marks-mean-170)
+has the full list.
 
 | What you see | What it means, and what to do |
 |---|---|
-| **No WiFi** on a red plate on orb 2 | WiFi is down. Wait: the orbs try to rejoin every 30 seconds. If the router restarted, give it a few minutes. [When WiFi goes down](USER-GUIDE.md#when-wifi-goes-down) has the timings. |
+| **No WiFi** on an amber plate on orb 2 | WiFi is down. Wait: the orbs try to rejoin every 30 seconds. If the router restarted, give it a few minutes. [When WiFi goes down](USER-GUIDE.md#when-wifi-goes-down) has the timings. |
+| The orbs changed to the clock by themselves: a **broken** red ring on every orb, **No WiFi** on a red plate on orb 3 | WiFi is down, and **Clock only when WiFi is out** is On. Wait, as in the row above: the page that was up comes back with the WiFi. A button still shows the other pages. To keep pages up during an outage, set it to Off: settings page, **Rotation**. |
+| The clock shows during an outage though it is not ticked under **Show** | That is **Clock only when WiFi is out** doing its job. The clock leaves again when WiFi returns. |
+| The clock's seconds tick is gone, or the Nixie colon has stopped blinking | They rest while the clock wears its red ring. Both come back with the WiFi. |
 | **No WiFi** that comes and goes through the day | The signal is weak where the orbs sit. Hold the middle button 2 seconds and read orb 2: `fair` or `weak` is the cause. Move the orbs or the router closer together. |
 | **No WiFi** that never clears, though phones are online | Unplug the orbs and plug them back in. If they cannot join, orbs 4 and 5 say why: see [WiFi setup](#wifi-setup). |
-| A **broken** red ring around some orbs | WiFi has been down long enough that the data inside the ring is old. It clears when WiFi returns. |
-| A **solid** red ring, no **No WiFi** | WiFi is up, but fresh data is not arriving. Check that the internet works on your phone, on the same WiFi. If only the weather page has the ring, see "Weather worked, then stopped" below. |
+| A **broken** amber ring around some orbs | WiFi has been down long enough that the data inside the ring is old. It clears when WiFi returns. |
+| A **solid** amber ring, no **No WiFi** | WiFi is up, but fresh data is not arriving. Check that the internet works on your phone, on the same WiFi. If only the weather page has the ring, see "Weather worked, then stopped" below. |
 
 ### Pages
 
