@@ -513,10 +513,23 @@ void test_the_clock_is_not_marked_outside_clock_only() {
     TEST_ASSERT_TRUE(stale::Mark::None == c.mark(CLOCK, stale::Mark::None));
 }
 
-void test_the_clock_mark_is_a_broken_ring_with_no_words() {
+void test_the_clock_mark_is_a_broken_ring_with_words() {
     TEST_ASSERT_TRUE(stale::hasRing(stale::Mark::ClockOnly));
-    TEST_ASSERT_FALSE(stale::hasWords(stale::Mark::ClockOnly)); // "No WiFi" would cover a digit
+    TEST_ASSERT_TRUE(stale::hasWords(stale::Mark::ClockOnly)); // a ring alone did not say why
     TEST_ASSERT_TRUE(stale::broken(stale::Mark::ClockOnly));
+}
+
+// Orb 2 holds a digit on the clock. The colon orb has room above the colon.
+void test_the_clock_label_goes_on_the_center_orb() {
+    TEST_ASSERT_EQUAL(2, stale::plateOrb(stale::Mark::ClockOnly));
+    TEST_ASSERT_EQUAL(1, stale::plateOrb(stale::Mark::NoWifi));
+    TEST_ASSERT_EQUAL(1, stale::plateOrb(stale::Mark::LinkDown));
+}
+
+void test_the_label_takes_the_color_of_its_ring() {
+    TEST_ASSERT_EQUAL_HEX16(stale::kRed, stale::plateColor(stale::Mark::ClockOnly));
+    TEST_ASSERT_EQUAL_HEX16(stale::kAmber, stale::plateColor(stale::Mark::NoWifi));
+    TEST_ASSERT_EQUAL_HEX16(stale::kAmber, stale::plateColor(stale::Mark::LinkDown));
 }
 
 // Broken = no WiFi, solid = WiFi up and the service is not answering
@@ -533,7 +546,6 @@ void test_the_clock_ring_is_red_and_data_rings_are_amber() {
     TEST_ASSERT_EQUAL_HEX16(stale::kRed, stale::ringColor(stale::Mark::ClockOnly));
     TEST_ASSERT_EQUAL_HEX16(stale::kAmber, stale::ringColor(stale::Mark::NoWifi));
     TEST_ASSERT_EQUAL_HEX16(stale::kAmber, stale::ringColor(stale::Mark::Old));
-    TEST_ASSERT_EQUAL_HEX16(stale::kAmber, stale::kPlateColor);
 }
 
 void test_the_clock_ring_goes_on_every_clock_orb_without_a_repaint() {
@@ -544,10 +556,17 @@ void test_the_clock_ring_goes_on_every_clock_orb_without_a_repaint() {
 }
 
 // The picture clock repaints its colon orb every second: no ring there
-void test_the_clock_ring_skips_an_orb_the_clock_leaves_out() {
+// The center orb is painted for its label even if it were to take no ring
+void test_the_clock_label_is_painted_on_the_center_orb() {
     stale::Overlay o;
     const stale::Paint p = o.step(0, stale::Mark::ClockOnly, 0x1B);
-    TEST_ASSERT_EQUAL_HEX8(0x1B, p.orbs);
+    TEST_ASSERT_EQUAL_HEX8(0x1F, p.orbs);
+}
+
+void test_the_data_label_still_goes_on_orb_2() {
+    stale::Overlay o;
+    const stale::Paint p = o.step(0, stale::Mark::LinkDown, 0x10);
+    TEST_ASSERT_EQUAL_HEX8(0x02, p.orbs);
 }
 
 void test_a_clock_orb_that_was_repainted_gets_its_ring_back() {
@@ -639,11 +658,14 @@ int main() {
     RUN_TEST(test_the_clock_gets_its_own_mark_in_clock_only);
     RUN_TEST(test_other_pages_keep_their_own_mark_in_clock_only);
     RUN_TEST(test_the_clock_is_not_marked_outside_clock_only);
-    RUN_TEST(test_the_clock_mark_is_a_broken_ring_with_no_words);
+    RUN_TEST(test_the_clock_mark_is_a_broken_ring_with_words);
+    RUN_TEST(test_the_clock_label_goes_on_the_center_orb);
+    RUN_TEST(test_the_label_takes_the_color_of_its_ring);
     RUN_TEST(test_the_shape_says_whether_wifi_is_out);
     RUN_TEST(test_the_clock_ring_is_red_and_data_rings_are_amber);
     RUN_TEST(test_the_clock_ring_goes_on_every_clock_orb_without_a_repaint);
-    RUN_TEST(test_the_clock_ring_skips_an_orb_the_clock_leaves_out);
+    RUN_TEST(test_the_clock_label_is_painted_on_the_center_orb);
+    RUN_TEST(test_the_data_label_still_goes_on_orb_2);
     RUN_TEST(test_a_clock_orb_that_was_repainted_gets_its_ring_back);
     RUN_TEST(test_the_clock_ring_comes_off_by_repainting_the_clock);
     RUN_TEST(test_a_switch_from_a_marked_page_to_the_clock_needs_no_extra_repaint);

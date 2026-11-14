@@ -447,7 +447,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     }
     h += boolSelect("wificlock", "Clock only when WiFi is out", v.wificlock, d.wificlock, "Off", "On", errors);
     h += hint("Off: the page stays up, with \"No WiFi\" on orb 2 and an amber ring on data that has gone old. "
-              "On: after 10 seconds without WiFi the orbs show the clock with a broken red ring, and the page that was up comes back with the WiFi.");
+              "On: after 10 seconds without WiFi the orbs show the clock with a broken red ring and \"No WiFi\" on orb 3, and the page that was up comes back with the WiFi.");
     h += "</fieldset>";
 
     h += "<fieldset id='clock'><legend>Clock</legend>";

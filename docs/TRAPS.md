@@ -638,6 +638,8 @@ clock repaints without it, three ways:
 
 A page that repaints an orb any way other than `fillScreen` has to call
 `ScreenManager::notePainted`, or a mark on that orb is lost until the next
-full redraw. The clock does, for its digit orbs. The ring wipes its band
+full redraw. The clock does, for its digit orbs and for every orb of a
+picture face. While its ring is on, a picture face also stops blinking its
+colon, since each blink is a whole-orb repaint under the ring and "No WiFi". The ring wipes its band
 before it draws, so a digit's corners lose their last 2 or 3 px under it.
 Worked out from the code and the font; not yet looked at on the panels.

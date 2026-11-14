@@ -19,7 +19,7 @@
 //
 // "Clock only when WiFi is out" (a setting, off by default; Yang asked for
 // it, 2026-11-14): once WiFi counts as out, the orbs go to the clock, with a
-// broken red ring on its orbs and no words ("No WiFi" would cover a digit).
+// broken red ring on its orbs and "No WiFi" in red on the center orb.
 // The page that was up comes back with the WiFi. See ClockOnly below.
 // Without that setting a clock orb is never marked: it keeps time without
 // WiFi.
@@ -114,7 +114,7 @@ enum class Mark : uint8_t {
     LinkDown, // "No WiFi" on orb 2, no ring: WiFi is out, the data is still good
     NoWifi, // broken ring, "No WiFi" on orb 2: WiFi is out and the data is old
     Old, // solid ring: WiFi is up, the data is old
-    ClockOnly, // broken red ring on the clock, no words: see ClockOnly below
+    ClockOnly, // broken red ring on the clock, "No WiFi" on its center orb: see ClockOnly below
 };
 
 // wifiOut: see LinkGrace. fetches: the page shows data it gets over WiFi.
@@ -134,7 +134,7 @@ inline Mark mark(bool pageStale, bool wifiOut, bool fetches) {
 }
 
 inline bool hasRing(Mark m) { return m == Mark::NoWifi || m == Mark::Old || m == Mark::ClockOnly; }
-inline bool hasWords(Mark m) { return m == Mark::NoWifi || m == Mark::LinkDown; }
+inline bool hasWords(Mark m) { return m == Mark::NoWifi || m == Mark::LinkDown || m == Mark::ClockOnly; }
 // Broken = this orb has no WiFi. Solid = WiFi is up and the service is not
 // answering.
 inline bool broken(Mark m) { return m == Mark::NoWifi || m == Mark::ClockOnly; }
@@ -228,7 +228,12 @@ inline Arc dash(int i) { return {30 * i + 7, 30 * i + 23}; }
 constexpr int kPlateOrb = 1; // screen index
 constexpr int kPlateH = 28, kPlateRadius = 6;
 constexpr int kPlateTextSize = 20;
-constexpr uint16_t kPlateColor = kAmber;
+// On the clock the words go on the center orb: orb 2 holds a digit there,
+// and the colon orb has room above the colon. The plate takes its ring's
+// color, so red stays on the clock and amber on the data pages.
+constexpr int kClockPlateOrb = 2; // screen index
+inline int plateOrb(Mark m) { return m == Mark::ClockOnly ? kClockPlateOrb : kPlateOrb; }
+inline uint16_t plateColor(Mark m) { return ringColor(m); }
 // Where the plate goes: top edge and width, centered left to right. The
 // default is clear of the weather and MQTT pages' own text. A page with
 // something there says where instead (Widget::stalePlate): half-covered
@@ -271,7 +276,7 @@ public:
             orbs = dataOrbs & 0x1F;
         }
         if (hasWords(want)) {
-            orbs |= 1u << kPlateOrb; // whether or not orb 2 holds data
+            orbs |= 1u << plateOrb(want); // whether or not that orb holds data
         }
         // The rings joining the words (WiFi out, and now the data is old too)
         // go on over what is there. Orb 2 is painted again: it needs a ring.

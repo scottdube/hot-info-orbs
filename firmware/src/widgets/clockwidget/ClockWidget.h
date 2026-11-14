@@ -84,10 +84,10 @@ public:
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
     String getName() override;
     uint8_t dataOrbs() override { return 0; } // keeps time without WiFi: no data to mark
-    // The red ring of "Clock only when WiFi is out". The picture faces
-    // repaint the whole colon orb every second, so a ring there would
-    // flicker once a second: they get it on the four digit orbs.
-    uint8_t clockOnlyOrbs() override { return m_type == ClockType::NORMAL ? 0x1F : 0x1B; }
+    // The red ring and "No WiFi" of "Clock only when WiFi is out". The
+    // center orb carries both, so while they are on nothing may repaint
+    // that orb whole or draw in the ring's band: see draw().
+    uint8_t clockOnlyOrbs() override { return 0x1F; }
     void setClockOnly(bool on) override { m_ringed = on; }
 
 private:
@@ -104,7 +104,7 @@ private:
 
     ClockType m_type = DEFAULT_CLOCK; // replaced from Settings in the constructor
     bool m_ringed = false; // the red ring is on (setClockOnly)
-    bool ticksShown() const { return !m_ringed || m_type != ClockType::NORMAL; }
+    bool pictureFace() const { return m_type != ClockType::NORMAL; }
     bool m_tickDrawn = false;
     uint32_t m_color = CLOCK_COLOR;
     uint32_t m_shadow = CLOCK_SHADOW_COLOR;

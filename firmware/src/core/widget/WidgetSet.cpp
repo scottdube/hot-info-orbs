@@ -132,7 +132,8 @@ void WidgetSet::rotate() {
 // each orb holding stale data: broken when the orb has no WiFi, solid when
 // WiFi is up and the data is old all the same. Drawn here and not in each
 // page so every page gets the same mark and none has to leave room for it.
-// With "Clock only when WiFi is out" the clock gets a broken red ring.
+// With "Clock only when WiFi is out" the clock gets a broken red ring, and
+// "No WiFi" in red on its center orb.
 void WidgetSet::drawStaleMark() {
     Widget *w = getCurrent();
     const uint8_t pageOrbs = w->dataOrbs() & 0x1F;
@@ -168,9 +169,9 @@ void WidgetSet::drawStaleMark() {
                 }
             }
         }
-        if (stale::hasWords(want) && i == stale::kPlateOrb) {
+        if (stale::hasWords(want) && i == stale::plateOrb(want)) {
             const stale::Plate plate = w->stalePlate();
-            m_screenManager->drawPlate("No WiFi", ScreenCenterX, plate.y, plate.w, stale::kPlateH, stale::kPlateRadius, stale::kPlateTextSize, stale::kPlateColor, TFT_BLACK);
+            m_screenManager->drawPlate("No WiFi", ScreenCenterX, plate.y, plate.w, stale::kPlateH, stale::kPlateRadius, stale::kPlateTextSize, stale::plateColor(want), TFT_BLACK);
         }
     }
     m_screenManager->reset();

@@ -238,13 +238,16 @@ over it, so no page has to leave room for it.
 | WiFi out for 10 seconds | "No WiFi" on orb 2, on any page that has data |
 | WiFi out and the data has gone old | A broken amber ring on each orb with old data |
 | WiFi up, the service not answering, data old | A solid amber ring on those orbs |
-| WiFi out, **Clock only when WiFi is out** set to On | All five orbs go to the clock, each with a broken red ring and no words |
+| WiFi out, **Clock only when WiFi is out** set to On | All five orbs go to the clock, each with a broken red ring, and "No WiFi" in red on orb 3 |
 
 Data counts as old after 20 minutes for weather and stocks, and after 3 or
 more for MQTT and web data. The ring's shape carries the meaning (broken = no
 WiFi, solid = WiFi up) and its color says which page: red is only ever on the
 clock, amber only on data pages. A reader who cannot tell the colors apart
-loses nothing, because the clock has no other mark.
+loses nothing: the words say what is wrong, and the clock has no other mark.
+The clock's words are on orb 3 because orb 2 holds a digit. The first build
+had the ring with no words; Scott asked for the words after seeing it on the
+rig (2026-11-14).
 
 With the clock setting On: the switch happens at the same 10 second mark, the
 rotation waits, and the page that was up comes back with the WiFi (and
@@ -252,9 +255,9 @@ refreshes at once if its data is old). The clock shows even if its box under
 **Show** is unticked. A button still moves to another page, which carries the
 amber marks; the next rotation turn goes back to the clock. The clock drops
 its seconds tick while ringed, because the tick runs in the ring's band. On
-the picture clock faces (Nixie, custom) the ring is on the four digit orbs
-only: the colon orb is repainted whole every second, and a ring there would
-flicker. The setting is Off by default. Rule: `stale::ClockOnly` in
+the picture clock faces (Nixie, custom) the colon stays lit instead of
+blinking: those faces blink it by repainting the whole orb, which would take
+the ring and the words off once a second. The setting is Off by default. Rule: `stale::ClockOnly` in
 `firmware/src/core/wifi/StalePolicy.h`, tested on the host. Rejected: making
 clock-only the one behavior (a member watching the weather keeps a reading
 that is a few minutes old, which is still worth having), a red "No WiFi"
