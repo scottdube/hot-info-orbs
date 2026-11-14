@@ -557,3 +557,64 @@ for the expected short hash.
 Settings, unlike firmware, can be changed by a partial POST: `POST /settings`
 with only `lids=10&iris=9&lashes=0` changes those three and keeps every
 other saved value (`handlePost` starts from `Settings::get()`).
+
+## A per-device block at the access point is not an outage test (2026-11-13)
+
+Two ways to cut a rig's WiFi at a UniFi controller give two different
+faults, and only one of them is an outage:
+
+| What was done | What the orb sees | Disconnect reasons logged |
+|---|---|---|
+| Pause the whole WiFi network | The network is gone from the air | 3 when it goes, then 201 (no access point found) on every try |
+| Block the one device | The network is on the air and refuses the join | 3, then 202 (auth fail) on every try |
+
+A block reads exactly like a wrong password: 202 on every try (build
+8f209cf and later; an older build logged reason 8 for the same block, so do
+not match on one number across builds). To stand in for a real outage,
+pause the network. Use the block only to test "heard but refused".
+
+After the block is lifted the controller went on refusing that device,
+restart or not, until the device's record was **forgotten** at the
+controller. The same board joined at once under a different hardware
+address. That is the network's doing, not the firmware's; a whole morning
+went to looking for it in the rejoin code. One more controller quirk: the
+Unblock control was missing on the blocked client once, and came back after
+blocking it again.
+
+## After Unblock and Forget, the first join connected but got no address (2026-11-13)
+
+Measured, on build cace049, from the device log: the block was lifted and
+the record forgotten; about 100 seconds later the orb's first retry
+associated in 4 s, to a different access point than usual, and never got
+an address. It gave up 44 s later (reason 8, the orb leaving) and opened
+the "WiFi didn't connect" screen. The next retry, 10 minutes on, joined the
+usual access point and had an address in 4 s.
+
+Not established: why. It may be the controller still settling after the
+Forget, or that access point; nothing here tells them apart. What it costs:
+a join that associates but gets no address waits out the full setup-screen
+retry step (5, 10, 20, 30 minutes) like any other failed join.
+
+## A paused network logged reason 2 once, a minute in (2026-11-13)
+
+In the pause test (935 s outage, build 4b93ae9) every try logged 201,
+except that the line written 60 s into the outage carried reason 2 (auth
+expire). The ladder treats 2 as "heard". It did no harm in that run: no
+restart, one radio reset at 10 min 44 s. Not explained. If an outage ever
+ends in a restart, look for a 2 in the log first.
+
+## Opening the USB serial port restarts the orb
+
+Starting a serial reader on the XIAO resets it, which wipes the very state
+a WiFi test is trying to observe. Since the device log exists, read
+`http://<orb>/log` instead: it survives a restart and a power-off, and it
+was the only evidence for everything above.
+
+## The host tests compile newer C++ than the firmware
+
+The ESP32 toolchain builds C++11; `pio test -e native` uses the computer's
+compiler and a newer standard. A struct with default member values
+(`bool any = false;`) cannot be brace-initialized (`{true, now}`) in C++11,
+so code like that passed all host tests and failed the release build
+(2026-11-14, `stale::LastGood`). Passing host tests say nothing about
+whether the firmware compiles: always run `pio run -e release` too.

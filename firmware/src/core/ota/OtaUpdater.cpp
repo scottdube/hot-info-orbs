@@ -1,4 +1,5 @@
 #include "OtaUpdater.h"
+#include "DeviceLogStore.h"
 #include "Utils.h"
 #include "build_id.h"
 #include "config_helper.h"
@@ -89,11 +90,15 @@ void OtaUpdater::setupArduinoOta() {
         drawStatus("Updating", "do not unplug", TFT_ORANGE);
     });
     ArduinoOTA.onProgress([this](unsigned int done, unsigned int total) { drawProgress(done, total); });
-    ArduinoOTA.onEnd([this]() { drawStatus("Update OK", "restarting", TFT_GREEN); });
+    ArduinoOTA.onEnd([this]() {
+        drawStatus("Update OK", "restarting", TFT_GREEN);
+        DeviceLog::beforeRestart("firmware update from the build tool"); // ArduinoOTA restarts next
+    });
     ArduinoOTA.onError([this](ota_error_t error) {
         Serial.printf("OTA error %u\n", error);
         drawStatus("Update failed", "old firmware kept", TFT_RED);
         delay(3000);
+        DeviceLog::beforeRestart("firmware update from the build tool failed");
         ESP.restart(); // screens are in an unknown state; a restart redraws everything
     });
     ArduinoOTA.begin();
@@ -120,6 +125,7 @@ void OtaUpdater::setupWebUpdate() {
             s_server.send(ok ? 200 : 500, "text/plain", ok ? "Update OK, restarting.\n" : "Update FAILED, old firmware kept.\n");
             drawStatus(ok ? "Update OK" : "Update failed", ok ? "restarting" : "old firmware kept", ok ? TFT_GREEN : TFT_RED);
             delay(1000);
+            DeviceLog::beforeRestart(ok ? "firmware update" : "firmware update failed");
             ESP.restart();
         },
         // Runs once per chunk while the upload streams in

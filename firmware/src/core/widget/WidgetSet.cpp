@@ -55,6 +55,10 @@ bool WidgetSet::shown(int8_t i) {
     return isShown(i);
 }
 
+Widget *WidgetSet::page(int8_t i) {
+    return m_widgets[i];
+}
+
 int8_t WidgetSet::indexOf(Widget *w) {
     for (int8_t i = 0; i < m_widgetCount; i++) {
         if (m_widgets[i] == w) {

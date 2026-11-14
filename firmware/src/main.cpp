@@ -1,5 +1,7 @@
 #include "Button.h"
+#include "DeviceLogStore.h"
 #include "GlobalTime.h"
+#include "InfoPage.h"
 #include "OtaUpdater.h"
 #include "ScreenManager.h"
 #include "Settings.h"
@@ -43,6 +45,7 @@ String connectingString{""};
 WifiWidget *wifiWidget{nullptr};
 OtaUpdater *otaUpdater{nullptr};
 SettingsPage *settingsPage{nullptr};
+InfoPage *infoPage{nullptr}; // on the orbs: hold the middle button 2 seconds
 
 int connectionTimer{0};
 const int connectionTimeout{10000};
@@ -138,6 +141,7 @@ void setup() {
     // new board's partition has never been formatted (a few seconds, once)
     s_fsMounted = LittleFS.begin(true);
     Serial.printf("LittleFS %s\n", s_fsMounted ? "mounted" : "FAILED - built-in logo only");
+    DeviceLog::begin(s_fsMounted);
 
     TJpgDec.setSwapBytes(true); // JPEG rendering setup
     TJpgDec.setCallback(tft_output);
@@ -189,6 +193,7 @@ void setup() {
     wifiWidget = new WifiWidget(*sm);
     otaUpdater = new OtaUpdater(*sm);
     settingsPage = new SettingsPage(*otaUpdater);
+    infoPage = new InfoPage(*sm, *widgetSet);
     // Every splash screen is drawn before the eyes start: from here until
     // BootEyes::finish the eye task is the only thing drawing
     wifiWidget->begin(!eyesWanted);
@@ -298,6 +303,14 @@ void checkCycleWidgets() {
     }
 }
 
+// The info page is off the orbs again: the page that was on show draws itself
+// whole, and gets its full turn before the rotation moves on.
+void leaveInfoPage() {
+    infoPage->close();
+    widgetSet->setClearScreensOnDrawCurrent();
+    m_widgetCycleDelayPrev = millis();
+}
+
 void checkButtons() {
     // While the panels are off, a press only wakes them; it does not also act
     if (widgetSet->panelsAsleep()) {
@@ -308,6 +321,28 @@ void checkButtons() {
             Serial.println("Button pressed -> wake panels for a minute");
             m_widgetCycleDelayPrev = millis();
             widgetSet->wakeForAMinute();
+        }
+        return;
+    }
+    // The middle button down for 2 seconds: the info page, from any page, while
+    // the finger is still on the button
+    if (buttonOK.heldFor(Button::LONG_PRESS_TIME) && infoPage->hold()) {
+        Serial.println("Middle button held -> info page");
+        m_widgetCycleDelayPrev = millis();
+    }
+    // While the info page is open, any press closes it and does nothing else.
+    // The hold that opened it being let go is not a press (Ignored).
+    if (infoPage->isOpen()) {
+        const ButtonState middleState = buttonOK.getState();
+        bool closed = middleState != BTN_NOTHING && infoPage->press(true, middleState == BTN_LONG) == infopage::Press::Closed;
+        bool side = buttonLeft.getState() != BTN_NOTHING;
+        side = buttonRight.getState() != BTN_NOTHING || side;
+        if (!closed && side && infoPage->isOpen()) {
+            closed = infoPage->press(false, false) == infopage::Press::Closed;
+        }
+        if (closed) {
+            Serial.println("Button pressed -> info page closed");
+            leaveInfoPage();
         }
         return;
     }
@@ -335,7 +370,12 @@ void checkButtons() {
         } else if (middleState != BTN_NOTHING) {
             Serial.printf("Middle button pressed, state=%d\n", middleState);
             m_widgetCycleDelayPrev = millis();
-            widgetSet->buttonPressed(BUTTON_OK, middleState);
+            // A 2 second hold is the info page's (opened above while it was
+            // still down, or here if the loop was busy then). The page on show
+            // does not get that hold.
+            if (infoPage->press(true, middleState == BTN_LONG) == infopage::Press::PassOn) {
+                widgetSet->buttonPressed(BUTTON_OK, middleState);
+            }
         } else if (rightState != BTN_NOTHING) {
             Serial.printf("Right button pressed, state=%d\n", rightState);
             m_widgetCycleDelayPrev = millis();
@@ -345,6 +385,7 @@ void checkButtons() {
 }
 
 void loop() {
+    DeviceLog::tick(); // writes the events waiting; first, so every path below gets it
     if (wifiWidget->isConnected() == false) {
         wifiWidget->update();
         {
@@ -389,18 +430,28 @@ void loop() {
         wifiWidget->roamIfWeak();
         wifiWidget->rejoinIfDown();
         globalTime->updateTime();
+        DeviceLog::clock(globalTime->getUnixEpoch());
 
         checkButtons();
 
         widgetSet->setLinkUp(wifiWidget->linkUp());
-        widgetSet->updateCurrent();
+        if (!infoPage->isOpen()) {
+            widgetSet->updateCurrent(); // waits: nothing else draws under the info page
+        }
         for (MqttFeed *feed : mqttFeeds) {
             if (feed && feed->wanted()) {
                 feed->service(); // values current when a page comes up
             }
         }
         widgetSet->updateBrightnessByTime(globalTime->getHour24() * 60 + globalTime->getMinute());
-        if (!widgetSet->panelsAsleep()) {
+        if (infoPage->isOpen()) {
+            // The info page has the orbs: the rotation waits. It closes on any
+            // button (checkButtons), after a minute, or when the panels go off.
+            const bool mqttInUse[2] = {mqttFeeds[0] && mqttFeeds[0]->wanted(), mqttFeeds[1] && mqttFeeds[1]->wanted()};
+            if (widgetSet->panelsAsleep() || !infoPage->show(wifiWidget->linkUp(), mqttInUse)) {
+                leaveInfoPage();
+            }
+        } else if (!widgetSet->panelsAsleep()) {
             widgetSet->drawCurrent();
             checkCycleWidgets(); // a switch redraws all five screens
         }

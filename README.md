@@ -79,6 +79,10 @@ project's files. Pick the link that matches what you want:
 Each page uses all five displays. Set a rotation time (on the settings page,
 or `WIDGET_CYCLE_DELAY` in `config.h`) and the orbs move from page to page on
 their own. The left and right buttons step back and forward by hand.
+Hold the middle button for 2 seconds to see the orb's own info page:
+firmware version, WiFi, address, health and data feeds. It appears while
+you are still holding. Any button closes it, or it closes by itself after
+2 minutes.
 
 - **Clock**: normal, Nixie-tube, or custom faces, in your choice of colors.
 - **Weather** for a town (Visual Crossing), from your own

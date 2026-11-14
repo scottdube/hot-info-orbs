@@ -1,5 +1,6 @@
 #include "SettingsPage.h"
 
+#include "DeviceLogStore.h"
 #include "SettingsValidation.h"
 #include "TimeZones.h"
 #include "IrisPalette.h"
@@ -323,6 +324,11 @@ void SettingsPage::begin() {
     s.on("/settings/boot", HTTP_POST, [this]() { handleBootUploadDone(); }, [this]() { handleBootUploadChunk(); });
     s.on("/settings/boot/reset", HTTP_POST, [this]() { handleBootReset(); });
     s.on("/boot.jpg", HTTP_GET, [this]() { handleBootGet(); });
+    s.on("/log", HTTP_GET, [this, &s]() {
+        if (m_ota.authorized()) {
+            DeviceLog::send(s, s.hasArg("dl"));
+        }
+    });
     s.on("/", HTTP_GET, [&s]() {
         s.sendHeader("Location", "/settings");
         s.send(302, "text/plain", "");
@@ -351,6 +357,8 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
             h += outage + "<br>";
         }
     }
+    // What to send when asking for help: events only, see DeviceLog.h
+    h += "Log: <a href='/log'>view</a> &middot; <a href='/log?dl=1'>download</a><br>";
     h += Settings::hasStored() ? "Using settings saved from this page." : "Nothing saved yet &mdash; using the values built into the firmware.";
     h += "</p>";
 #ifndef OTA_PASSWORD
@@ -968,6 +976,7 @@ void SettingsPage::handleBootUploadDone() {
     }
     s.send(200, "text/plain", "Saved (" + String((unsigned)(m_uploadSize / 1024)) + " KB). The orbs are restarting to show it.");
     delay(1000);
+    DeviceLog::beforeRestart("new start-up picture");
     ESP.restart();
 }
 
@@ -1004,5 +1013,6 @@ void SettingsPage::sendRestarting(const String &what) {
     h += "<p><a href='/settings'>Back to settings</a></p></body></html>";
     m_ota.server().send(200, "text/html", h);
     delay(1000); // let the reply leave before the network goes down
+    DeviceLog::beforeRestart(("settings page: " + what).c_str());
     ESP.restart();
 }

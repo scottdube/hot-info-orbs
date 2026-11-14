@@ -84,6 +84,78 @@ void test_headlines_say_what_went_wrong() {
     TEST_ASSERT_FALSE(has(screens(Case::NotFound, "h", "a").steps, "Will retry.", Kind::Plain));
 }
 
+// ---- Setup screen, network heard but the join failed: retry by restarting ----
+
+void test_only_a_heard_network_that_did_not_join_is_retried_by_restart() {
+    for (bool joinedBefore : {false, true}) {
+        TEST_ASSERT_TRUE(wififail::retriesByRestart(wififail::Case::Other, joinedBefore));
+        TEST_ASSERT_FALSE(wififail::retriesByRestart(wififail::Case::NotFound, joinedBefore)); // keepsLooking() scans for that one
+        TEST_ASSERT_FALSE(wififail::retriesByRestart(wififail::Case::NeverSetUp, joinedBefore));
+    }
+}
+
+void test_a_refused_password_that_never_joined_stays_put() {
+    // Freshly typed and wrong: the same password gets the same answer
+    TEST_ASSERT_FALSE(wififail::retriesByRestart(wififail::Case::WrongPassword, false));
+}
+
+void test_a_refused_password_that_joined_before_is_retried_by_restart() {
+    // A device blocked at the access point is refused with the same reason as a
+    // wrong password (rig, 2026-11-13: reason 202 on every try)
+    TEST_ASSERT_TRUE(wififail::retriesByRestart(wififail::Case::WrongPassword, true));
+}
+
+void test_the_mark_is_the_same_for_the_same_name_and_password() {
+    TEST_ASSERT_EQUAL_UINT32(wififail::credentialsMark("Home", "secret123"), wififail::credentialsMark("Home", "secret123"));
+}
+
+void test_the_mark_changes_with_the_name_or_the_password() {
+    const uint32_t m = wififail::credentialsMark("Home", "secret123");
+    TEST_ASSERT_TRUE(m != wififail::credentialsMark("Home", "secret124"));
+    TEST_ASSERT_TRUE(m != wififail::credentialsMark("Home2", "secret123"));
+    // Where the name ends counts: "ab" + "c" is not "a" + "bc"
+    TEST_ASSERT_TRUE(wififail::credentialsMark("ab", "c") != wififail::credentialsMark("a", "bc"));
+}
+
+void test_the_mark_is_never_the_value_that_means_nothing_stored() {
+    TEST_ASSERT_TRUE(wififail::credentialsMark("", "") != wififail::kNoMark);
+    TEST_ASSERT_TRUE(wififail::credentialsMark("Home", "secret123") != wififail::kNoMark);
+    TEST_ASSERT_FALSE(wififail::joinedBefore(wififail::kNoMark, "Home", "secret123"));
+    const uint32_t stored = wififail::credentialsMark("Home", "secret123");
+    TEST_ASSERT_TRUE(wififail::joinedBefore(stored, "Home", "secret123"));
+    TEST_ASSERT_FALSE(wififail::joinedBefore(stored, "Home", "changed-at-the-setup-page"));
+}
+
+void test_retries_wait_5_10_20_then_30_minutes() {
+    const uint32_t minute = 60000;
+    TEST_ASSERT_EQUAL_UINT32(5 * minute, wififail::retryAfterMs(0));
+    TEST_ASSERT_EQUAL_UINT32(10 * minute, wififail::retryAfterMs(1));
+    TEST_ASSERT_EQUAL_UINT32(20 * minute, wififail::retryAfterMs(2));
+    TEST_ASSERT_EQUAL_UINT32(30 * minute, wififail::retryAfterMs(3));
+    TEST_ASSERT_EQUAL_UINT32(30 * minute, wififail::retryAfterMs(4));
+    TEST_ASSERT_EQUAL_UINT32(30 * minute, wififail::retryAfterMs(100000)); // no end (Scott, 2026-11-13)
+}
+
+void test_the_retry_count_survives_a_restart_but_not_a_power_cycle() {
+    // The count lives in memory a restart keeps and a power cycle scrambles
+    wififail::RetryMemory fresh{0xDEADBEEF, 0x12345678}; // whatever was there at power-on
+    TEST_ASSERT_EQUAL_UINT32(0, wififail::retriesDone(fresh));
+    wififail::noteRetry(fresh);
+    TEST_ASSERT_EQUAL_UINT32(1, wififail::retriesDone(fresh));
+    wififail::noteRetry(fresh);
+    wififail::noteRetry(fresh);
+    TEST_ASSERT_EQUAL_UINT32(3, wififail::retriesDone(fresh));
+    wififail::clearRetries(fresh); // joined
+    TEST_ASSERT_EQUAL_UINT32(0, wififail::retriesDone(fresh));
+}
+
+void test_a_scrambled_count_reads_as_none() {
+    wififail::RetryMemory m{0, 0};
+    wififail::noteRetry(m);
+    m.check ^= 1; // one bit off
+    TEST_ASSERT_EQUAL_UINT32(0, wififail::retriesDone(m));
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_no_saved_network_is_first_setup);
@@ -95,5 +167,14 @@ int main() {
     RUN_TEST(test_first_setup_screens_unchanged);
     RUN_TEST(test_failure_screens_name_the_saved_network);
     RUN_TEST(test_headlines_say_what_went_wrong);
+    RUN_TEST(test_only_a_heard_network_that_did_not_join_is_retried_by_restart);
+    RUN_TEST(test_a_refused_password_that_never_joined_stays_put);
+    RUN_TEST(test_a_refused_password_that_joined_before_is_retried_by_restart);
+    RUN_TEST(test_the_mark_is_the_same_for_the_same_name_and_password);
+    RUN_TEST(test_the_mark_changes_with_the_name_or_the_password);
+    RUN_TEST(test_the_mark_is_never_the_value_that_means_nothing_stored);
+    RUN_TEST(test_retries_wait_5_10_20_then_30_minutes);
+    RUN_TEST(test_the_retry_count_survives_a_restart_but_not_a_power_cycle);
+    RUN_TEST(test_a_scrambled_count_reads_as_none);
     return UNITY_END();
 }

@@ -2,6 +2,7 @@
 #define WEATHERWIDGET_H
 
 #include "GlobalTime.h"
+#include "DeviceLog.h"
 #include "StalePolicy.h"
 #include "Utils.h"
 #include "WeatherDataModel.h"
@@ -23,6 +24,8 @@ public:
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
     String getName() override;
     bool dataStale() override { return m_fresh.stale(); }
+    const char *dataKind() override { return "weather"; }
+    stale::LastGood lastGood() override { return m_fresh.lastGood(); }
     uint8_t dataOrbs() override { return 0x1E; } // orb 1 is the clock
 
 private:
@@ -51,6 +54,7 @@ private:
     const long m_weatherDelay = 600000; // Weather refresh rate
     unsigned long m_weatherDelayPrev = 0;
     stale::Tracker m_fresh;
+    devlog::PageWatch m_logWatch; // the device log gets the changes, not every refresh
 
     const int center = 120; // Center location of the screen(240x240)
 

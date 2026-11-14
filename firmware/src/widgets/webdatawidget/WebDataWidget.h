@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 
+#include "DeviceLog.h"
 #include "StalePolicy.h"
 #include "Utils.h"
 #include "WebDataModel.h"
@@ -31,6 +32,8 @@ public:
     String getName() override;
     static const WebDataStatus &status();
     bool dataStale() override { return m_fresh.stale(); }
+    const char *dataKind() override { return "web data"; }
+    stale::LastGood lastGood() override { return m_fresh.lastGood(); }
 
 private:
     bool fetch(); // one bounded GET; true when the data was applied
@@ -39,6 +42,7 @@ private:
     unsigned long m_lastUpdate = 0;
     unsigned long m_updateDelay = WEBDATA_DEFAULT_INTERVAL_MS;
     stale::Tracker m_fresh;
+    devlog::PageWatch m_logWatch; // the device log gets the changes, not every refresh
     String httpRequestAddress;
     String m_name;
     bool m_hasData = false;
