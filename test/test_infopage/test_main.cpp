@@ -146,6 +146,8 @@ static Facts facts() {
     f.mqtt[0].connected = true;
     f.mqtt[0].hasData = true;
     f.mqtt[0].dataAgeS = 12;
+    f.sources.push_back({"weather", true, 3 * 60 + 20});
+    f.sources.push_back({"stocks", true, 12 * 60});
     return f;
 }
 
@@ -189,47 +191,105 @@ void test_orb_4_is_the_health() {
                {{"Health", Kind::Title}, {"up 2 d 04 h", Kind::Plain}, {"last start: power on", Kind::Plain}, {"182 KB free", Kind::Plain}});
 }
 
-void test_orb_5_is_the_data() {
-    expectPage(infopage::page(4, facts()), {{"Data", Kind::Title}, {"MQTT connected", Kind::Plain}, {"data 12 s ago", Kind::Plain}});
+// Orb 5: one line for each kind of data page in the rotation, then MQTT.
+
+void test_orb_5_lists_each_kind_of_data_and_when_it_last_refreshed() {
+    expectPage(infopage::page(4, facts()), {{"Data", Kind::Title},
+                                            {"weather 3 min ago", Kind::Plain},
+                                            {"stocks 12 min ago", Kind::Plain},
+                                            {"MQTT 12 s ago", Kind::Plain}});
 }
 
-void test_orb_5_without_mqtt_says_it_is_not_in_use() {
+void test_orb_5_without_mqtt_still_shows_the_other_data() {
     Facts f = facts();
     f.mqtt[0] = infopage::Mqtt{};
-    expectPage(infopage::page(4, f), {{"Data", Kind::Title}, {"MQTT not in use", Kind::Plain}});
+    expectPage(infopage::page(4, f), {{"Data", Kind::Title}, {"weather 3 min ago", Kind::Plain}, {"stocks 12 min ago", Kind::Plain}});
 }
 
-void test_orb_5_connected_with_nothing_received_yet() {
+void test_orb_5_with_no_data_pages_at_all_says_so() {
+    Facts f = facts();
+    f.sources.clear();
+    f.mqtt[0] = infopage::Mqtt{};
+    expectPage(infopage::page(4, f), {{"Data", Kind::Title}, {"no data pages", Kind::Plain}});
+}
+
+void test_orb_5_a_page_with_nothing_fetched_yet_says_so() {
+    Facts f = facts();
+    f.sources[1].hasData = false;
+    expectPage(infopage::page(4, f), {{"Data", Kind::Title},
+                                      {"weather 3 min ago", Kind::Plain},
+                                      {"stocks no data yet", Kind::Plain},
+                                      {"MQTT 12 s ago", Kind::Plain}});
+}
+
+void test_orb_5_two_pages_of_one_kind_share_a_line_with_the_oldest_age() {
+    Facts f = facts();
+    f.sources.push_back({"weather", true, 25 * 60}); // a second weather page, older
+    f.sources.push_back({"web data", true, 40});
+    expectPage(infopage::page(4, f), {{"Data", Kind::Title},
+                                      {"weather 25 min ago", Kind::Plain},
+                                      {"stocks 12 min ago", Kind::Plain},
+                                      {"web data 40 s ago", Kind::Plain},
+                                      {"MQTT 12 s ago", Kind::Plain}});
+}
+
+void test_orb_5_one_page_of_a_kind_without_data_wins_over_its_age() {
+    Facts f = facts();
+    f.sources.push_back({"weather", false, 0});
+    const Page p = infopage::page(4, f);
+    TEST_ASSERT_EQUAL_STRING("weather no data yet", p[1].text.c_str());
+}
+
+void test_orb_5_mqtt_connected_with_nothing_received_yet() {
     Facts f = facts();
     f.mqtt[0].hasData = false;
-    expectPage(infopage::page(4, f), {{"Data", Kind::Title}, {"MQTT connected", Kind::Plain}, {"no data yet", Kind::Plain}});
+    const Page p = infopage::page(4, f);
+    TEST_ASSERT_EQUAL_STRING("MQTT no data yet", p.back().text.c_str());
 }
 
-void test_orb_5_not_connected_still_says_how_old_the_data_is() {
+void test_orb_5_mqtt_not_connected_says_so() {
     Facts f = facts();
     f.mqtt[0].connected = false;
-    f.mqtt[0].dataAgeS = 300;
-    expectPage(infopage::page(4, f), {{"Data", Kind::Title}, {"MQTT not connected", Kind::Plain}, {"data 5 min ago", Kind::Plain}});
+    const Page p = infopage::page(4, f);
+    TEST_ASSERT_EQUAL_STRING("MQTT not connected", p.back().text.c_str());
 }
 
-void test_orb_5_numbers_two_brokers() {
+void test_orb_5_two_brokers_share_a_line_with_the_oldest_data() {
     Facts f = facts();
-    f.mqtt[1].inUse = true;
-    expectPage(infopage::page(4, f), {{"Data", Kind::Title},
-                                      {"MQTT 1 connected", Kind::Plain},
-                                      {"data 12 s ago", Kind::Plain},
-                                      {"MQTT 2 not connected", Kind::Plain},
-                                      {"no data yet", Kind::Plain}});
+    f.mqtt[1] = {true, true, true, 90};
+    const Page p = infopage::page(4, f);
+    TEST_ASSERT_EQUAL_INT(4, p.size());
+    TEST_ASSERT_EQUAL_STRING("MQTT 1 min ago", p.back().text.c_str());
+}
+
+void test_orb_5_names_the_broker_that_is_not_connected() {
+    Facts f = facts();
+    f.mqtt[1] = {true, false, false, 0};
+    TEST_ASSERT_EQUAL_STRING("MQTT 2 not connected", infopage::page(4, f).back().text.c_str());
+    f.mqtt[0].connected = false;
+    TEST_ASSERT_EQUAL_STRING("MQTT not connected", infopage::page(4, f).back().text.c_str()); // both
+}
+
+void test_orb_5_only_the_second_broker_in_use() {
+    Facts f = facts();
+    f.mqtt[0] = infopage::Mqtt{};
+    f.mqtt[1] = {true, true, true, 7};
+    TEST_ASSERT_EQUAL_STRING("MQTT 7 s ago", infopage::page(4, f).back().text.c_str());
 }
 
 void test_every_orb_has_a_title_and_at_most_five_lines() {
     Facts f = facts();
     f.mqtt[1].inUse = true;
+    for (const char *kind : {"web data", "a fourth kind", "a fifth kind"}) {
+        f.sources.push_back({kind, true, 5});
+    }
     for (int orb = 0; orb < infopage::kOrbs; orb++) {
         const Page p = infopage::page(orb, f);
         TEST_ASSERT_TRUE(p.size() >= 2 && p.size() <= 5);
         TEST_ASSERT_TRUE(p[0].kind == Kind::Title);
     }
+    // MQTT keeps its line when the kinds run over: it is the last one
+    TEST_ASSERT_EQUAL_STRING("MQTT 2 not connected", infopage::page(4, f).back().text.c_str());
 }
 
 // --- drawing only what changed ------------------------------------------------
@@ -304,11 +364,17 @@ int main() {
     RUN_TEST(test_orb_3_is_the_address);
     RUN_TEST(test_orb_3_has_no_address_without_wifi);
     RUN_TEST(test_orb_4_is_the_health);
-    RUN_TEST(test_orb_5_is_the_data);
-    RUN_TEST(test_orb_5_without_mqtt_says_it_is_not_in_use);
-    RUN_TEST(test_orb_5_connected_with_nothing_received_yet);
-    RUN_TEST(test_orb_5_not_connected_still_says_how_old_the_data_is);
-    RUN_TEST(test_orb_5_numbers_two_brokers);
+    RUN_TEST(test_orb_5_lists_each_kind_of_data_and_when_it_last_refreshed);
+    RUN_TEST(test_orb_5_without_mqtt_still_shows_the_other_data);
+    RUN_TEST(test_orb_5_with_no_data_pages_at_all_says_so);
+    RUN_TEST(test_orb_5_a_page_with_nothing_fetched_yet_says_so);
+    RUN_TEST(test_orb_5_two_pages_of_one_kind_share_a_line_with_the_oldest_age);
+    RUN_TEST(test_orb_5_one_page_of_a_kind_without_data_wins_over_its_age);
+    RUN_TEST(test_orb_5_mqtt_connected_with_nothing_received_yet);
+    RUN_TEST(test_orb_5_mqtt_not_connected_says_so);
+    RUN_TEST(test_orb_5_two_brokers_share_a_line_with_the_oldest_data);
+    RUN_TEST(test_orb_5_names_the_broker_that_is_not_connected);
+    RUN_TEST(test_orb_5_only_the_second_broker_in_use);
     RUN_TEST(test_every_orb_has_a_title_and_at_most_five_lines);
     RUN_TEST(test_nothing_is_redrawn_when_nothing_changed);
     RUN_TEST(test_only_the_changed_line_is_redrawn);

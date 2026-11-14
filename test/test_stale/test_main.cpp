@@ -380,6 +380,40 @@ void test_rings_that_go_while_wifi_is_still_out_repaint_and_keep_the_words() {
     TEST_ASSERT_EQUAL_HEX8(0x02, p.orbs);
 }
 
+// --- when the data last refreshed well, for the info page ----------------------
+
+void test_no_good_refresh_yet_before_any_try() {
+    stale::Tracker t;
+    TEST_ASSERT_FALSE(t.lastGood().any);
+}
+
+void test_a_failed_first_try_is_not_a_good_refresh() {
+    stale::Tracker t;
+    t.attempt(1000, false, WEATHER);
+    TEST_ASSERT_FALSE(t.lastGood().any);
+}
+
+void test_the_last_good_refresh_is_remembered_through_failures() {
+    stale::Tracker t;
+    t.attempt(5000, true, WEATHER);
+    TEST_ASSERT_TRUE(t.lastGood().any);
+    TEST_ASSERT_EQUAL_UINT32(5000, t.lastGood().at);
+    t.attempt(5000 + 10 * MIN, false, WEATHER);
+    t.attempt(5000 + 20 * MIN, false, WEATHER);
+    TEST_ASSERT_TRUE(t.lastGood().any);
+    TEST_ASSERT_EQUAL_UINT32(5000, t.lastGood().at);
+    t.attempt(5000 + 30 * MIN, true, WEATHER);
+    TEST_ASSERT_EQUAL_UINT32(5000 + 30 * MIN, t.lastGood().at);
+}
+
+void test_a_good_refresh_after_a_failed_first_try_counts() {
+    stale::Tracker t;
+    t.attempt(1000, false, WEATHER);
+    t.attempt(1000 + 10 * MIN, true, WEATHER);
+    TEST_ASSERT_TRUE(t.lastGood().any);
+    TEST_ASSERT_EQUAL_UINT32(1000 + 10 * MIN, t.lastGood().at);
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_page_is_fresh_after_a_good_refresh);
@@ -426,5 +460,9 @@ int main() {
     RUN_TEST(test_the_ring_joins_the_words_without_a_repaint);
     RUN_TEST(test_the_words_come_off_when_wifi_is_back);
     RUN_TEST(test_rings_that_go_while_wifi_is_still_out_repaint_and_keep_the_words);
+    RUN_TEST(test_no_good_refresh_yet_before_any_try);
+    RUN_TEST(test_a_failed_first_try_is_not_a_good_refresh);
+    RUN_TEST(test_the_last_good_refresh_is_remembered_through_failures);
+    RUN_TEST(test_a_good_refresh_after_a_failed_first_try_counts);
     return UNITY_END();
 }

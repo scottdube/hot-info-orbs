@@ -193,7 +193,7 @@ void setup() {
     wifiWidget = new WifiWidget(*sm);
     otaUpdater = new OtaUpdater(*sm);
     settingsPage = new SettingsPage(*otaUpdater);
-    infoPage = new InfoPage(*sm);
+    infoPage = new InfoPage(*sm, *widgetSet);
     // Every splash screen is drawn before the eyes start: from here until
     // BootEyes::finish the eye task is the only thing drawing
     wifiWidget->begin(!eyesWanted);

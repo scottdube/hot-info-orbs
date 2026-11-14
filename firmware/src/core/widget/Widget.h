@@ -20,6 +20,11 @@ public:
     // failing and what it shows is old. A page that fetches nothing (the
     // clock) never is.
     virtual bool dataStale() { return false; }
+    // For the info page on the orbs (InfoPagePolicy.h): the kind of data this
+    // page fetches, "weather", and when it last got it. nullptr = it has no
+    // line there: it fetches nothing, or MQTT, which has its own line.
+    virtual const char *dataKind() { return nullptr; }
+    virtual stale::LastGood lastGood() { return {false, 0}; }
     // The orbs that show that data, bit 0 = orb 1. Those get the ring. 0 =
     // the page fetches nothing, and is not told about WiFi either.
     virtual uint8_t dataOrbs() { return 0x1F; }

@@ -239,7 +239,7 @@ the button is still down (a press is only measured when it ends):
 | 2 WiFi | Network name, signal as a word and in dBm, channel; or "No WiFi" |
 | 3 Address | IP address and the `.local` name |
 | 4 Health | Time since start, why it last started, free memory |
-| 5 Data | Each MQTT broker in use: connected or not, how long since data last arrived |
+| 5 Data | One line for each kind of data page in the rotation (weather, stocks, web data): how long since it last refreshed well. Then one MQTT line: not connected, or how long since data last arrived |
 
 Any button closes it, and so does a minute without one; the closing press
 does nothing else, and the page that was on show draws again. While it is open
@@ -253,6 +253,17 @@ the orbs only, never to the device log. Rules and wording:
 `InfoPage.cpp`. Rejected: a sixth page in the rotation (it would come around
 on its own on every orb), and closing with the same 2 second hold (any button
 is what a hand tries first).
+
+Orb 5 (changed 2026-11-14, the day it was built: an orb with no MQTT showed
+only "MQTT not in use" there). It has room for four lines under the title and
+an orb can have eight data pages, so pages of one kind share a line, and the
+line tells the worst of them: "no data yet" if one has fetched nothing since
+power-on, else the oldest age. Two brokers share the MQTT line the same way,
+and one that is not connected is named ("MQTT 2 not connected"). A page ticked
+off in the settings has no line. A page is refreshed only while it is the one
+on show, so with many pages in the rotation an age of several minutes is
+normal. Rejected: a line per page (does not fit), and keeping two lines per
+broker (weather, stocks and one broker would already need five).
 
 ## R2 — Over-the-air firmware updates
 

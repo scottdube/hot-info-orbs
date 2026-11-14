@@ -21,6 +21,8 @@ public:
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
     String getName() override;
     bool dataStale() override { return m_fresh.stale(); }
+    const char *dataKind() override { return "stocks"; }
+    stale::LastGood lastGood() override { return m_fresh.lastGood(); }
     uint8_t dataOrbs() override { return (uint8_t)((1u << m_stockCount) - 1); } // one orb per ticker
     // Over the whole percent line (y 37..59, up to 100 px wide). The default
     // spot cut that line and the arrow above it in half.

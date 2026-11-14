@@ -24,6 +24,8 @@ public:
     void buttonPressed(uint8_t buttonId, ButtonState state) override;
     String getName() override;
     bool dataStale() override { return m_fresh.stale(); }
+    const char *dataKind() override { return "weather"; }
+    stale::LastGood lastGood() override { return m_fresh.lastGood(); }
     uint8_t dataOrbs() override { return 0x1E; } // orb 1 is the clock
 
 private:

@@ -174,6 +174,13 @@ struct Mqtt {
     uint32_t dataAgeS = 0; // how long ago the newest one arrived
 };
 
+// One data page in the rotation: "weather", "stocks", "web data"
+struct Source {
+    std::string name;
+    bool hasData; // false: nothing fetched since power-on
+    uint32_t ageS; // since the last good refresh
+};
+
 // Everything the page shows, gathered by the firmware once a second.
 struct Facts {
     std::string version, commit, built; // built: "2026-11-13 21:05 UTC"
@@ -185,12 +192,62 @@ struct Facts {
     uint32_t upS = 0;
     Start start = Start::Unknown;
     uint32_t freeBytes = 0;
+    std::vector<Source> sources;
     Mqtt mqtt[2];
 };
 
-inline void addMqtt(Page &p, const Mqtt &m, const char *label) {
-    p.push_back({std::string(label) + (m.connected ? " connected" : " not connected"), Kind::Plain});
-    p.push_back({m.hasData ? "data " + spanText(m.dataAgeS) + " ago" : std::string("no data yet"), Kind::Plain});
+// Orb 5 holds a title and four lines, and an orb can have more data pages
+// than that (three weather pages, stocks, two web data pages, two brokers), so
+// each kind of page gets one line, and the line tells the worst of its pages:
+// one that has fetched nothing yet, or else the oldest.
+inline std::vector<Source> byKind(const std::vector<Source> &sources) {
+    std::vector<Source> kinds; // in the order the pages come in the rotation
+    for (const Source &s : sources) {
+        Source *kind = nullptr;
+        for (Source &k : kinds) {
+            if (k.name == s.name) {
+                kind = &k;
+            }
+        }
+        if (!kind) {
+            kinds.push_back(s);
+        } else if (!s.hasData) {
+            kind->hasData = false;
+        } else if (kind->hasData && s.ageS > kind->ageS) {
+            kind->ageS = s.ageS;
+        }
+    }
+    return kinds;
+}
+
+// The one MQTT line, empty when no broker is in use. A broker that is not
+// connected comes first: the age of data that has stopped arriving says less
+// than that. It is numbered only when the other broker is fine.
+inline std::string mqttLine(const Mqtt m[2]) {
+    int inUse = 0, down = 0, lastDown = 0;
+    bool waiting = false;
+    uint32_t oldest = 0;
+    for (int i = 0; i < 2; i++) {
+        if (!m[i].inUse) {
+            continue;
+        }
+        inUse++;
+        if (!m[i].connected) {
+            down++;
+            lastDown = i + 1;
+        } else if (!m[i].hasData) {
+            waiting = true;
+        } else if (m[i].dataAgeS > oldest) {
+            oldest = m[i].dataAgeS;
+        }
+    }
+    if (inUse == 0) {
+        return "";
+    }
+    if (down > 0) {
+        return inUse == 2 && down == 1 ? "MQTT " + std::to_string(lastDown) + " not connected" : std::string("MQTT not connected");
+    }
+    return waiting ? std::string("MQTT no data yet") : "MQTT " + spanText(oldest) + " ago";
 }
 
 // The lines of one orb, 0 to 4 from the left: a title and up to four lines.
@@ -230,13 +287,21 @@ inline Page page(int orb, const Facts &f) {
         break;
     default:
         p.push_back({"Data", Kind::Title});
-        if (f.mqtt[0].inUse && f.mqtt[1].inUse) {
-            addMqtt(p, f.mqtt[0], "MQTT 1");
-            addMqtt(p, f.mqtt[1], "MQTT 2");
-        } else if (f.mqtt[0].inUse || f.mqtt[1].inUse) {
-            addMqtt(p, f.mqtt[0].inUse ? f.mqtt[0] : f.mqtt[1], "MQTT");
-        } else {
-            p.push_back({"MQTT not in use", Kind::Plain});
+        {
+            const std::string mqtt = mqttLine(f.mqtt);
+            const size_t room = mqtt.empty() ? 4 : 3; // MQTT keeps its line when the kinds run over
+            for (const Source &k : byKind(f.sources)) {
+                if (p.size() > room) {
+                    break;
+                }
+                p.push_back({k.name + (k.hasData ? " " + spanText(k.ageS) + " ago" : std::string(" no data yet")), Kind::Plain});
+            }
+            if (!mqtt.empty()) {
+                p.push_back({mqtt, Kind::Plain});
+            }
+            if (p.size() == 1) {
+                p.push_back({"no data pages", Kind::Plain});
+            }
         }
         break;
     }

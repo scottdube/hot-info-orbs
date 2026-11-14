@@ -1,5 +1,6 @@
 #include "InfoPage.h"
 #include "Utils.h"
+#include "WidgetSet.h"
 #include "build_id.h"
 #include "config_helper.h"
 #include "mqttwidget/MqttFeed.h"
@@ -52,7 +53,7 @@ uint32_t colorOf(infopage::Kind kind) {
 
 } // namespace
 
-InfoPage::InfoPage(ScreenManager &manager) : m_manager(manager) {}
+InfoPage::InfoPage(ScreenManager &manager, WidgetSet &pages) : m_manager(manager), m_pages(pages) {}
 
 infopage::Press InfoPage::press(bool okHeldLong) {
     const infopage::Press result = m_session.press(okHeldLong, millis());
@@ -87,6 +88,14 @@ infopage::Facts InfoPage::facts(bool linkUp, const bool mqttInUse[2]) const {
     f.start = startOf(esp_reset_reason());
     f.freeBytes = ESP.getFreeHeap();
     const uint32_t now = millis();
+    for (int8_t i = 0; i < m_pages.count(); i++) {
+        Widget *page = m_pages.page(i);
+        if (!m_pages.shown(i) || !page->dataKind()) {
+            continue; // a page taken out of the rotation is not refreshed: its age would only alarm
+        }
+        const stale::LastGood good = page->lastGood();
+        f.sources.push_back({page->dataKind(), good.any, (now - good.at) / 1000});
+    }
     for (int slot = 0; slot < 2; slot++) {
         const MqttStatus &st = MqttFeed::status(slot);
         f.mqtt[slot].inUse = mqttInUse[slot];

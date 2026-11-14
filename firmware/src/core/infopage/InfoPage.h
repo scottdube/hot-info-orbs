@@ -6,9 +6,11 @@
 #include "InfoPagePolicy.h"
 #include "ScreenManager.h"
 
+class WidgetSet;
+
 class InfoPage {
 public:
-    explicit InfoPage(ScreenManager &manager);
+    InfoPage(ScreenManager &manager, WidgetSet &pages);
 
     bool isOpen() const { return m_session.isOpen(); }
 
@@ -26,6 +28,7 @@ private:
     void drawLine(const infopage::Page &page, int index);
 
     ScreenManager &m_manager;
+    WidgetSet &m_pages; // for orb 5: when each data page last refreshed
     infopage::Session m_session;
     infopage::Page m_shown[infopage::kOrbs]; // what each orb has on it now
 };

@@ -32,6 +32,8 @@ public:
     String getName() override;
     static const WebDataStatus &status();
     bool dataStale() override { return m_fresh.stale(); }
+    const char *dataKind() override { return "web data"; }
+    stale::LastGood lastGood() override { return m_fresh.lastGood(); }
 
 private:
     bool fetch(); // one bounded GET; true when the data was applied

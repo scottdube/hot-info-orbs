@@ -62,6 +62,14 @@ inline uint32_t nextWaitMs(uint32_t refreshMs, uint32_t limit, uint32_t misses) 
     return refreshMs;
 }
 
+// When a page last refreshed well. any = false: not since power-on.
+// No default values in it: the ESP32 compiler is C++11, where they would stop
+// {true, now} from compiling.
+struct LastGood {
+    bool any;
+    uint32_t at;
+};
+
 // One page's data. Call attempt() after every refresh, good or bad. A feed
 // with no refresh time (an MQTT connection) calls it on every pass with
 // refreshMs 0: stale once it has been down for the floor.
@@ -76,14 +84,20 @@ public:
             m_started = true;
             m_since = now;
         }
+        if (ok) {
+            m_good = {true, now};
+        }
         m_stale = !ok && (now - m_since) >= limit; // unsigned: right across the millis() wrap
     }
     bool stale() const { return m_stale; }
+    // For the info page: m_since cannot say this, it is also the first failed try
+    LastGood lastGood() const { return m_good; }
 
 private:
     bool m_started = false;
     bool m_stale = false;
     uint32_t m_since = 0; // the last good refresh, or the first try
+    LastGood m_good{false, 0};
 };
 
 enum class Mark : uint8_t {
