@@ -694,4 +694,15 @@ What it means: if that allowance runs out, or its owner revokes the key, every
 stocks orb goes empty while weather keeps working, and it looks like a fault
 in this firmware. TROUBLESHOOTING has the row. The fix is a settings-page key
 field like the weather one: a firmware change, held for after the 1.8.0
-freeze. Twelve Data's current free limits were not checked.
+freeze.
+
+**Measured 2026-11-14 (Saturday, markets closed), via `/api_usage`:** the key
+is on a **paid Grow plan** (`plan_category: grow`, `plan_limit: 144` credits a
+minute, the $49/month tier), not the free one, so there is **no daily cap**;
+only the per-minute limit applies, and over it Twelve Data answers 429. Usage
+in the current minute read **64 at :47 and 85 at :59**, so about 60% of the
+limit with the markets shut; readings at :01-:03 (2, 1, 6) only show the
+counter just reset. A quote costs one credit per ticker, so one HOT set adds at
+most 5 a minute. Weekday market hours, and how close the busiest minutes come to
+144, are not measured. Each `/api_usage` read itself costs one credit of their
+allowance: sample sparingly, from the end of a minute.
