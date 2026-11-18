@@ -877,3 +877,44 @@ overwriting, and nothing is killed. Test a binary with `"$f" --version; echo $?`
 **Not established:** whether it recurs on the next launch, now that the file
 exists again and will be overwritten in place. Check for new
 `nrfutil-*.ips` files before trusting the launcher.
+
+## A failing time sync freezes the clock colon and stalls the buttons (issue #52, 2026-11-18)
+
+Reproduced on the rig (XIAO, debug build e7e799c) by blocking only the orb's
+traffic at the router, WiFi left up. The time pages were rotating as usual.
+
+- **Internet blocked, DNS still answering (14:15:27):** the log showed
+  `time sync failed (1021 ms), retrying every pass` at 14:16:07, and Scott saw
+  the colon freeze at 2:16: stuck off, then stuck on at 2:17. HTTP latency to
+  the orb rose from 0.33 s mean to 0.68 s, with a 1.9 s max.
+- **DNS to the gateway blocked as well, so a real outage (14:17:41):** passes
+  of 8.7 s, of which the time sync took 8.0 s (DNS lookup timeout plus the 1 s
+  wait). HTTP requests timed out at 6 s. Scott: "it freezes and also seems to
+  prevent the buttons from working normally."
+- **Unblocked at 14:19:37:** `time sync ok again after 71 failures in 220 s,
+  121613 ms blocked`, logged at 14:19:48. The orb spent 2 of those 3.7 minutes
+  waiting on the time sync.
+
+**Why the colon freezes even when no pass takes 2 s:**
+- `GlobalTime::updateTime()` refreshes every time field, the seconds
+  included, only inside its once-a-second gate, and that same gate calls
+  `NTPClient::update()`.
+- arduino-libraries/NTPClient 3.2.1 does not record a failed attempt, so it
+  tries again on every gate. Each try costs at least 1 s: 101 × `delay(10)`,
+  plus the DNS lookup `beginPacket()` does every time.
+- So the seconds advance about every 2 s, in steps of 2. The colon (lit on
+  even seconds, `ClockWidget.cpp:58`) sticks on one parity and flips when a
+  step drifts to 1 or 3.
+- The buttons are caught by interrupts but acted on once per pass, so a
+  press waits for the pass to end.
+
+**The debug build's slow-loop watch missed stage 1.** It counts *consecutive*
+passes over 1 s, but only the pass carrying the sync is slow, and the
+gate-skipping passes between are fast. The sync-failure line is the one that
+names the cause. Stage 2 tripped the watch only because its passes were long.
+
+**Not yet established:** what makes Yang's and the rig's syncs fail in normal
+running (a time server or DNS hiccup of about 30 s fits the reported
+duration). Fix direction, not yet built: keep the clock running from the
+system time between syncs, and make the sync non-blocking (ESP-IDF SNTP) or
+at least back off after a failure.
