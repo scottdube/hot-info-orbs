@@ -113,7 +113,13 @@ Two ways to build it:
 | Discrete | P-channel MOSFET (e.g. AO3401A) in the 5 V line, 10 kΩ gate to 5 V; N-channel MOSFET (e.g. 2N7002) pulling that gate to ground; 10 kΩ from the 2N7002 gate to 3.3 V | The 2N7002 is needed because a 3.3 V pin cannot turn off a P-FET whose source is at 5 V. With the pull-up on the 2N7002, the displays are **on** by default, during boot and on firmware that knows nothing about the switch. The firmware drives the pin low to turn them off. |
 | Load-switch chip | One IC rated to 5.5 V with a logic-level enable and controlled turn-on (TI TPS22918 is one; check the datasheet before choosing) | One part instead of three, and it ramps on gently. That matters because the ESP32's regulator is fed from the same 5 V line, and a hard switch-on dip could reset it. Needs a pull-up on the enable pin for the same displays-on default. |
 
-*The pin.* The firmware already uses GPIO 1, 2 and 4–15. The vendor pinout
+*The pin.* **On the XIAO board there is no free pin (noted 2026-11-18).** All
+11 XIAO GPIO are in use: 3 buttons, 5 chip-selects, SCLK, DC, MOSI (see
+`docs/VARIANT-XIAO-ESP32S3.md`, "Pin assignment and why"). The S3 Plus's extra
+D11–D19 pads are on its back, out of reach of this board, and builders may
+fit either module anyway. So on the XIAO, a 5 V display switch also needs a
+board change to free or add a pin. The rest of this paragraph was written for
+the earlier ESP32-S3 SuperMini, which had spare pins: The firmware already uses GPIO 1, 2 and 4–15. The vendor pinout
 lists 16, 17, 18 and 21 as broken out and safe to use, but nobody has checked
 them on the board we have. Look on the back pads before designing around one.
 Avoid the strapping pins (0, 3, 45, 46). GPIO 14 is taken: it's the dummy
