@@ -35,6 +35,11 @@ public:
     static GlobalTime *getInstance();
 
     void updateTime();
+    // The last updateTime(): whether an NTP sync was tried, whether it got
+    // the time, and how long the NTP call held the loop (issue #52)
+    bool syncAttempted() const { return m_syncAttempted; }
+    bool syncOk() const { return m_syncOk; }
+    uint32_t syncMs() const { return m_syncMs; }
     void getHourAndMinute(int &hour, int &minute);
     int getHour();
     int getHour24();
@@ -79,6 +84,9 @@ private:
 
     unsigned long m_oneSecond = 1000;
     unsigned long m_updateTimer = 0;
+    bool m_syncAttempted{false};
+    bool m_syncOk{false};
+    uint32_t m_syncMs{0};
 
     bool m_format24hour{Settings::get().h24};
 

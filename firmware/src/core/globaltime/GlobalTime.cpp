@@ -33,8 +33,14 @@ GlobalTime *GlobalTime::getInstance() {
 }
 
 void GlobalTime::updateTime() {
+    m_syncAttempted = false;
     if (millis() - m_updateTimer > m_oneSecond) {
-        m_timeClient->update();
+        const uint32_t syncStart = millis();
+        m_syncOk = m_timeClient->update();
+        m_syncMs = millis() - syncStart;
+        // update() is false both when no sync was due (it returns at once)
+        // and when one failed, which takes its whole wait: 101 x delay(10)
+        m_syncAttempted = m_syncOk || m_syncMs >= 900;
         const time_t utc = m_timeClient->getEpochTime();
         m_timeZoneOffset = tzdb::offsetAt(utc);
         // Local time kept as an epoch: the widgets read it through TimeLib's

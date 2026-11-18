@@ -1,6 +1,7 @@
 #include "Button.h"
 #include "DeviceLogStore.h"
 #include "GlobalTime.h"
+#include "LoopWatch.h"
 #include "InfoPage.h"
 #include "OtaUpdater.h"
 #include "ScreenManager.h"
@@ -89,6 +90,16 @@ void setupButtons() {
 static bool s_fsMounted = false;
 // The eyes are up from WiFi connect until the first page (orb 3 shows the nose)
 static bool s_eyesShowing = false;
+
+// Issue #52 (colon freeze): the time sync and slow loop passes, in the log
+static devlog::SyncWatch s_syncWatch;
+static devlog::SlowWatch s_slowWatch;
+
+static void logNews(const std::string &news) {
+    if (!news.empty()) {
+        DeviceLog::note("%s", news.c_str());
+    }
+}
 
 // Orb 3's start-up picture: the uploaded one if there is one and it decodes;
 // the built-in logo otherwise, drawn over whatever part of a bad file got drawn
@@ -429,22 +440,34 @@ void loop() {
         if (otaUpdater->isUpdating()) {
             return; // leave the CPU and screen 2 to the upload
         }
+        // Timed in parts for the slow-pass log (issue #52); a pass starts
+        // here, after the web server and OTA have had their turn
+        const uint32_t passStart = millis();
+        devlog::PassParts parts{};
         wifiWidget->roamIfWeak();
         wifiWidget->rejoinIfDown();
+        uint32_t t = millis();
         globalTime->updateTime();
+        parts.ntp = millis() - t;
         DeviceLog::clock(globalTime->getUnixEpoch());
+        logNews(s_syncWatch.step(millis() / 1000, globalTime->syncAttempted(), globalTime->syncOk(), globalTime->syncMs()));
 
         checkButtons();
 
         widgetSet->setLinkUp(wifiWidget->linkUp());
+        t = millis();
         if (!infoPage->isOpen()) {
             widgetSet->updateCurrent(); // waits: nothing else draws under the info page
         }
+        parts.page = millis() - t;
+        t = millis();
         for (MqttFeed *feed : mqttFeeds) {
             if (feed && feed->wanted()) {
                 feed->service(); // values current when a page comes up
             }
         }
+        parts.mqtt = millis() - t;
+        t = millis();
         widgetSet->updateBrightnessByTime(globalTime->getHour24() * 60 + globalTime->getMinute());
         if (infoPage->isOpen()) {
             // The info page has the orbs: the rotation waits. It closes on any
@@ -460,5 +483,7 @@ void loop() {
             widgetSet->drawCurrent();
             checkCycleWidgets(); // a switch redraws all five screens
         }
+        parts.draw = millis() - t;
+        logNews(s_slowWatch.step(millis() / 1000, millis() - passStart, parts));
     }
 }
