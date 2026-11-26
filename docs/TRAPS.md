@@ -1129,3 +1129,31 @@ so a straight copy gives the target the source's name and the two take
 turns answering to it. Drop `host` from the copied fields, or set the
 target's own name in the same POST. The NVS clone has the same problem: the
 name is in NVS now, so a cloned orb must be renamed on its page afterwards.
+
+## All five panels show the same image: a module batch with CS tied to ground (2026-11-25)
+
+A set built with one batch of GC9A01 modules showed the **same frame on all
+five displays, updating together**. The same board and firmware with modules
+from another source worked normally. Same image everywhere means every module
+accepts every write: the bus (SCLK, MOSI, DC, RST) is shared, and only each
+module's own CS line tells it which writes are its own.
+
+**Measured (Scott, unpowered, module out of the socket):**
+- Good module: CS to GND **~51 kΩ**; across R8 **50.4 kΩ**. The back silkscreen
+  says why: `R8-CS下拉电阻` = "R8: CS pull-down resistor", and
+  `此模块可不接CS,RST` = "this module works without CS and RST connected".
+  R8 is the top row of parts, far right (beside R1x, after C6/C4/C7). A 51k
+  pull-down is harmless here: the ESP32 drives CS high over it easily.
+- Faulty batch: CS to GND **0 Ω**. CS is hard-wired low, so the ESP32 cannot
+  deselect the module, and on the faulty set each CS GPIO was driving high
+  into that short.
+
+**Not established:** whether the 0 Ω is a 0 Ω part fitted at R8 or a bridge
+elsewhere. Firmware cannot fix it either way. **Next:** lift R8 on one faulty
+module, re-measure CS to GND (expect open), and run it in a set. If it works,
+fitting a 10k–100k at R8 matches the good module exactly; leaving it empty
+should also work because the ESP32 drives CS from boot.
+
+**Incoming check:** an ohmmeter from CS to GND on every module before it goes
+into a kit. 0 Ω = this fault. Listing photos and the front of the module do
+not show it.
