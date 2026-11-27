@@ -36,7 +36,7 @@ Each page uses all five orbs. The orbs move from page to page on their own, or y
 - **Winged Speedster:** a 3D-printed Jet Age case with brass-colored rings, buttons and wings.
 - **Acrylic Sandwich:** the board held between two clear acrylic panels, for a clean modern look.
 
-![The orbs held between two clear acrylic panels](https://raw.githubusercontent.com/scottdube/hot-info-orbs/main/hardware/enclosures/acrylic-sandwich/acrylic%20sandwich.jpg)
+![The orbs held between two clear acrylic panels](https://raw.githubusercontent.com/scottdube/hot-info-orbs/main/hardware/enclosures/Acrylic-Sandwich/acrylic%20sandwich.jpg)
 
 *Rendering of the Acrylic Sandwich enclosure.*
 

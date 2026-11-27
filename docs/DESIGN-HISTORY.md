@@ -155,7 +155,7 @@ The finished files went in on 12 November 2026: one `.3mf` per part, two Bambu S
 
 Fasteners were settled the same way as the board: by measuring. Boss depth was checked in Fusion for each screw path, which showed one length engages better everywhere than two. Each kit uses **15 #4 × 3/8 in Phillips pan-head screws**; 600 were ordered on 9 November 2026 for a 40-kit run, about $0.58 a kit landed.
 
-![Exploded view of the Winged Speedster enclosure](https://raw.githubusercontent.com/scottdube/hot-info-orbs/main/hardware/enclosures/winged-speedster/exploded%20master%20assembly.jpg)
+![Exploded view of the Winged Speedster enclosure](https://raw.githubusercontent.com/scottdube/hot-info-orbs/main/hardware/enclosures/Winged-Speedster/exploded%20master%20assembly.jpg)
 
 *Winged Speedster, exploded view of the master assembly.*
 
@@ -168,7 +168,7 @@ A minimal open-frame case. The board is clamped between two 6.35 mm (1/4 in) cle
 - The only printed part is a display standoff, glued to the board.
 - The Fusion file is self-contained, so others can change it without the Winged Speedster files.
 
-![Acrylic Sandwich enclosure](https://raw.githubusercontent.com/scottdube/hot-info-orbs/main/hardware/enclosures/acrylic-sandwich/acrylic%20sandwich.jpg)
+![Acrylic Sandwich enclosure](https://raw.githubusercontent.com/scottdube/hot-info-orbs/main/hardware/enclosures/Acrylic-Sandwich/acrylic%20sandwich.jpg)
 
 *Acrylic Sandwich: the same board between two clear panels on four rods (Fusion render).*
 
@@ -255,7 +255,7 @@ All from the project repository, [github.com/scottdube/hot-info-orbs](https://gi
 - [VARIANT-XIAO-ESP32S3.md](https://github.com/scottdube/hot-info-orbs/blob/main/docs/VARIANT-XIAO-ESP32S3.md) and [VARIANT-ESP32-S3-SUPERMINI.md](https://github.com/scottdube/hot-info-orbs/blob/main/docs/VARIANT-ESP32-S3-SUPERMINI.md)
 - [POWER-MEASURED.md](https://github.com/scottdube/hot-info-orbs/blob/main/docs/POWER-MEASURED.md)
 - [ENCLOSURE.md](https://github.com/scottdube/hot-info-orbs/blob/main/docs/ENCLOSURE.md)
-- [Winged Speedster README](https://github.com/scottdube/hot-info-orbs/blob/main/hardware/enclosures/winged-speedster/README.md) and [Acrylic Sandwich README](https://github.com/scottdube/hot-info-orbs/blob/main/hardware/enclosures/acrylic-sandwich/README.md)
+- [Winged Speedster README](https://github.com/scottdube/hot-info-orbs/blob/main/hardware/enclosures/Winged-Speedster/README.md) and [Acrylic Sandwich README](https://github.com/scottdube/hot-info-orbs/blob/main/hardware/enclosures/Acrylic-Sandwich/README.md)
 - [ESPHOME-EVALUATION.md](https://github.com/scottdube/hot-info-orbs/blob/main/docs/ESPHOME-EVALUATION.md)
 - `partitions.csv`, git history and release tags
 - Original design: [brettdottech/info-orbs](https://github.com/brettdottech/info-orbs)
