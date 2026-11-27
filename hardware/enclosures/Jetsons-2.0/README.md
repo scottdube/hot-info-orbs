@@ -2,6 +2,8 @@
 
 **Community-ready 3D-print files — final physically fitted front: P30.**
 
+![Jetsons](IMG_1081.jpeg)
+
 This project is a retro-futuristic enclosure for a PCB with **five circular displays at 46.00 mm center-to-center spacing**. The final P30 front panel was confirmed by the builder to align correctly after the display opening coordinates were mirrored horizontally. **Do not substitute P19, P26, P27, P29 or the P28 test gauges for the final P30 front.** The rear enclosure is the previously validated P23.
 
 > This package contains mechanical 3D-print files and PCB Gerber reference/manufacturing files; it does **not** include display firmware, a schematic, source electronics design, a PCB bill of materials, or a guaranteed ready-to-slice printer profile. Printer settings below are starting recommendations, not measured settings from the builder's final successful print.
