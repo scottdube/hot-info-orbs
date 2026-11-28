@@ -13,12 +13,46 @@
     #define USE_CLOCK_CUSTOM false
 #endif
 
+#ifndef USE_CLOCK_VFD
+    #define USE_CLOCK_VFD true
+#endif
+
+#ifndef USE_CLOCK_DOTMATRIX
+    #define USE_CLOCK_DOTMATRIX true
+#endif
+
+#ifndef USE_CLOCK_STEAMPUNK
+    #define USE_CLOCK_STEAMPUNK true
+#endif
+
+// Optional blank images for empty digit positions (e.g., leading space in "9:00")
+// Set to true and add the blank.jpg image to use a separate blank instead of colon_off
+#ifndef USE_CLOCK_VFD_BLANK
+    #define USE_CLOCK_VFD_BLANK true
+#endif
+
+#ifndef USE_CLOCK_STEAMPUNK_BLANK
+    #define USE_CLOCK_STEAMPUNK_BLANK true
+#endif
+
 #if USE_CLOCK_NIXIE
     #include "nixie.h"
 #endif
 
 #if USE_CLOCK_CUSTOM
     #include "clock-custom.h"
+#endif
+
+#if USE_CLOCK_VFD
+    #include "vfd.h"
+#endif
+
+#if USE_CLOCK_DOTMATRIX
+    #include "dotmatrix.h"
+#endif
+
+#if USE_CLOCK_STEAMPUNK
+    #include "steampunk.h"
 #endif
 
 #ifndef CLOCK_FONT
@@ -71,7 +105,10 @@ struct DigitOffset {
 enum class ClockType {
     NORMAL,
     NIXIE,
-    CUSTOM
+    CUSTOM,
+    VFD,
+    DOTMATRIX,
+    STEAMPUNK
 };
 
 class ClockWidget : public Widget {
@@ -99,6 +136,9 @@ private:
     void displayImage(int displayIndex, const String &digit);
     void displayNixie(int displayIndex, const String &digit);
     void displayCustom(int displayIndex, const String &digit);
+    void displayVfd(int displayIndex, const String &digit);
+    void displayDotmatrix(int displayIndex, const String &digit);
+    void displaySteampunk(int displayIndex, const String &digit);
     void changeClockType();
     void drawNoTime();
 

@@ -14,6 +14,12 @@ ClockWidget::ClockWidget(ScreenManager &manager) : Widget(manager) {
         m_type = ClockType::NIXIE;
     } else if (s.face == (int)ClockType::CUSTOM && USE_CLOCK_CUSTOM) {
         m_type = ClockType::CUSTOM;
+    } else if (s.face == (int)ClockType::VFD && USE_CLOCK_VFD) {
+        m_type = ClockType::VFD;
+    } else if (s.face == (int)ClockType::DOTMATRIX && USE_CLOCK_DOTMATRIX) {
+        m_type = ClockType::DOTMATRIX;
+    } else if (s.face == (int)ClockType::STEAMPUNK && USE_CLOCK_STEAMPUNK) {
+        m_type = ClockType::STEAMPUNK;
     }
 }
 
@@ -191,17 +197,38 @@ void ClockWidget::changeClockType() {
     switch (m_type) {
     case ClockType::NORMAL:
         if (USE_CLOCK_NIXIE) {
-            // If nixie is enabled, use it, otherwise fall through
             m_type = ClockType::NIXIE;
             break;
         }
+        // fall through
 
     case ClockType::NIXIE:
         if (USE_CLOCK_CUSTOM) {
-            // If custom is enabled, use it, otherwise fall through
             m_type = ClockType::CUSTOM;
             break;
         }
+        // fall through
+
+    case ClockType::CUSTOM:
+        if (USE_CLOCK_VFD) {
+            m_type = ClockType::VFD;
+            break;
+        }
+        // fall through
+
+    case ClockType::VFD:
+        if (USE_CLOCK_DOTMATRIX) {
+            m_type = ClockType::DOTMATRIX;
+            break;
+        }
+        // fall through
+
+    case ClockType::DOTMATRIX:
+        if (USE_CLOCK_STEAMPUNK) {
+            m_type = ClockType::STEAMPUNK;
+            break;
+        }
+        // fall through
 
     default:
         m_type = ClockType::NORMAL;
@@ -231,7 +258,7 @@ DigitOffset ClockWidget::getOffsetForDigit(const String &digit) {
 }
 
 void ClockWidget::displayDigit(int displayIndex, const String &lastDigit, const String &digit, uint32_t color, bool shadowing) {
-    if (m_type == ClockType::NIXIE || m_type == ClockType::CUSTOM) {
+    if (pictureFace()) {
         if (digit == ":" && color == m_shadow) {
             // Show colon off
             displayImage(displayIndex, " ");
@@ -306,6 +333,21 @@ void ClockWidget::displayImage(int displayIndex, const String &digit) {
 
     case ClockType::CUSTOM:
         displayCustom(displayIndex, digit);
+        break;
+
+    case ClockType::VFD:
+        displayVfd(displayIndex, digit);
+        break;
+
+    case ClockType::DOTMATRIX:
+        displayDotmatrix(displayIndex, digit);
+        break;
+
+    case ClockType::STEAMPUNK:
+        displaySteampunk(displayIndex, digit);
+        break;
+
+    default:
         break;
     }
 }
@@ -401,6 +443,170 @@ void ClockWidget::displayCustom(int displayIndex, const String &digit) {
         break;
     case ':':
         TJpgDec.drawJpg(0, 0, clock_custom_colon_on_start, clock_custom_colon_on_end - clock_custom_colon_on_start);
+        break;
+    }
+#endif
+}
+
+void ClockWidget::displayVfd(int displayIndex, const String &digit) {
+#if USE_CLOCK_VFD
+    if (digit.length() != 1) {
+        return;
+    }
+    m_manager.selectScreen(displayIndex);
+    TJpgDec.setJpgScale(1);
+    switch (digit.charAt(0)) {
+    case '0':
+        TJpgDec.drawJpg(0, 0, vfd_0_start, vfd_0_end - vfd_0_start);
+        break;
+    case '1':
+        TJpgDec.drawJpg(0, 0, vfd_1_start, vfd_1_end - vfd_1_start);
+        break;
+    case '2':
+        TJpgDec.drawJpg(0, 0, vfd_2_start, vfd_2_end - vfd_2_start);
+        break;
+    case '3':
+        TJpgDec.drawJpg(0, 0, vfd_3_start, vfd_3_end - vfd_3_start);
+        break;
+    case '4':
+        TJpgDec.drawJpg(0, 0, vfd_4_start, vfd_4_end - vfd_4_start);
+        break;
+    case '5':
+        TJpgDec.drawJpg(0, 0, vfd_5_start, vfd_5_end - vfd_5_start);
+        break;
+    case '6':
+        TJpgDec.drawJpg(0, 0, vfd_6_start, vfd_6_end - vfd_6_start);
+        break;
+    case '7':
+        TJpgDec.drawJpg(0, 0, vfd_7_start, vfd_7_end - vfd_7_start);
+        break;
+    case '8':
+        TJpgDec.drawJpg(0, 0, vfd_8_start, vfd_8_end - vfd_8_start);
+        break;
+    case '9':
+        TJpgDec.drawJpg(0, 0, vfd_9_start, vfd_9_end - vfd_9_start);
+        break;
+    case ' ':
+        if (displayIndex == 2) {
+            // Center orb is the colon - show colon_off
+            TJpgDec.drawJpg(0, 0, vfd_colon_off_start, vfd_colon_off_end - vfd_colon_off_start);
+        } else {
+            // Other orbs - show blank for empty digit positions
+#if USE_CLOCK_VFD_BLANK
+            TJpgDec.drawJpg(0, 0, vfd_blank_start, vfd_blank_end - vfd_blank_start);
+#else
+            TJpgDec.drawJpg(0, 0, vfd_colon_off_start, vfd_colon_off_end - vfd_colon_off_start);
+#endif
+        }
+        break;
+    case ':':
+        TJpgDec.drawJpg(0, 0, vfd_colon_on_start, vfd_colon_on_end - vfd_colon_on_start);
+        break;
+    }
+#endif
+}
+
+void ClockWidget::displayDotmatrix(int displayIndex, const String &digit) {
+#if USE_CLOCK_DOTMATRIX
+    if (digit.length() != 1) {
+        return;
+    }
+    m_manager.selectScreen(displayIndex);
+    TJpgDec.setJpgScale(1);
+    switch (digit.charAt(0)) {
+    case '0':
+        TJpgDec.drawJpg(0, 0, dotmatrix_0_start, dotmatrix_0_end - dotmatrix_0_start);
+        break;
+    case '1':
+        TJpgDec.drawJpg(0, 0, dotmatrix_1_start, dotmatrix_1_end - dotmatrix_1_start);
+        break;
+    case '2':
+        TJpgDec.drawJpg(0, 0, dotmatrix_2_start, dotmatrix_2_end - dotmatrix_2_start);
+        break;
+    case '3':
+        TJpgDec.drawJpg(0, 0, dotmatrix_3_start, dotmatrix_3_end - dotmatrix_3_start);
+        break;
+    case '4':
+        TJpgDec.drawJpg(0, 0, dotmatrix_4_start, dotmatrix_4_end - dotmatrix_4_start);
+        break;
+    case '5':
+        TJpgDec.drawJpg(0, 0, dotmatrix_5_start, dotmatrix_5_end - dotmatrix_5_start);
+        break;
+    case '6':
+        TJpgDec.drawJpg(0, 0, dotmatrix_6_start, dotmatrix_6_end - dotmatrix_6_start);
+        break;
+    case '7':
+        TJpgDec.drawJpg(0, 0, dotmatrix_7_start, dotmatrix_7_end - dotmatrix_7_start);
+        break;
+    case '8':
+        TJpgDec.drawJpg(0, 0, dotmatrix_8_start, dotmatrix_8_end - dotmatrix_8_start);
+        break;
+    case '9':
+        TJpgDec.drawJpg(0, 0, dotmatrix_9_start, dotmatrix_9_end - dotmatrix_9_start);
+        break;
+    case ' ':
+        TJpgDec.drawJpg(0, 0, dotmatrix_colon_off_start, dotmatrix_colon_off_end - dotmatrix_colon_off_start);
+        break;
+    case ':':
+        TJpgDec.drawJpg(0, 0, dotmatrix_colon_on_start, dotmatrix_colon_on_end - dotmatrix_colon_on_start);
+        break;
+    }
+#endif
+}
+
+void ClockWidget::displaySteampunk(int displayIndex, const String &digit) {
+#if USE_CLOCK_STEAMPUNK
+    if (digit.length() != 1) {
+        return;
+    }
+    m_manager.selectScreen(displayIndex);
+    TJpgDec.setJpgScale(1);
+    switch (digit.charAt(0)) {
+    case '0':
+        TJpgDec.drawJpg(0, 0, steampunk_0_start, steampunk_0_end - steampunk_0_start);
+        break;
+    case '1':
+        TJpgDec.drawJpg(0, 0, steampunk_1_start, steampunk_1_end - steampunk_1_start);
+        break;
+    case '2':
+        TJpgDec.drawJpg(0, 0, steampunk_2_start, steampunk_2_end - steampunk_2_start);
+        break;
+    case '3':
+        TJpgDec.drawJpg(0, 0, steampunk_3_start, steampunk_3_end - steampunk_3_start);
+        break;
+    case '4':
+        TJpgDec.drawJpg(0, 0, steampunk_4_start, steampunk_4_end - steampunk_4_start);
+        break;
+    case '5':
+        TJpgDec.drawJpg(0, 0, steampunk_5_start, steampunk_5_end - steampunk_5_start);
+        break;
+    case '6':
+        TJpgDec.drawJpg(0, 0, steampunk_6_start, steampunk_6_end - steampunk_6_start);
+        break;
+    case '7':
+        TJpgDec.drawJpg(0, 0, steampunk_7_start, steampunk_7_end - steampunk_7_start);
+        break;
+    case '8':
+        TJpgDec.drawJpg(0, 0, steampunk_8_start, steampunk_8_end - steampunk_8_start);
+        break;
+    case '9':
+        TJpgDec.drawJpg(0, 0, steampunk_9_start, steampunk_9_end - steampunk_9_start);
+        break;
+    case ' ':
+        if (displayIndex == 2) {
+            // Center orb is the colon - show colon_off
+            TJpgDec.drawJpg(0, 0, steampunk_colon_off_start, steampunk_colon_off_end - steampunk_colon_off_start);
+        } else {
+            // Other orbs - show blank for empty digit positions
+#if USE_CLOCK_STEAMPUNK_BLANK
+            TJpgDec.drawJpg(0, 0, steampunk_blank_start, steampunk_blank_end - steampunk_blank_start);
+#else
+            TJpgDec.drawJpg(0, 0, steampunk_colon_off_start, steampunk_colon_off_end - steampunk_colon_off_start);
+#endif
+        }
+        break;
+    case ':':
+        TJpgDec.drawJpg(0, 0, steampunk_colon_on_start, steampunk_colon_on_end - steampunk_colon_on_start);
         break;
     }
 #endif

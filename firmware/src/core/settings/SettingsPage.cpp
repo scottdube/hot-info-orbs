@@ -337,14 +337,24 @@ static const char *faceName(int face) {
         return "Nixie";
     case (int)ClockType::CUSTOM:
         return "Custom";
+    case (int)ClockType::VFD:
+        return "VFD";
+    case (int)ClockType::DOTMATRIX:
+        return "Dot Matrix";
+    case (int)ClockType::STEAMPUNK:
+        return "Steampunk";
     default:
         return "Normal (LED digits)";
     }
 }
 
 static bool faceCompiledIn(int face) {
-    return face == (int)ClockType::NORMAL || (face == (int)ClockType::NIXIE && USE_CLOCK_NIXIE) ||
-           (face == (int)ClockType::CUSTOM && USE_CLOCK_CUSTOM);
+    return face == (int)ClockType::NORMAL || 
+           (face == (int)ClockType::NIXIE && USE_CLOCK_NIXIE) ||
+           (face == (int)ClockType::CUSTOM && USE_CLOCK_CUSTOM) ||
+           (face == (int)ClockType::VFD && USE_CLOCK_VFD) ||
+           (face == (int)ClockType::DOTMATRIX && USE_CLOCK_DOTMATRIX) ||
+           (face == (int)ClockType::STEAMPUNK && USE_CLOCK_STEAMPUNK);
 }
 
 // --- page ---------------------------------------------------------------------
@@ -519,7 +529,7 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
 
     h += "<fieldset id='clock'><legend>Clock</legend>";
     h += "<label for='face'>Clock face</label><select id='face' name='face'>";
-    for (int f = 0; f <= (int)ClockType::CUSTOM; f++) {
+    for (int f = 0; f <= (int)ClockType::STEAMPUNK; f++) {
         if (faceCompiledIn(f)) {
             h += option(String(f), faceName(f), f == v.face);
         }
@@ -781,7 +791,7 @@ void SettingsPage::handlePost() {
     }
     if (has("face")) {
         std::string a = argStr(s, "face");
-        if (a.size() == 1 && a[0] >= '0' && a[0] <= '2' && faceCompiledIn(a[0] - '0')) {
+        if (a.size() == 1 && a[0] >= '0' && a[0] <= '5' && faceCompiledIn(a[0] - '0')) {
             v.face = a[0] - '0';
         } else {
             errors["face"] = "That clock face is not built into this firmware";
