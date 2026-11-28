@@ -153,6 +153,11 @@ SettingsValues Settings::defaults() {
     d.tsttok = "";
 #endif
     d.awapp = d.awkey = ""; // no build-time default: page only
+    d.newskey = "";
+    d.newsminutes = 15;
+    d.newstop = false;
+    const char *newsDefaults[] = {"world", "us", "business", "technology", "science"};
+    for (int i = 0; i < 5; i++) d.newscat[i] = newsDefaults[i];
     return d;
 }
 
@@ -223,6 +228,14 @@ void Settings::load() {
             v.tsttok = p.getString("tsttok", v.tsttok.c_str()).c_str();
             v.awapp = p.getString("awapp", v.awapp.c_str()).c_str();
             v.awkey = p.getString("awkey", v.awkey.c_str()).c_str();
+            v.newskey = p.getString("newskey", v.newskey.c_str()).c_str();
+            v.newsminutes = p.getInt("newsminutes", v.newsminutes);
+            v.newstop = p.getBool("newstop", v.newstop);
+            for (int i = 0; i < 5; i++) {
+                char k[8];
+                snprintf(k, sizeof(k), "news%d", i + 1);
+                v.newscat[i] = p.getString(k, v.newscat[i].c_str()).c_str();
+            }
             for (int i = 0; i < 5; i++) {
                 char k[8];
                 snprintf(k, sizeof(k), "mqt%d", i + 1);
@@ -310,6 +323,12 @@ bool Settings::save(const SettingsValues &v) {
          putStr("wxkey", v.wxkey) && putStr("tsttok", v.tsttok) && putStr("awapp", v.awapp) && putStr("awkey", v.awkey) &&
          p.putInt("sttype1", v.sttype1) && p.putInt("sttype2", v.sttype2) && putStr("stmac1", v.stmac1) &&
          putStr("stmac2", v.stmac2);
+    ok = ok && putStr("newskey", v.newskey) && p.putInt("newsminutes", v.newsminutes) && p.putBool("newstop", v.newstop);
+    for (int i = 0; ok && i < 5; i++) {
+        char k[8];
+        snprintf(k, sizeof(k), "news%d", i + 1);
+        ok = putStr(k, v.newscat[i]);
+    }
     for (int i = 0; ok && i < 5; i++) {
         char k[8];
         snprintf(k, sizeof(k), "mqt%d", i + 1);

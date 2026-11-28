@@ -104,6 +104,9 @@ you are still holding. Any button closes it, or it closes by itself after
   or both.
 - **Stocks**: up to five tickers, one per orb. Prices come through a shared
   key built into the software; you need no key of your own.
+- **News**: headlines from NewsData.io, with categories per orb or five
+  stories ranked by source. Add your own optional key in settings; see the
+  [user guide](docs/USER-GUIDE.md#news).
 - **Custom pages** that you set up from the browser, no rebuild:
   - **Web Data** draws a JSON file from any web address.
   - **MQTT**, up to two pages, shows one live value per display from an MQTT

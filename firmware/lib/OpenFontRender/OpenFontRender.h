@@ -269,6 +269,7 @@ public:
 
 	FT_BBox calculateBoundingBoxFmt(int32_t x, int32_t y, unsigned int font_size, Align align, Layout layout, const char *fmt, ...);
 	FT_BBox calculateBoundingBox(int32_t x, int32_t y, unsigned int font_size, Align align, Layout layout, const char *str);
+	bool hasGlyph(uint32_t codepoint);
 
 	uint32_t getTextWidth(const char *fmt, ...);
 	uint32_t getTextHeight(const char *fmt, ...);

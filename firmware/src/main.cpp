@@ -14,6 +14,7 @@
 #include "config_helper.h"
 #include "icons.h"
 #include "mqttwidget/MQTTWidget.h"
+#include "newswidget/NewsWidget.h"
 #include "weatherwidget/AmbientSource.h"
 #include "weatherwidget/StationTypes.h"
 #include "weatherwidget/TempestSource.h"
@@ -276,6 +277,9 @@ void setup() {
     addStation(1, wx.sttype2, wx.tstn2, wx.stmac2, wx.tlbl2);
     if (!stationPages || !wx.wxkey.empty()) {
         widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
+    }
+    if (!Settings::get().newskey.empty()) {
+        widgetSet->add(new NewsWidget(*sm));
     }
     // Custom pages: set up on /settings, registered only when configured.
     // Saving restarts the orb, so this runs again with the new values.

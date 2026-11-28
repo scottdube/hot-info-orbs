@@ -9,6 +9,7 @@
 #include "weatherwidget/StationStatus.h"
 #include "weatherwidget/StationTypes.h"
 #include "mqttwidget/MqttFeed.h"
+#include "newswidget/NewsData.h"
 #include "webdatawidget/WebDataWidget.h"
 #include "wifiwidget/WifiWidget.h"
 #include "Utils.h"
@@ -81,7 +82,7 @@ static String contents() {
          "<a href='#place'>Time zone and location</a>"
          "<a href='#stations'>Weather stations</a><a href='#mount'>Mounting</a></div>";
     h += "<div><b><a href='#display'>Display</a></b><a href='#rotation'>Rotation</a><a href='#clock'>Clock</a>"
-         "<a href='#weather'>Weather</a>";
+         "<a href='#weather'>Weather</a><a href='#news'>News</a>";
 #ifdef STOCK_TICKER_LIST
     h += "<a href='#stocks'>Stocks</a>";
 #endif
@@ -447,6 +448,14 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
          "<input type='password' id='awkey' name='awkey' value='' placeholder='" +
          String(sv::secretPlaceholder(stored.awkey)) + "' autocomplete='off'>";
     h += hint(sv::ambientKeyHint(v.awkey, stored.awkey, ambientSet).c_str()) + errorLine(errors, "awkey");
+    h += "<label for='newskey'>NewsData.io key (optional) &mdash; "
+         "<a href='https://newsdata.io/register' target='_blank' rel='noopener noreferrer'>get a key (opens a new tab)</a></label>"
+         "<input type='password' id='newskey' name='newskey' value='' placeholder='" +
+         String(sv::secretPlaceholder(stored.newskey)) + "' autocomplete='off'>";
+    h += hint(v.newskey.empty() && stored.newskey.empty() ? "Optional: add a key to enable the News page."
+                                                           : sv::apiKeyHint(v.newskey, stored.newskey, "News").c_str()) +
+         errorLine(errors, "newskey");
+    h += "<label class='chk'><input type='checkbox' name='newsclr' value='1'> Remove the stored NewsData.io key</label>";
     h += "</fieldset>";
 
     // The set's own name (issue #72): the mDNS name and what the router lists.
@@ -536,6 +545,25 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += boolSelect("wxmetric", "Units", v.wxmetric, d.wxmetric, "&deg;F, mph", "&deg;C, km/h", errors);
     h += boolSelect("wxdark", "Weather screens", v.wxdark, d.wxdark, "Light", "Dark", errors);
     h += hint("The location is under <a href='#place'>Setup</a>.");
+    h += "</fieldset>";
+
+    h += "<fieldset id='news'><legend>News</legend>";
+    h += hint("Add a NewsData.io key under API keys to add News to Rotation. One shared request returns up to 10 English articles; "
+              "some chosen categories may have no matching story. Free-plan articles are delayed by 12 hours.");
+    h += boolSelect("newstop", "News layout", v.newstop, d.newstop, "Categories per orb", "Top five (ranked by source)", errors);
+    for (int i = 0; i < 5; i++) {
+        String key = "news" + String(i + 1);
+        h += "<label for='" + key + "'>Orb " + String(i + 1) + " category</label><select id='" + key + "' name='" + key + "'>";
+        for (const auto &c : news::categories) h += option(c.code, c.name, v.newscat[i] == c.code);
+        h += "</select>" + errorLine(errors, key.c_str());
+    }
+    h += "<label for='newsminutes'>Refresh interval (minutes)</label><input type='number' id='newsminutes' name='newsminutes' min='1' max='1440' value='" +
+         String(v.newsminutes) + "'>";
+    h += hint("Default: 15 minutes (about 96 requests per day while News is active). Restarts and shared keys add requests.") +
+         errorLine(errors, "newsminutes");
+    h += "<div id='newswarn' class='err'>&#9888; Under 15 minutes may exceed the free plan's 200 credits per day.</div>"
+         "<script>(()=>{const i=document.getElementById('newsminutes'),w=document.getElementById('newswarn');"
+         "const f=()=>w.hidden=Number(i.value)>=15;i.addEventListener('input',f);f()})()</script>";
     h += "</fieldset>";
 
 #ifdef STOCK_TICKER_LIST
@@ -722,6 +750,27 @@ void SettingsPage::handlePost() {
         const std::string stored = v.wxkey;
         if (!sv::parseApiKey(argStr(s, "wxkey"), stored, v.wxkey, err)) {
             errors["wxkey"] = err;
+        }
+    }
+    if (has("newsclr")) {
+        v.newskey.clear();
+    } else if (has("newskey")) {
+        const std::string storedKey = v.newskey;
+        if (!sv::parseApiKey(argStr(s, "newskey"), storedKey, v.newskey, err)) errors["newskey"] = err;
+    }
+    readBool("newstop", v.newstop);
+    if (has("newsminutes")) {
+        int n;
+        if (!sv::parseInt(argStr(s, "newsminutes"), n) || n < 1 || n > 1440)
+            errors["newsminutes"] = "Enter 1 to 1440 minutes.";
+        else v.newsminutes = n;
+    }
+    for (int i = 0; i < 5; i++) {
+        String key = "news" + String(i + 1);
+        if (has(key.c_str())) {
+            std::string code = argStr(s, key.c_str());
+            if (news::category(code)) v.newscat[i] = code;
+            else errors[key.c_str()] = "Pick a category from the list.";
         }
     }
     if (has("tsttok")) {

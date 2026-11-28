@@ -79,6 +79,10 @@ struct SettingsValues {
     std::string tsttok; // Tempest (WeatherFlow) token, "" = no Tempest pages
     std::string awapp; // Ambient Weather Application Key
     std::string awkey; // Ambient Weather API Key; both needed for Ambient pages
+    std::string newskey;
+    int newsminutes;
+    bool newstop;
+    std::string newscat[5];
 };
 
 // Night-dim level. The page sets hours only; the level stays a build choice.

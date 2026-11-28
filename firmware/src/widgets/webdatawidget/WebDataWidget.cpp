@@ -1,38 +1,9 @@
 
 #include "WebDataWidget.h"
 #include "DeviceLogStore.h"
+#include "LimitedStream.h"
 
 WebDataStatus WebDataWidget::s_status;
-
-// Hands ArduinoJson at most `limit` bytes. deserializeJson reads from a
-// Stream, so the reply is never held whole in a String (upstream did
-// http.getString(), unbounded). Blocking waits happen on the inner stream,
-// under its own timeout; this one's is 0 so it never adds a wait of its own.
-class LimitedStream : public Stream {
-  public:
-    LimitedStream(Stream &in, size_t limit) : m_in(in), m_left(limit) { setTimeout(0); }
-    int available() override { return m_left ? m_in.available() : 0; }
-    int read() override {
-        if (m_left == 0) {
-            m_exceeded = true;
-            return -1;
-        }
-        char c;
-        if (m_in.readBytes(&c, 1) != 1) {
-            return -1;
-        }
-        m_left--;
-        return (uint8_t)c;
-    }
-    int peek() override { return m_left ? m_in.peek() : -1; }
-    size_t write(uint8_t) override { return 0; }
-    bool exceeded() const { return m_exceeded; }
-
-  private:
-    Stream &m_in;
-    size_t m_left;
-    bool m_exceeded = false;
-};
 
 WebDataWidget::WebDataWidget(ScreenManager &manager, String url, String name) : Widget(manager) {
     httpRequestAddress = url;

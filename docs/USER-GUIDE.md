@@ -12,6 +12,7 @@ In this guide the five displays are **orb 1 to orb 5, left to right**, and
 
 - [The three buttons](#the-three-buttons)
 - [The pages](#the-pages)
+- [News](#news)
 - [What you see at start-up](#what-you-see-at-start-up)
 - [Finding the orbs' address](#finding-the-orbs-address)
 - [The settings page](#the-settings-page)
@@ -55,6 +56,7 @@ A tap on the middle button on each page:
 | Clock | next clock face |
 | Weather | orb 5 switches between the three-day highs and lows |
 | Stocks | fetch the prices now |
+| News | redraw the headlines without making another request |
 | MQTT | draw the page again (MQTT values arrive by themselves, so there is nothing to fetch) |
 | Web Data | fetch the data now |
 
@@ -74,6 +76,7 @@ Each page uses all five orbs.
 | **Clock** | Hours on orbs 1 and 2, minutes on orbs 4 and 5, the colon and the seconds on orb 3. Normal (LED digits) or Nixie-tube face. |
 | **Weather** | Orb 1: time, date and weekday. Orb 2: the conditions in words. Orb 3: the weather picture, sunrise and sunset, and the moon's phase. Orb 4: the temperature now, with today's high and low. Orb 5: the next three days. |
 | **Stocks** | One ticker on each orb: price, change today, and the 52-week high and low. |
+| **News** | Headlines by category, or five stories ranked by source, with publisher and age. |
 | **Web Data** | A page of your own, drawn from a JSON file at a web address. |
 | **MQTT** (up to two) | A page of your own: one live value on each orb from an MQTT broker, such as Home Assistant. |
 
@@ -110,6 +113,39 @@ does not fetch; it gets fresh data as soon as it comes up again. So with the
 clock kept on screen, the info page can show weather that is hours old, and
 that is normal. MQTT values change as the broker sends them, on screen or
 not.
+
+### News
+
+Sign up at [NewsData.io](https://newsdata.io/register), paste your API key
+under **API keys** on the settings page, and save. After the restart, News
+appears under **Rotation > Show**. Remove the key to remove the page.
+
+Under **News**, choose a category for each orb (the default is World, United
+States, Business, Technology and Science), or choose **Top five**. Top five
+sorts the returned articles by NewsData.io's source priority, not an
+independently determined importance score. Each category orb shows only the
+latest matching story returned; orbs with the same category show the same
+story. United States uses the article's country, not a category.
+
+The headline fits on one screen, shrinking if necessary. If it is still too
+long, it is cut and ends in `...`. Unsupported characters are replaced, not
+shown as boxes. The story changes only when a refresh returns a different
+latest match; no AI summary is made. The source and age appear below it. A
+middle tap redraws the page without fetching. Exact normalized titles and
+matching article URLs are deduplicated.
+
+One shared request returns up to ten English articles, so it may not contain
+a story for every selected category. Those orbs say **No stories**; choosing
+United States leaves the request unfiltered by category so that US stories
+can also be matched. The default 15-minute interval is at most about 96
+requests per day on one continuously active device, plus start-ups. Shorter
+intervals, restarts or sharing a key across devices can exhaust the free
+plan's 200 daily credits. Fetches happen on start-up and while the page is
+shown, not while it is hidden. NewsData.io documents a 12-hour delay on its
+free plan. A failed refresh keeps previous headlines and the usual stale-data
+indicator; the log records failures without the key. If the orbs show a news
+error, open `/log` for the specific failure (such as a JSON error or HTTP
+status) when asking for help.
 
 ## What you see at start-up
 

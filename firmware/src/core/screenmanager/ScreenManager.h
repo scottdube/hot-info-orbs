@@ -58,6 +58,7 @@ public:
     unsigned int calculateFitFontSize(uint32_t limit_width, uint32_t limit_height, Layout layout, const String &text);
     // Measured ink size of one line at fontSize in the current font (no scaling)
     void measureText(const String &text, unsigned int fontSize, int &w, int &h);
+    bool hasGlyph(uint32_t codepoint);
 
     // Draw string functions
     void drawString(const String &text, int x, int y, unsigned int fontSize, Align align, int32_t fgColor = -1, int32_t bgColor = -1, bool applyScale = true);

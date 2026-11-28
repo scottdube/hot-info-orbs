@@ -231,6 +231,10 @@ void ScreenManager::measureText(const String &text, unsigned int fontSize, int &
     h = box.yMax - box.yMin;
 }
 
+bool ScreenManager::hasGlyph(uint32_t codepoint) {
+    return m_render.hasGlyph(codepoint);
+}
+
 void ScreenManager::drawString(const String &text, int x, int y) {
     // Use current font size and alignment
     drawString(text, x, y, 0, m_render.getAlignment());

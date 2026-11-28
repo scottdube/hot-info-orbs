@@ -1498,6 +1498,13 @@ uint16_t OpenFontRender::decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t rema
 	return c; // fall-back to extended ASCII
 }
 
+bool OpenFontRender::hasGlyph(uint32_t codepoint) {
+	FT_Face face = nullptr;
+	return _ftc_manager && codepoint <= 0xFFFF &&
+	       FTC_Manager_LookupFace(_ftc_manager, &_face_id, &face) == 0 &&
+	       face && FT_Get_Char_Index(face, codepoint) != 0;
+}
+
 uint16_t OpenFontRender::color565(uint8_t r, uint8_t g, uint8_t b) {
 	return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }

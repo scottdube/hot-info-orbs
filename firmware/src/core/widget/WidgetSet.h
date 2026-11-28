@@ -10,7 +10,7 @@
 // Crossing where its tick box exists), Web Data, the second Web Data define,
 // two MQTT pages = 10.
 // At 5 an orb with two Tempest pages dropped the custom pages.
-#define MAX_WIDGETS 10
+#define MAX_WIDGETS 11
 
 class WidgetSet {
 public:
