@@ -383,6 +383,30 @@ void test_fixed_text_size() {
     TEST_ASSERT_EQUAL(60, out); // a refused value leaves the old one
 }
 
+void test_magnitude() {
+    float out = -1.0f;
+    std::string err;
+    TEST_ASSERT_TRUE(parseMagnitude("4.5", out, err));
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 4.5f, out);
+    TEST_ASSERT_TRUE(err.empty());
+    TEST_ASSERT_TRUE(parseMagnitude("5", out, err)); // a whole number is fine
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 5.0f, out);
+    TEST_ASSERT_TRUE(parseMagnitude(" 6.2 ", out, err));
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 6.2f, out);
+    TEST_ASSERT_TRUE(parseMagnitude("0", out, err)); // report everything
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 0.0f, out);
+    TEST_ASSERT_TRUE(parseMagnitude("10", out, err)); // the top of the range
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 10.0f, out);
+    out = 4.5f; // a refused value leaves the old one
+    TEST_ASSERT_FALSE(parseMagnitude("", out, err));
+    TEST_ASSERT_FALSE(parseMagnitude("10.1", out, err));
+    TEST_ASSERT_FALSE(parseMagnitude("-1", out, err));
+    TEST_ASSERT_FALSE(parseMagnitude("4.5.1", out, err));
+    TEST_ASSERT_FALSE(parseMagnitude("abc", out, err));
+    TEST_ASSERT_FALSE(err.empty());
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 4.5f, out);
+}
+
 void test_optional_text() {
     std::string out, err;
     TEST_ASSERT_TRUE(parseOptionalText("   ", 8, out, err));
@@ -564,6 +588,7 @@ int main() {
     RUN_TEST(test_hostname);
     RUN_TEST(test_port);
     RUN_TEST(test_fixed_text_size);
+    RUN_TEST(test_magnitude);
     RUN_TEST(test_optional_text);
     RUN_TEST(test_topic);
     RUN_TEST(test_password);

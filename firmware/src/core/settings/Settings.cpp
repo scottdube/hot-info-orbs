@@ -93,8 +93,19 @@ SettingsValues Settings::defaults() {
 #endif
     d.sttype1 = d.sttype2 = 0;
     d.stmac1 = d.stmac2 = "";
+    // The earthquake page is always registered, so it starts unticked (hidden)
+    // unless the build opts in with EARTHQUAKE_MONITOR. Its key is its name.
+#ifdef EARTHQUAKE_MONITOR
     d.hidden = "";
+#else
+    d.hidden = "Quake";
+#endif
     d.wificlock = false;
+#ifdef EARTHQUAKE_MIN_MAG
+    d.quakemag = EARTHQUAKE_MIN_MAG;
+#else
+    d.quakemag = 4.5f; // worldwide default, avoids hundreds of small events
+#endif
     // Custom pages: the old build-time defines are now defaults, so a build
     // that sets them keeps working with nothing saved
     d.wdname = "Web Data";
@@ -203,6 +214,8 @@ void Settings::load() {
             v.stmac2 = p.getString("stmac2", v.stmac2.c_str()).c_str();
             v.hidden = p.getString("hidden", v.hidden.c_str()).c_str();
             v.wificlock = p.getBool("wificlock", v.wificlock); // added 2026-11-14; absent = default
+            // Earthquake minimum magnitude: added after schema 1 without a bump, like tstn1
+            v.quakemag = p.getFloat("quakemag", v.quakemag);
             // Custom pages: added after schema 1 without a bump, like tstn1
             v.wdname = p.getString("wdname", v.wdname.c_str()).c_str();
             v.wdurl = p.getString("wdurl", v.wdurl.c_str()).c_str();
@@ -300,7 +313,8 @@ bool Settings::save(const SettingsValues &v) {
               p.putUInt("tstn2", v.tstn2) &&
               p.putString("tlbl2", v.tlbl2.c_str()) == v.tlbl2.size() &&
               p.putString("hidden", v.hidden.c_str()) == v.hidden.size() &&
-              p.putBool("wificlock", v.wificlock);
+              p.putBool("wificlock", v.wificlock) &&
+              p.putFloat("quakemag", v.quakemag);
     // put* returns bytes written; strings compare against their own length
     auto putStr = [&p](const char *k, const std::string &s) { return p.putString(k, s.c_str()) == s.size(); };
     ok = ok && putStr("host", v.host) && putStr("wdname", v.wdname) && putStr("wdurl", v.wdurl) && putStr("mqname", v.mqname) &&

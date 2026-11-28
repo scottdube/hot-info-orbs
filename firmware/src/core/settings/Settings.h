@@ -46,6 +46,11 @@ struct SettingsValues {
     std::string stmac2;
     std::string hidden; // widget names left out of the rotation, '\n'-separated; "" = show all
     bool wificlock; // WiFi out: all five orbs go to the clock (stale::ClockOnly). Off = the page stays, marked
+    // Earthquake Monitor page: the five most recent events at or above a
+    // minimum magnitude, from the USGS GeoJSON feed. The page is always
+    // registered; it is turned on and off by its tick box under Rotation (so
+    // it starts in `hidden` unless the build opts in with EARTHQUAKE_MONITOR).
+    float quakemag; // minimum magnitude to report, 0.0..10.0; the feed is picked from it
     // Custom pages (docs/superpowers/specs/2026-10-17-custom-pages-design.md).
     // A page is registered at boot only when its URL / host is set.
     std::string wdname; // Web Data page name, 1..16

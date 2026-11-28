@@ -14,6 +14,7 @@
 #include "config_helper.h"
 #include "icons.h"
 #include "mqttwidget/MQTTWidget.h"
+#include "quakewidget/QuakeWidget.h"
 #include "weatherwidget/AmbientSource.h"
 #include "weatherwidget/StationTypes.h"
 #include "weatherwidget/TempestSource.h"
@@ -277,6 +278,9 @@ void setup() {
     if (!stationPages || !wx.wxkey.empty()) {
         widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
     }
+    // Always registered so it appears in Rotation > Show; its tick box turns
+    // it on. New orbs start with it unticked (Settings::defaults hides it).
+    widgetSet->add(new QuakeWidget(*sm));
     // Custom pages: set up on /settings, registered only when configured.
     // Saving restarts the orb, so this runs again with the new values.
     const SettingsValues &cp = Settings::get();

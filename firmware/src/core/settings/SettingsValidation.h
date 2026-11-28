@@ -537,6 +537,36 @@ inline bool parsePort(const std::string &in, int &out, std::string &err) {
     return true;
 }
 
+// Minimum earthquake magnitude to report: 0.0..10.0, one decimal place. Takes
+// "4.5", "5", " 4.5 "; a blank or out-of-range value is refused. The USGS feed
+// to pull is chosen from this, so it is kept to the scale of the Richter-style
+// numbers the feed carries.
+inline bool parseMagnitude(const std::string &in, float &out, std::string &err) {
+    err = "Enter a magnitude from 0.0 to 10.0";
+    std::string s = trim(in);
+    if (s.empty() || s.size() > 5) {
+        return false;
+    }
+    bool dot = false;
+    for (size_t i = 0; i < s.size(); i++) {
+        if (s[i] == '.') {
+            if (dot) {
+                return false; // only one decimal point
+            }
+            dot = true;
+        } else if (!isdigit((unsigned char)s[i])) {
+            return false;
+        }
+    }
+    float v = std::stof(s);
+    if (v < 0.0f || v > 10.0f) {
+        return false;
+    }
+    out = v;
+    err = "";
+    return true;
+}
+
 // An MQTT page's fixed text size: 0 or blank = automatic, otherwise 12..60.
 // Below 12 nothing is readable on a 240 px orb; above 60 not even one line of
 // two digits fits between a label and a unit.

@@ -55,6 +55,7 @@ A tap on the middle button on each page:
 | Clock | next clock face |
 | Weather | orb 5 switches between the three-day highs and lows |
 | Stocks | fetch the prices now |
+| Earthquakes | fetch the feed now |
 | MQTT | draw the page again (MQTT values arrive by themselves, so there is nothing to fetch) |
 | Web Data | fetch the data now |
 
@@ -74,6 +75,7 @@ Each page uses all five orbs.
 | **Clock** | Hours on orbs 1 and 2, minutes on orbs 4 and 5, the colon and the seconds on orb 3. Normal (LED digits) or Nixie-tube face. |
 | **Weather** | Orb 1: time, date and weekday. Orb 2: the conditions in words. Orb 3: the weather picture, sunrise and sunset, and the moon's phase. Orb 4: the temperature now, with today's high and low. Orb 5: the next three days. |
 | **Stocks** | One ticker on each orb: price, change today, and the 52-week high and low. |
+| **Earthquakes** | The five most recent earthquakes at or above a magnitude you choose, one per orb: the magnitude large, a short location, how long ago it was, and its depth. The ring is colored by magnitude (green, yellow, orange, red). From the public USGS feed; no key needed. |
 | **Web Data** | A page of your own, drawn from a JSON file at a web address. |
 | **MQTT** (up to two) | A page of your own: one live value on each orb from an MQTT broker, such as Home Assistant. |
 
@@ -104,8 +106,8 @@ same again to unlock: the middle orb shows **Unlocked** and the padlock goes.
   power-up starts the countdown to forget the WiFi network (let go to keep
   it). A hold carried over from power-up never locks.
 
-**How often the data refreshes.** Weather every 10 minutes and stocks every
-15 minutes, **while their page is on screen**. A page that is not on screen
+**How often the data refreshes.** Weather every 10 minutes, stocks every
+15 minutes, and earthquakes every minute, **while their page is on screen**. A page that is not on screen
 does not fetch; it gets fresh data as soon as it comes up again. So with the
 clock kept on screen, the info page can show weather that is hours old, and
 that is normal. MQTT values change as the broker sends them, on screen or
@@ -213,6 +215,7 @@ Your settings stay through restarts, power cuts and
 | **Clock** | The clock face (a middle tap on the clock page changes it too), 12-hour or 24-hour, the AM/PM mark, the digit color and the color of the unlit segments. |
 | **Weather** | °F and mph, or °C and km/h. Light or dark screens. |
 | **Stocks** | One to five tickers, with commas between them, one per orb. Crypto is written `BTC/USD`. To pick an exchange, add the country: `APC&country=Germany`. |
+| **Earthquakes** | **Minimum magnitude**: the smallest earthquake to show, 0.0 to 10.0. 4.5 keeps the world's many small quakes off the orbs. Turn the page itself on with its tick box under **Rotation > Show**. |
 | **Dim times**, **Screens-off times** | See [Dimming and switching off at night](#dimming-and-switching-off-at-night). |
 | **Start-up eyes** | **Waking eyes** on or off, the eye lid style, eyelashes, and the iris color. **Demo: show each in turn** plays a wake-up in every style, with its name on orb 5, and keeps playing until you pick a style. While it plays, no pages show, the buttons do nothing and the start-up picture is skipped; the settings page still works. |
 | **Start-up picture** | Pick any photo. The page crops it to a square and shows the circle the orb will display. **Upload and restart** puts it on orb 3 at start-up. **Use the built-in logo** takes it off again. |

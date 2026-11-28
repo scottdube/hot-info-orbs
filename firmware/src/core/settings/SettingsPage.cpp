@@ -85,6 +85,7 @@ static String contents() {
 #ifdef STOCK_TICKER_LIST
     h += "<a href='#stocks'>Stocks</a>";
 #endif
+    h += "<a href='#quakes'>Earthquakes</a>";
     h += "<a href='#dimtimes'>Dim times</a><a href='#offtimes'>Screens-off times</a>";
 #ifdef BOOT_EYES
     h += "<a href='#eyes'>Start-up eyes</a>";
@@ -545,6 +546,15 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += "</fieldset>";
 #endif
 
+    h += "<fieldset id='quakes'><legend>Earthquakes</legend>";
+    h += "<label for='quakemag'>Minimum magnitude</label><input type='number' id='quakemag' name='quakemag' min='0' max='10' step='0.1' value='" +
+         String(v.quakemag, 1) + "'>";
+    h += hint("The five most recent earthquakes at or above this magnitude, from the USGS feed. "
+              "4.5 keeps the world's smaller quakes off the orbs. Range 0.0 to 10.0. Default: " + String(d.quakemag, 1) +
+              ". Turn the page on under <a href='#rotation'>Rotation</a> above.") +
+         errorLine(errors, "quakemag");
+    h += "</fieldset>";
+
     h += "<fieldset id='dimtimes'><legend>Dim times</legend>";
     h += boolSelect("dim", "Dim", v.dim, d.dim, "Off", "On", errors);
     h += hint("Darkens the colors drawn; the backlight itself stays on.");
@@ -760,6 +770,9 @@ void SettingsPage::handlePost() {
     readBool("invert", v.invert);
     readBool("booteyes", v.booteyes);
     readBool("wificlock", v.wificlock);
+    if (has("quakemag") && !sv::parseMagnitude(argStr(s, "quakemag"), v.quakemag, err)) {
+        errors["quakemag"] = err;
+    }
     readBool("lashes", v.lashes);
     if (has("lids")) {
         const std::string a = argStr(s, "lids");
