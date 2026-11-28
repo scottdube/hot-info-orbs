@@ -45,6 +45,19 @@
 // STOCK TICKER CONFIGURATION
 #define STOCK_TICKER_LIST "SPY,QQQ,AAPL,MSFT,BTC/USD" // Choose 5 securities to track. You can track forex, crypto (symbol/USD) or stocks from any exchange (if one ticker is part of multiple exchanges you can add on "&country=Canada" to narrow down to your ticker)
 
+// WORLD CLOCK CONFIGURATION
+// Up to five cities, one per orb, each showing the city, its local time and its
+// weather. Uses the Visual Crossing weather service (needs WEATHER_API_KEY),
+// which also supplies each city's time zone. A city is a Visual Crossing
+// location, so it may include a state or country. Leave one blank to skip that
+// orb. All five are changeable on the /settings page. Defaults to the five
+// below even if these lines are absent.
+#define WORLD_CLOCK_CITY_1 "New York, NY"
+#define WORLD_CLOCK_CITY_2 "Los Angeles, CA"
+#define WORLD_CLOCK_CITY_3 "London, England"
+#define WORLD_CLOCK_CITY_4 "Tokyo, Japan"
+#define WORLD_CLOCK_CITY_5 "Sydney, Australia"
+
 // PARQET.COM PORTFOLIO CONFIGURATION
 //#define PARQET_PORTFOLIO_ID "" // set the id of your parqet.com portfolio. Make sure the portfolio is set to public!
 

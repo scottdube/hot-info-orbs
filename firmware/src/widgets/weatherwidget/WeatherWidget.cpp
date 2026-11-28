@@ -12,6 +12,7 @@
 
 #include "DeviceLogStore.h"
 #include "SunMoon.h"
+#include "WeatherIcon.h"
 #include "WeatherWidget.h"
 #include "icons.h"
 
@@ -150,37 +151,12 @@ void WeatherWidget::showJPG(int displayIndex, int x, int y, const byte jpgData[]
 
 // Take the text output from the weather API and map it to a icon/byte array, then display it
 void WeatherWidget::drawWeatherIcon(int displayIndex, const String &condition, int x, int y, int scale) {
-    const byte *iconStart = NULL;
-    const byte *iconEnd = NULL;
-
-    if (condition == "partly-cloudy-night") {
-        iconStart = m_screenMode == Light ? moonCloudW_start : moonCloudB_start;
-        iconEnd = m_screenMode == Light ? moonCloudW_end : moonCloudB_end;
-    } else if (condition == "partly-cloudy-day") {
-        iconStart = m_screenMode == Light ? sunCloudsW_start : sunCloudsB_start;
-        iconEnd = m_screenMode == Light ? sunCloudsW_end : sunCloudsB_end;
-    } else if (condition == "clear-day") {
-        iconStart = m_screenMode == Light ? sunW_start : sunB_start;
-        iconEnd = m_screenMode == Light ? sunW_end : sunB_end;
-    } else if (condition == "clear-night") {
-        iconStart = m_screenMode == Light ? moonW_start : moonB_start;
-        iconEnd = m_screenMode == Light ? moonW_end : moonB_end;
-    } else if (condition == "snow") {
-        iconStart = m_screenMode == Light ? snowW_start : snowB_start;
-        iconEnd = m_screenMode == Light ? snowW_end : snowB_end;
-    } else if (condition == "rain") {
-        iconStart = m_screenMode == Light ? rainW_start : rainB_start;
-        iconEnd = m_screenMode == Light ? rainW_end : rainB_end;
-    } else if (condition == "fog" || condition == "wind" || condition == "cloudy") {
-        iconStart = m_screenMode == Light ? cloudsW_start : cloudsB_start;
-        iconEnd = m_screenMode == Light ? cloudsW_end : cloudsB_end;
+    const byte *iconStart = nullptr;
+    int size = 0;
+    if (wxicon::resolve(condition, m_screenMode != Light, iconStart, size)) {
+        showJPG(displayIndex, x, y, iconStart, size, scale);
     } else {
         Serial.println("unknown weather icon:" + condition);
-    }
-
-    const int size = iconEnd - iconStart;
-    if (iconStart != NULL && size > 0) {
-        showJPG(displayIndex, x, y, iconStart, size, scale);
     }
 }
 

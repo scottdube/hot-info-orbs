@@ -44,6 +44,12 @@ struct SettingsValues {
     int sttype2;
     std::string stmac1;
     std::string stmac2;
+    // World Clock page: up to five cities, each its own orb (city name, local
+    // time and weather). A city is a Visual Crossing location as typed, so it
+    // may hold a comma ("Los Angeles, CA"); "" = that orb is unused. The page
+    // is registered at boot only when at least one city is set. It needs the
+    // Visual Crossing key, like the weather pages.
+    std::string wcity[5];
     std::string hidden; // widget names left out of the rotation, '\n'-separated; "" = show all
     bool wificlock; // WiFi out: all five orbs go to the clock (stale::ClockOnly). Off = the page stays, marked
     // Custom pages (docs/superpowers/specs/2026-10-17-custom-pages-design.md).

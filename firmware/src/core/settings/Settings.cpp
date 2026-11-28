@@ -93,6 +93,35 @@ SettingsValues Settings::defaults() {
 #endif
     d.sttype1 = d.sttype2 = 0;
     d.stmac1 = d.stmac2 = "";
+    // World Clock default cities (one per orb). The WORLD_CLOCK_CITY_n defines
+    // override them; an orb with neither a define nor a built-in falls back to
+    // "" (unused). The five built-ins ship the page ready to use even on an
+    // older config.h that predates the defines.
+#ifdef WORLD_CLOCK_CITY_1
+    d.wcity[0] = WORLD_CLOCK_CITY_1;
+#else
+    d.wcity[0] = "New York, NY";
+#endif
+#ifdef WORLD_CLOCK_CITY_2
+    d.wcity[1] = WORLD_CLOCK_CITY_2;
+#else
+    d.wcity[1] = "Los Angeles, CA";
+#endif
+#ifdef WORLD_CLOCK_CITY_3
+    d.wcity[2] = WORLD_CLOCK_CITY_3;
+#else
+    d.wcity[2] = "London, England";
+#endif
+#ifdef WORLD_CLOCK_CITY_4
+    d.wcity[3] = WORLD_CLOCK_CITY_4;
+#else
+    d.wcity[3] = "Tokyo, Japan";
+#endif
+#ifdef WORLD_CLOCK_CITY_5
+    d.wcity[4] = WORLD_CLOCK_CITY_5;
+#else
+    d.wcity[4] = "Sydney, Australia";
+#endif
     d.hidden = "";
     d.wificlock = false;
     // Custom pages: the old build-time defines are now defaults, so a build
@@ -201,6 +230,14 @@ void Settings::load() {
             v.sttype2 = p.getInt("sttype2", v.sttype2);
             v.stmac1 = p.getString("stmac1", v.stmac1.c_str()).c_str();
             v.stmac2 = p.getString("stmac2", v.stmac2.c_str()).c_str();
+            // World Clock cities: added after schema 1 without a bump, like
+            // tstn1. An orb saved before this firmware keeps its config.h
+            // defaults (the five built-in cities).
+            for (int i = 0; i < 5; i++) {
+                char k[8];
+                snprintf(k, sizeof(k), "wcity%d", i + 1);
+                v.wcity[i] = p.getString(k, v.wcity[i].c_str()).c_str();
+            }
             v.hidden = p.getString("hidden", v.hidden.c_str()).c_str();
             v.wificlock = p.getBool("wificlock", v.wificlock); // added 2026-11-14; absent = default
             // Custom pages: added after schema 1 without a bump, like tstn1
@@ -310,6 +347,11 @@ bool Settings::save(const SettingsValues &v) {
          putStr("wxkey", v.wxkey) && putStr("tsttok", v.tsttok) && putStr("awapp", v.awapp) && putStr("awkey", v.awkey) &&
          p.putInt("sttype1", v.sttype1) && p.putInt("sttype2", v.sttype2) && putStr("stmac1", v.stmac1) &&
          putStr("stmac2", v.stmac2);
+    for (int i = 0; ok && i < 5; i++) {
+        char k[8];
+        snprintf(k, sizeof(k), "wcity%d", i + 1);
+        ok = ok && putStr(k, v.wcity[i]);
+    }
     for (int i = 0; ok && i < 5; i++) {
         char k[8];
         snprintf(k, sizeof(k), "mqt%d", i + 1);

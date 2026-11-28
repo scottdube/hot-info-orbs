@@ -46,6 +46,13 @@ public:
     int64_t getSunrise() { return m_sunrise; }
     int64_t getSunset() { return m_sunset; }
 
+    // Seconds east of UTC at the location (Visual Crossing "tzoffset", hours).
+    // The World Clock page turns UTC into each city's wall clock with it; the
+    // weather page ignores it. m_tzValid stays false until a source sets it.
+    WeatherDataModel &setTzOffset(int32_t seconds);
+    int32_t getTzOffset() { return m_tzOffset; }
+    bool hasTzOffset() { return m_tzValid; }
+
     bool isChanged();
     WeatherDataModel &setChangedStatus(bool changed);
 
@@ -63,6 +70,9 @@ private:
 
     int64_t m_sunrise = 0;
     int64_t m_sunset = 0;
+
+    int32_t m_tzOffset = 0;
+    bool m_tzValid = false;
 
     bool m_changed = false;
 };

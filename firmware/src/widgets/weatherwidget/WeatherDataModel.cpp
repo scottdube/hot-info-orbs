@@ -198,3 +198,12 @@ WeatherDataModel &WeatherDataModel::setSunTimes(int64_t sunrise, int64_t sunset)
     }
     return *this;
 }
+
+WeatherDataModel &WeatherDataModel::setTzOffset(int32_t seconds) {
+    if (!m_tzValid || m_tzOffset != seconds) {
+        m_tzOffset = seconds;
+        m_tzValid = true;
+        m_changed = true;
+    }
+    return *this;
+}

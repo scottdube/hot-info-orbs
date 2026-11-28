@@ -7,6 +7,7 @@
 #include "config_helper.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include <math.h>
 
 // This is a hack to support old config.h files that have WEATHER_LOCAION instead of LOCATION.
 #ifndef WEATHER_LOCATION
@@ -42,6 +43,12 @@ bool VisualCrossingSource::fetch(WeatherDataModel &model) {
 
         if (!error) {
             model.setCityName(doc["resolvedAddress"].as<String>());
+            // tzoffset is the location's offset from UTC in hours (e.g. -5, 5.5);
+            // the World Clock page reads it to show each city's local time. It
+            // may arrive as an int (-5) or a float (5.5), so test for presence.
+            if (!doc["tzoffset"].isNull()) {
+                model.setTzOffset((int32_t)lround(doc["tzoffset"].as<float>() * 3600.0));
+            }
             model.setCurrentTemperature(doc["currentConditions"]["temp"].as<float>());
             model.setCurrentText(doc["days"][0]["description"].as<String>());
 

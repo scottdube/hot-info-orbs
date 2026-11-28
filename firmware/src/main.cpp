@@ -21,6 +21,7 @@
 #include "weatherwidget/WeatherWidget.h"
 #include "webdatawidget/WebDataWidget.h"
 #include "wifiwidget/WifiWidget.h"
+#include "worldclockwidget/WorldClockWidget.h"
 #include <Arduino.h>
 #include <LittleFS.h>
 #include "BootEyes.h" // ScreenGuard and end() are no-ops without BOOT_EYES
@@ -276,6 +277,17 @@ void setup() {
     addStation(1, wx.sttype2, wx.tstn2, wx.stmac2, wx.tlbl2);
     if (!stationPages || !wx.wxkey.empty()) {
         widgetSet->add(new WeatherWidget(*sm, new VisualCrossingSource()));
+    }
+    // World Clock: one orb per configured city (name, local time, weather).
+    // Registered only when a city is set and a Visual Crossing key is present,
+    // since every city fetches from Visual Crossing.
+    if (!wx.wxkey.empty()) {
+        WorldClockWidget *worldClock = new WorldClockWidget(*sm);
+        if (worldClock->cityCount() > 0) {
+            widgetSet->add(worldClock);
+        } else {
+            delete worldClock;
+        }
     }
     // Custom pages: set up on /settings, registered only when configured.
     // Saving restarts the orb, so this runs again with the new values.

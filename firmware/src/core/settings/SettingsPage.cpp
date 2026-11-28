@@ -81,7 +81,7 @@ static String contents() {
          "<a href='#place'>Time zone and location</a>"
          "<a href='#stations'>Weather stations</a><a href='#mount'>Mounting</a></div>";
     h += "<div><b><a href='#display'>Display</a></b><a href='#rotation'>Rotation</a><a href='#clock'>Clock</a>"
-         "<a href='#weather'>Weather</a>";
+         "<a href='#weather'>Weather</a><a href='#worldclock'>World Clock</a>";
 #ifdef STOCK_TICKER_LIST
     h += "<a href='#stocks'>Stocks</a>";
 #endif
@@ -538,6 +538,20 @@ String SettingsPage::renderForm(const SettingsValues &v, const Errors &errors, c
     h += hint("The location is under <a href='#place'>Setup</a>.");
     h += "</fieldset>";
 
+    h += "<fieldset id='worldclock'><legend>World Clock</legend>";
+    h += hint("One orb per city, showing the city, its local time and its weather. Leave a box blank to skip that orb. "
+              "Tick <b>World Clock</b> under <a href='#rotation'>Rotation</a> to include it. "
+              "Each city is a Visual Crossing location (as under <a href='#place'>Setup</a>), so it may include a state or country "
+              "(\"Los Angeles, CA\"). Needs the Visual Crossing key. Each orb is white by day and dark by night in that city. "
+              "Units follow <a href='#weather'>Weather</a> above.");
+    for (int i = 0; i < 5; i++) {
+        char key[8];
+        snprintf(key, sizeof(key), "wcity%d", i + 1);
+        String label = "City " + String(i + 1);
+        h += textField(key, label.c_str(), v.wcity[i], d.wcity[i], ". Blank = skip this orb.", errors);
+    }
+    h += "</fieldset>";
+
 #ifdef STOCK_TICKER_LIST
     h += "<fieldset id='stocks'><legend>Stocks</legend>";
     h += textField("tickers", "Tickers, comma-separated (1 to 5, one per orb)", v.tickers, d.tickers,
@@ -741,6 +755,13 @@ void SettingsPage::handlePost() {
     }
     if (has("wxloc") && !sv::normalizeText(argStr(s, "wxloc"), 64, v.wxloc, err)) {
         errors["wxloc"] = err;
+    }
+    for (int i = 0; i < 5; i++) {
+        char k[8];
+        snprintf(k, sizeof(k), "wcity%d", i + 1);
+        if (has(k) && !sv::parseOptionalText(argStr(s, k), 64, v.wcity[i], err)) {
+            errors[k] = err;
+        }
     }
     if (has("tz")) {
         const std::string want = argStr(s, "tz");

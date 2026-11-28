@@ -7,10 +7,10 @@
 #include "Widget.h"
 
 // Clock, Parqet, Stocks, up to three weather pages (two Tempest, plus Visual
-// Crossing where its tick box exists), Web Data, the second Web Data define,
-// two MQTT pages = 10.
+// Crossing where its tick box exists), World Clock, Web Data, the second Web
+// Data define, two MQTT pages = 11.
 // At 5 an orb with two Tempest pages dropped the custom pages.
-#define MAX_WIDGETS 10
+#define MAX_WIDGETS 11
 
 class WidgetSet {
 public:
