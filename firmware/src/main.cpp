@@ -19,6 +19,7 @@
 #include "weatherwidget/TempestSource.h"
 #include "weatherwidget/VisualCrossingSource.h"
 #include "weatherwidget/WeatherWidget.h"
+#include "villageswidget/VillagesWidget.h"
 #include "webdatawidget/WebDataWidget.h"
 #include "wifiwidget/WifiWidget.h"
 #include <Arduino.h>
@@ -251,6 +252,7 @@ void setup() {
         widgetSet->add(new StockWidget(*sm));
     }
 #endif
+    widgetSet->add(new VillagesWidget(*sm)); // untick "Villages Entertainment" under Rotation to hide it
     bool stationPages = false;
     // One weather page per station (Tempest or Ambient, issue #51), plus
     // Visual Crossing for the location whenever a VC key is set (a third

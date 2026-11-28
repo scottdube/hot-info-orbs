@@ -55,6 +55,7 @@ A tap on the middle button on each page:
 | Clock | next clock face |
 | Weather | orb 5 switches between the three-day highs and lows |
 | Stocks | fetch the prices now |
+| Villages Entertainment | fetch today's acts now |
 | MQTT | draw the page again (MQTT values arrive by themselves, so there is nothing to fetch) |
 | Web Data | fetch the data now |
 
@@ -74,6 +75,7 @@ Each page uses all five orbs.
 | **Clock** | Hours on orbs 1 and 2, minutes on orbs 4 and 5, the colon and the seconds on orb 3. Normal (LED digits) or Nixie-tube face. |
 | **Weather** | Orb 1: time, date and weekday. Orb 2: the conditions in words. Orb 3: the weather picture, sunrise and sunset, and the moon's phase. Orb 4: the temperature now, with today's high and low. Orb 5: the next three days. |
 | **Stocks** | One ticker on each orb: price, change today, and the 52-week high and low. |
+| **Villages Entertainment** | One venue on each orb (Spanish Springs, Lake Sumter, Brownwood, Sawgrass, Eastport): who is playing today and when. Up to three acts per orb. |
 | **Web Data** | A page of your own, drawn from a JSON file at a web address. |
 | **MQTT** (up to two) | A page of your own: one live value on each orb from an MQTT broker, such as Home Assistant. |
 
